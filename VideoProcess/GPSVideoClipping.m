@@ -9,6 +9,8 @@
 %%%%%%%%%%%%%%% Fill in the following information %%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+VideoFolder         =           uigetdir();
+
 vidfolder           =           pwd;
 CSVFile             =           dir('*.csv');
 BehTableName        =           CSVFile(1).name;
