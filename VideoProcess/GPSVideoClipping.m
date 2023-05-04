@@ -8,9 +8,78 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%% Fill in the following information %%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+clear; clc;
 
-VideoFolder         =           uigetdir();
+fprintf("\nGPS video clipping ...\n");
 
+VideoFolder     =   uigetdir("E:\YuLab\Work\GPS\Video\", "Choose target vedio folder");
+if ~VideoFolder
+    return;
+end
+ViewFolders     =   dir(VideoFolder);
+
+view_front      =   0;
+view_top        =   0;
+
+for i = 1:length(ViewFolders)
+    entry = fullfile(ViewFolders(i).folder, ViewFolders(i).name);
+    if isfolder(entry)
+        switch upper(ViewFolders(i).name)
+            case {'FRONT'}
+                view_front          =   1;
+                VideoFolderFront    =   entry;
+            case {'TOP'}
+                view_top            =   1;
+                VideoFolderTop      =   entry;
+        end
+    end
+end
+clear i entry
+
+if ~view_top
+    fprintf("\nFind no top-view vedios.\n");
+    return
+else
+    fprintf("\nTop-view vedios folder: \n%s\n", VideoFolderTop);
+    [vidFilesTop, tsFilesTop, ~] = ShowAviFiles(VideoFolderTop);
+    fprintf(" Videos\t\tTimestamps\n");
+    cellfun(@(vid, ts) fprintf(" %s\t%s\n", vid, ts), vidFilesTop, tsFilesTop);
+end
+
+if ~view_front
+    fprintf("\nFind no front-view vedios.\n");
+else
+    fprintf("\nFront-view vedios folder: \n%s\n", VideoFolderFront);
+    [vidFilesFront, tsFilesFront, ~] = ShowAviFiles(VideoFolderFront);
+    fprintf(" Videos\t\tTimestamps\n");
+    cellfun(@(vid, ts) fprintf(" %s\t%s\n", vid, ts), vidFilesFront, tsFilesFront);
+end
+
+%%
+vidInfo         =   split(VideoFolder, filesep);
+ANM             =   string(vidInfo{end-1});
+Session         =   string(vidInfo{end});
+
+ANMInfoFile     =   "E:\YuLab\Work\GPS\Data\ANMInfo.xlsx";
+ANMInfo         =   readtable(ANMInfoFile, "Sheet", ANM, "TextType", "string");
+ANMInfo.Session =   string(ANMInfo.Session);
+
+if isempty(ANMInfo.Session==Session)
+    fprintf("\nCannot find session information.\n")
+    return
+elseif ANMInfo(ANMInfo.Session==Session, :).Task == "None"
+    fprintf("\nThe session class has not been generated.\n")
+    return
+else
+    SessionInfo = ANMInfo(ANMInfo.Session==Session, :);
+    disp(SessionInfo(:, 1:6));
+end
+
+CSVFile         =   dir(SessionInfo.SessionFolder+"\*.csv");
+BehTableName    =   CSVFile(1).name;
+BehTableInfo    =   split(BehTableName, '_');
+
+%%
 vidfolder           =           pwd;
 CSVFile             =           dir('*.csv');
 BehTableName        =           CSVFile(1).name;
@@ -23,15 +92,11 @@ MarkingEvent        =           'PortCenterPokeTime'; % use this time to align b
 CheckingEvent       =           'CenterLightTime'; % use this time to align bpod and video ts
 VideoEvent          =           'PortCenterOutTime'; % make video clips based on this event
 Pre                 =           1000; % ms pre event time for video clips
-Post                =           3000; % ms post event time for video clips
+Post                =           2500; % ms post event time for video clips
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-[vidFiles, tsFiles, vidfolder] = ShowAviFiles(vidfolder);
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
 
 if isempty(thisTable)
     [thisTable, path] = uigetfile('.csv', 'Select a behavior table');

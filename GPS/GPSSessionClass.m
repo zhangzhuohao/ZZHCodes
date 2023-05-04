@@ -1008,7 +1008,7 @@ classdef GPSSessionClass
             if nargin<2
                 savepath = obj.BpodFilePath;
             end
-            save(fullfile(savepath, ['GPSSessionClass_' obj.Task '_' upper(obj.Subject)  '_' obj.Session]), 'obj');
+            save(fullfile(savepath, ['GPSSessionClass_' obj.Task '_' upper(obj.Subject) '_' obj.Session]), 'obj');
         end
 
         function updateANMInfo(obj, savepath)
@@ -1018,11 +1018,14 @@ classdef GPSSessionClass
 
             anm_info.Task(session_ind)      = obj.Task;
             anm_info.BpodFile(session_ind)  = obj.BpodFile;
+            
 
             if nargin<2
                 savepath = obj.BpodFilePath;
             end
-            session_file = fullfile(savepath, ['GPSSessionClass_' obj.Task '_' upper(obj.Subject)  '_' obj.Session]);
+            anm_info.SessionFolder(session_ind) = savepath;
+            
+            session_file = fullfile(savepath, ['GPSSessionClass_' obj.Task '_' upper(obj.Subject) '_' obj.Session]);
             anm_info.SessionClassFile(session_ind) = session_file;
 
             anm_info.UpdateTime(session_ind) = string(datetime());
@@ -1031,7 +1034,7 @@ classdef GPSSessionClass
         end
 
         function print(obj, targetDir)
-            savename = fullfile(obj.BpodFilePath, ['GPSSessionClass_' obj.Task '_' upper(obj.Subject)  '_' obj.Session]);
+            savename = fullfile(obj.BpodFilePath, ['GPSSessionClass_' obj.Task '_' upper(obj.Subject) '_' obj.Session]);
             hf = obj.plot();
             print(hf,'-dpdf', savename, '-bestfit')
             print(hf,'-dpng', savename)
@@ -1045,7 +1048,7 @@ classdef GPSSessionClass
                         mkdir(targetDir)
                     end
                 end
-                savename = fullfile(targetDir, ['GPSSessionClass_' obj.Task '_' upper(obj.Subject)  '_' obj.Session]);
+                savename = fullfile(targetDir, ['GPSSessionClass_' obj.Task '_' upper(obj.Subject) '_' obj.Session]);
                 print(hf,'-dpdf', savename, '-bestfit')
                 print(hf,'-dpng', savename)
                 saveas(hf, savename, 'fig')

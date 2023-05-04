@@ -42,6 +42,12 @@ if length(dir_parts) >= 2
                 folder_names = directory;
                 return
             end
+        case "SESSION"
+            if length(parts)==1 && all(isstrprop(parts{1}, 'digit')) && length(parts{1})==8 % yyyymmss
+                % If the foldername has at least 5 parts and the date part has 8 digits, append the full file path to the cell array
+                folder_names = directory;
+                return
+            end
     end
 end
 
@@ -60,6 +66,15 @@ for i = 1:length(contents)
         switch opts.FolderType
             case "PROTOCOL"
                 if length(parts)>=3 && all(isstrprop(parts{2}, 'digit')) && any(strcmpi(parts{3}, opts.Tasks)) % GPS_##_Protocol
+                    % If the foldername has at least 5 parts and the date part has 8 digits, append the full file path to the cell array
+                    folder_names = [folder_names; fullfile(directory, entry.name)];
+                else
+                    subdirectory = fullfile(directory, entry.name);
+                    subdirectory_folders = get_folders(subdirectory, "FolderType", opts.FolderType, "Tasks", opts.Tasks);
+                    folder_names = [folder_names; subdirectory_folders];
+                end
+            case "SESSION"
+                if length(parts)==1 && all(isstrprop(parts{1}, 'digit')) && length(parts{1})==8 % yyyymmss
                     % If the foldername has at least 5 parts and the date part has 8 digits, append the full file path to the cell array
                     folder_names = [folder_names; fullfile(directory, entry.name)];
                 else

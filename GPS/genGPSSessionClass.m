@@ -68,10 +68,10 @@ for d = 1:length(Folders)
         SessionClass.updateANMInfo();
         SessionClass.print(SessionDataFigsFolder);
 
-        BehavCsvName = ['GPSSessionTable' '_' SessionClass.Task '_' SessionClass.Subject, '.csv'];
+        BehavCsvName = ['GPSSessionTable_' SessionClass.Task '_' SessionClass.Subject, '.csv'];
         writetable(SessionClass.BehavTable, fullfile(file_path, BehavCsvName));
 
-        InterCsvName = ['GPSSessionInter' '_' SessionClass.Task '_' SessionClass.Subject, '.csv'];
+        InterCsvName = ['GPSInterruptTable_' SessionClass.Task '_' SessionClass.Subject, '.csv'];
         writetable(SessionClass.Interruption, fullfile(file_path, InterCsvName));
 
     end
