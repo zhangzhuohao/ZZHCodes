@@ -1,4 +1,4 @@
-function maskout = ExtractMask(vidFile, frmindex)
+function [maskout, fig_mask] = ExtractMask(vidFile, frmindex)
 
 % Jianing Yu 
 % 4/27/2021
@@ -22,17 +22,14 @@ list_of_frames = squeeze(list_of_frames(:, :, 1, :));
 maxproj_frames = max(list_of_frames, [], 3);
 
 % plot the max projection of these frames:
-figure(13); clf
+fig_mask = figure(13); clf
 set(gcf, 'name', 'ROI selection', 'units', 'centimeters', 'position', [15 5 20 20])
 imagesc(maxproj_frames, [0 400]);
-colormap('gray')
-axis off
+colormap('gray');
+axis equal;
+axis off;
 
-clc
-sprintf('Please select region of interests')
+fprintf('\nPlease select region of interests\n');
 
 roi_selected = drawfreehand();
 maskout = createMask(roi_selected); % this mask determines what pixels are included. this is the mask to use in the future.
-
-% save this fig
-print (gcf,'-dpng', 'ROI_mask');
