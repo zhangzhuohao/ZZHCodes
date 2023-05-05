@@ -10,6 +10,7 @@ obj.CentPokeInTime = cell(obj.NumTrials, 1);
 obj.CentPokeOutTime = cell(obj.NumTrials, 1);
 
 obj.ChoiceCueTime = zeros(obj.NumTrials, 2);
+obj.TriggrtCueTime = nan(obj.NumTrials, 1);
 obj.ChoicePokeTime = zeros(obj.NumTrials, 1);
 
 obj.PortCorrect = zeros(obj.NumTrials, 1);
@@ -39,7 +40,7 @@ for i = 1:obj.NumTrials
         % should match a port entry time
         if isfield(iEvents, 'Port2In') && sum(ismember(iEvents.Port2In, iStates.WrongPort(1)))
             obj.PortChosen(i) = 2;
-        elseif  isfield(iEvents, 'Port1In') && sum(ismember(iEvents.Port1In, iStates.WrongPort(1)))
+        elseif isfield(iEvents, 'Port1In') && sum(ismember(iEvents.Port1In, iStates.WrongPort(1)))
             obj.PortChosen(i) = 1;
         else % sometimes, they poke during the choice light presentation
             obj.PortChosen(i) = NaN;

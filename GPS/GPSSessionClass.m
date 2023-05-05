@@ -26,6 +26,7 @@ classdef GPSSessionClass
         CentPokeOutTime % Time when the animal poked-out port_cent, and went to make choice, [NumTrials x 1]
         ChoicePokeTime % Time when the animal poked-in one of the port_choice (port_left/port_right), [NumTrials x 1]
         ChoiceCueTime % Duration that choice light lit up, [NumTrials x 2]
+        TriggerCueTime
 
         PortCorrect % The correct for each trial (1 for port_left, 2 for port_right), [NumTrials x 1]
         PortChosen % The port chosen by the animal in each trial, [NumTrials x 1]
@@ -126,6 +127,8 @@ classdef GPSSessionClass
                     obj.Task = 'ThreeFPHoldCRT';
                 case {'GPS_06_3FPHoldSRT'}
                     obj.Task = 'ThreeFPHoldSRT';
+                case {'GPS_07_3FPHoldWM'}
+                    obj.Task = 'ThreeFPHoldWM';
             end
 
             % Session meta-information
@@ -256,7 +259,7 @@ classdef GPSSessionClass
         %% Reaction time
         function value = get.RT(obj)
             % find the last poke out time before center poke
-            reaction_time = cellfun(@(x) x(end), obj.CentPokeOutTime) - obj.ChoiceCueTime(:, 1);
+            reaction_time = cellfun(@(x) x(end), obj.CentPokeOutTime) - obj.TriggerCueTime;
             value = reaction_time;
         end
 
@@ -991,12 +994,12 @@ classdef GPSSessionClass
 
             behav_table = table( ...
                 Subjects, SessionDate, SessionStart, obj.Trials, obj.TrialStartTime, obj.Stage, ...
-                InitInTime, InitOutTime, CentInTime, CentOutTime, obj.ChoicePokeTime, obj.ChoiceCueTime, ...
+                InitInTime, InitOutTime, CentInTime, CentOutTime, obj.ChoicePokeTime, obj.ChoiceCueTime, obj.TriggerCueTime, ...
                 obj.PortCorrect, obj.PortChosen, obj.FP, RWthis, obj.Outcome, ...
                 obj.ShuttleTime, obj.HoldDuration, obj.RT, obj.MovementTime, ...
                 'VariableNames', ...
                 {'Subjects', 'SessionDate', 'SessionStartTime', 'Trials', 'TrialStartTime', 'Stage', ...
-                'InitInTime', 'InitOutTime', 'CentInTime', 'CentOutTime', 'ChoicePokeTime', 'ChoiceCueTime', ...
+                'InitInTime', 'InitOutTime', 'CentInTime', 'CentOutTime', 'ChoicePokeTime', 'ChoiceCueTime', 'TriggerCueTime', ...
                 'PortCorrect', 'PortChosen', 'FP', 'RW', 'Outcome', ...
                 'ShuttleTime', 'HoldDuration', 'RT', 'MovementTime'});
 

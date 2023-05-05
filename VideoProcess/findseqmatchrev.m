@@ -5,8 +5,9 @@ function [IndOut, FigAlign] = findseqmatchrev(seqmom, seqson, man, toprint, topr
 % NaN means no reliable match is found.
 % time unit should be ms
 % length of seqmom should be greater than that of seqson
-
 % revised to facilitate fast alignment
+
+% revised by ZZH, 5/5/2023
 
 if nargin<6
     threshold = 5;
@@ -42,7 +43,7 @@ for i = 1:length(seqson)
     end
 
     if ~rem(i, 100)
-        sprintf('check seqson %2.0f of %2.0f', i, length(seqson))
+        fprintf('check seqson %2.0f of %2.0f\n', i, length(seqson))
     end
 
     corr_momson = zeros(1, length(seqmom));
@@ -95,7 +96,7 @@ text(min(get(ha3, 'xlim')), max(get(ha3, 'ylim')), 'Select a threshold!', 'fonts
 
 if man
     % set a threshold to get rid of outliers.
-    disp('Select one point to define min corr, end seleciton by right click');
+    fprintf('\nSelect one point to define min corr, end seleciton by right click\n');
     [x_thrh, ~] = getpts(gcf);
     corr_min = min(x_thrh); % this is the threshold to extract LED_on times
 else

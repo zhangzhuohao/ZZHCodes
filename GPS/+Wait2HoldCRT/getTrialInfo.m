@@ -17,6 +17,7 @@ obj.CentPokeInTime = cell(obj.NumTrials, 1);
 obj.CentPokeOutTime = cell(obj.NumTrials, 1);
 
 obj.ChoiceCueTime = zeros(obj.NumTrials, 2);
+obj.TriggerCueTime = zeros(obj.NumTrials, 1);
 obj.ChoicePokeTime = zeros(obj.NumTrials, 1);
 
 obj.PortCorrect = zeros(obj.NumTrials, 1);
@@ -38,12 +39,20 @@ for i = 1:obj.NumTrials
         obj.Outcome{i} = 'Premature';
         obj.CentPokeOutTime{i} = iStates.FP(:, 2);
         obj.ChoiceCueTime(i, :) = [nan, nan]; % when premature, the choice light would not lit up
+        obj.TriggerCueTime(i) = nan;
         obj.ChoicePokeTime(i) = nan;
         obj.PortChosen(i) = nan;
     elseif ~isnan(iStates.Late(1)) % Late
         obj.CentPokeOutTime{i} = [iStates.FP(1:end-1, 2); iStates.Late(2)];
         obj.ChoiceCueTime(i, :) = [iStates.ChoiceCue(1) iStates.Late(2)];
-        if ~isnan(iStates.LateWrong(1))
+        obj.TriggerCueTime(i) = iStates.ChoiceCue(1);
+        if ~any(isfield(iStates, ["LateWrong", "LateCorrect"]))
+            obj.Outcome{i} = 'Late';
+            obj.ChoicePokeTime(i) = nan;
+            % figure out the port situation: WrongPort(1)
+            % should match a port entry time
+            obj.PortChosen(i) = nan;
+        elseif ~isnan(iStates.LateWrong(1))
             obj.Outcome{i} = 'LateWrong';
             obj.ChoicePokeTime(i) = iStates.LateWrong(1);
             % figure out the port situation: WrongPort(1)
@@ -67,11 +76,18 @@ for i = 1:obj.NumTrials
             else % sometimes, they poke during the choice light presentation
                 obj.PortChosen(i) = NaN;
             end
+        else
+            obj.Outcome{i} = 'LateMiss';
+            obj.ChoicePokeTime(i) = nan;
+            % figure out the port situation: WrongPort(1)
+            % should match a port entry time
+            obj.PortChosen(i) = nan;
         end
     elseif ~isnan(iStates.WrongPort(1)) % selected the wrong port
         obj.Outcome{i} = 'Wrong';
         obj.CentPokeOutTime{i} = [iStates.FP(1:end-1, 2); iStates.Wait4Choice(1)];
         obj.ChoiceCueTime(i, :) = [iStates.ChoiceCue(1) iStates.Wait4Choice(1)]; % duration that the choice light lit up.
+        obj.TriggerCueTime(i) = iStates.ChoiceCue(1);
         obj.ChoicePokeTime(i) = iStates.Wait4Choice(2);
         % figure out the port situation: WrongPort(1)
         % should match a port entry time
@@ -86,6 +102,7 @@ for i = 1:obj.NumTrials
         obj.Outcome{i} = 'Correct';
         obj.CentPokeOutTime{i} = [iStates.FP(1:end-1, 2); iStates.Wait4Choice(1)];
         obj.ChoiceCueTime(i, :) = [iStates.ChoiceCue(1) iStates.Wait4Choice(1)]; % duration that the choice light lit up.
+        obj.TriggerCueTime(i) = iStates.ChoiceCue(1);
         obj.ChoicePokeTime(i) = iStates.Wait4Choice(2);
         % find out the port
         if isfield(iEvents, 'Port2In') && sum(ismember(iEvents.Port2In, iStates.Wait4Reward(1)))

@@ -45,7 +45,7 @@ for i = 1:obj.NumTrials
     if ~isnan(iStates.Premature(1)) % Premature
         obj.Outcome{i} = 'Premature';
         obj.CentPokeOutTime{i} = iStates.FP(:, 2);
-        obj.ChoiceCueTime(i, :) = [iStates.FP(1) iStates.Premature(1)];
+        obj.ChoiceCueTime(i, :) = [iEvents.GlobalTimer1_Start iEvents.GlobalTimer1_End];
         obj.TriggerCueTime(i) = nan;
         obj.ChoicePokeTime(i) = nan;
         obj.PortChosen(i) = nan;
@@ -55,7 +55,7 @@ for i = 1:obj.NumTrials
         end
     elseif ~isnan(iStates.Late(1)) % Late
         obj.CentPokeOutTime{i} = [iStates.FP(1:end-1, 2); iStates.Late(2)];
-        obj.ChoiceCueTime(i, :) = [iStates.FP(1) iStates.Late(2)];
+        obj.ChoiceCueTime(i, :) = [iEvents.GlobalTimer1_Start iEvents.GlobalTimer1_End];
         obj.TriggerCueTime(i) = iStates.ChoiceCue(1);
         if ~any(isfield(iStates, ["LateWrong", "LateCorrect"]))
             obj.Outcome{i} = 'Late';
@@ -97,7 +97,7 @@ for i = 1:obj.NumTrials
     elseif ~isnan(iStates.WrongPort(1)) % selected the wrong port
         obj.Outcome{i} = 'Wrong';
         obj.CentPokeOutTime{i} = [iStates.FP(1:end-1, 2); iStates.Wait4Choice(1)];
-        obj.ChoiceCueTime(i, :) = [iStates.FP(1) iStates.Wait4Choice(2)]; % duration that the choice light lit up.
+        obj.ChoiceCueTime(i, :) = [iEvents.GlobalTimer1_Start iEvents.GlobalTimer1_End];
         obj.TriggerCueTime(i) = iStates.ChoiceCue(1);
         obj.ChoicePokeTime(i) = iStates.Wait4Choice(2);
         % figure out the port situation: WrongPort(1)
@@ -112,7 +112,7 @@ for i = 1:obj.NumTrials
     elseif ~isnan(iStates.Wait4Reward(1))
         obj.Outcome{i} = 'Correct';
         obj.CentPokeOutTime{i} = [iStates.FP(1:end-1, 2); iStates.Wait4Choice(1)];
-        obj.ChoiceCueTime(i, :) = [iStates.FP(1) iStates.Wait4Choice(2)]; % duration that the choice light lit up.
+        obj.ChoiceCueTime(i, :) = [iEvents.GlobalTimer1_Start iEvents.GlobalTimer1_End];
         obj.TriggerCueTime(i) = iStates.ChoiceCue(1);
         obj.ChoicePokeTime(i) = iStates.Wait4Choice(2);
         % find out the port

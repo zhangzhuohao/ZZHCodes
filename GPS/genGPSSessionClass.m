@@ -10,6 +10,7 @@ Tasks = [
     "Wait2HoldCRT";
     "ThreeFPHoldCRT";
     "ThreeFPHoldSRT";
+    "ThreeFPHoldWM";
     "KornblumSRT";
     ];
 

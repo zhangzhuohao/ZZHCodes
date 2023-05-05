@@ -10,7 +10,8 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%% Fill in the following information %%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-clear; clc;
+clear all; clc;
+parpool(6);
 
 fprintf("\nGPS video clipping ...\n");
 
@@ -136,7 +137,6 @@ AviFileIndx     =   [];
 
 tic
 
-disp("------------------------------------");
 fprintf("\nExtracting marking events ...\n");
 
 for i = 1:length(vidFilesTop)
@@ -153,7 +153,7 @@ for i = 1:length(vidFilesTop)
     filename = fullfile(VideoFolderTop, vidFilesTop{i});
     vidObj   = VideoReader(filename);
 
-    for k = 1:vidObj.NumFrames
+    parfor k = 1:vidObj.NumFrames
         thisFrame = read(vidObj, k);
         thisFrame = thisFrame(:, :, 1);
         roi_k     = sum(thisFrame(Mask));
@@ -205,7 +205,7 @@ if view_front
         filename = fullfile(VideoFolderFront, vidFilesFront{i});
         vidObj   = VideoReader(filename);
 
-        for k = 1:vidObj.NumFrames
+        parfor k = 1:vidObj.NumFrames
             tsROIFront_org          =   [tsROIFront_org; FrameTs(k)];
             AviFileIndxFront_org    =   [AviFileIndxFront_org; i];
             AviFrameIndxFront_org   =   [AviFrameIndxFront_org; k];
@@ -217,7 +217,7 @@ if view_front
     tsROIFront          =   zeros(length(AviFileIndx), 1);
     AviFileIndxFront    =   zeros(length(AviFileIndx), 1);
     AviFrameIndxFront   =   zeros(length(AviFileIndx), 1);
-    for i = 1:length(AviFileIndx)
+    parfor i = 1:length(AviFileIndx)
         [~, id] = min(abs(tsROIFront_org - tsROI(i)));
         tsROIFront(i)          =   tsROIFront_org(id);
         AviFileIndxFront(i)    =   AviFileIndxFront_org(id);
@@ -306,5 +306,5 @@ end
 %%
 clearvars -except SaveNameUsedData;
 load(SaveNameUsedData);
-ExportVideoClipFromAvi(BehTable, IntTable, FrameTable, SessionInfo, ClipInfo, 1);
+ExportVideoClipFromAvi(BehTable, IntTable, FrameTable, SessionInfo, ClipInfo, 0);
 

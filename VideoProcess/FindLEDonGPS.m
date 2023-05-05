@@ -90,7 +90,6 @@ if above_th_ends(end) == length(tsROI)
     falseindex_LEDon = [falseindex_LEDon; length(above_th_ends)];
 end
 
-
 above_th_begs(falseindex_LEDon) = [];
 above_th_ends(falseindex_LEDon) = [];
 above_th_dur(falseindex_LEDon)  = [];
@@ -98,7 +97,7 @@ above_th_dur(falseindex_LEDon)  = [];
 plot(ha1, tsROI(above_th_begs), led(above_th_begs), 'g+', 'linewidth', 2);
 
 % empirically, push the onset time by one frame
-above_th_begs = above_th_begs-1;
+% above_th_begs = above_th_begs-1;
 
 ha4=subplot(2, 2, 4);
 set(ha4, 'nextplot', 'add', 'xlim', [-1 5]);

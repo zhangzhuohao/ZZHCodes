@@ -4,10 +4,13 @@ clear;
 Tasks = [
     "Autoshaping";
     "Wait1Hold";
+    "Wait1HoldSRT";
     "Wait1HoldCRT";
+    "Wait2HoldSRT";
     "Wait2HoldCRT";
     "ThreeFPHoldCRT";
     "ThreeFPHoldSRT";
+    "ThreeFPHoldWM";
     "KornblumSRT";
     ];
 

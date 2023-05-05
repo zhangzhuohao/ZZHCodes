@@ -18,9 +18,11 @@ classdef GPSColor
         FPLong      = [254  245  172] / 255;
         FPMed       = [151  210  236] / 255;
         FPShort     = [95   111  148] / 255;
-        %Phase
+        % Phase
         PhaseEarly  = [63   85   172] / 255;
         PhaseLate   = [250  75   40 ] / 255;
+        % Cue
+        Cue         = [240  160  40 ] / 255;
     end
 
     methods

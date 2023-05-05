@@ -15,6 +15,7 @@ obj.CentPokeInTime = cell(obj.NumTrials, 1);
 obj.CentPokeOutTime = cell(obj.NumTrials, 1);
 
 obj.ChoiceCueTime = zeros(obj.NumTrials, 2);
+obj.TriggerCueTime = zeros(obj.NumTrials, 1);
 obj.ChoicePokeTime = zeros(obj.NumTrials, 1);
 
 obj.PortCorrect = zeros(obj.NumTrials, 1);
@@ -35,13 +36,15 @@ for i = 1:obj.NumTrials
     if ~isnan(iStates.Premature(1)) % Premature
         obj.Outcome{i} = 'Premature';
         obj.CentPokeOutTime{i} = iStates.FP(:, 2);
-        obj.ChoiceCueTime(i, :) = [nan, nan]; % when premature, the choice light would not lit up
+        obj.ChoiceCueTime(i, :) = [iStates.FP(1) iStates.Premature(1)]; % when premature, the choice light would not lit up
+        obj.TriggerCueTime(i) = nan;
         obj.ChoicePokeTime(i) = nan;
         obj.PortChosen(i) = nan;
     elseif ~isnan(iStates.WrongPort(1)) % selected the wrong port
         obj.Outcome{i} = 'Wrong';
         obj.CentPokeOutTime{i} = [iStates.FP(1:end-1, 2); iStates.Wait4Choice(1)];
-        obj.ChoiceCueTime(i, :) = [iStates.ChoiceCue(1) iStates.Wait4Choice(1)]; % duration that the choice light lit up.
+        obj.ChoiceCueTime(i, :) = [iStates.FP(1) iStates.Wait4Choice(2)]; % duration that the choice light lit up.
+        obj.TriggerCueTime(i) = iStates.ChoiceCue(1);
         obj.ChoicePokeTime(i) = iStates.Wait4Choice(2);
         % figure out the port situation: WrongPort(1)
         % should match a port entry time
@@ -55,7 +58,8 @@ for i = 1:obj.NumTrials
     elseif ~isnan(iStates.Wait4Reward(1))
         obj.Outcome{i} = 'Correct';
         obj.CentPokeOutTime{i} = [iStates.FP(1:end-1, 2); iStates.Wait4Choice(1)];
-        obj.ChoiceCueTime(i, :) = [iStates.ChoiceCue(1) iStates.Wait4Choice(1)]; % duration that the choice light lit up.
+        obj.ChoiceCueTime(i, :) = [iStates.FP(1) iStates.Wait4Choice(2)]; % duration that the choice light lit up.
+        obj.TriggerCueTime(i) = iStates.ChoiceCue(1);
         obj.ChoicePokeTime(i) = iStates.Wait4Choice(2);
         % find out the port
         if isfield(iEvents, 'Port2In') && sum(ismember(iEvents.Port2In, iStates.Wait4Reward(1)))
