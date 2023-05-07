@@ -67,10 +67,10 @@ ANMInfo         =   readtable(ANMInfoFile, "Sheet", ANM, "TextType", "string");
 ANMInfo.Session =   string(ANMInfo.Session);
 
 if isempty(ANMInfo.Session==Session)
-    fprintf("\nCannot find session information.\n")
+    fprintf("\nCannot find session information.\n");
     return
 elseif ANMInfo(ANMInfo.Session==Session, :).Task == "None"
-    fprintf("\nThe session class has not been generated.\n")
+    fprintf("\nThe session class has not been generated.\n");
     return
 else
     SessionInfo = ANMInfo(ANMInfo.Session==Session, :);
@@ -85,7 +85,7 @@ CheckingEvent       =   'ChoiceCueTime_1';  % use this time to align bpod and vi
 Pre                 =   1000; % ms pre event time for video clips
 Post                =   2500; % ms post event time for video clips
 switch SessionInfo.Task
-    case {'Task'}
+    case {'Autoshaping'}
         VideoEvent  =   'CentOutTime';      % make video clips based on this event
     otherwise
         VideoEvent  =   'CentInTime';       % make video clips based on this event
@@ -123,6 +123,8 @@ tCheckingEvent      =   BehTable.(CheckingEvent) + BehTable.TrialStartTime; % in
 
 %%  ROI extraction
 % Define mask
+fprintf("\n----------------------------------------");
+fprintf("\n----------------------------------------");
 [Mask, FigMask] = ExtractMask(fullfile(VideoFolderTop, vidFilesTop{1}), [500 1000]);
 % save this fig
 SaveNameFigMask = fullfile(VideoFolder, "ROI_Mask");
@@ -136,7 +138,8 @@ AviFileIndx     =   [];
 
 tic
 
-disp("------------------------------------");
+fprintf("\n----------------------------------------");
+fprintf("\n----------------------------------------");
 fprintf("\nExtracting marking events ...\n");
 
 for i = 1:length(vidFilesTop)
@@ -242,11 +245,15 @@ end
 
 %% Alignment: tsROI and MarkingEvent 
 % use threshold method to find LED onset
+fprintf("\n----------------------------------------");
+fprintf("\n----------------------------------------");
 [tLEDon, FigLEDon] = FindLEDonGPS(tsROI, SummedROI);
 SaveNameFigLEDon = fullfile(VideoFolder, "LED_On");
 print(FigLEDon, '-dpng', SaveNameFigLEDon);
 
 %% 
+fprintf("\n----------------------------------------");
+fprintf("\n----------------------------------------");
 [IndOut, FigAlign] = findseqmatchrev(tMarkingEvent*1000, tLEDon);
 SaveNameFigAlign = fullfile(VideoFolder, "Alignment");
 print(FigAlign, '-dpng', SaveNameFigAlign);
@@ -306,5 +313,9 @@ end
 %%
 clearvars -except SaveNameUsedData;
 load(SaveNameUsedData);
-ExportVideoClipFromAvi(BehTable, IntTable, FrameTable, SessionInfo, ClipInfo, 1);
+ExportVideoClipFromAvi(BehTable, IntTable, FrameTable, SessionInfo, ClipInfo, 0);
+
+fprintf("\n----------------------------------------");
+fprintf("\n----------------------------------------");
+fprintf("\nDone.\n");
 

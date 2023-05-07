@@ -24,7 +24,7 @@ obj.CentPokeInTime = cell(obj.NumTrials, 1);
 obj.CentPokeOutTime = cell(obj.NumTrials, 1);
 
 obj.ChoiceCueTime = zeros(obj.NumTrials, 2);
-obj.TriggerCueTime = zeros(obj.NumTrials, 2);
+obj.TriggerCueTime = zeros(obj.NumTrials, 1);
 obj.ChoicePokeTime = zeros(obj.NumTrials, 1);
 
 obj.PortCorrect = zeros(obj.NumTrials, 1);
