@@ -146,7 +146,7 @@ obj.CentPokeInTime(ind_bug)     = [];
 obj.CentPokeOutTime(ind_bug)    = [];
 
 obj.ChoiceCueTime(ind_bug, :)   = [];
-obj.TriggerCueTime(ind_bug, :)  = [];
+obj.TriggerCueTime(ind_bug)     = [];
 obj.ChoicePokeTime(ind_bug)     = [];
 
 obj.PortCorrect(ind_bug)        = [];

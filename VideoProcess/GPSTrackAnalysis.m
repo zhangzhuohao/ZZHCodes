@@ -18,8 +18,13 @@ opts.VariableTypes = ["double", "double", "double", "double", "double", "double"
 opts.ExtraColumnsRule = "ignore";
 opts.EmptyLineRule = "read";
 
+%%
+NumTrials = length(matFiles);
+
+AngleHead  = cell(NumTrials, 1);
+AngleHeadS = cell(NumTrials, 1);
 % Import the tracking data
-for i = 1:length(matFiles)
+for i = 1:NumTrials
     
     csvFile = dir(strcat(VideoFolder, filesep, matFiles(i).name(1:end-4), "*00.csv"));
 
@@ -32,7 +37,7 @@ for i = 1:length(matFiles)
     vecPort = PortR - PortL;
 
     nframes = height(thisTrack);
-    angle_head = zeros(nframes, 1);
+    angle_head = zeros(1, nframes);
     for t = 1:nframes
         if thisTrack.ear_base_left_p(t) > .99 && thisTrack.ear_base_right_p(t) > .99
 
@@ -51,10 +56,30 @@ for i = 1:length(matFiles)
         else
             angle_head(t) = nan;
         end
-        angle_head_s = smoothdata(angle_head, "gaussian", 5, "omitnan");
     end
+    angle_head_s = smoothdata(angle_head, "gaussian", 5, "omitnan");
+
+    AngleHead{i}  = angle_head;
+    AngleHeadS{i} = angle_head_s;
 end
 
+%%
+minFrame = min(cellfun(@(x) length(x), AngleHead));
+AngleHeadMat  = cell2mat(cellfun(@(x) x(1:minFrame), AngleHead,  "UniformOutput", false));
+AngleHeadMat(isnan(AngleHeadMat)) = 0;
+AngleHeadSMat = cell2mat(cellfun(@(x) x(1:minFrame), AngleHeadS, "UniformOutput", false));
+AngleHeadSMat(isnan(AngleHeadSMat)) = 0;
 
+%%
+[~, sortid] = sort(AngleHeadMat(:,end));
+mycolormap = customcolormap_preset("red-white-blue");
+figure(); colormap(mycolormap);
+imagesc(AngleHeadSMat(sortid, :));
+caxis([-80 80]);
+cb = colorbar(); cb.Limits = [-80 80];
 
+%%
+plot(mean(AngleHeadSMat(AngleHeadSMat(:, end)>0, :)))
+hold on;
+plot(mean(AngleHeadSMat(AngleHeadSMat(:, end)<0, :)))
 
