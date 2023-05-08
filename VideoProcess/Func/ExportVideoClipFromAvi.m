@@ -52,7 +52,7 @@ VidsMeta = struct('Session', [], 'Event', [], 'EventIndex', [], 'Performance', [
 fprintf("\nStart video clipping ...\n")
 video_accum = 0;
 
-wait_bar = waitbar(0, sprintf('1 / %d', length(tBehEvent)), 'Name', 'Clipping');
+wait_bar = waitbar(0, sprintf('1 / %d', length(tBehEvent)), 'Name', sprintf('Clipping_%s', session));
 for i = 1:length(tBehEvent) % i is also the trial number
 
     waitbar(i/length(tBehEvent), wait_bar, sprintf('%d / %d', i, length(tBehEvent)));

@@ -313,6 +313,10 @@ end
 %%
 clearvars -except SaveNameUsedData;
 load(SaveNameUsedData);
+
+%%
+fprintf("\n----------------------------------------");
+fprintf("\n----------------------------------------");
 ExportVideoClipFromAvi(BehTable, IntTable, FrameTable, SessionInfo, ClipInfo, 0);
 
 fprintf("\n----------------------------------------");
