@@ -73,40 +73,47 @@ uicontrol('Style', 'text', 'parent', 24, 'units', 'normalized', 'position', [0.3
 %% Set axes and plot
 %% Maze diagram
 ha1 = axes;
-set(ha1, 'units', 'centimeters', 'position', [2.8+2*(opts.sep_row+opts.plotsize(1, 1))+5.5 1.5+3*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(1, :) ], 'nextplot', 'add', 'fontsize', 8);
+set(ha1, 'units', 'centimeters', 'position', [2.8+2*(opts.sep_row+opts.plotsize(1, 1))+5.5 1.5+3*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(1, :) ], ...
+    'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
 plot_diagram(ha1, opts);
 
 %% Performance
 % Hold duration scatter
 % Control
 ha21 = axes;
-set(ha21, 'units', 'centimeters', 'position', [1.5+0*(opts.sep_row+opts.plotsize(1, 1)) 1.5+3*(opts.sep_col+opts.plotsize(1, 2))+2.7, opts.plotsize(3, :) ], 'nextplot', 'add', 'fontsize', 8);
+set(ha21, 'units', 'centimeters', 'position', [1.5+0*(opts.sep_row+opts.plotsize(1, 1)) 1.5+3*(opts.sep_col+opts.plotsize(1, 2))+2.7, opts.plotsize(3, :) ], ...
+    'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
 plot_hold_duration_scatter(ha21, obj, cp, "Control", opts);
 set(ha21, 'xtick', [], 'xlabel', []);
 
 % Chemo
 ha22 = axes;
-set(ha22, 'units', 'centimeters', 'position', [1.5+0*(opts.sep_row+opts.plotsize(1, 1)) 1.5+3*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(3, :) ], 'nextplot', 'add', 'fontsize', 8);
+set(ha22, 'units', 'centimeters', 'position', [1.5+0*(opts.sep_row+opts.plotsize(1, 1)) 1.5+3*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(3, :) ], ...
+    'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
 plot_hold_duration_scatter(ha22, obj, cp, "Chemo", opts);
 
 % Performance track
 ha3 = axes;
-set(ha3, 'units', 'centimeters', 'position', [1.5+1*(opts.sep_row+opts.plotsize(1, 1)) 1.5+3*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(4, :) ], 'nextplot', 'add', 'fontsize', 8);
+set(ha3, 'units', 'centimeters', 'position', [1.5+1*(opts.sep_row+opts.plotsize(1, 1)) 1.5+3*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(4, :) ], ...
+    'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
 plot_performance_track(ha3, obj, cp, opts);
 
 % Performance compare
 ha4 = axes;
-set(ha4, 'units', 'centimeters', 'position', [2+2*(opts.sep_row+opts.plotsize(1, 1)) 1.5+3*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(5, :) ], 'nextplot', 'add', 'fontsize', 8);
+set(ha4, 'units', 'centimeters', 'position', [2+2*(opts.sep_row+opts.plotsize(1, 1)) 1.5+3*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(5, :) ], ...
+    'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
 plot_performance_compare(ha4, obj, opts);
 
 ha41 = axes;
-set(ha41, 'units', 'centimeters', 'position', [2+2*(opts.sep_row+opts.plotsize(1, 1))+3 1.5+3*(opts.sep_col+opts.plotsize(1, 2))+.5, 0.4*opts.plotsize(5, :) ], 'nextplot', 'add', 'fontsize', 7);
+set(ha41, 'units', 'centimeters', 'position', [2+2*(opts.sep_row+opts.plotsize(1, 1))+3 1.5+3*(opts.sep_col+opts.plotsize(1, 2))+.5, 0.4*opts.plotsize(5, :) ], ...
+    'nextplot', 'add', 'fontsize', 7, 'tickdir', 'out');
 plot_performance_compare(ha41, obj, opts);
 set(ha41, 'xlim', [0 8], 'ylim', [0 8], 'xlabel', [], 'ylabel', [], 'xtick', 0:2:8, 'ytick', 0:2:8, 'title', []);
 
 % legend
 ha42 = axes;
-set(ha42, 'units', 'centimeters', 'position', [2+2*(opts.sep_row+opts.plotsize(1, 1))+5.1 1.5+3*(opts.sep_col+opts.plotsize(1, 2))+2, [1.5 3] ], 'nextplot', 'add', 'fontsize', 7);
+set(ha42, 'units', 'centimeters', 'position', [2+2*(opts.sep_row+opts.plotsize(1, 1))+5.1 1.5+3*(opts.sep_col+opts.plotsize(1, 2))+2, [1.5 3] ], ...
+    'nextplot', 'add', 'fontsize', 7, 'tickdir', 'out');
 line(ha42, [0 .6], [0 0], 'Color', opts.color.Correct, 'LineWidth', 1);
 text(ha42, .7, 0, 'Correct', 'FontSize', 8, 'Color', opts.color.Correct);
 line(ha42, [0 .6], [1 1], 'Color', opts.color.Premature, 'LineWidth', 1);
@@ -128,30 +135,35 @@ set(ha42, 'xlim', [0 2], 'ylim', [0 7], 'xcolor', 'none', 'ycolor', 'none', 'ydi
 %% Hold duration
 % Hold duration violin plot
 ha5 = axes;
-set(ha5, 'units', 'centimeters', 'position', [1.5+0*(opts.sep_row+opts.plotsize(1, 1)) 1.5+2*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(1, :) ], 'nextplot', 'add', 'fontsize', 8);
+set(ha5, 'units', 'centimeters', 'position', [1.5+0*(opts.sep_row+opts.plotsize(1, 1)) 1.5+2*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(1, :) ], ...
+    'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
 plot_hold_duration_violin(ha5, obj, opts);
 
 % Hold duration statistic
 % Median
 ha61 = axes;
-set(ha61, 'units', 'centimeters', 'position', [1.5+1*(opts.sep_row+opts.plotsize(1, 1)) 1.5+2*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(6, :) ], 'nextplot', 'add', 'fontsize', 8);
+set(ha61, 'units', 'centimeters', 'position', [1.5+1*(opts.sep_row+opts.plotsize(1, 1)) 1.5+2*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(6, :) ], ...
+    'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
 plot_hold_duration_median_compare(ha61, obj, opts);
 
 % IQR
 ha62 = axes;
-set(ha62, 'units', 'centimeters', 'position', [1.8+1*(opts.sep_row+opts.plotsize(1, 1))+4.5 1.5+2*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(6, :) ], 'nextplot', 'add', 'fontsize', 8);
+set(ha62, 'units', 'centimeters', 'position', [1.8+1*(opts.sep_row+opts.plotsize(1, 1))+4.5 1.5+2*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(6, :) ], ...
+    'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
 plot_hold_duration_iqr_compare(ha62, obj, opts);
 set(ha62, 'ylabel', []);
 
 % Hold duration PDF
 % Right
 ha71 = axes;
-set(ha71, 'units', 'centimeters', 'position', [1.5+0*(opts.sep_row+opts.plotsize(1, 1)) 1.5+1*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(2, :) ], 'nextplot', 'add', 'fontsize', 8);
+set(ha71, 'units', 'centimeters', 'position', [1.5+0*(opts.sep_row+opts.plotsize(1, 1)) 1.5+1*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(2, :) ], ...
+    'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
 plot_hold_duration_pdf(ha71, obj, "R", opts);
 
 % Left
 ha72 = axes;
-set(ha72, 'units', 'centimeters', 'position', [1.5+0*(opts.sep_row+opts.plotsize(1, 1)) 1.5+0*(opts.sep_col+opts.plotsize(1, 2))+0.5, opts.plotsize(2, :) ], 'nextplot', 'add', 'fontsize', 8);
+set(ha72, 'units', 'centimeters', 'position', [1.5+0*(opts.sep_row+opts.plotsize(1, 1)) 1.5+0*(opts.sep_col+opts.plotsize(1, 2))+0.5, opts.plotsize(2, :) ], ...
+    'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
 plot_hold_duration_pdf(ha72, obj, "L", opts);
 
 ha71.YLim(2) = max([ha71.YLim(2) ha72.YLim(2)]);
@@ -160,46 +172,54 @@ ha72.YLim(2) = ha71.YLim(2);
 % Hold duration CDF
 % Right
 ha81 = axes;
-set(ha81, 'units', 'centimeters', 'position', [1.5+1*(opts.sep_row+opts.plotsize(1, 1)) 1.5+1*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(2, :) ], 'nextplot', 'add', 'fontsize', 8);
+set(ha81, 'units', 'centimeters', 'position', [1.5+1*(opts.sep_row+opts.plotsize(1, 1)) 1.5+1*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(2, :) ], ...
+    'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
 plot_hold_duration_cdf(ha81, obj, "R", opts);
 
 % Left
 ha82 = axes;
-set(ha82, 'units', 'centimeters', 'position', [1.5+1*(opts.sep_row+opts.plotsize(1, 1)) 1.5+0*(opts.sep_col+opts.plotsize(1, 2))+0.5, opts.plotsize(2, :) ], 'nextplot', 'add', 'fontsize', 8);
+set(ha82, 'units', 'centimeters', 'position', [1.5+1*(opts.sep_row+opts.plotsize(1, 1)) 1.5+0*(opts.sep_col+opts.plotsize(1, 2))+0.5, opts.plotsize(2, :) ], ...
+    'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
 plot_hold_duration_cdf(ha82, obj, "L", opts);
 
 %% Reaction time
 % Reaction time violin
 ha9 = axes;
-set(ha9, 'units', 'centimeters', 'position', [2+2*(opts.sep_row+opts.plotsize(1, 1)) 1.5+2*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(1, :) ], 'nextplot', 'add', 'fontsize', 8);
+set(ha9, 'units', 'centimeters', 'position', [2+2*(opts.sep_row+opts.plotsize(1, 1)) 1.5+2*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(1, :) ], ...
+    'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
 plot_reaction_time_violin(ha9, obj, opts);
 
 % reaction time compare
 ha10 = axes;
-set(ha10, 'units', 'centimeters', 'position', [2+3*(opts.sep_row+opts.plotsize(1, 1)) 1.5+2*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(6, :) ], 'nextplot', 'add', 'fontsize', 8);
+set(ha10, 'units', 'centimeters', 'position', [2+3*(opts.sep_row+opts.plotsize(1, 1)) 1.5+2*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(6, :) ], ...
+    'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
 plot_reaction_time_median_compare(ha10, obj, opts);
 
 %% Movement time
 % movement time violin
 ha11 = axes;
-set(ha11, 'units', 'centimeters', 'position', [2+2*(opts.sep_row+opts.plotsize(1, 1)) 1.5+1*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(1, :) ], 'nextplot', 'add', 'fontsize', 8);
+set(ha11, 'units', 'centimeters', 'position', [2+2*(opts.sep_row+opts.plotsize(1, 1)) 1.5+1*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(1, :) ], ...
+    'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
 plot_movement_time_violin(ha11, obj, opts);
 
 % movement time median
 ha12 = axes;
-set(ha12, 'units', 'centimeters', 'position', [2+3*(opts.sep_row+opts.plotsize(1, 1)) 1.5+1*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(6, :) ], 'nextplot', 'add', 'fontsize', 8);
+set(ha12, 'units', 'centimeters', 'position', [2+3*(opts.sep_row+opts.plotsize(1, 1)) 1.5+1*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(6, :) ], ...
+    'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
 plot_movement_time_median_compare(ha12, obj, opts);
 
 %% Shuttle time
 % log shuttle time violin
 ha13 = axes;
-set(ha13, 'units', 'centimeters', 'position', [2+2*(opts.sep_row+opts.plotsize(1, 1)) 1.5+0*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(1, :) .* [1/3, 1] ], 'nextplot', 'add', 'fontsize', 8);
+set(ha13, 'units', 'centimeters', 'position', [2+2*(opts.sep_row+opts.plotsize(1, 1)) 1.5+0*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(1, :) .* [1/3, 1] ], ...
+    'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
 plot_shuttle_time_violin(ha13, obj, cp, opts);
 
 %% Interruption
 % Interruption histogram
 ha14 = axes;
-set(ha14, 'units', 'centimeters', 'position', [2+2*(opts.sep_row+opts.plotsize(1, 1))+4.5 2+0*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(2, :) .* [3/5 1] ], 'nextplot', 'add', 'fontsize', 8);
+set(ha14, 'units', 'centimeters', 'position', [2+2*(opts.sep_row+opts.plotsize(1, 1))+4.5 2+0*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(2, :) .* [3/5 1] ], ...
+    'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
 plot_interruption(ha14, obj, cp, opts);
 
 %% ha1. Make a diagram of the setup
@@ -809,7 +829,7 @@ plot_interruption(ha14, obj, cp, opts);
         ax.YLabel.String = 'Shuttle time (s)';
         set(ax, 'xlim', [.5 2.5], 'ylim', [-1 obj.Bins.ShuttleTimeLog(end)], 'xtick', 1:2, ...
             'xticklabel', ["Control", "Chemo"], ...
-            'ytick', -1:3, 'yticklabel', ["10^-1", "10^0", "10^1", "10^2", "10^3"], ...
+            'ytick', -1:3, 'yticklabel', ["10^{-1}", "10^0", "10^1", "10^2", "10^3"], ...
             'ticklength', [0.01 0.1], 'box', 'off');
     end
 

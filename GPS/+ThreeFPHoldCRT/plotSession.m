@@ -21,57 +21,57 @@ plot_size3 = [3.5 4];
 
 % Maze diagram
 ha1 = axes;
-set(ha1, 'units', 'centimeters', 'position', [1.2 16, plot_size1], 'nextplot', 'add', 'fontsize', 8);
+set(ha1, 'units', 'centimeters', 'position', [1.2 16, plot_size1], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
 plot_diagram(ha1, opts);
 
 % Cumulative plot
 ha2 = axes;
-set(ha2, 'units', 'centimeters', 'position', [1.5 16-plot_size1(2)-1, plot_size1], 'nextplot', 'add', 'fontsize', 8);
+set(ha2, 'units', 'centimeters', 'position', [1.5 16-plot_size1(2)-1, plot_size1], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
 plot_cumulative(ha2, opts);
 
 % Performance track
 ha3 = axes;
-set(ha3, 'units', 'centimeters', 'position', [1.5 16-2*plot_size1(2)-2, plot_size1], 'nextplot', 'add', 'fontsize', 8);
+set(ha3, 'units', 'centimeters', 'position', [1.5 16-2*plot_size1(2)-2, plot_size1], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
 plot_performance(ha3, obj, opts);
 
 % Shuttle time
 ha4 = axes;
-set(ha4, 'units', 'centimeters', 'position', [1.5+plot_size1(1)+1 16, plot_size1], 'nextplot', 'add', 'fontsize', 8);
+set(ha4, 'units', 'centimeters', 'position', [1.5+plot_size1(1)+1 16, plot_size1], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
 plot_shuttle_time(ha4, obj, opts);
 
 % PDF of shuttle time
 ha5 = axes;
-set(ha5, 'units', 'centimeters', 'position', [1.5+2*plot_size1(1)+1.8 16, plot_size2], 'nextplot', 'add', 'fontsize', 8);
+set(ha5, 'units', 'centimeters', 'position', [1.5+2*plot_size1(1)+1.8 16, plot_size2], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
 plot_shuttle_time_pdf(ha5, obj, opts);
 
 % Hold duration
 ha6 = axes;
-set(ha6, 'units', 'centimeters', 'position', [1.5+plot_size1(1)+1 16-plot_size1(2)-1, plot_size1], 'nextplot', 'add', 'fontsize', 8);
+set(ha6, 'units', 'centimeters', 'position', [1.5+plot_size1(1)+1 16-plot_size1(2)-1, plot_size1], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
 plot_hold_duration(ha6, obj, opts);
 
 % PDF for hold duration
 ha7 = axes;
-set(ha7, 'units', 'centimeters', 'position', [1.5+2*plot_size1(1)+1.8 16-plot_size1(2)-1, plot_size2], 'nextplot', 'add', 'fontsize', 8);
+set(ha7, 'units', 'centimeters', 'position', [1.5+2*plot_size1(1)+1.8 16-plot_size1(2)-1, plot_size2], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
 plot_hold_duration_pdf(ha7, obj, opts);
 
 % CDF for hold duration
 ha71 = axes;
-set(ha71, 'units', 'centimeters', 'position', [1.5+2*plot_size1(1)+1.8+plot_size2(1)+0.8 16-plot_size1(2)-1, plot_size2], 'nextplot', 'add', 'fontsize', 8);
+set(ha71, 'units', 'centimeters', 'position', [1.5+2*plot_size1(1)+1.8+plot_size2(1)+0.8 16-plot_size1(2)-1, plot_size2], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
 plot_hold_duration_cdf(ha71, obj, opts);
 
 % Reaction time
 ha8 = axes;
-set(ha8, 'units', 'centimeters', 'position', [1.5+plot_size1(1)+1 16-2*plot_size1(2)-2, plot_size1], 'nextplot', 'add', 'fontsize', 8);
+set(ha8, 'units', 'centimeters', 'position', [1.5+plot_size1(1)+1 16-2*plot_size1(2)-2, plot_size1], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
 plot_reaction_time(ha8, obj, opts);
 
 % PDF for reaction time to PortL
 ha9 = axes;
-set(ha9, 'units', 'centimeters', 'position', [1.5+2*plot_size1(1)+1.8 16-2*plot_size1(2)-2, plot_size2], 'nextplot', 'add', 'fontsize', 8);
+set(ha9, 'units', 'centimeters', 'position', [1.5+2*plot_size1(1)+1.8 16-2*plot_size1(2)-2, plot_size2], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
 plot_reaction_time_pdf_l(ha9, obj, opts);
 
 % PDF for reaction time to PortR
 ha91 = axes;
-set(ha91, 'units', 'centimeters', 'position', [1.5+2*plot_size1(1)+1.8+plot_size2(1)+0.8 16-2*plot_size1(2)-2, plot_size2], 'nextplot', 'add', 'fontsize', 8);
+set(ha91, 'units', 'centimeters', 'position', [1.5+2*plot_size1(1)+1.8+plot_size2(1)+0.8 16-2*plot_size1(2)-2, plot_size2], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
 plot_reaction_time_pdf_r(ha91, obj, opts);
 
 ha9.XLim(2) = max([ha9.XLim(2) ha91.XLim(2)]);
@@ -79,17 +79,17 @@ ha91.XLim   = ha9.XLim;
 
 % Movement time
 ha10 = axes;
-set(ha10, 'units', 'centimeters', 'position', [1.5+plot_size1(1)+1 16-3*plot_size1(2)-3, plot_size1], 'nextplot', 'add', 'fontsize', 8);
+set(ha10, 'units', 'centimeters', 'position', [1.5+plot_size1(1)+1 16-3*plot_size1(2)-3, plot_size1], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
 plot_movement_time(ha10, obj, opts);
 
 % PDF for movement time to PortL
 ha11 = axes;
-set(ha11, 'units', 'centimeters', 'position', [1.5+2*plot_size1(1)+1.8 16-3*plot_size1(2)-3, plot_size2], 'nextplot', 'add', 'fontsize', 8);
+set(ha11, 'units', 'centimeters', 'position', [1.5+2*plot_size1(1)+1.8 16-3*plot_size1(2)-3, plot_size2], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
 plot_movement_time_pdf_l(ha11, obj, opts);
 
 % PDF for movement time to PortR
 ha111 = axes;
-set(ha111, 'units', 'centimeters', 'position', [1.5+2*plot_size1(1)+1.8+plot_size2(1)+0.8 16-3*plot_size1(2)-3, plot_size2], 'nextplot', 'add', 'fontsize', 8);
+set(ha111, 'units', 'centimeters', 'position', [1.5+2*plot_size1(1)+1.8+plot_size2(1)+0.8 16-3*plot_size1(2)-3, plot_size2], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
 plot_movement_time_pdf_r(ha111, obj, opts);
 
 ha11.XLim(2) = max([ha11.XLim(2) ha111.XLim(2)]);
@@ -97,17 +97,17 @@ ha111.XLim   = ha11.XLim;
 
 % Collected performance
 ha12 = axes;
-set(ha12, 'units', 'centimeters', 'position', [1.5, 16-3*plot_size1(2)-3, plot_size3], 'nextplot', 'add', 'fontsize', 8);
+set(ha12, 'units', 'centimeters', 'position', [1.5, 16-3*plot_size1(2)-3, plot_size3], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
 plot_performance_collected(ha12, obj, opts);
 
 % Legend for collected performance
 ha121 = axes;
-set(ha121, 'units', 'centimeters', 'position', [3.2, 16-3*plot_size1(2)-3+2*plot_size3(2)/3, plot_size3/3], 'nextplot', 'add', 'fontsize', 8);
+set(ha121, 'units', 'centimeters', 'position', [3.2, 16-3*plot_size1(2)-3+2*plot_size3(2)/3, plot_size3/3], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
 legend_performance(ha121, opts);
 
 % Violin plot for collected reaction time
 ha13 = axes;
-set(ha13, 'units', 'centimeters', 'position', [1.5+plot_size3(1)+1, 16-3*plot_size1(2)-3, plot_size3], 'nextplot', 'add', 'fontsize', 8);
+set(ha13, 'units', 'centimeters', 'position', [1.5+plot_size3(1)+1, 16-3*plot_size1(2)-3, plot_size3], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
 plot_reaction_time_collected(ha13, obj, opts);
 
 %% ha1. Make a diagram of the setup

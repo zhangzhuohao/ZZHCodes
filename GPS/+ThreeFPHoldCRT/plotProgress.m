@@ -36,54 +36,63 @@ uicontrol('Style', 'text', 'parent', 23, 'units', 'normalized', 'position', [0.2
 %% Set axes and plot
 % Maze diagram
 ha1 = axes;
-set(ha1, 'units', 'centimeters', 'position', [2+3*(opts.sep_row+opts.plotsize1(1))+5.5 1.35+4*(opts.sep_col+opts.plotsize1(2)), [3 6] ], 'nextplot', 'add', 'fontsize', 8);
+set(ha1, 'units', 'centimeters', 'position', [2+3*(opts.sep_row+opts.plotsize1(1))+5.5 1.35+4*(opts.sep_col+opts.plotsize1(2)), [3 6] ], ...
+    'nextplot', 'add', 'fontsize', 8, 'ticklength', [0.01 0.1], 'tickdir', 'out');
 plot_diagram(ha1, opts);
 set(ha1, 'xlim', [0 6]);
 
 % Hold duration scatter
 ha2 = axes;
-set(ha2, 'units', 'centimeters', 'position', [1.5+0*(opts.sep_row+opts.plotsize1(1)) 2+3*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8);
+set(ha2, 'units', 'centimeters', 'position', [1.5+0*(opts.sep_row+opts.plotsize1(1)) 2+3*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], ...
+    'nextplot', 'add', 'fontsize', 8, 'ticklength', [0.01 0.1], 'tickdir', 'out');
 plot_hold_duration_scatter(ha2, obj, opts);
 set(ha2, 'xtick', [], 'xlabel', []);
 
 % Reaction time scatter
 ha3 = axes;
-set(ha3, 'units', 'centimeters', 'position', [1.5+0*(opts.sep_row+opts.plotsize1(1)) 2+2*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8);
+set(ha3, 'units', 'centimeters', 'position', [1.5+0*(opts.sep_row+opts.plotsize1(1)) 2+2*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], ...
+    'nextplot', 'add', 'fontsize', 8, 'ticklength', [0.01 0.1], 'tickdir', 'out');
 plot_reaction_time_scatter(ha3, obj, opts);
 set(ha3, 'xtick', [], 'xlabel', []);
 
 % Performance track
 ha4 = axes;
-set(ha4, 'units', 'centimeters', 'position', [1.5+0*(opts.sep_row+opts.plotsize1(1)) 2+4*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8);
+set(ha4, 'units', 'centimeters', 'position', [1.5+0*(opts.sep_row+opts.plotsize1(1)) 2+4*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], ...
+    'nextplot', 'add', 'fontsize', 8, 'ticklength', [0.01 0.1], 'tickdir', 'out');
 plot_performance_track_progress(ha4, obj, opts);
 set(ha4, 'xtick', [], 'xlabel', []);
 
 % Performance progress
 ha5 = axes;
-set(ha5, 'units', 'centimeters', 'position', [.5+1*(opts.sep_row+opts.plotsize1(1)) 2+4*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8);
+set(ha5, 'units', 'centimeters', 'position', [.5+1*(opts.sep_row+opts.plotsize1(1)) 2+4*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], ...
+    'nextplot', 'add', 'fontsize', 8, 'ticklength', [0.01 0.1], 'tickdir', 'out');
 plot_performance_progress(ha5, obj, opts);
 set(ha5, 'xtick', [], 'xlabel', [], 'yticklabel', [], 'ylabel', []);
 
 % Reaction time violin plot
 ha6 = axes;
-set(ha6, 'units', 'centimeters', 'position', [.5+1*(opts.sep_row+opts.plotsize1(1)) 2+2*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8);
+set(ha6, 'units', 'centimeters', 'position', [.5+1*(opts.sep_row+opts.plotsize1(1)) 2+2*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], ...
+    'nextplot', 'add', 'fontsize', 8, 'ticklength', [0.01 0.1], 'tickdir', 'out');
 plot_reaction_time_violin(ha6, obj, opts);
 set(ha6, 'xtick', [], 'xlabel', [], 'yticklabel', [], 'ylabel', []);
 
 %
 ha7 = axes;
-set(ha7, 'units', 'centimeters', 'position', [.5+3*(opts.sep_row+opts.plotsize1(1))+1.5 2+3*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8);
+set(ha7, 'units', 'centimeters', 'position', [.5+3*(opts.sep_row+opts.plotsize1(1))+1.5 2+3*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], ...
+    'nextplot', 'add', 'fontsize', 8, 'ticklength', [0.01 0.1], 'tickdir', 'out');
 plot_reaction_time_median(ha7, obj, opts);
 set(ha7, 'xtick', [], 'xlabel', []);
 
 %
 ha8 = axes;
-set(ha8, 'units', 'centimeters', 'position', [.5+3*(opts.sep_row+opts.plotsize1(1))+1.5 2+2*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8);
+set(ha8, 'units', 'centimeters', 'position', [.5+3*(opts.sep_row+opts.plotsize1(1))+1.5 2+2*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], ...
+    'nextplot', 'add', 'fontsize', 8, 'ticklength', [0.01 0.1], 'tickdir', 'out');
 plot_hold_duration_iqr(ha8, obj, opts);
 
 %
 ha9 = axes;
-set(ha9, 'units', 'centimeters', 'position', [.5+2*(opts.sep_row+opts.plotsize1(1)) 2+4*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8);
+set(ha9, 'units', 'centimeters', 'position', [.5+2*(opts.sep_row+opts.plotsize1(1)) 2+4*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], ...
+    'nextplot', 'add', 'fontsize', 8, 'ticklength', [0.01 0.1], 'tickdir', 'out');
 plot_hold_duration_heatmap(ha9, obj, "R", opts)
 set(ha9, 'xtick', [], 'xlabel', []);
 
@@ -95,7 +104,8 @@ cb9.FontSize = 8;
 
 %
 ha10 = axes;
-set(ha10, 'units', 'centimeters', 'position', [.5+2*(opts.sep_row+opts.plotsize1(1)) 2+3*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8);
+set(ha10, 'units', 'centimeters', 'position', [.5+2*(opts.sep_row+opts.plotsize1(1)) 2+3*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], ...
+    'nextplot', 'add', 'fontsize', 8, 'ticklength', [0.01 0.1], 'tickdir', 'out');
 plot_hold_duration_heatmap(ha10, obj, "L", opts)
 set(ha10, 'xtick', [], 'xlabel', []);
 
@@ -107,7 +117,8 @@ cb10.FontSize = 8;
 
 %
 ha11 = axes;
-set(ha11, 'units', 'centimeters', 'position', [.5+2*(opts.sep_row+opts.plotsize1(1)) 2+2*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8);
+set(ha11, 'units', 'centimeters', 'position', [.5+2*(opts.sep_row+opts.plotsize1(1)) 2+2*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], ...
+    'nextplot', 'add', 'fontsize', 8, 'ticklength', [0.01 0.1], 'tickdir', 'out');
 plot_hold_duration_heatmap(ha11, obj, "L-R", opts);
 
 colormap(mycolormap);
@@ -117,11 +128,13 @@ cb11.FontSize = 8;
 
 %
 ha121 = axes;
-set(ha121, 'units', 'centimeters', 'position', [.5+2*(opts.sep_row+opts.plotsize1(1)) 1.5+1*(opts.sep_col+opts.plotsize1(2)), opts.plotsize2], 'nextplot', 'add', 'fontsize', 8);
+set(ha121, 'units', 'centimeters', 'position', [.5+2*(opts.sep_row+opts.plotsize1(1)) 1.5+1*(opts.sep_col+opts.plotsize1(2)), opts.plotsize2], ...
+    'nextplot', 'add', 'fontsize', 8, 'ticklength', [0.01 0.1], 'tickdir', 'out');
 plot_hold_duration_pdf_early_late(ha121, obj, "R", opts);
 
 ha122 = axes;
-set(ha122, 'units', 'centimeters', 'position', [.5+2*(opts.sep_row+opts.plotsize1(1)) 1.9+0*(opts.sep_col+opts.plotsize1(2)), opts.plotsize2], 'nextplot', 'add', 'fontsize', 8);
+set(ha122, 'units', 'centimeters', 'position', [.5+2*(opts.sep_row+opts.plotsize1(1)) 1.9+0*(opts.sep_col+opts.plotsize1(2)), opts.plotsize2], ...
+    'nextplot', 'add', 'fontsize', 8, 'ticklength', [0.01 0.1], 'tickdir', 'out');
 plot_hold_duration_pdf_early_late(ha122, obj, "L", opts);
 
 density_max = max([ha121.YLim(2) ha122.YLim(2)]);
@@ -130,17 +143,19 @@ set(ha122, 'ylim', [0 density_max]);
 
 %
 ha131 = axes;
-set(ha131, 'units', 'centimeters', 'position', [1+3*(opts.sep_row+opts.plotsize1(1)) 1.5+1*(opts.sep_col+opts.plotsize1(2)), opts.plotsize2], 'nextplot', 'add', 'fontsize', 8);
+set(ha131, 'units', 'centimeters', 'position', [1+3*(opts.sep_row+opts.plotsize1(1)) 1.5+1*(opts.sep_col+opts.plotsize1(2)), opts.plotsize2], ...
+    'nextplot', 'add', 'fontsize', 8, 'ticklength', [0.01 0.1], 'tickdir', 'out');
 plot_hold_duration_cdf_early_late(ha131, obj, "R", opts);
 set(ha131, 'xticklabel', [], 'xlabel', []);
 
 ha132 = axes;
-set(ha132, 'units', 'centimeters', 'position', [1+3*(opts.sep_row+opts.plotsize1(1)) 1.9+0*(opts.sep_col+opts.plotsize1(2)), opts.plotsize2], 'nextplot', 'add', 'fontsize', 8);
+set(ha132, 'units', 'centimeters', 'position', [1+3*(opts.sep_row+opts.plotsize1(1)) 1.9+0*(opts.sep_col+opts.plotsize1(2)), opts.plotsize2], ...
+    'nextplot', 'add', 'fontsize', 8, 'ticklength', [0.01 0.1], 'tickdir', 'out');
 plot_hold_duration_cdf_early_late(ha132, obj, "L", opts);
 
 ha1321 = axes;
 set(ha1321, 'units', 'centimeters', 'position', [.5+3*(opts.sep_row+opts.plotsize1(1))+5*opts.plotsize2(1)/6 1.5+0*(opts.sep_col+opts.plotsize1(2))+1*opts.plotsize2(2)/6, opts.plotsize2 ./ [5 3]], ...
-    'nextplot', 'add', 'fontsize', 8, 'color', 'none', 'xcolor', 'none', 'ycolor', 'none', 'xlim', [0 3], 'ylim', [0 3]);
+    'nextplot', 'add', 'fontsize', 8, 'color', 'none', 'xcolor', 'none', 'ycolor', 'none', 'xlim', [0 3], 'ylim', [0 3], 'ticklength', [0.01 0.1], 'tickdir', 'out');
 line(ha1321, [1 2], [2 2], 'Color', opts.color.PhaseEarly, 'LineWidth', 1, 'LineStyle', '-');
 line(ha1321, [1 2], [1 1], 'Color', opts.color.PhaseLate, 'LineWidth', 1, 'LineStyle', '-');
 text(ha1321, 2.2, 2, "Early", 'FontSize', 8);
@@ -148,33 +163,39 @@ text(ha1321, 2.2, 1, "Late", 'FontSize', 8);
 
 %
 ha14 = axes;
-set(ha14, 'units', 'centimeters', 'position', [1.5+0*(opts.sep_row+opts.plotsize1(1)) 2+1*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8);
+set(ha14, 'units', 'centimeters', 'position', [1.5+0*(opts.sep_row+opts.plotsize1(1)) 2+1*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], ...
+    'nextplot', 'add', 'fontsize', 8, 'ticklength', [0.01 0.1], 'tickdir', 'out');
 plot_movement_time_scatter(ha14, obj, opts);
 set(ha14, 'xtick', [], 'xlabel', []);
 
 %
 ha15 = axes;
-set(ha15, 'units', 'centimeters', 'position', [1.5+0*(opts.sep_row+opts.plotsize1(1)) 2+0*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8);
+set(ha15, 'units', 'centimeters', 'position', [1.5+0*(opts.sep_row+opts.plotsize1(1)) 2+0*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], ...
+    'nextplot', 'add', 'fontsize', 8, 'ticklength', [0.01 0.1], 'tickdir', 'out');
 plot_shuttle_time_scatter(ha15, obj, opts);
 
 %
 ha16 = axes;
-set(ha16, 'units', 'centimeters', 'position', [.5+1*(opts.sep_row+opts.plotsize1(1)) 2+3*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8);
+set(ha16, 'units', 'centimeters', 'position', [.5+1*(opts.sep_row+opts.plotsize1(1)) 2+3*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], ...
+    'nextplot', 'add', 'fontsize', 8, 'ticklength', [0.01 0.1], 'tickdir', 'out');
 plot_hold_duration_violin(ha16, obj, opts)
 set(ha16, 'xtick', [], 'xlabel', [], 'yticklabel', [], 'ylabel', []);
 
 ha17 = axes;
-set(ha17, 'units', 'centimeters', 'position', [.5+1*(opts.sep_row+opts.plotsize1(1)) 2+1*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8);
+set(ha17, 'units', 'centimeters', 'position', [.5+1*(opts.sep_row+opts.plotsize1(1)) 2+1*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], ...
+    'nextplot', 'add', 'fontsize', 8, 'ticklength', [0.01 0.1], 'tickdir', 'out');
 plot_movement_time_violin(ha17, obj, opts)
 set(ha17, 'xtick', [], 'xlabel', [], 'yticklabel', [], 'ylabel', []);
 
 ha18 = axes;
-set(ha18, 'units', 'centimeters', 'position', [.5+1*(opts.sep_row+opts.plotsize1(1)) 2+0*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8);
+set(ha18, 'units', 'centimeters', 'position', [.5+1*(opts.sep_row+opts.plotsize1(1)) 2+0*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], ...
+    'nextplot', 'add', 'fontsize', 8, 'ticklength', [0.01 0.1], 'tickdir', 'out');
 plot_shuttle_time_violin(ha18, obj, opts)
 set(ha18, 'yticklabel', [], 'ylabel', [])
 
 ha19 = axes;
-set(ha19, 'units', 'centimeters', 'position', [1.5+3*(opts.sep_row+opts.plotsize1(1)) 2.5+4*(opts.sep_col+opts.plotsize1(2)), opts.plotsize2 .* [3/5 1]], 'nextplot', 'add', 'fontsize', 8);
+set(ha19, 'units', 'centimeters', 'position', [1.5+3*(opts.sep_row+opts.plotsize1(1)) 2.5+4*(opts.sep_col+opts.plotsize1(2)), opts.plotsize2 .* [3/5 1]], ...
+    'nextplot', 'add', 'fontsize', 8, 'ticklength', [0.005 0.01], 'tickdir', 'out');
 plot_interruption_early_late(ha19, obj, opts)
 
 %% ha1. Make a diagram of the setup
@@ -195,7 +216,7 @@ plot_interruption_early_late(ha19, obj, opts)
         viscircles(ax, [4.5, 3], 0.3,  'color', opts.color.PortR);
         text(ax, 4.5, 2.2, 'Right', 'FontWeight', 'bold', 'HorizontalAlignment', 'center', 'Color', opts.color.PortR);
 
-        set(ax, 'Color', 'none', 'XColor', 'none', 'YColor', 'none', 'ylim', [0 12], 'xlim', [0 6]);
+        set(ax, 'Color', 'none', 'XDir', 'reverse', 'XColor', 'none', 'YColor', 'none', 'ylim', [0 12], 'xlim', [0 6]);
     end
 
 %% ha2. Plot every trial's hold duration during training
@@ -244,7 +265,7 @@ plot_interruption_early_late(ha19, obj, opts)
 
         ax.XLabel.String = 'Time in training (s)';
         ax.YLabel.String = 'Hold duration (s)';
-        set(ax, 'xlim', [0 opts.trial_ticks(end)+5], 'ylim', [0 2.5], 'ticklength', [0.01 0.1]);
+        set(ax, 'xlim', [0 opts.trial_ticks(end)+5], 'ylim', [0 2.5], 'ticklength', [0.01 0.1], 'tickdir', 'out');
 
     end
 
@@ -282,7 +303,7 @@ plot_interruption_early_late(ha19, obj, opts)
 
         ax.XLabel.String = 'Time in training (s)';
         ax.YLabel.String = 'Reaction time (s)';
-        set(ax, 'xlim', [0 opts.trial_ticks(end)+5], 'ylim', [0 obj.Bins.RT(end)], 'ticklength', [0.01 0.1]);
+        set(ax, 'xlim', [0 opts.trial_ticks(end)+5], 'ylim', [0 obj.Bins.RT(end)], 'ticklength', [0.01 0.1], 'tickdir', 'out');
     end
 
 %% ha3. Plot correct trial's reaction during training
@@ -318,7 +339,7 @@ plot_interruption_early_late(ha19, obj, opts)
 
         ax.XLabel.String = 'Time in training (s)';
         ax.YLabel.String = 'Movement time (s)';
-        set(ax, 'xlim', [0 opts.trial_ticks(end)+5], 'ylim', [0 obj.Bins.MovementTime(end)], 'ticklength', [0.01 0.1]);
+        set(ax, 'xlim', [0 opts.trial_ticks(end)+5], 'ylim', [0 obj.Bins.MovementTime(end)], 'ticklength', [0.01 0.1], 'tickdir', 'out');
     end
 
 %% ha3. Plot correct trial's reaction during training
@@ -339,7 +360,7 @@ plot_interruption_early_late(ha19, obj, opts)
 
         ax.XLabel.String = 'Time in training (s)';
         ax.YLabel.String = 'Log Shuttle time (s)';
-        set(ax, 'xlim', [0 opts.trial_ticks(end)+5], 'ylim', [0 obj.Bins.ShuttleTimeLog(end)], 'ticklength', [0.01 0.1]);
+        set(ax, 'xlim', [0 opts.trial_ticks(end)+5], 'ylim', [0 obj.Bins.ShuttleTimeLog(end)], 'ticklength', [0.01 0.1], 'tickdir', 'out');
     end
 
 %% ha4. Plot performance track of each session
@@ -367,7 +388,7 @@ plot_interruption_early_late(ha19, obj, opts)
 
         ax.XLabel.String = 'Time in training (s)';
         ax.YLabel.String = 'Performance (%)';
-        set(ax, 'XLim', [0 opts.trial_ticks(end)+5], 'YLim', [0 100]);
+        set(ax, 'XLim', [0 opts.trial_ticks(end)+5], 'YLim', [0 100], 'tickdir', 'out');
     end
 
 %% ha5. Plot performance progress
@@ -411,7 +432,7 @@ plot_interruption_early_late(ha19, obj, opts)
 
         ax.XLabel.String = 'Sessions';
         ax.YLabel.String = 'Performance (%)';
-        set(ax, 'xlim', [0.5 obj.NumSessions+0.5], 'xtick', session_id, 'xticklabel', opts.session_date);
+        set(ax, 'xlim', [0.5 obj.NumSessions+0.5], 'xtick', session_id, 'xticklabel', opts.session_date, 'tickdir', 'out');
     end
 
 %% ha6. Plot hold duration of each session (violin), each port
@@ -449,7 +470,7 @@ plot_interruption_early_late(ha19, obj, opts)
         ax.XLabel.String = 'Sessions';
         ax.YLabel.String = 'Hold duration (s)';
         set(ax, 'xlim', [.5 obj.NumSessions+.5], 'ylim', [0 obj.Bins.HoldDuration(end)], 'xtick', 1:obj.NumSessions, ...
-            'xticklabel', opts.session_date, 'ticklength', [0.01 0.1], 'box', 'off');
+            'xticklabel', opts.session_date, 'ticklength', [0.01 0.1], 'box', 'off', 'tickdir', 'out');
     end
 
 %% ha6. Plot reaction time of each session (violin), each port
@@ -491,7 +512,7 @@ plot_interruption_early_late(ha19, obj, opts)
         ax.XLabel.String = 'Sessions';
         ax.YLabel.String = 'Reaction time (s)';
         set(ax, 'xlim', [.5 obj.NumSessions+.5], 'ylim', [0 obj.Bins.RT(end)], 'xtick', 1:obj.NumSessions, ...
-            'xticklabel', opts.session_date, 'ticklength', [0.01 0.1], 'box', 'off');
+            'xticklabel', opts.session_date, 'ticklength', [0.01 0.1], 'box', 'off', 'tickdir', 'out');
     end
 
 %% ha6. Plot reaction time of each session (violin), each port
@@ -532,7 +553,7 @@ plot_interruption_early_late(ha19, obj, opts)
         ax.XLabel.String = 'Sessions';
         ax.YLabel.String = 'Movement time (s)';
         set(ax, 'xlim', [.5 obj.NumSessions+.5], 'ylim', [0 obj.Bins.MovementTime(end)], 'xtick', 1:obj.NumSessions, ...
-            'xticklabel', opts.session_date, 'ticklength', [0.01 0.1], 'box', 'off');
+            'xticklabel', opts.session_date, 'ticklength', [0.01 0.1], 'box', 'off', 'tickdir', 'out');
     end
 
 %% ha6. Plot reaction time of each session (violin), each port
@@ -570,7 +591,7 @@ plot_interruption_early_late(ha19, obj, opts)
         ax.XLabel.String = 'Sessions';
         ax.YLabel.String = 'Log Shuttle time (s)';
         set(ax, 'xlim', [.5 obj.NumSessions+.5], 'ylim', [0 obj.Bins.ShuttleTimeLog(end)], 'xtick', 1:obj.NumSessions, ...
-            'xticklabel', opts.session_date, 'ticklength', [0.01 0.1], 'box', 'off');
+            'xticklabel', opts.session_date, 'ticklength', [0.01 0.1], 'box', 'off', 'tickdir', 'out');
     end
 
 %%
@@ -599,7 +620,7 @@ plot_interruption_early_late(ha19, obj, opts)
         ax.XLabel.String = 'Sessions';
         ax.YLabel.String = 'Reaction time median (s)';
         set(ax, 'xlim', [.5 obj.NumSessions+.5], 'ylim', [0 .5], 'xtick', 1:obj.NumSessions, ...
-            'xticklabel', opts.session_date, 'ticklength', [0.01 0.1], 'box', 'off');
+            'xticklabel', opts.session_date, 'ticklength', [0.01 0.1], 'box', 'off', 'tickdir', 'out');
     end
 
 %%
@@ -627,7 +648,7 @@ plot_interruption_early_late(ha19, obj, opts)
         ax.XLabel.String = 'Sessions';
         ax.YLabel.String = 'Hold duration IQR (s)';
         set(ax, 'xlim', [.5 obj.NumSessions+.5], 'ylim', [0 max(obj.HDStat.IQR)*1.5], 'xtick', 1:obj.NumSessions, ...
-            'xticklabel', opts.session_date, 'ticklength', [0.01 0.1], 'box', 'off');
+            'xticklabel', opts.session_date, 'ticklength', [0.01 0.1], 'box', 'off', 'tickdir', 'out');
     end
 
 %%
@@ -672,7 +693,7 @@ plot_interruption_early_late(ha19, obj, opts)
         set(ax, 'xlim', [.5 3*obj.NumSessions+.5], 'ylim', [-.5 length(obj.Bins.HoldDuration)+.5], ...
             'xtick', 1:3*obj.NumSessions, 'xticklabel', repmat(opts.session_date, 3, 1), ...
             'ytick', 0:250:length(obj.Bins.HoldDuration), 'yticklabel', string(0:0.5:obj.Bins.HoldDuration(end)), ...
-            'ticklength', [0.01 0.1], 'box', 'off');
+            'ticklength', [0.01 0.1], 'box', 'off', 'tickdir', 'out');
     end
 
 %%
@@ -718,7 +739,7 @@ plot_interruption_early_late(ha19, obj, opts)
         end
         
         ax.XLabel.String = "Hold duration (s)";
-        set(ax, 'xlim', [0 obj.Bins.HoldDuration(end)], 'ylimmode', 'auto');
+        set(ax, 'xlim', [0 obj.Bins.HoldDuration(end)], 'ylimmode', 'auto', 'tickdir', 'out');
     end
 
     function plot_hold_duration_cdf_early_late(ax, obj, port, opts)
@@ -762,7 +783,7 @@ plot_interruption_early_late(ha19, obj, opts)
         end
         
         ax.XLabel.String = "Hold duration (s)";
-        set(ax, 'xlim', [0 obj.Bins.HoldDuration(end)], 'ylim', [0 1]);
+        set(ax, 'xlim', [0 obj.Bins.HoldDuration(end)], 'ylim', [0 1], 'tickdir', 'out');
     end
 
     function plot_interruption_early_late(ax, obj, opts)
@@ -812,7 +833,7 @@ plot_interruption_early_late(ha19, obj, opts)
 
         ax.YLabel.String = "Interruptions / trial";
         ax.XLabel.String = "Hold duration (s)";
-        set(ax, 'xlim', [0 1.5]);
+        set(ax, 'xlim', [0 1.5], 'tickdir', 'out');
     end
 
 end
