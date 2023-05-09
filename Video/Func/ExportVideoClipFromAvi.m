@@ -55,6 +55,11 @@ video_accum = 0;
 wait_bar = waitbar(0, sprintf('1 / %d', length(tBehEvent)), 'Name', sprintf('Clipping_%s', session));
 for i = 1:length(tBehEvent) % i is also the trial number
 
+    if ~isvalid(wait_bar)
+        fprintf("\n****** Interrupted ******\n");
+        fprintf("%d / %d clips have been generated\n", i-1, length(tBehEvent));
+        return
+    end
     waitbar(i/length(tBehEvent), wait_bar, sprintf('%d / %d', i, length(tBehEvent)));
 
     itEvent = tBehEvent(i);

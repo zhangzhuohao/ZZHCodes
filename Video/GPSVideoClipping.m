@@ -18,6 +18,26 @@ VideoFolder     =   uigetdir("E:\YuLab\Work\GPS\Video\", "Choose target vedio fo
 if ~VideoFolder
     return;
 end
+
+SaveNameUsedData = fullfile(VideoFolder, "UsedData.mat");
+if exist(SaveNameUsedData, "file")
+
+    load(SaveNameUsedData);
+
+    fprintf("\nUsed data already exist");
+    fprintf("\n----------------------------------------");
+    fprintf("\n----------------------------------------");
+
+    ExportVideoClipFromAvi(BehTable, IntTable, FrameTable, SessionInfo, ClipInfo, 0);
+
+    fprintf("\n----------------------------------------");
+    fprintf("\n----------------------------------------");
+
+    fprintf("\nDone.\n\n");
+    return
+end
+
+%%
 ViewFolders     =   dir(VideoFolder);
 
 view_front      =   0;
@@ -80,10 +100,10 @@ else
 end
 
 %%
-MarkingEvent        =   'CentInTime';       % use this time to align bpod and video ts
-CheckingEvent       =   'ChoiceCueTime_1';  % use this time to align bpod and video ts
-Pre                 =   1000; % ms pre event time for video clips
-Post                =   2500; % ms post event time for video clips
+MarkingEvent    =   'CentInTime';       % use this time to align bpod and video ts
+CheckingEvent   =   'ChoiceCueTime_1';  % use this time to align bpod and video ts
+Pre             =   1000; % ms pre event time for video clips
+Post            =   3000; % ms post event time for video clips
 switch SessionInfo.Task
     case {'Autoshaping'}
         VideoEvent  =   'CentOutTime';      % make video clips based on this event
@@ -303,7 +323,6 @@ end
 % info table
 % 
 
-SaveNameUsedData = fullfile(VideoFolder, "UsedData.mat");
 switch view_front
     case 1
         save(SaveNameUsedData, 'BehTable', 'IntTable', 'FrameTable', 'FrameTableFront', 'SessionInfo', 'ClipInfo');
@@ -321,5 +340,5 @@ ExportVideoClipFromAvi(BehTable, IntTable, FrameTable, SessionInfo, ClipInfo, 0)
 
 fprintf("\n----------------------------------------");
 fprintf("\n----------------------------------------");
-fprintf("\nDone.\n");
+fprintf("\nDone.\n\n");
 
