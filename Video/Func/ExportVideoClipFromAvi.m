@@ -9,7 +9,9 @@ function ExportVideoClipFromAvi(BehTable, IntTable, FrameTable, SessionInfo, Cli
 
 % revised by ZZH, 5/5/2023
 
-scale_ratio     =   .7;
+scn_scale       =   1.25;
+scale_ratio     =   1.05 / scn_scale;
+
 color           =   GPSColor();
 
 anm             =   SessionInfo.ANM;
@@ -52,7 +54,7 @@ VidsMeta = struct('Session', [], 'Event', [], 'EventIndex', [], 'Performance', [
 fprintf("\nStart video clipping ...\n")
 video_accum = 0;
 
-wait_bar = waitbar(0, sprintf('1 / %d', length(tBehEvent)), 'Name', sprintf('Clipping_%s', session));
+wait_bar = waitbar(0, sprintf('1 / %d', length(tBehEvent)), 'Name', sprintf('Clipping_%s_%s', anm, session));
 for i = 1:length(tBehEvent) % i is also the trial number
 
     if ~isvalid(wait_bar)
@@ -170,8 +172,8 @@ for i = 1:length(tBehEvent) % i is also the trial number
 
     k = 1;
     hf25 = figure(25); clf
-    set(hf25, 'visible', 'off', 'name', thisView, 'units', 'pixels', 'position', [5 50 scale_ratio*W 1.3*scale_ratio*H], ...
-        'PaperPositionMode', 'auto', 'color', 'w', 'renderer', 'opengl', 'toolbar', 'none', 'resize', 'off');
+    set(hf25, 'name', thisView, 'units', 'pixels', 'position', [5 50 scale_ratio*W 1.3*scale_ratio*H], ...
+        'PaperPositionMode', 'auto', 'color', 'w', 'renderer', 'opengl', 'toolbar', 'none', 'resize', 'off', 'Visible', 'off');
 
     ha = axes;
     set(ha, 'units', 'pixels', 'position', [0 .3*scale_ratio*H scale_ratio*W scale_ratio*H], 'nextplot', 'add', 'xlim', [0 W], 'ylim', [0 H], 'ydir', 'reverse')

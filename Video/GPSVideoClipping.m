@@ -145,7 +145,7 @@ tCheckingEvent      =   BehTable.(CheckingEvent) + BehTable.TrialStartTime; % in
 % Define mask
 fprintf("\n----------------------------------------");
 fprintf("\n----------------------------------------");
-[Mask, FigMask] = ExtractMask(fullfile(VideoFolderTop, vidFilesTop{1}), [500 1000]);
+[Mask, FigMask] = ExtractMask(fullfile(VideoFolderTop, vidFilesTop{1}), [1000 2000]);
 % save this fig
 SaveNameFigMask = fullfile(VideoFolder, "ROI_Mask");
 print(FigMask, '-dpng', SaveNameFigMask);
