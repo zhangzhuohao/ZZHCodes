@@ -33,6 +33,8 @@ if exist(SaveNameUsedData, "file")
 
     ExportVideoClipFromAvi(BehTable, IntTable, FrameTable, SessionInfo, ClipInfo, ScnScale, 0);
 
+    ExportVideoClipFromAvi(BehTable, IntTable, FrameTableFront, SessionInfo, ClipInfo, ScnScale, 0);
+
     fprintf("\n----------------------------------------");
     fprintf("\n----------------------------------------");
 

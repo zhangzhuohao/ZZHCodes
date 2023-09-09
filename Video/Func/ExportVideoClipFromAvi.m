@@ -157,9 +157,8 @@ for i = 1:length(tBehEvent) % i is also the trial number
     this_video = fullfile(viewFolder, FrameTable.MyVidFiles{IndThisFrame});
     vidObj = VideoReader(this_video);
     img_extracted = [];
-    frames_ifile = read(vidObj, [VidFrameIndx_thisfile(1) VidFrameIndx_thisfile(end)]);
-    for ii = 1:size(frames_ifile, 4)
-        img_extracted = cat(3, img_extracted, rgb2gray(frames_ifile(:, :, :, ii)));
+    for ii = 1:length(VidFrameIndx_thisfile)
+        img_extracted = cat(3, img_extracted, rgb2gray(read(vidObj, VidFrameIndx_thisfile(ii))));
     end
     clear frames_ifile vidObj
 
@@ -175,7 +174,7 @@ for i = 1:length(tBehEvent) % i is also the trial number
         'PaperPositionMode', 'auto', 'color', 'w', 'renderer', 'opengl', 'toolbar', 'none', 'resize', 'off', 'Visible', 'on');
 
     ha = axes;
-    set(ha, 'units', 'pixels', 'position', [0 .3*scale_ratio*H + 1 scale_ratio*W scale_ratio*H], 'nextplot', 'add', 'xlim', [1 W], 'ylim', [1 H], 'ydir', 'reverse')
+    set(ha, 'units', 'pixels', 'position', [0 .3*scale_ratio*H + 1 scale_ratio*W scale_ratio*H], 'nextplot', 'add', 'xlim', [.5 W+.5], 'ylim', [.5 H+.5], 'ydir', 'reverse')
     axis off
 
     % plot this frame:
@@ -198,8 +197,9 @@ for i = 1:length(tBehEvent) % i is also the trial number
     ha2 = axes;
     set(ha2, 'units', 'pixels', 'position', [0.025*scale_ratio*W 0.1*scale_ratio*H 0.95*scale_ratio*W 0.18*scale_ratio*H], ...
         'nextplot', 'add', 'xtick', [-tPre:500:tPost], 'xlim', [-tPre tPost], ...
-        'ycolor', 'none', 'ylim', [0 1.25], 'tickdir', 'out') %#ok<NBRAK>
+        'ycolor', 'none', 'ylim', [0 1.25], 'tickdir', 'out', 'FontSize', 9) %#ok<NBRAK>
     ha2.XLabel.String = 'Time (ms)';
+    ha2.XLabel.FontWeight = 'bold';
 
     time_line = xline(ha2, tthis_frame, 'Color', 'k', 'LineStyle', '-', 'LineWidth', 1, 'Alpha', 0.6);
 
