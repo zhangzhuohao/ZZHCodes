@@ -9,7 +9,7 @@ function ExportVideoClipFromAvi(BehTable, IntTable, FrameTable, SessionInfo, Cli
 
 % revised by ZZH, 5/5/2023
 
-scale_ratio     =   1.05 / scn_scale;
+scale_ratio     =   1 / scn_scale;
 
 color           =   GPSColor();
 
@@ -175,7 +175,7 @@ for i = 1:length(tBehEvent) % i is also the trial number
         'PaperPositionMode', 'auto', 'color', 'w', 'renderer', 'opengl', 'toolbar', 'none', 'resize', 'off', 'Visible', 'off');
 
     ha = axes;
-    set(ha, 'units', 'pixels', 'position', [0 .3*scale_ratio*H scale_ratio*W scale_ratio*H], 'nextplot', 'add', 'xlim', [0 W], 'ylim', [0 H], 'ydir', 'reverse')
+    set(ha, 'units', 'pixels', 'position', [0 .3*scale_ratio*H + 1 scale_ratio*W scale_ratio*H], 'nextplot', 'add', 'xlim', [1 W], 'ylim', [1 H], 'ydir', 'reverse')
     axis off
 
     % plot this frame:
