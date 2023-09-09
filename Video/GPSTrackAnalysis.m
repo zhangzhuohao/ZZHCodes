@@ -24,6 +24,7 @@ NumTrials = length(matFiles);
 AngleHead  = cell(NumTrials, 1);
 AngleHeadS = cell(NumTrials, 1);
 % Import the tracking data
+
 for i = 1:NumTrials
     
     csvFile = dir(strcat(VideoFolder, filesep, matFiles(i).name(1:end-4), "*00.csv"));

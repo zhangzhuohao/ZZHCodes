@@ -23,6 +23,7 @@ if any(strcmp(opts.Tasks, "ALL"))
         "Wait2HoldCRT";
         "ThreeFPHoldCRT";
         "ThreeFPHoldSRT";
+        "ThreeFPHoldWM";
         "KornblumSRT"
         ];
 end

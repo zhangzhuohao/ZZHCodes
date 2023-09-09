@@ -14,38 +14,54 @@ Tasks = [
     "KornblumSRT";
     ];
 
-[indx, tf] = listdlg("ListString", Tasks, "ListSize", [200, 200]);
+[TaskInd, tf] = listdlg("ListString", Tasks, "ListSize", [200, 200]);
 if ~tf
     return
 end
 
 %%
 % Use the uigetdir function to open a dialog box and allow the user to select the parent directory
-ParentDir = uigetdir('E:\YuLab\Work\GPS\Data', 'Select parent directory');
-if ~ParentDir
+ParentDir = 'E:\YuLab\Work\GPS\Data';
+
+Entry = dir(ParentDir);
+ANMFolders = [];
+for e = 1:length(Entry)
+    if Entry(e).isdir && ~any(strcmp(Entry(e).name, {'.', '..'}))
+        ANMFolders = [ANMFolders; string(fullfile(Entry(e).folder, Entry(e).name))];
+    end
+end
+[~, ANMs] = arrayfun(@(x) fileparts(x), ANMFolders);
+
+[ANMInd, tf] = listdlg("ListString", ANMs, "ListSize", [200, 200]);
+if ~tf
+    return
+end
+
+ANMFolders = ANMFolders(ANMInd);
+
+%%
+ProtocolFolders = [];
+for f = 1:length(ANMFolders)
+    ProtocolFolders = [ProtocolFolders; get_folders(ANMFolders(f), "FolderType", 'Protocol', "Tasks", Tasks(TaskInd))];
+end
+
+%%
+SessionFolders = [];
+for f = 1:length(ProtocolFolders)
+    SessionFolders = [SessionFolders; get_folders(ProtocolFolders(f), "FolderType", 'Session')];
+end
+
+%%
+[~, SessionsAll] = arrayfun(@(x) fileparts(x), SessionFolders);
+Sessions = unique(SessionsAll);
+
+[SessionInd, tf] = listdlg("ListString", Sessions, "ListSize", [200, 200]);
+if ~tf
     return
 end
 
 %%
-Entry = dir(ParentDir);
-
-haveSubFolder = 0;
-for e = 1:length(Entry)
-    if isfolder(fullfile(Entry(e).folder, Entry(e).name)) && ~any(strcmp(Entry(e).name, {'.', '..'}))
-        haveSubFolder = 1;
-        break;
-    end
-end
-
-if ~haveSubFolder
-    Folders = string(ParentDir);
-    infos   = split(Folders, ["_", filesep]);
-    if ~any(strcmp(infos, Tasks(indx)))
-        return
-    end
-else
-    Folders = get_folders(ParentDir, "FolderType", 'Protocol', "Tasks", Tasks(indx));
-end
+Folders = SessionFolders(ismember(SessionsAll, Sessions(SessionInd)));
 
 %%
 for d = 1:length(Folders)

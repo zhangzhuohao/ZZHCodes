@@ -129,7 +129,7 @@ end
 obj.FP = roundn(obj.FP, -1);
 
 %% remove bug trials
-ind_bug = strcmp(obj.Outcome, 'Bug');
+ind_bug = strcmp(obj.Outcome, 'Bug') | obj.FP <= 0;
 
 obj.NumTrials = obj.NumTrials - sum(ind_bug);
 

@@ -1,0 +1,159 @@
+function heatmapAngleHead(ax, obj, opts)
+
+arguments
+    ax  (1, 1) handle
+    obj (1, 1) 
+    opts.color (1, 1) GPSColor = GPSColor()
+    opts.PortChosen (1, 1) {mustBeMember(opts.PortChosen, ["L", "R"])} = "L"
+    opts.Performance (1, 1) {mustBeMember(opts.Performance, ["Correct", "Wrong", "Late", "Premature", "Valid"])} = "Valid"
+    opts.ForePeriod (1, 1) {mustBeMember(opts.ForePeriod, ["Short", "Med", "Long", "All"])} = "All"
+    opts.SortBy (1, 1) {mustBeMember(opts.SortBy, ["HD", "MT", "FP"])} = "HD"
+    opts.AlignTo (1, 1) {mustBeMember(opts.AlignTo, ["In", "Out"])} = "In"
+end
+
+ind = obj.Ind;
+
+switch opts.Performance
+    case {'Premature', 'Late'}
+        switch opts.ForePeriod
+            case {'All'}
+                these_trials = find(ind.(opts.Performance));
+            otherwise
+                these_trials = find(ind.(opts.Performance) & ind.(opts.ForePeriod));
+        end
+        ax.Title.String = opts.Performance;
+    case {'Valid'}
+        switch opts.ForePeriod
+            case {'All'}
+                these_trials = find(ind.("Choose"+opts.PortChosen) & (ind.Wrong | ind.Correct));
+            otherwise
+                these_trials = find(ind.("Choose"+opts.PortChosen) & (ind.Wrong | ind.Correct) & ind.(opts.ForePeriod));
+        end
+        yline(ax, sum(ind.("Choose"+opts.PortChosen) & ind.Correct) + 0.5, ':', 'LineWidth', 1);
+        ax.Title.String = "Chose Port"+opts.PortChosen;
+        ax.Title.Color  = opts.color.("Port"+opts.PortChosen);
+    otherwise
+        switch opts.ForePeriod
+            case {'All'}
+                these_trials = find(ind.("Choose"+opts.PortChosen) & ind.(opts.Performance));
+            otherwise
+                these_trials = find(ind.("Choose"+opts.PortChosen) & ind.(opts.Performance) & ind.(opts.ForePeriod));
+        end
+        ax.Title.String = "Chose Port"+opts.PortChosen;
+        ax.Title.Color  = opts.color.("Port"+opts.PortChosen);
+end
+
+if length(these_trials) > 100
+    these_trials = these_trials(randperm(length(these_trials), 100));
+end
+
+switch opts.Performance
+    case {'Correct', 'Wrong'}
+        [~, sort_id] = sort(obj.(opts.SortBy)(these_trials));
+        these_trials = these_trials(sort_id);
+
+        if opts.ForePeriod=="All"
+            [~, sort_id] = sort(obj.FP(these_trials));
+            these_trials = these_trials(sort_id);
+        end
+
+    case {'Valid'}
+        [~, sort_id] = sort(obj.(opts.SortBy)(these_trials));
+        these_trials = these_trials(sort_id);
+
+        if opts.ForePeriod=="All"
+            [~, sort_id] = sort(obj.FP(these_trials));
+            these_trials = these_trials(sort_id);
+        end
+
+        [~, sort_id] = sort(obj.Performance(these_trials));
+        these_trials = these_trials(sort_id);
+
+    case {'Premature', 'Late'}
+        [~, sort_id] = sort(obj.(opts.SortBy)(these_trials));
+        these_trials = these_trials(sort_id);
+
+        [~, sort_id] = sort(cellfun(@(x) x(end)>0, obj.AngleHead(these_trials)));
+        these_trials = these_trials(sort_id);
+end
+
+M = obj.("AngleHeadMat"+opts.AlignTo)(these_trials, :);
+
+if isempty(M)
+    set(ax, 'ylim', [0.5 1.5], 'ytick', [], 'xticklabel', [], 'ycolor', 'none');
+    ax.Position(4) = 0.05*ax.Position(4);
+    switch opts.AlignTo
+        case "In"
+            point_in = find(obj.TimePointsIn==0);
+            set(ax, 'xtick', point_in + (-5000:5000:25000), 'xticklabel', ["-500", "0", "500", "1000", "1500", "2000", "2500"]);
+
+        case "Out"
+            point_out = find(obj.TimePointsOut==0);
+            set(ax, 'xtick', point_out + (-25000:5000:6000), 'xticklabel', ["-2500", "-2000", "-1500", "-1000", "-500", "0", "500"]);
+    end
+    ax.XLabel.String     = "Time from poke "+opts.AlignTo+" (ms)";
+    ax.XLabel.FontWeight = "Bold";
+
+    set(ax, 'ydir', 'reverse', 'xlim', [0 length(obj.("TimePoints"+opts.AlignTo))]);
+
+    return
+end
+
+switch opts.AlignTo
+    case "In"
+        point_in = find(obj.TimePointsIn==0);
+        xline(ax, point_in, '-', 'LineWidth', 1.2);
+
+        imagesc(ax, M, "AlphaData", ~isnan(M));
+
+        for i = 1:length(these_trials)
+            point_out    = point_in + 10*1000*obj.HD(these_trials(i));
+            point_choose = point_in + 10*1000*(obj.HD(these_trials(i)) + obj.MT(these_trials(i)));
+            point_fp     = point_in + 10*1000*obj.FP(these_trials(i));
+            line(ax, [point_out point_out], [i-.5 i+.5], 'LineStyle', '-', 'LineWidth', 1.5, 'Color', 'k');
+            line(ax, [point_choose point_choose], [i-.5 i+.5], 'LineStyle', '-', 'LineWidth', 1.5, 'Color', opts.color.(obj.Performance(these_trials(i))));
+            line(ax, [point_fp point_fp], [i-.4 i+.4], 'LineStyle', '-', 'LineWidth', 1.2, 'Color', [.3 .3 .3]);
+        end
+
+        set(ax, 'xtick', point_in + (-5000:5000:25000), 'xticklabel', ["-500", "0", "500", "1000", "1500", "2000", "2500"]);
+
+    case "Out"
+        point_out = find(obj.TimePointsOut==0);
+        xline(ax, point_out, '-', 'LineWidth', 1.2);
+
+        imagesc(ax, M, "AlphaData", ~isnan(M));
+
+        for i = 1:length(these_trials)
+            point_in     = point_out - 10*1000*obj.HD(these_trials(i));
+            point_choose = point_out + 10*1000*obj.MT(these_trials(i));
+            point_fp     = point_in + 10*1000*obj.FP(these_trials(i));
+            line(ax, [point_in point_in], [i-.5 i+.5], 'LineStyle', '-', 'LineWidth', 1.5, 'Color', 'k');
+            line(ax, [point_choose point_choose], [i-.5 i+.5], 'LineStyle', '-', 'LineWidth', 1.5, 'Color', opts.color.(obj.Performance(these_trials(i))));
+            line(ax, [point_fp point_fp], [i-.4 i+.4], 'LineStyle', '-', 'LineWidth', 1.2, 'Color', [.3 .3 .3]);
+        end
+
+        set(ax, 'xtick', point_out + (-25000:5000:6000), 'xticklabel', ["-2500", "-2000", "-1500", "-1000", "-500", "0", "500"]);
+end
+
+caxis(ax, [-1 1]*max(max(abs(M))));
+
+ax.Position(4) = min([ax.Position(4) size(M, 1)*0.05]);
+
+ax.XLabel.String     = "Time from poke "+opts.AlignTo+" (ms)";
+ax.XLabel.FontWeight = "Bold";
+ax.YLabel.String     = "Trial #";
+ax.YLabel.FontWeight = "Bold";
+
+if length(these_trials)<10
+    set(ax, 'ytick', 1:5:10);
+    ax.YLabel.String = "";
+elseif length(these_trials)<40
+    set(ax, 'ytick', 0:5:40);
+elseif length(these_trials)<80
+    set(ax, 'ytick', 0:10:80);
+elseif length(these_trials)<160
+    set(ax, 'ytick', 0:20:160);
+end
+set(ax, 'ydir', 'reverse', 'ylim', [0.5 length(these_trials)+0.5], ...
+    'xlim', [0 length(obj.("TimePoints"+opts.AlignTo))]);
+end

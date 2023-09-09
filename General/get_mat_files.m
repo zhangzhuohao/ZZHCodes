@@ -39,6 +39,10 @@ for i = 1:length(contents)
                 if length(parts)>=4 && strcmp(parts{1}, 'GPSSessionClass')
                     file_names = [file_names; fullfile(directory, entry.name)];
                 end
+            case "PROGRESSCLASS"
+                if length(parts)>=3 && strcmp(parts{1}, 'GPSProgressClass')
+                    file_names = [file_names; fullfile(directory, entry.name)];
+                end
         end
     end
 end

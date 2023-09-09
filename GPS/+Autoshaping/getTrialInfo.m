@@ -10,7 +10,7 @@ obj.CentPokeInTime = cell(obj.NumTrials, 1);
 obj.CentPokeOutTime = cell(obj.NumTrials, 1);
 
 obj.ChoiceCueTime = zeros(obj.NumTrials, 2);
-obj.TriggrtCueTime = nan(obj.NumTrials, 1);
+obj.TriggerCueTime = nan(obj.NumTrials, 1);
 obj.ChoicePokeTime = zeros(obj.NumTrials, 1);
 
 obj.PortCorrect = zeros(obj.NumTrials, 1);
@@ -21,11 +21,11 @@ for i = 1:obj.NumTrials
     iStates = SessionData.RawEvents.Trial{i}.States;
     iEvents = SessionData.RawEvents.Trial{i}.Events;
 
-    obj.InitPokeInTime{i} = iEvents.Port3In(iEvents.Port3In>=iStates.Wait4Sample(1) & iEvents.Port3In<=iStates.Wait4Center(2));
-    obj.InitPokeOutTime{i} = iEvents.Port3Out(iEvents.Port3Out>=iStates.Wait4Sample(1) & iEvents.Port3Out<=iStates.Wait4Center(2));
+    obj.InitPokeInTime{i} = iEvents.Port3In(iEvents.Port3In>=iStates.Wait4Sample(1) & iEvents.Port3In<=iStates.Wait4Center(2))';
+    obj.InitPokeOutTime{i} = iEvents.Port3Out(iEvents.Port3Out>=iStates.Wait4Sample(1) & iEvents.Port3Out<=iStates.Wait4Center(2))';
 
-    obj.CentPokeInTime{i} = iEvents.Port4In(iEvents.Port4In>=iStates.Wait4Center(1) & iEvents.Port4In<=iStates.Wait4Choice(1));
-    obj.CentPokeOutTime{i} = iEvents.Port4Out(iEvents.Port4Out>=iStates.Wait4Center(1) & iEvents.Port4Out<=iStates.Wait4Choice(1));
+    obj.CentPokeInTime{i} = iEvents.Port4In(iEvents.Port4In>=iStates.Wait4Center(1) & iEvents.Port4In<=iStates.Wait4Choice(1))';
+    obj.CentPokeOutTime{i} = iEvents.Port4Out(iEvents.Port4Out>=iStates.Wait4Center(1) & iEvents.Port4Out<=iStates.Wait4Choice(1))';
 %     obj.CentPokeInTime{i} = iEvents.Port4In(iEvents.Port4In>=iStates.Wait4Center(1) & iEvents.Port4In<=iStates.Wait4Choice(2));
 %     obj.CentPokeOutTime{i} = iEvents.Port4Out(iEvents.Port4Out>=iStates.Wait4Center(1) & iEvents.Port4Out<=iStates.Wait4Choice(2));
 

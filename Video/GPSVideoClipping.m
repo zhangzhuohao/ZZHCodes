@@ -12,9 +12,12 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear; clc;
 
+ScnScale = 1.5;
+
+%%
 fprintf("\nGPS video clipping ...\n");
 
-VideoFolder     =   uigetdir("E:\YuLab\Work\GPS\Video\", "Choose target vedio folder");
+VideoFolder = uigetdir("E:\YuLab\Work\GPS\Video\", "Choose target vedio folder");
 if ~VideoFolder
     return;
 end
@@ -28,7 +31,7 @@ if exist(SaveNameUsedData, "file")
     fprintf("\n----------------------------------------");
     fprintf("\n----------------------------------------");
 
-    ExportVideoClipFromAvi(BehTable, IntTable, FrameTable, SessionInfo, ClipInfo, 0);
+    ExportVideoClipFromAvi(BehTable, IntTable, FrameTable, SessionInfo, ClipInfo, ScnScale, 0);
 
     fprintf("\n----------------------------------------");
     fprintf("\n----------------------------------------");
@@ -273,7 +276,7 @@ print(FigLEDon, '-dpng', SaveNameFigLEDon);
 
 %% 
 fprintf("\n----------------------------------------");
-fprintf("\n----------------------------------------");
+fprintf("\n----------------------------------------\n");
 [IndOut, FigAlign] = findseqmatchrev(tMarkingEvent*1000, tLEDon);
 SaveNameFigAlign = fullfile(VideoFolder, "Alignment");
 print(FigAlign, '-dpng', SaveNameFigAlign);
@@ -325,9 +328,9 @@ end
 
 switch view_front
     case 1
-        save(SaveNameUsedData, 'BehTable', 'IntTable', 'FrameTable', 'FrameTableFront', 'SessionInfo', 'ClipInfo');
+        save(SaveNameUsedData, 'BehTable', 'IntTable', 'FrameTable', 'FrameTableFront', 'SessionInfo', 'ClipInfo', 'ScnScale');
     case 0
-        save(SaveNameUsedData, 'BehTable', 'IntTable', 'FrameTable', 'SessionInfo', 'ClipInfo');
+        save(SaveNameUsedData, 'BehTable', 'IntTable', 'FrameTable', 'SessionInfo', 'ClipInfo', 'ScnScale');
 end
 %%
 clearvars -except SaveNameUsedData;
@@ -336,7 +339,7 @@ load(SaveNameUsedData);
 %%
 fprintf("\n----------------------------------------");
 fprintf("\n----------------------------------------");
-ExportVideoClipFromAvi(BehTable, IntTable, FrameTable, SessionInfo, ClipInfo, 0);
+ExportVideoClipFromAvi(BehTable, IntTable, FrameTable, SessionInfo, ClipInfo, ScnScale, 0);
 
 fprintf("\n----------------------------------------");
 fprintf("\n----------------------------------------");

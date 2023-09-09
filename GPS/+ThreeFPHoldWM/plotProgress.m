@@ -722,7 +722,7 @@ plot_interruption_early_late(ha19, obj, opts)
     end
 
     function plot_hold_duration_cdf_early_late(ax, obj, port, opts)
-
+ 
         p_this = obj.Ports==upper(string(port));
 
         if all(all(cellfun(@(x) length(x)>=100, obj.HDSortedNone)))

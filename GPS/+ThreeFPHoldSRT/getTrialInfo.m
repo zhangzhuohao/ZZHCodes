@@ -1,22 +1,6 @@
 function obj = getTrialInfo(obj, SessionData)
 % Get trial information of events' time points
 
-if ~isfield(SessionData.Custom, "Version")
-    obj.FP = SessionData.Custom.FP';
-else
-    switch SessionData.Custom.Version
-        case {'20230312'}
-            obj.FP = zeros(obj.NumTrials, 1);
-            for i = 1:SessionData.nTrials
-                obj.FP(i) = SessionData.RawEvents.Trial{1, i}.Events.BNC1High(1) - SessionData.RawEvents.Trial{1, i}.States.FP(1);
-            end
-    end
-end
-
-obj.MixedFP = [.5, 1, 1.5];
-
-obj.RW = SessionData.Custom.RW';
-
 obj.InitPokeInTime = cell(obj.NumTrials, 1);
 obj.InitPokeOutTime = cell(obj.NumTrials, 1);
 
@@ -31,14 +15,41 @@ obj.PortCorrect = zeros(obj.NumTrials, 1);
 obj.PortChosen = zeros(obj.NumTrials, 1);
 obj.Outcome = cell(obj.NumTrials, 1);
 
+if ~isfield(SessionData.Custom, "Version")
+    obj.FP = SessionData.Custom.FP';
+else
+    switch SessionData.Custom.Version
+        case {'20230312', '20230618'}
+            obj.FP = zeros(obj.NumTrials, 1);
+            for i = 1:SessionData.nTrials
+                if ~isfield(SessionData.RawEvents.Trial{1, i}.Events, 'BNC1High')
+                    obj.Outcome{i} = 'Bug';
+                else
+                    obj.FP(i) = SessionData.RawEvents.Trial{1, i}.Events.BNC1High(1) - SessionData.RawEvents.Trial{1, i}.States.FP(1);
+                end
+            end
+    end
+end
+obj.MixedFP = [.5, 1, 1.5];
+obj.RW = SessionData.Custom.RW';
+
 for i = 1:obj.NumTrials
+
+    if strcmp(obj.Outcome{i}, 'Bug')
+        continue;
+    end
+
     iStates = SessionData.RawEvents.Trial{i}.States;
     iEvents = SessionData.RawEvents.Trial{i}.Events;
 
     obj.InitPokeInTime{i} = iEvents.Port3In(iEvents.Port3In>=iStates.Wait4Sample(1) & iEvents.Port3In<=iStates.Wait4Center(2));
     obj.InitPokeOutTime{i} = iEvents.Port3Out(iEvents.Port3Out>=iStates.Wait4Sample(1) & iEvents.Port3Out<=iStates.Wait4Center(2));
 
-    obj.CentPokeInTime{i} = iStates.FP(:, 1);
+    if isfield(iStates, 'Wait4Out')
+        obj.CentPokeInTime{i} = [iStates.FP(:, 1); iStates.Wait4Out(2:end, 1); iStates.Late(2:end, 1)];
+    else
+        obj.CentPokeInTime{i} = iStates.FP(:, 1);
+    end
 
     obj.PortCorrect(i) = SessionData.Custom.CorPort(i);
 
@@ -54,7 +65,11 @@ for i = 1:obj.NumTrials
             obj.Outcome{i} = 'Bug';
         end
     elseif ~isnan(iStates.Late(1)) % Late
-        obj.CentPokeOutTime{i} = [iStates.FP(1:end-1, 2); iStates.Late(2)];
+        if isfield(iStates, 'Wait4Out')
+            obj.CentPokeOutTime{i} = [iStates.FP(1:end-1, 2); iStates.Wait4Out(1:end-1, 2); iStates.Late(:, 2)];
+        else
+            obj.CentPokeOutTime{i} = [iStates.FP(1:end-1, 2); iStates.Late(2)];
+        end
         obj.ChoiceCueTime(i, :) = [iStates.FP(1) iStates.Late(2)];
         obj.TriggerCueTime(i) = iStates.ChoiceCue(1);
         if ~any(isfield(iStates, ["LateWrong", "LateCorrect"]))
@@ -96,7 +111,11 @@ for i = 1:obj.NumTrials
         end
     elseif ~isnan(iStates.WrongPort(1)) % selected the wrong port
         obj.Outcome{i} = 'Wrong';
-        obj.CentPokeOutTime{i} = [iStates.FP(1:end-1, 2); iStates.Wait4Choice(1)];
+        if isfield(iStates, 'Wait4Out')
+            obj.CentPokeOutTime{i} = [iStates.FP(1:end-1, 2); iStates.Wait4Out(:, 2)];
+        else
+            obj.CentPokeOutTime{i} = [iStates.FP(1:end-1, 2); iStates.Wait4Choice(1)];
+        end
         obj.ChoiceCueTime(i, :) = [iStates.FP(1) iStates.Wait4Choice(2)]; % duration that the choice light lit up.
         obj.TriggerCueTime(i) = iStates.ChoiceCue(1);
         obj.ChoicePokeTime(i) = iStates.Wait4Choice(2);
@@ -111,7 +130,11 @@ for i = 1:obj.NumTrials
         end
     elseif ~isnan(iStates.Wait4Reward(1))
         obj.Outcome{i} = 'Correct';
-        obj.CentPokeOutTime{i} = [iStates.FP(1:end-1, 2); iStates.Wait4Choice(1)];
+        if isfield(iStates, 'Wait4Out')
+            obj.CentPokeOutTime{i} = [iStates.FP(1:end-1, 2); iStates.Wait4Out(:, 2)];
+        else
+            obj.CentPokeOutTime{i} = [iStates.FP(1:end-1, 2); iStates.Wait4Choice(1)];
+        end
         obj.ChoiceCueTime(i, :) = [iStates.FP(1) iStates.Wait4Choice(2)]; % duration that the choice light lit up.
         obj.TriggerCueTime(i) = iStates.ChoiceCue(1);
         obj.ChoicePokeTime(i) = iStates.Wait4Choice(2);
@@ -129,7 +152,7 @@ end
 obj.FP = roundn(obj.FP, -1);
 
 %% remove bug trials
-ind_bug = strcmp(obj.Outcome, 'Bug');
+ind_bug = strcmp(obj.Outcome, 'Bug') | obj.FP <= 0;
 
 obj.NumTrials = obj.NumTrials - sum(ind_bug);
 

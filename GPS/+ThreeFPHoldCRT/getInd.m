@@ -16,7 +16,7 @@ ind.wrong       = strcmp(obj.Outcome, 'Wrong');
 ind.wrongL      = ind.portL & ind.wrong;
 ind.wrongR      = ind.portR & ind.wrong;
 
-ind.late        = (strcmp(obj.Outcome, 'LateCorrect') | strcmp(obj.Outcome, 'LateWrong')  | strcmp(obj.Outcome, 'LateMiss') | strcmp(obj.Outcome, 'Late'));
+ind.late        = (strcmp(obj.Outcome, 'LateCorrect') | strcmp(obj.Outcome, 'LateWrong') | strcmp(obj.Outcome, 'LateMiss') | strcmp(obj.Outcome, 'Late'));
 ind.lateL       = ind.portL & ind.late;
 ind.lateR       = ind.portR & ind.late;
 

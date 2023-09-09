@@ -25,24 +25,28 @@ classdef GPSProgressClass
         RTStat
         MTStat
         HDStat
+        CTStat
 
         RTSorted
         MTSorted
         HDSorted
+        CTSorted
 
         RTPDF
         MTPDF
         HDPDF
+        CTPDF
 
         RTCDF
         MTCDF
         HDCDF
+        CTCDF
 
         Interruption
     end
 
     properties (Constant)
-        PhaseCount = 100; % Trial number to determine the early or late training phase
+        PhaseCount = 50; % Trial number to determine the early or late training phase
     end
 
     properties (Dependent)
@@ -53,6 +57,7 @@ classdef GPSProgressClass
         PerformanceControl
         PerformanceChemo
 
+        RTStatAll
         RTStatControl
         RTStatChemo
 
@@ -63,6 +68,7 @@ classdef GPSProgressClass
         RTSortedControl
         RTSortedChemo
 
+        MTStatAll
         MTStatControl
         MTStatChemo
 
@@ -72,7 +78,18 @@ classdef GPSProgressClass
         MTSortedDCZ
         MTSortedControl
         MTSortedChemo
+
+        CTStatControl
+        CTStatChemo
+
+        CTSortedAll
+        CTSortedNone
+        CTSortedSaline
+        CTSortedDCZ
+        CTSortedControl
+        CTSortedChemo
         
+        HDStatAll
         HDStatControl
         HDStatChemo
 
@@ -120,6 +137,9 @@ classdef GPSProgressClass
 
                     thisTable               = addvars(thisTable, TrialStartTimeProgress, 'After', "TrialStartTime");
                     thisTable               = addvars(thisTable, TrialProgress, 'After', "Trials");
+                    thisTable               = addvars(thisTable, repmat(obj.Treatment(i), height(thisTable), 1), 'After', "SessionDate", 'NewVariableNames', "Treatment");
+                    thisTable               = addvars(thisTable, repmat(obj.Dose(i)     , height(thisTable), 1), 'After', "Treatment"  , 'NewVariableNames', "Dose");
+                    thisTable               = addvars(thisTable, repmat(obj.Label(i)    , height(thisTable), 1), 'After', "Dose"       , 'NewVariableNames', "Label");
 
                     obj.BehavTable          = thisTable;
                 else
@@ -128,6 +148,9 @@ classdef GPSProgressClass
 
                     thisTable               = addvars(thisTable, TrialStartTimeProgress, 'After', "TrialStartTime");
                     thisTable               = addvars(thisTable, TrialProgress, 'After', "Trials");
+                    thisTable               = addvars(thisTable, repmat(obj.Treatment(i), height(thisTable), 1), 'After', "SessionDate", 'NewVariableNames', "Treatment");
+                    thisTable               = addvars(thisTable, repmat(obj.Dose(i)     , height(thisTable), 1), 'After', "Treatment"  , 'NewVariableNames', "Dose");
+                    thisTable               = addvars(thisTable, repmat(obj.Label(i)    , height(thisTable), 1), 'After', "Dose"       , 'NewVariableNames', "Label");
 
                     obj.BehavTable          = [obj.BehavTable; thisTable];
                 end
@@ -168,6 +191,12 @@ classdef GPSProgressClass
                 obj.MTStat = [obj.MTStat; allMTStats{i}];
             end
 
+            allCTStats              = cellfun(@(x) x.ChoiceTimeStat, SessionClassAll, 'UniformOutput', false);
+            obj.CTStat              = [];
+            for i = 1:length(allTables)
+                obj.CTStat = [obj.CTStat; allCTStats{i}];
+            end
+
             allSTStats              = cellfun(@(x) x.ShuttleTimeStat, SessionClassAll, 'UniformOutput', false);
             obj.STStat              = [];
             for i = 1:length(allTables)
@@ -183,14 +212,17 @@ classdef GPSProgressClass
             obj.RTSorted            = cellfun(@(x) x.RTSorted, SessionClassAll, 'UniformOutput', false);
             obj.HDSorted            = cellfun(@(x) x.HoldDurationSorted, SessionClassAll, 'UniformOutput', false);
             obj.MTSorted            = cellfun(@(x) x.MovementTimeSorted, SessionClassAll, 'UniformOutput', false);
+            obj.CTSorted            = cellfun(@(x) x.ChoiceTimeSorted, SessionClassAll, 'UniformOutput', false);
 
             obj.RTPDF               = cellfun(@(x) x.RTPDF, SessionClassAll, 'UniformOutput', false);
             obj.HDPDF               = cellfun(@(x) x.HoldDurationPDF, SessionClassAll, 'UniformOutput', false);
             obj.MTPDF               = cellfun(@(x) x.MovementTimePDF, SessionClassAll, 'UniformOutput', false);
+            obj.CTPDF               = cellfun(@(x) x.ChoiceTimePDF, SessionClassAll, 'UniformOutput', false);
 
             obj.RTCDF               = cellfun(@(x) x.RTCDF, SessionClassAll, 'UniformOutput', false);
             obj.HDCDF               = cellfun(@(x) x.HoldDurationCDF, SessionClassAll, 'UniformOutput', false);
             obj.MTCDF               = cellfun(@(x) x.MovementTimeCDF, SessionClassAll, 'UniformOutput', false);
+            obj.CTCDF               = cellfun(@(x) x.ChoiceTimeCDF, SessionClassAll, 'UniformOutput', false);
 
             allInterruption         = cellfun(@(x) x.Interruption, SessionClassAll, 'UniformOutput', false);
             obj.Interruption        = [];
@@ -387,6 +419,36 @@ classdef GPSProgressClass
         end
 
         %%
+        function value = get.RTStatAll(obj)
+            
+            thisFP    = [zeros(length(obj.Ports), 1); repmat(obj.MixedFP', length(obj.Ports), 1)];
+            Port      = [obj.Ports'; reshape(repmat(obj.Ports, length(obj.MixedFP), 1), [], 1)];
+
+            num_entry = length(thisFP);
+            Subjects  = repmat(obj.Subject, num_entry, 1);
+            
+            N          = zeros(num_entry, 1);
+            Median     = zeros(num_entry, 1);
+            Median_kde = zeros(num_entry, 1);
+            IQR        = zeros(num_entry, 1);
+            Q1         = zeros(num_entry, 1);
+            Q3         = zeros(num_entry, 1);
+            Median_sem = zeros(num_entry, 1);
+            for i = 1:num_entry
+                ind_this   = obj.RTStat.thisFP==thisFP(i) & obj.RTStat.Port==Port(i);
+                N(i)          = mean(obj.RTStat.N(ind_this), 'omitnan');
+                Median(i)     = mean(obj.RTStat.Median(ind_this), 'omitnan');
+                Median_kde(i) = mean(obj.RTStat.Median_kde(ind_this), 'omitnan');
+                IQR(i)        = mean(obj.RTStat.IQR(ind_this), 'omitnan');
+                Q1(i)         = mean(obj.RTStat.Q1(ind_this), 'omitnan');
+                Q3(i)         = mean(obj.RTStat.Q3(ind_this), 'omitnan');
+                Median_sem(i) = std(obj.RTStat.Median(ind_this), 'omitnan') / sqrt(sum(ind_this, 'omitnan'));
+            end
+
+            rt_stat_all = table(Subjects, thisFP, Port, N, Median, Median_kde, IQR, Q1, Q3, Median_sem);
+            value = rt_stat_all;
+        end
+
         function value = get.RTStatControl(obj)
             
             thisFP    = [zeros(length(obj.Ports), 1); repmat(obj.MixedFP', length(obj.Ports), 1)];
@@ -405,13 +467,13 @@ classdef GPSProgressClass
             Median_sem = zeros(num_entry, 1);
             for i = 1:num_entry
                 ind_this   = obj.RTStat.thisFP==thisFP(i) & obj.RTStat.Port==Port(i) & ismember(obj.RTStat.Sessions, obj.Sessions(obj.Label=="Control"));
-                N(i)          = mean(obj.RTStat.N(ind_this));
-                Median(i)     = mean(obj.RTStat.Median(ind_this));
-                Median_kde(i) = mean(obj.RTStat.Median_kde(ind_this));
-                IQR(i)        = mean(obj.RTStat.IQR(ind_this));
-                Q1(i)         = mean(obj.RTStat.Q1(ind_this));
-                Q3(i)         = mean(obj.RTStat.Q3(ind_this));
-                Median_sem(i) = std(obj.RTStat.Median(ind_this)) / sqrt(sum(ind_this));
+                N(i)          = mean(obj.RTStat.N(ind_this), 'omitnan');
+                Median(i)     = mean(obj.RTStat.Median(ind_this), 'omitnan');
+                Median_kde(i) = mean(obj.RTStat.Median_kde(ind_this), 'omitnan');
+                IQR(i)        = mean(obj.RTStat.IQR(ind_this), 'omitnan');
+                Q1(i)         = mean(obj.RTStat.Q1(ind_this), 'omitnan');
+                Q3(i)         = mean(obj.RTStat.Q3(ind_this), 'omitnan');
+                Median_sem(i) = std(obj.RTStat.Median(ind_this), 'omitnan') / sqrt(sum(~isnan(Median)));
             end
 
             rt_stat_control = table(Subjects, Labels, thisFP, Port, N, Median, Median_kde, IQR, Q1, Q3, Median_sem);
@@ -436,13 +498,13 @@ classdef GPSProgressClass
             Median_sem = zeros(num_entry, 1);
             for i = 1:num_entry
                 ind_this   = obj.RTStat.thisFP==thisFP(i) & obj.RTStat.Port==Port(i) & ismember(obj.RTStat.Sessions, obj.Sessions(obj.Label=="Chemo"));
-                N(i)          = mean(obj.RTStat.N(ind_this));
-                Median(i)     = mean(obj.RTStat.Median(ind_this));
-                Median_kde(i) = mean(obj.RTStat.Median_kde(ind_this));
-                IQR(i)        = mean(obj.RTStat.IQR(ind_this));
-                Q1(i)         = mean(obj.RTStat.Q1(ind_this));
-                Q3(i)         = mean(obj.RTStat.Q3(ind_this));
-                Median_sem(i) = std(obj.RTStat.Median(ind_this)) / sqrt(sum(ind_this));
+                N(i)          = mean(obj.RTStat.N(ind_this), 'omitnan');
+                Median(i)     = mean(obj.RTStat.Median(ind_this), 'omitnan');
+                Median_kde(i) = mean(obj.RTStat.Median_kde(ind_this), 'omitnan');
+                IQR(i)        = mean(obj.RTStat.IQR(ind_this), 'omitnan');
+                Q1(i)         = mean(obj.RTStat.Q1(ind_this), 'omitnan');
+                Q3(i)         = mean(obj.RTStat.Q3(ind_this), 'omitnan');
+                Median_sem(i) = std(obj.RTStat.Median(ind_this), 'omitnan') / sqrt(sum(~isnan(Median)));
             end
 
             rt_stat_control = table(Subjects, Labels, thisFP, Port, N, Median, Median_kde, IQR, Q1, Q3, Median_sem);
@@ -539,6 +601,34 @@ classdef GPSProgressClass
         end
 
         %%
+        function value = get.HDStatAll(obj)
+            
+            thisFP    = [zeros(length(obj.Ports), 1); repmat(obj.MixedFP', length(obj.Ports), 1)];
+            Port      = [obj.Ports'; reshape(repmat(obj.Ports, length(obj.MixedFP), 1), [], 1)];
+
+            num_entry = length(thisFP);
+            Subjects  = repmat(obj.Subject, num_entry, 1);
+            
+            N          = zeros(num_entry, 1);
+            Median     = zeros(num_entry, 1);
+            Median_kde = zeros(num_entry, 1);
+            IQR        = zeros(num_entry, 1);
+            Q1         = zeros(num_entry, 1);
+            Q3         = zeros(num_entry, 1);
+            for i = 1:num_entry
+                ind_this   = obj.HDStat.thisFP==thisFP(i) & obj.HDStat.Port==Port(i);
+                N(i)          = mean(obj.HDStat.N(ind_this), 'omitnan');
+                Median(i)     = mean(obj.HDStat.Median(ind_this), 'omitnan');
+                Median_kde(i) = mean(obj.HDStat.Median_kde(ind_this), 'omitnan');
+                IQR(i)        = mean(obj.HDStat.IQR(ind_this), 'omitnan');
+                Q1(i)         = mean(obj.HDStat.Q1(ind_this), 'omitnan');
+                Q3(i)         = mean(obj.HDStat.Q3(ind_this), 'omitnan');
+            end
+
+            hd_stat_all = table(Subjects, thisFP, Port, N, Median, Median_kde, IQR, Q1, Q3);
+            value = hd_stat_all;
+        end
+
         function value = get.HDStatControl(obj)
             
             thisFP    = [zeros(length(obj.Ports), 1); repmat(obj.MixedFP', length(obj.Ports), 1)];
@@ -687,6 +777,36 @@ classdef GPSProgressClass
         end
 
         %%
+        function value = get.MTStatAll(obj)
+            
+            thisFP    = [zeros(length(obj.Ports), 1); repmat(obj.MixedFP', length(obj.Ports), 1)];
+            Port      = [obj.Ports'; reshape(repmat(obj.Ports, length(obj.MixedFP), 1), [], 1)];
+
+            num_entry = length(thisFP);
+            Subjects  = repmat(obj.Subject, num_entry, 1);
+            
+            N          = zeros(num_entry, 1);
+            Median     = zeros(num_entry, 1);
+            Median_kde = zeros(num_entry, 1);
+            IQR        = zeros(num_entry, 1);
+            Q1         = zeros(num_entry, 1);
+            Q3         = zeros(num_entry, 1);
+            Median_sem = zeros(num_entry, 1);
+            for i = 1:num_entry
+                ind_this   = obj.MTStat.thisFP==thisFP(i) & obj.MTStat.Port==Port(i);
+                N(i)          = mean(obj.MTStat.N(ind_this), 'omitnan');
+                Median(i)     = mean(obj.MTStat.Median(ind_this), 'omitnan');
+                Median_kde(i) = mean(obj.MTStat.Median_kde(ind_this), 'omitnan');
+                IQR(i)        = mean(obj.MTStat.IQR(ind_this), 'omitnan');
+                Q1(i)         = mean(obj.MTStat.Q1(ind_this), 'omitnan');
+                Q3(i)         = mean(obj.MTStat.Q3(ind_this), 'omitnan');
+                Median_sem(i) = std(obj.MTStat.Median(ind_this), 'omitnan') / sqrt(sum(~isnan(Median)));
+            end
+
+            mt_stat_all = table(Subjects, thisFP, Port, N, Median, Median_kde, IQR, Q1, Q3, Median_sem);
+            value = mt_stat_all;
+        end
+
         function value = get.MTStatControl(obj)
             
             thisFP    = [zeros(length(obj.Ports), 1); repmat(obj.MixedFP', length(obj.Ports), 1)];
@@ -705,13 +825,13 @@ classdef GPSProgressClass
             Median_sem = zeros(num_entry, 1);
             for i = 1:num_entry
                 ind_this   = obj.MTStat.thisFP==thisFP(i) & obj.MTStat.Port==Port(i) & ismember(obj.MTStat.Sessions, obj.Sessions(obj.Label=="Control"));
-                N(i)          = mean(obj.MTStat.N(ind_this));
-                Median(i)     = mean(obj.MTStat.Median(ind_this));
-                Median_kde(i) = mean(obj.MTStat.Median_kde(ind_this));
-                IQR(i)        = mean(obj.MTStat.IQR(ind_this));
-                Q1(i)         = mean(obj.MTStat.Q1(ind_this));
-                Q3(i)         = mean(obj.MTStat.Q3(ind_this));
-                Median_sem(i) = std(obj.MTStat.Median(ind_this)) / sqrt(sum(ind_this));
+                N(i)          = mean(obj.MTStat.N(ind_this), 'omitnan');
+                Median(i)     = mean(obj.MTStat.Median(ind_this), 'omitnan');
+                Median_kde(i) = mean(obj.MTStat.Median_kde(ind_this), 'omitnan');
+                IQR(i)        = mean(obj.MTStat.IQR(ind_this), 'omitnan');
+                Q1(i)         = mean(obj.MTStat.Q1(ind_this), 'omitnan');
+                Q3(i)         = mean(obj.MTStat.Q3(ind_this), 'omitnan');
+                Median_sem(i) = std(obj.MTStat.Median(ind_this), 'omitnan') / sqrt(sum(~isnan(Median)));
             end
 
             mt_stat_control = table(Subjects, Labels, thisFP, Port, N, Median, Median_kde, IQR, Q1, Q3, Median_sem);
@@ -736,13 +856,13 @@ classdef GPSProgressClass
             Median_sem = zeros(num_entry, 1);
             for i = 1:num_entry
                 ind_this   = obj.MTStat.thisFP==thisFP(i) & obj.MTStat.Port==Port(i) & ismember(obj.MTStat.Sessions, obj.Sessions(obj.Label=="Chemo"));
-                N(i)          = mean(obj.MTStat.N(ind_this));
-                Median(i)     = mean(obj.MTStat.Median(ind_this));
-                Median_kde(i) = mean(obj.MTStat.Median_kde(ind_this));
-                IQR(i)        = mean(obj.MTStat.IQR(ind_this));
-                Q1(i)         = mean(obj.MTStat.Q1(ind_this));
-                Q3(i)         = mean(obj.MTStat.Q3(ind_this));
-                Median_sem(i) = std(obj.MTStat.Median(ind_this)) / sqrt(sum(ind_this));
+                N(i)          = mean(obj.MTStat.N(ind_this), 'omitnan');
+                Median(i)     = mean(obj.MTStat.Median(ind_this), 'omitnan');
+                Median_kde(i) = mean(obj.MTStat.Median_kde(ind_this), 'omitnan');
+                IQR(i)        = mean(obj.MTStat.IQR(ind_this), 'omitnan');
+                Q1(i)         = mean(obj.MTStat.Q1(ind_this), 'omitnan');
+                Q3(i)         = mean(obj.MTStat.Q3(ind_this), 'omitnan');
+                Median_sem(i) = std(obj.MTStat.Median(ind_this), 'omitnan') / sqrt(sum(~isnan(Median)));
             end
 
             mt_stat_chemo = table(Subjects, Labels, thisFP, Port, N, Median, Median_kde, IQR, Q1, Q3, Median_sem);
@@ -839,6 +959,159 @@ classdef GPSProgressClass
         end
 
         %%
+        function value = get.CTStatControl(obj)
+            
+            thisFP    = [zeros(length(obj.Ports), 1); repmat(obj.MixedFP', length(obj.Ports), 1)];
+            Port      = [obj.Ports'; reshape(repmat(obj.Ports, length(obj.MixedFP), 1), [], 1)];
+
+            num_entry = length(thisFP);
+            Subjects  = repmat(obj.Subject, num_entry, 1);
+            Labels    = repmat("Control", num_entry, 1);
+            
+            N          = zeros(num_entry, 1);
+            Median     = zeros(num_entry, 1);
+            Median_kde = zeros(num_entry, 1);
+            IQR        = zeros(num_entry, 1);
+            Q1         = zeros(num_entry, 1);
+            Q3         = zeros(num_entry, 1);
+            Median_sem = zeros(num_entry, 1);
+            for i = 1:num_entry
+                ind_this   = obj.CTStat.thisFP==thisFP(i) & obj.CTStat.Port==Port(i) & ismember(obj.CTStat.Sessions, obj.Sessions(obj.Label=="Control"));
+                N(i)          = mean(obj.CTStat.N(ind_this));
+                Median(i)     = mean(obj.CTStat.Median(ind_this));
+                Median_kde(i) = mean(obj.CTStat.Median_kde(ind_this));
+                IQR(i)        = mean(obj.CTStat.IQR(ind_this));
+                Q1(i)         = mean(obj.CTStat.Q1(ind_this));
+                Q3(i)         = mean(obj.CTStat.Q3(ind_this));
+                Median_sem(i) = std(obj.CTStat.Median(ind_this)) / sqrt(sum(ind_this));
+            end
+
+            mt_stat_control = table(Subjects, Labels, thisFP, Port, N, Median, Median_kde, IQR, Q1, Q3, Median_sem);
+            value = mt_stat_control;
+        end
+
+        function value = get.CTStatChemo(obj)
+            
+            thisFP    = [zeros(length(obj.Ports), 1); repmat(obj.MixedFP', length(obj.Ports), 1)];
+            Port      = [obj.Ports'; reshape(repmat(obj.Ports, length(obj.MixedFP), 1), [], 1)];
+
+            num_entry = length(thisFP);
+            Subjects  = repmat(obj.Subject, num_entry, 1);
+            Labels    = repmat("Chemo", num_entry, 1);
+            
+            N          = zeros(num_entry, 1);
+            Median     = zeros(num_entry, 1);
+            Median_kde = zeros(num_entry, 1);
+            IQR        = zeros(num_entry, 1);
+            Q1         = zeros(num_entry, 1);
+            Q3         = zeros(num_entry, 1);
+            Median_sem = zeros(num_entry, 1);
+            for i = 1:num_entry
+                ind_this   = obj.CTStat.thisFP==thisFP(i) & obj.CTStat.Port==Port(i) & ismember(obj.CTStat.Sessions, obj.Sessions(obj.Label=="Chemo"));
+                N(i)          = mean(obj.CTStat.N(ind_this));
+                Median(i)     = mean(obj.CTStat.Median(ind_this));
+                Median_kde(i) = mean(obj.CTStat.Median_kde(ind_this));
+                IQR(i)        = mean(obj.CTStat.IQR(ind_this));
+                Q1(i)         = mean(obj.CTStat.Q1(ind_this));
+                Q3(i)         = mean(obj.CTStat.Q3(ind_this));
+                Median_sem(i) = std(obj.CTStat.Median(ind_this)) / sqrt(sum(ind_this));
+            end
+
+            mt_stat_chemo = table(Subjects, Labels, thisFP, Port, N, Median, Median_kde, IQR, Q1, Q3, Median_sem);
+            value = mt_stat_chemo;
+        end
+
+        function value = get.CTSortedAll(obj)
+
+            ct_sorted_all = cell(length(obj.MixedFP), length(obj.Ports));
+            for j = 1:length(obj.Ports)
+                for i = 1:length(obj.MixedFP)
+                    ind_thisFP = obj.BehavTable.Stage==1 & obj.BehavTable.FP==obj.MixedFP(i) & eval("obj.Ind.correct" + obj.Ports(j));
+                    iCTs = obj.BehavTable.ChoiceTime(find(ind_thisFP));
+                    ct_sorted_all{i, j} = iCTs;
+                end
+            end
+
+            value = ct_sorted_all;
+        end
+
+        function value = get.CTSortedNone(obj)
+
+            mt_sorted_none = cell(length(obj.MixedFP), length(obj.Ports));
+            sessions_ind   = ismember(obj.BehavTable.SessionDate, obj.Sessions(obj.Treatment=="None"));
+            for j = 1:length(obj.Ports)
+                for i = 1:length(obj.MixedFP)
+                    ind_thisFP = sessions_ind & obj.BehavTable.Stage==1 & obj.BehavTable.FP==obj.MixedFP(i) & eval("obj.Ind.correct" + obj.Ports(j));
+                    iCTs = obj.BehavTable.ChoiceTime(find(ind_thisFP));
+                    mt_sorted_none{i, j} = iCTs;
+                end
+            end
+
+            value = mt_sorted_none;
+        end
+
+        function value = get.CTSortedSaline(obj)
+
+            mt_sorted_saline = cell(length(obj.MixedFP), length(obj.Ports));
+            sessions_ind     = ismember(obj.BehavTable.SessionDate, obj.Sessions(obj.Treatment=="Saline"));
+            for j = 1:length(obj.Ports)
+                for i = 1:length(obj.MixedFP)
+                    ind_thisFP = sessions_ind & obj.BehavTable.Stage==1 & obj.BehavTable.FP==obj.MixedFP(i) & eval("obj.Ind.correct" + obj.Ports(j));
+                    iCTs = obj.BehavTable.ChoiceTime(find(ind_thisFP));
+                    mt_sorted_saline{i, j} = iCTs;
+                end
+            end
+
+            value = mt_sorted_saline;
+        end
+
+        function value = get.CTSortedDCZ(obj)
+
+            mt_sorted_dcz = cell(length(obj.MixedFP), length(obj.Ports));
+            sessions_ind  = ismember(obj.BehavTable.SessionDate, obj.Sessions(obj.Treatment=="DCZ"));
+            for j = 1:length(obj.Ports)
+                for i = 1:length(obj.MixedFP)
+                    ind_thisFP = sessions_ind & obj.BehavTable.Stage==1 & obj.BehavTable.FP==obj.MixedFP(i) & eval("obj.Ind.correct" + obj.Ports(j));
+                    iCTs = obj.BehavTable.ChoiceTime(find(ind_thisFP));
+                    mt_sorted_dcz{i, j} = iCTs;
+                end
+            end
+
+            value = mt_sorted_dcz;
+        end
+
+        function value = get.CTSortedControl(obj)
+
+            mt_sorted_Control = cell(length(obj.MixedFP), length(obj.Ports));
+            sessions_ind   = ismember(obj.BehavTable.SessionDate, obj.Sessions(obj.Label=="Control"));
+            for j = 1:length(obj.Ports)
+                for i = 1:length(obj.MixedFP)
+                    ind_thisFP = sessions_ind & obj.BehavTable.Stage==1 & obj.BehavTable.FP==obj.MixedFP(i) & eval("obj.Ind.correct" + obj.Ports(j));
+                    iCTs = obj.BehavTable.ChoiceTime(find(ind_thisFP));
+                    mt_sorted_Control{i, j} = iCTs;
+                end
+            end
+
+            value = mt_sorted_Control;
+        end
+
+        %%
+        function value = get.CTSortedChemo(obj)
+
+            mt_sorted_chemo = cell(length(obj.MixedFP), length(obj.Ports));
+            sessions_ind   = ismember(obj.BehavTable.SessionDate, obj.Sessions(obj.Label=="Chemo"));
+            for j = 1:length(obj.Ports)
+                for i = 1:length(obj.MixedFP)
+                    ind_thisFP = sessions_ind & obj.BehavTable.Stage==1 & obj.BehavTable.FP==obj.MixedFP(i) & eval("obj.Ind.correct" + obj.Ports(j));
+                    iCTs = obj.BehavTable.ChoiceTime(find(ind_thisFP));
+                    mt_sorted_chemo{i, j} = iCTs;
+                end
+            end
+
+            value = mt_sorted_chemo;
+        end
+
+        %%
         function value = get.InterruptionControl(obj)
 
             sessions_ind = ismember(obj.Interruption.Sessions, obj.Sessions(obj.Label=="Control"));
@@ -897,6 +1170,8 @@ classdef GPSProgressClass
                     hf = obj.plotProgress();
                 case {'chemoeffect'}
                     hf = obj.plotChemoEffect();
+                case {'show'}
+                    hf = obj.plotShow();
             end
 
             if nargin==3
@@ -934,6 +1209,17 @@ classdef GPSProgressClass
             end
 
             fig = feval(obj.Task + ".plotChemoEffect", obj);
+        end
+
+        function fig = plotShow(obj)
+
+            try
+                set_matlab_default
+            catch
+                disp('You do not have "set_matlab_default"');
+            end
+
+            fig = feval(obj.Task + ".plotShow", obj);
         end
 
     end

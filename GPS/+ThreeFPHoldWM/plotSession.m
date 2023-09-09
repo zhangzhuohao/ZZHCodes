@@ -9,7 +9,7 @@ opts.ticks = obj.TrialStartTime + cellfun(@(x)x(1), obj.CentPokeInTime); % Ticks
 
 %%
 fig = figure(22); clf(22);
-set(gcf, 'unit', 'centimeters', 'position', [2 2 24.5 21.2], 'paperpositionmode', 'auto', 'color', 'w');
+set(fig, 'unit', 'centimeters', 'position', [2 2 24.5 21.2], 'paperpositionmode', 'auto', 'color', 'w');
 
 uicontrol('Style', 'text', 'parent', 22, 'units', 'normalized', 'position', [0.05 0.95 0.9 0.04],...
     'string', [obj.Subject ' / ' obj.Session ' / ' obj.Task ' / ' char(obj.Treatment)], 'fontsize', 10, 'fontweight', 'bold', 'backgroundcolor', 'w');

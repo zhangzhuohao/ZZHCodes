@@ -24,4 +24,12 @@ ind.premature   = strcmp(obj.Outcome, 'Premature');
 ind.prematureL  = ind.portL & ind.premature;
 ind.prematureR  = ind.portR & ind.premature;
 
+ind.hit         = (strcmp(obj.Outcome, 'Correct') | strcmp(obj.Outcome, 'LateCorrect'));
+ind.hitL        = ind.portL & ind.hit;
+ind.hitR        = ind.portR & ind.hit;
+
+ind.off         = (strcmp(obj.Outcome, 'Wrong') | strcmp(obj.Outcome, 'LateWrong'));
+ind.offL        = ind.portL & ind.off;
+ind.offR        = ind.portR & ind.off;
+
 end

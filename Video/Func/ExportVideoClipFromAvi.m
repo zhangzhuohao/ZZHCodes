@@ -1,4 +1,4 @@
-function ExportVideoClipFromAvi(BehTable, IntTable, FrameTable, SessionInfo, ClipInfo, remake)
+function ExportVideoClipFromAvi(BehTable, IntTable, FrameTable, SessionInfo, ClipInfo, scn_scale, remake)
 
 % ExportVideoClipFromAvi(thisTable, FrameTable, 'Event', VideoEvent,'ANM', ANM, ...
 %     'Pre', Pre, 'Post', Post, 'BehaviorType', BehaviorType, 'Session', Session, 'Remake', 1)
@@ -9,7 +9,6 @@ function ExportVideoClipFromAvi(BehTable, IntTable, FrameTable, SessionInfo, Cli
 
 % revised by ZZH, 5/5/2023
 
-scn_scale       =   1.25;
 scale_ratio     =   1.05 / scn_scale;
 
 color           =   GPSColor();
@@ -223,7 +222,7 @@ for i = 1:length(tBehEvent) % i is also the trial number
         'YData', [1.05 1.05 1.15 1.15], ...
         'FaceColor', [30 144 255] / 255, 'FaceAlpha', 0.8, 'EdgeColor', 'none');
 
-    F(k) = getframe(hf25) ;
+    F(k) = getframe(hf25);
     % plot or update data in this plot
     for k = 2:nframe
 

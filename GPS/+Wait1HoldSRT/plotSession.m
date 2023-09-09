@@ -6,7 +6,7 @@ Color = GPSColor();
 choice_symbols = {'o', 'x'};
 
 fig = figure(22); clf(22);
-set(gcf, 'unit', 'centimeters', 'position',[2 2 22 21.2], 'paperpositionmode', 'auto', 'color', 'w')
+set(gcf, 'unit', 'centimeters', 'position', [2 2 22 21.2], 'paperpositionmode', 'auto', 'color', 'w')
 
 plotsize1 = [8 4];
 plotsize2 = [2 4];
