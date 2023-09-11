@@ -1,9 +1,6 @@
 function obj = getTrialInfo(obj, SessionData)
 % Get trial information of events' time points
 
-obj.Cued = SessionData.Custom.Cued';
-obj.RW = SessionData.Custom.RW';
-
 obj.InitPokeInTime = cell(obj.NumTrials, 1);
 obj.InitPokeOutTime = cell(obj.NumTrials, 1);
 
@@ -33,6 +30,8 @@ switch SessionData.Custom.Version
             end
         end
 end
+obj.Cued = SessionData.Custom.Cued';
+obj.RW = SessionData.Custom.RW';
 
 switch SessionData.Custom.Version
 
@@ -189,20 +188,28 @@ switch SessionData.Custom.Version
         %% Version 20230618, time controlled by GlobalTimer, signalled by Arduino, 1 uncued RWs
     case {'20230618'}
         for i = 1:obj.NumTrials
+
+            if strcmp(obj.Outcome{i}, 'Bug')
+                continue;
+            end
+
             iStates = SessionData.RawEvents.Trial{i}.States;
             iEvents = SessionData.RawEvents.Trial{i}.Events;
 
             obj.InitPokeInTime{i} = iEvents.Port3In(iEvents.Port3In>=iStates.Wait4Sample(1) & iEvents.Port3In<=iStates.Wait4Center(2));
             obj.InitPokeOutTime{i} = iEvents.Port3Out(iEvents.Port3Out>=iStates.Wait4Sample(1) & iEvents.Port3Out<=iStates.Wait4Center(2));
 
+            if isfield(iStates, 'Wait4Out')
+                obj.CentPokeInTime{i} = [iStates.FP(:, 1); iStates.Wait4Out(2:end, 1); iStates.Late(2:end, 1)];
+            else
+                obj.CentPokeInTime{i} = iStates.FP(:, 1);
+            end
+
             obj.PortCorrect(i) = SessionData.Custom.CorPort(i);
 
             if ~isnan(iStates.Premature(1)) % Premature
                 obj.Outcome{i} = 'Premature';
-
-                obj.CentPokeInTime{i} = iStates.FP(:, 1);
                 obj.CentPokeOutTime{i} = iStates.FP(:, 2);
-
                 obj.ChoiceCueTime(i, :) = [iStates.FP(1) iStates.Premature(1)];
                 obj.TriggerCueTime(i) = nan;
                 obj.ChoicePokeTime(i) = nan;
@@ -212,15 +219,11 @@ switch SessionData.Custom.Version
                     obj.Outcome{i} = 'Bug';
                 end
             elseif ~isnan(iStates.Late(1)) % Late
-
-                if size(iStates.Wait4Out, 1)==1
-                    obj.CentPokeInTime{i} = iStates.FP(:, 1);
-                    obj.CentPokeOutTime{i} = [iStates.FP(1:end-1, 2); iStates.Late(2)];
+                if isfield(iStates, 'Wait4Out')
+                    obj.CentPokeOutTime{i} = [iStates.FP(1:end-1, 2); iStates.Wait4Out(1:end-1, 2); iStates.Late(:, 2)];
                 else
-                    obj.CentPokeInTime{i} = [iStates.FP(:, 1); iStates.Wait4Out(2:end, 1)];
-                    obj.CentPokeOutTime{i} = [iStates.FP(1:end-1, 2); iStates.Wait4Out(1:end-1, 2); iStates.Late(2)];
+                    obj.CentPokeOutTime{i} = [iStates.FP(1:end-1, 2); iStates.Late(2)];
                 end
-
                 obj.ChoiceCueTime(i, :) = [iStates.FP(1) iStates.Late(2)];
                 obj.TriggerCueTime(i) = iStates.FP(end, 2);
 
@@ -244,7 +247,7 @@ switch SessionData.Custom.Version
                     end
                 elseif ~isnan(iStates.LateCorrect(1))
                     obj.Outcome{i} = 'LateCorrect';
-                    obj.ChoicePokeTime(i) = nan;
+                    obj.ChoicePokeTime(i) = iStates.LateCorrect(1);
                     % figure out the port situation: WrongPort(1)
                     % should match a port entry time
                     if isfield(iEvents, 'Port2In') && sum(ismember(iEvents.Port2In, iStates.LateCorrect(1)))
@@ -264,18 +267,15 @@ switch SessionData.Custom.Version
 
             elseif ~isnan(iStates.WrongPort(1)) % selected the wrong port
                 obj.Outcome{i} = 'Wrong';
-                obj.ChoiceCueTime(i, :) = [iStates.FP(1) iStates.WrongPort(1)]; % duration that the choice light lit up.
-                obj.TriggerCueTime(i) = iStates.FP(end, 2);
-
-                if size(iStates.Wait4Out, 1)==1
-                    obj.CentPokeInTime{i} = iStates.FP(:, 1);
-                    obj.CentPokeOutTime{i} = [iStates.FP(1:end-1, 2); iStates.Wait4Out(2)];
-                else
-                    obj.CentPokeInTime{i} = [iStates.FP(:, 1); iStates.Wait4Out(2:end, 1)];
+                if isfield(iStates, 'Wait4Out')
                     obj.CentPokeOutTime{i} = [iStates.FP(1:end-1, 2); iStates.Wait4Out(:, 2)];
+                else
+                    obj.CentPokeOutTime{i} = [iStates.FP(1:end-1, 2); iStates.Wait4Choice(1)];
                 end
 
-                obj.ChoicePokeTime(i) = iStates.Wait4Choice(1);
+                obj.ChoiceCueTime(i, :) = [iStates.FP(1) iStates.Wait4Choice(2)]; % duration that the choice light lit up.
+                obj.TriggerCueTime(i) = iStates.FP(end, 2);
+                obj.ChoicePokeTime(i) = iStates.Wait4Choice(2);
                 % figure out the port situation: WrongPort(1)
                 % should match a port entry time
                 if isfield(iEvents, 'Port2In') && sum(ismember(iEvents.Port2In, iStates.WrongPort(1)))
@@ -287,15 +287,11 @@ switch SessionData.Custom.Version
                 end
             elseif ~isnan(iStates.Wait4Reward(1))
                 obj.Outcome{i} = 'Correct';
-                
-                if size(iStates.Wait4Out, 1)==1
-                    obj.CentPokeInTime{i} = iStates.FP(:, 1);
-                    obj.CentPokeOutTime{i} = [iStates.FP(1:end-1, 2); iStates.Wait4Out(2)];
-                else
-                    obj.CentPokeInTime{i} = [iStates.FP(:, 1); iStates.Wait4Out(2:end, 1)];
+                if isfield(iStates, 'Wait4Out')
                     obj.CentPokeOutTime{i} = [iStates.FP(1:end-1, 2); iStates.Wait4Out(:, 2)];
+                else
+                    obj.CentPokeOutTime{i} = [iStates.FP(1:end-1, 2); iStates.Wait4Choice(1)];
                 end
-                
                 obj.ChoiceCueTime(i, :) = [iStates.FP(1) iStates.Wait4Choice(2)]; % duration that the choice light lit up.
                 obj.TriggerCueTime(i) = iStates.FP(end, 2);
                 obj.ChoicePokeTime(i) = iStates.Wait4Choice(2);

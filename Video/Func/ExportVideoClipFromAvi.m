@@ -133,6 +133,12 @@ for i = 1:length(tBehEvent) % i is also the trial number
     ChoiceCueTime   =   (BehTable.TrialStartTime(i) + [BehTable.ChoiceCueTime_1(i) BehTable.ChoiceCueTime_2(i)])*1000 - iFrameTimesBpod(1) - tPre;
     TriggerCueTime  =   [0 250] + (BehTable.TrialStartTime(i) + BehTable.TriggerCueTime(i))*1000 - iFrameTimesBpod(1) - tPre;
 
+    if strcmp(beh_type, "KornblumSRT")
+        if BehTable.Cued(i)==0
+            TriggerCueTime = nan(1,2);
+        end
+    end
+
     % build video clips, frame by frame
     F = struct('cdata', [], 'colormap', []);
 

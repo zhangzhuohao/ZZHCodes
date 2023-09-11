@@ -99,9 +99,6 @@ classdef GPSSessionKbClass
         HoldDurationStat
 
         Interruption
-        InterruptDur
-        InterruptionCollect
-        InterruptDurCollect
 
         Performance % Performance table, grouped by PortCorrect (and FP)
         PerformanceTrackCue
@@ -959,27 +956,6 @@ classdef GPSSessionKbClass
             inter(inter.Dur<0.001, :) = [];
             
             value = inter;
-        end
-
-        function value = get.InterruptDur(obj)
-            inter_dur = cellfun(@(x, y) y(2:end) - x(1:end-1), obj.CentPokeOutTime(obj.Stage==1), obj.CentPokeInTime(obj.Stage==1), 'UniformOutput', false);
-            value = inter_dur;
-        end
-
-        function value = get.InterruptionCollect(obj)
-            inter_collect = [];
-            for t = 1:sum(obj.Stage==1)
-                inter_collect = [inter_collect; obj.Interruption{t}];
-            end
-            value = inter_collect;
-        end
-
-        function value = get.InterruptDurCollect(obj)
-            inter_dur_collect = [];
-            for t = 1:sum(obj.Stage==1)
-                inter_dur_collect = [inter_dur_collect; obj.InterruptDur{t}];
-            end
-            value = inter_dur_collect;
         end
 
         %%

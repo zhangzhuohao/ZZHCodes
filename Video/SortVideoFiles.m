@@ -7,6 +7,7 @@ fprintf("\nVideo sorting ...\n");
 CamTopID    =   ["00G40298598", "L16636102"];
 CamFrontID  =   ["00G40298581", "00D41933012"];
 CamFieldID  =   ["G44627565"  , "DA0069619"];
+CamInitID   =   ["00G40298619", "L16636084"];
 
 %%
 VideoFolder = uigetdir("E:\YuLab\Work\GPS\Video\", "Choose target vedio folder");
@@ -53,6 +54,18 @@ for b = 1:length(CamTopID)
             for f = 1:length(VidFieldFiles)
                 vid_file = fullfile(VidFieldFiles(f).folder, VidFieldFiles(f).name);
                 movefile(vid_file, FieldFolder);
+            end
+        end
+
+        VidInitFiles = dir(VidSessionFolders(s) + "\*" + CamInitID(b) + "*");
+        if ~isempty(VidInitFiles)
+            InitFolder = fullfile(VidSessionFolders(s), "Init");
+            if ~isfolder(InitFolder)
+                mkdir(InitFolder);
+            end
+            for f = 1:length(VidInitFiles)
+                vid_file = fullfile(VidInitFiles(f).folder, VidInitFiles(f).name);
+                movefile(vid_file, InitFolder);
             end
         end
     
