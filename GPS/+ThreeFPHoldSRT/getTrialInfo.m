@@ -70,7 +70,7 @@ for i = 1:obj.NumTrials
         else
             obj.CentPokeOutTime{i} = [iStates.FP(1:end-1, 2); iStates.Late(2)];
         end
-        obj.ChoiceCueTime(i, :) = [iStates.FP(1) iStates.Late(2)];
+        obj.ChoiceCueTime(i, :) = [iStates.FP(1) iStates.Late(end, 2)];
         obj.TriggerCueTime(i) = iStates.ChoiceCue(1);
 
         if ~any(isfield(iStates, ["LateWrong", "LateCorrect"]))
