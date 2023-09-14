@@ -125,7 +125,7 @@ classdef GPSProgressKbClass
             obj.Label               = string(cellfun(@(x) x.Label, SessionClassAll, 'UniformOutput', false));
 
             MixedFP                 = cell2mat(cellfun(@(x) x.MixedFP, SessionClassAll , 'UniformOutput', false)');
-            obj.MixedFP             = [unique(MixedFP(:, 1)) unique(MixedFP(:, 2)) unique(MixedFP(:, 3))];
+            obj.MixedFP             = unique(MixedFP(:, 1));
 
             obj.Ports = ["L", "R"];
 
