@@ -13,6 +13,8 @@ classdef GPSTrajGroupClass
         Experimenter
         Task
 
+        TrialInfo
+        NumTrials
         Trial
         Stage
         Performance
@@ -39,12 +41,12 @@ classdef GPSTrajGroupClass
     end
 
     properties (Constant)
-        ANMInfoFile = "E:\YuLab\Work\GPS\Data\ANMInfo.xlsx";
+        ANMInfoFile = "D:\YuLab\Work\GPS\Data\ANMInfo.xlsx";
         ForePeriods = ["Short", "Med", "Long"];
         MixedFPs    = [.5 1 1.5];
         Ports = ["L", "R"];
-        TimePointsIn  = -100+0.1:0.1:2500;
-        TimePointsOut = -1600+0.1:0.1:1000;
+        TimePointsIn  = -99:1:2500;
+        TimePointsOut = -1599:1:1000;
         ShuffleIters  = 200;
         Alpha         = 0.01;
     end
@@ -67,6 +69,15 @@ classdef GPSTrajGroupClass
             obj.Treatment       = arrayfun(@(x) x.obj.Treatment, TrajClassAll);
             obj.Dose            = arrayfun(@(x) x.obj.Dose, TrajClassAll);
             obj.Label           = arrayfun(@(x) x.obj.Label, TrajClassAll);
+            obj.NumTrials       = arrayfun(@(x) x.obj.NumTrials, TrajClassAll);
+
+            for i = 1:length(TrajClassAll)
+                if i == 1
+                    obj.TrialInfo = TrajClassAll(i).obj.TrialInfo;
+                else
+                    obj.TrialInfo = [obj.TrialInfo; TrajClassAll(i).obj.TrialInfo];
+                end
+            end
 
             allTrials           = arrayfun(@(x) x.obj.Trial, TrajClassAll, 'UniformOutput', false);
             obj.Trial           = cell2mat(allTrials');
@@ -137,8 +148,8 @@ classdef GPSTrajGroupClass
             obj.AngleHeadTraceIn  = obj.getAngleHeadTrace("In");
             obj.AngleHeadTraceOut = obj.getAngleHeadTrace("Out");
 
-            obj.AngleHeadTraceInTest  = obj.testTrace("In", obj.ShuffleIters, obj.Alpha);
-            obj.AngleHeadTraceOutTest = obj.testTrace("Out", obj.ShuffleIters, obj.Alpha);
+%             obj.AngleHeadTraceInTest  = obj.testTrace("In", obj.ShuffleIters, obj.Alpha);
+%             obj.AngleHeadTraceOutTest = obj.testTrace("Out", obj.ShuffleIters, obj.Alpha);
 
         end
 
@@ -287,7 +298,7 @@ classdef GPSTrajGroupClass
         %% Save
         function save(obj, savepath)
             if nargin<2
-                savepath = fullfile("E:\YuLab\Work\GPS\Video", obj.ANM);
+                savepath = fullfile("D:\YuLab\Work\GPS\Video", obj.ANM);
             end
             save(fullfile(savepath, "GPSTrajGroupClass_"+obj.Task+"_"+upper(obj.ANM)+"_"+obj.Sessions(1)+"_"+obj.Sessions(end)), 'obj');
         end
@@ -301,7 +312,7 @@ classdef GPSTrajGroupClass
 
             switch lower(Func)
                 case {'heatmap'}
-                    hf = obj.plotHeatMap();
+                    hf = obj.plotHeatMap("All");
                 case {'trace'}
                     hf = obj.plotTrace();
             end
@@ -315,7 +326,7 @@ classdef GPSTrajGroupClass
                     end
                 end
             else
-                targetDir = fullfile("E:\YuLab\Work\GPS\Video", obj.ANM);
+                targetDir = fullfile("D:\YuLab\Work\GPS\Video", obj.ANM);
             end
             savename = fullfile(targetDir, "GPSTrajectoryClass_" + obj.Task + "_" + string(Func) + "_" + upper(obj.ANM)+"_"+obj.Sessions(1)+"_"+obj.Sessions(end));
             print(hf, '-dpdf', savename, '-bestfit')
@@ -323,39 +334,45 @@ classdef GPSTrajGroupClass
             saveas(hf, savename, 'fig')
         end
 
-        function fig = plotHeatMap(obj)
+        function fig = plotHeatMap(obj, label)
 
             mycolormap = customcolormap_preset("red-white-blue");
 
             fig = figure(33); clf(33);
-            set(fig, 'unit', 'centimeters', 'position', [2 1.5 19 21.2], 'paperpositionmode', 'auto', 'color', 'w');
+            set(fig, 'unit', 'centimeters', 'position', [2 1.5 19 21.5], 'paperpositionmode', 'auto', 'color', 'w');
 
+            switch label
+                case {"All"}
+                    group_title = obj.ANM+" / "+obj.Task+" / "+obj.Sessions(1)+"_"+obj.Sessions(end);
+                otherwise
+                    group_title = obj.ANM+" / "+obj.Task+" / "+obj.Sessions(1)+"_"+obj.Sessions(end) + " ("+label+")";
+            end
             uicontrol('Style', 'text', 'parent', fig, 'units', 'normalized', 'position', [0.05 0.95 0.9 0.04],...
-                'string', obj.ANM+" / "+obj.Task+" / "+obj.Sessions(1)+"_"+obj.Sessions(end), 'fontsize', 10, 'fontweight', 'bold', 'backgroundcolor', 'w');
+                'string', group_title, 'fontsize', 10, 'fontweight', 'bold', 'backgroundcolor', 'w');
 
             % Chose L
             h1 = 1.5;
             ax1 = axes; colormap(mycolormap);
             set(ax1, 'units', 'centimeters', 'position', [1.5 h1, 7 4.5], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
-            Plot.heatmapAngleHead(ax1, obj, "PortChosen", "L", "Performance", "Wrong", "AlignTo", "In");
+            Plot.heatmapAngleHead(ax1, obj, "PortChosen", "L", "Performance", "Wrong", "AlignTo", "In", "Label", label);
             ax1.Title.String = [];
 
             h2 = h1 + ax1.Position(4) + .2;
             ax2 = axes; colormap(mycolormap);
             set(ax2, 'units', 'centimeters', 'position', [1.5 h2, 7 4.5], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
-            Plot.heatmapAngleHead(ax2, obj, "PortChosen", "L", "Performance", "Correct", "AlignTo", "In");
+            Plot.heatmapAngleHead(ax2, obj, "PortChosen", "L", "Performance", "Correct", "AlignTo", "In", "Label", label);
             set(ax2, 'xcolor', 'none')
 
             ax11 = axes; colormap(mycolormap);
             set(ax11, 'units', 'centimeters', 'position', [9.5 h1, 7 4.5], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
-            Plot.heatmapAngleHead(ax11, obj, "PortChosen", "L", "Performance", "Wrong", "AlignTo", "Out");
+            Plot.heatmapAngleHead(ax11, obj, "PortChosen", "L", "Performance", "Wrong", "AlignTo", "Out", "Label", label);
             set(ax11, 'ycolor', 'none');
             ax11.Position(4) = ax1.Position(4);
             ax11.Title.String = [];
 
             ax21 = axes; colormap(mycolormap);
             set(ax21, 'units', 'centimeters', 'position', [9.5 h2, 7 4.5], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
-            Plot.heatmapAngleHead(ax21, obj, "PortChosen", "L", "Performance", "Correct", "AlignTo", "Out");
+            Plot.heatmapAngleHead(ax21, obj, "PortChosen", "L", "Performance", "Correct", "AlignTo", "Out", "Label", label);
             set(ax21, 'ycolor', 'none');
             ax21.Position(4) = ax2.Position(4);
             set(ax21, 'xcolor', 'none')
@@ -364,13 +381,13 @@ classdef GPSTrajGroupClass
             cb.Label.String = "Head angle (°)";
             cb.Label.FontSize = 9;
             cb.Label.FontWeight = "Bold";
-            cb.Ticks = -60:20:60;
+            cb.Ticks = -90:30:90;
 
             % Chose R
             h3 = h2 + ax2.Position(4) + .8;
             ax3 = axes("Parent", fig); colormap(mycolormap);
             set(ax3, 'units', 'centimeters', 'position', [1.5 h3 7 4.5], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
-            Plot.heatmapAngleHead(ax3, obj, "PortChosen", "R", "Performance", "Wrong", "AlignTo", "In");
+            Plot.heatmapAngleHead(ax3, obj, "PortChosen", "R", "Performance", "Wrong", "AlignTo", "In", "Label", label);
             set(ax3, "xticklabel", []);
             ax3.XLabel.String = "";
             ax3.Title.String = "";
@@ -378,12 +395,12 @@ classdef GPSTrajGroupClass
             h4 = h3 + ax3.Position(4) + .2;
             ax4 = axes("Parent", fig); colormap(mycolormap);
             set(ax4, 'units', 'centimeters', 'position', [1.5 h4 7 4.5], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
-            Plot.heatmapAngleHead(ax4, obj, "PortChosen", "R", "Performance", "Correct", "AlignTo", "In");
+            Plot.heatmapAngleHead(ax4, obj, "PortChosen", "R", "Performance", "Correct", "AlignTo", "In", "Label", label);
             set(ax4, "xcolor", 'none');
 
             ax31 = axes; colormap(mycolormap);
             set(ax31, 'units', 'centimeters', 'position', [9.5 h3 7 4.5], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
-            Plot.heatmapAngleHead(ax31, obj, "PortChosen", "R", "Performance", "Wrong", "AlignTo", "Out");
+            Plot.heatmapAngleHead(ax31, obj, "PortChosen", "R", "Performance", "Wrong", "AlignTo", "Out", "Label", label);
             set(ax31, 'ycolor', 'none');
             set(ax31, "xticklabel", []);
             ax31.XLabel.String = "";
@@ -392,19 +409,19 @@ classdef GPSTrajGroupClass
 
             ax41 = axes("Parent", fig); colormap(mycolormap);
             set(ax41, 'units', 'centimeters', 'position', [9.5 h4 7 4.5], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
-            Plot.heatmapAngleHead(ax41, obj, "PortChosen", "R", "Performance", "Correct", "AlignTo", "Out");
+            Plot.heatmapAngleHead(ax41, obj, "PortChosen", "R", "Performance", "Correct", "AlignTo", "Out", "Label", label);
             set(ax41, "xcolor", 'none', 'ycolor', 'none');
 
             % Late
             h5 = h4 + ax4.Position(4) + .8;
             ax5 = axes; colormap(mycolormap);
             set(ax5, 'units', 'centimeters', 'position', [1.5 h5 7 4.5], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
-            Plot.heatmapAngleHead(ax5, obj, "Performance", "Late", "AlignTo", "In");
+            Plot.heatmapAngleHead(ax5, obj, "Performance", "Late", "AlignTo", "In", "Label", label);
             set(ax5, "xticklabel", []); ax5.XLabel.String = "";
 
             ax51 = axes; colormap(mycolormap);
             set(ax51, 'units', 'centimeters', 'position', [9.5 h5, 7 4.5], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
-            Plot.heatmapAngleHead(ax51, obj, "Performance", "Late", "AlignTo", "Out");
+            Plot.heatmapAngleHead(ax51, obj, "Performance", "Late", "AlignTo", "Out", "Label", label);
             set(ax51, 'ycolor', 'none');
             set(ax51, "xticklabel", []); ax51.XLabel.String = ""; 
             ax51.Position(4) = ax5.Position(4);
@@ -413,26 +430,26 @@ classdef GPSTrajGroupClass
             h6 = h5 + ax5.Position(4) + .8;
             ax6 = axes; colormap(mycolormap);
             set(ax6, 'units', 'centimeters', 'position', [1.5 h6, 7 4.5], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
-            Plot.heatmapAngleHead(ax6, obj, "Performance", "Premature", "AlignTo", "In");
+            Plot.heatmapAngleHead(ax6, obj, "Performance", "Premature", "AlignTo", "In", "Label", label);
             set(ax6, "xticklabel", []); ax6.XLabel.String = "";
 
             ax61 = axes; colormap(mycolormap);
             set(ax61, 'units', 'centimeters', 'position', [9.5 h6, 7 4.5], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
-            Plot.heatmapAngleHead(ax61, obj, "Performance", "Premature", "AlignTo", "Out");
+            Plot.heatmapAngleHead(ax61, obj, "Performance", "Premature", "AlignTo", "Out", "Label", label);
             set(ax61, 'ycolor', 'none');
             set(ax61, "xticklabel", []); ax61.XLabel.String = ""; 
             ax61.Position(4) = ax6.Position(4);
 
             h_fig = h6 + ax6.Position(4) + 1.4;
 
-%             cLimits = max([caxis(ax1) caxis(ax2) caxis(ax3) caxis(ax4)]);
-            cLimits = 60;
-            caxis(ax1, [-1 1]*cLimits); caxis(ax11, [-1 1]*cLimits);
-            caxis(ax2, [-1 1]*cLimits); caxis(ax21, [-1 1]*cLimits);
-            caxis(ax3, [-1 1]*cLimits); caxis(ax31, [-1 1]*cLimits);
-            caxis(ax4, [-1 1]*cLimits); caxis(ax41, [-1 1]*cLimits);
-            caxis(ax5, [-1 1]*cLimits); caxis(ax51, [-1 1]*cLimits);
-            caxis(ax6, [-1 1]*cLimits); caxis(ax61, [-1 1]*cLimits);
+%             cLimits = max([clim(ax1) clim(ax2) clim(ax3) clim(ax4)]);
+            cLimits = 90;
+            clim(ax1, [-1 1]*cLimits); clim(ax11, [-1 1]*cLimits);
+            clim(ax2, [-1 1]*cLimits); clim(ax21, [-1 1]*cLimits);
+            clim(ax3, [-1 1]*cLimits); clim(ax31, [-1 1]*cLimits);
+            clim(ax4, [-1 1]*cLimits); clim(ax41, [-1 1]*cLimits);
+            clim(ax5, [-1 1]*cLimits); clim(ax51, [-1 1]*cLimits);
+            clim(ax6, [-1 1]*cLimits); clim(ax61, [-1 1]*cLimits);
 
             fig.Position(4) = h_fig;
             
@@ -441,10 +458,11 @@ classdef GPSTrajGroupClass
         function fig = plotTrace(obj)
 
             fig = figure(34); clf(34);
-            set(fig, 'unit', 'centimeters', 'position', [2 2 24 16], 'paperpositionmode', 'auto', 'color', 'w');
+            set(fig, 'unit', 'centimeters', 'position', [2 2 24 16.3], 'paperpositionmode', 'auto', 'color', 'w');
 
+            group_title = obj.ANM+" / "+obj.Task+" / "+obj.Sessions(1)+"_"+obj.Sessions(end);
             uicontrol('Style', 'text', 'parent', fig, 'units', 'normalized', 'position', [0.2 0.95 0.6 0.04],...
-                'string', obj.ANM+" / "+obj.Task+" / "+obj.Sessions(1)+"_"+obj.Sessions(end), 'fontsize', 10, 'fontweight', 'bold', 'backgroundcolor', 'w');
+                'string', group_title, 'fontsize', 10, 'fontweight', 'bold', 'backgroundcolor', 'w');
 
             h1 = 1.5;
             ax1 = axes();

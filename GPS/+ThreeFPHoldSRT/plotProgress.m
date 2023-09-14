@@ -674,6 +674,15 @@ plot_interruption_early_late(ha19, obj, opts)
 
         xline(ax, (1:2)*obj.NumSessions + .5, 'Color', [.5 .5 .5], 'LineWidth', 1, 'LineStyle', '--');
 
+        for s_this = 1:obj.NumSessions
+            if obj.Label(s_this) == "Chemo"
+                for fp_this = 1:length(obj.MixedFP)
+                    patch(ax, 'XData', s_this + obj.NumSessions*(fp_this-1)+[-0.5 0.5 0.5 -0.5], 'YData', [-.5 -.5 length(obj.Bins.HoldDuration)+.5 length(obj.Bins.HoldDuration)+.5], 'FaceColor', 'none', ...
+                        'EdgeColor', opts.color.Treat, 'LineWidth', 0.5, 'LineStyle', ':', 'EdgeAlpha', 0.8);
+                end
+            end
+        end
+
         ax.XLabel.String = 'Sessions';
         set(ax, 'xlim', [.5 3*obj.NumSessions+.5], 'ylim', [-.5 length(obj.Bins.HoldDuration)+.5], ...
             'xtick', 1:3*obj.NumSessions, 'xticklabel', repmat(opts.session_date, 3, 1), ...

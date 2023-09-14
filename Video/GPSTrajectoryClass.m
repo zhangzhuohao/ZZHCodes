@@ -28,11 +28,14 @@ classdef GPSTrajectoryClass
         ForePeriods = ["Short", "Med", "Long"];
         MixedFPs    = [.5 1 1.5];
         Ports = ["L", "R"];
-        TimePointsIn  = -100+0.1:0.1:2500;
-        TimePointsOut = -1600+0.1:0.1:1000;
+        TimePointsIn  = -99:1:2500;
+        TimePointsOut = -1599:1:1000;
     end
 
     properties (Dependent)
+        
+        TrialInfo
+        NumTrials
         Trial
         Stage
         Performance
@@ -101,6 +104,23 @@ classdef GPSTrajectoryClass
         end
 
         %%
+        function value = get.TrialInfo(obj)
+            
+            trial_info = table(repmat(obj.Session, obj.NumTrials, 1), repmat(obj.Treatment, obj.NumTrials, 1), repmat(obj.Dose, obj.NumTrials, 1), repmat(obj.Label, obj.NumTrials, 1), ...
+                obj.Trial', obj.Stage', obj.Performance', obj.PortCorrect', obj.PortChosen', obj.FP', obj.RT', obj.MT', obj.HD', ...
+                'VariableNames', ["Session", "Treatment", "Dose", "Label", "Trial", "Stage", "Performance", "PortCorrect", "PortChosen", "FP", "RT", "MT", "HD"]);
+
+            value = trial_info;
+
+        end
+
+        function value = get.NumTrials(obj)
+
+            num_trials = length(obj.Trial);
+
+            value = num_trials;
+        end
+
         function value = get.Trial(obj)
 
             trial = obj.DLCTracking.PoseTracking(1).BpodEventIndex(1,:);

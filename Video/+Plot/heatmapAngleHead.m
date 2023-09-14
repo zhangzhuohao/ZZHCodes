@@ -9,10 +9,12 @@ arguments
     opts.ForePeriod (1, 1) {mustBeMember(opts.ForePeriod, ["Short", "Med", "Long", "All"])} = "All"
     opts.SortBy (1, 1) {mustBeMember(opts.SortBy, ["HD", "MT", "FP"])} = "HD"
     opts.AlignTo (1, 1) {mustBeMember(opts.AlignTo, ["In", "Out"])} = "In"
+    opts.Label (1, 1) {mustBeMember(opts.Label, ["All", "None", "Saline", "Control", "Chemo"])} = "All"
 end
 
 ind = obj.Ind;
 
+%% extract by performance
 switch opts.Performance
     case {'Premature', 'Late'}
         switch opts.ForePeriod
@@ -43,10 +45,16 @@ switch opts.Performance
         ax.Title.Color  = opts.color.("Port"+opts.PortChosen);
 end
 
+%% extract by experiment label
+if ~strcmp(opts.Label, "All")
+    these_trials = these_trials(obj.TrialInfo.Label(these_trials)==opts.Label);
+end
+
 if length(these_trials) > 100
     these_trials = these_trials(randperm(length(these_trials), 100));
 end
 
+%% sort
 switch opts.Performance
     case {'Correct', 'Wrong'}
         [~, sort_id] = sort(obj.(opts.SortBy)(these_trials));
@@ -77,6 +85,7 @@ switch opts.Performance
         these_trials = these_trials(sort_id);
 end
 
+%%
 M = obj.("AngleHeadMat"+opts.AlignTo)(these_trials, :);
 
 if isempty(M)
@@ -85,11 +94,11 @@ if isempty(M)
     switch opts.AlignTo
         case "In"
             point_in = find(obj.TimePointsIn==0);
-            set(ax, 'xtick', point_in + (-5000:5000:25000), 'xticklabel', ["-500", "0", "500", "1000", "1500", "2000", "2500"]);
+            set(ax, 'xtick', point_in + (-500:500:2500), 'xticklabel', ["-500", "0", "500", "1000", "1500", "2000", "2500"]);
 
         case "Out"
             point_out = find(obj.TimePointsOut==0);
-            set(ax, 'xtick', point_out + (-25000:5000:6000), 'xticklabel', ["-2500", "-2000", "-1500", "-1000", "-500", "0", "500"]);
+            set(ax, 'xtick', point_out + (-2500:500:600), 'xticklabel', ["-2500", "-2000", "-1500", "-1000", "-500", "0", "500"]);
     end
     ax.XLabel.String     = "Time from poke "+opts.AlignTo+" (ms)";
     ax.XLabel.FontWeight = "Bold";
@@ -107,15 +116,15 @@ switch opts.AlignTo
         imagesc(ax, M, "AlphaData", ~isnan(M));
 
         for i = 1:length(these_trials)
-            point_out    = point_in + 10*1000*obj.HD(these_trials(i));
-            point_choose = point_in + 10*1000*(obj.HD(these_trials(i)) + obj.MT(these_trials(i)));
-            point_fp     = point_in + 10*1000*obj.FP(these_trials(i));
+            point_out    = point_in + 1000*obj.HD(these_trials(i));
+            point_choose = point_in + 1000*(obj.HD(these_trials(i)) + obj.MT(these_trials(i)));
+            point_fp     = point_in + 1000*obj.FP(these_trials(i));
             line(ax, [point_out point_out], [i-.5 i+.5], 'LineStyle', '-', 'LineWidth', 1.5, 'Color', 'k');
             line(ax, [point_choose point_choose], [i-.5 i+.5], 'LineStyle', '-', 'LineWidth', 1.5, 'Color', opts.color.(obj.Performance(these_trials(i))));
             line(ax, [point_fp point_fp], [i-.4 i+.4], 'LineStyle', '-', 'LineWidth', 1.2, 'Color', [.3 .3 .3]);
         end
 
-        set(ax, 'xtick', point_in + (-5000:5000:25000), 'xticklabel', ["-500", "0", "500", "1000", "1500", "2000", "2500"]);
+        set(ax, 'xtick', point_in + (-500:500:2500), 'xticklabel', ["-500", "0", "500", "1000", "1500", "2000", "2500"]);
 
     case "Out"
         point_out = find(obj.TimePointsOut==0);
@@ -124,15 +133,15 @@ switch opts.AlignTo
         imagesc(ax, M, "AlphaData", ~isnan(M));
 
         for i = 1:length(these_trials)
-            point_in     = point_out - 10*1000*obj.HD(these_trials(i));
-            point_choose = point_out + 10*1000*obj.MT(these_trials(i));
-            point_fp     = point_in + 10*1000*obj.FP(these_trials(i));
+            point_in     = point_out - 1000*obj.HD(these_trials(i));
+            point_choose = point_out + 1000*obj.MT(these_trials(i));
+            point_fp     = point_in + 1000*obj.FP(these_trials(i));
             line(ax, [point_in point_in], [i-.5 i+.5], 'LineStyle', '-', 'LineWidth', 1.5, 'Color', 'k');
             line(ax, [point_choose point_choose], [i-.5 i+.5], 'LineStyle', '-', 'LineWidth', 1.5, 'Color', opts.color.(obj.Performance(these_trials(i))));
             line(ax, [point_fp point_fp], [i-.4 i+.4], 'LineStyle', '-', 'LineWidth', 1.2, 'Color', [.3 .3 .3]);
         end
 
-        set(ax, 'xtick', point_out + (-25000:5000:6000), 'xticklabel', ["-2500", "-2000", "-1500", "-1000", "-500", "0", "500"]);
+        set(ax, 'xtick', point_out + (-2500:500:600), 'xticklabel', ["-2500", "-2000", "-1500", "-1000", "-500", "0", "500"]);
 end
 
 clim(ax, [-90 90]);

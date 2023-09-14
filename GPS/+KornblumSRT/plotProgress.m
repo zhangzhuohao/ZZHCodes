@@ -229,13 +229,13 @@ text(ha151, 2.2, 1, "Uncue", 'FontSize', 8, 'Color', 'k', 'FontWeight', 'bold');
         c = 1;
         ind_this = find(obj.Performance.Cued_this==obj.CueUncue(c) & obj.Performance.TargetPort==port);
 
-        plot(ax, session_id, obj.Performance.PrematureRatio(ind_this), 'o', 'linestyle', opts.ls(c), 'color', [opts.color.Premature .6], ...
+        plot(ax, session_id, obj.Performance.PrematureRatio(ind_this), 'o', 'linestyle', opts.ls(c), 'color', [opts.color.Premature .2], ...
             'markersize', 6, 'linewidth', 2, 'markerfacecolor', opts.color.Premature, 'markeredgecolor', 'w');
-        plot(ax, session_id, obj.Performance.LateRatio(ind_this), 'o', 'linestyle', opts.ls(c), 'color', [opts.color.Late .6], ...
+        plot(ax, session_id, obj.Performance.LateRatio(ind_this), 'o', 'linestyle', opts.ls(c), 'color', [opts.color.Late .2], ...
             'markersize', 6, 'linewidth', 2, 'markerfacecolor', opts.color.Late, 'markeredgecolor', 'w');
-        plot(ax, session_id, obj.Performance.WrongRatio(ind_this), 'o', 'linestyle', opts.ls(c), 'color', [opts.color.Wrong .6], ...
+        plot(ax, session_id, obj.Performance.WrongRatio(ind_this), 'o', 'linestyle', opts.ls(c), 'color', [opts.color.Wrong .2], ...
             'markersize', 6, 'linewidth', 2, 'markerfacecolor', opts.color.Wrong, 'markeredgecolor', 'w');
-        plot(ax, session_id, obj.Performance.CorrectRatio(ind_this), 'o', 'linestyle', opts.ls(c), 'color', [opts.color.Correct .6], ...
+        plot(ax, session_id, obj.Performance.CorrectRatio(ind_this), 'o', 'linestyle', opts.ls(c), 'color', [opts.color.Correct .2], ...
             'markersize', 6, 'linewidth', 2, 'markerfacecolor', opts.color.Correct, 'markeredgecolor', 'w');
 
         c = 2;
@@ -281,10 +281,10 @@ text(ha151, 2.2, 1, "Uncue", 'FontSize', 8, 'Color', 'k', 'FontWeight', 'bold');
         for s_this = 1:obj.NumSessions
             ind_cue = find(obj.BehavTable.SessionDate==obj.Sessions(s_this) & eval("obj.Ind.port"+upper(port)) & obj.Ind.cue);
             this_track_cue = obj.getPerformanceTrack(obj.BehavTable(ind_cue, :), obj.Ind(ind_cue, :));
-            plot(ax, this_track_cue.WinPos+s_sep(s_this), this_track_cue.CorrectRatio,   'linestyle', '-', 'color', [opts.color.Correct .5], 'linewidth', 1.8);
-            plot(ax, this_track_cue.WinPos+s_sep(s_this), this_track_cue.WrongRatio,     'linestyle', '-', 'color', [opts.color.Wrong .5], 'linewidth', 1.8);
-            plot(ax, this_track_cue.WinPos+s_sep(s_this), this_track_cue.PrematureRatio, 'linestyle', '-', 'color', [opts.color.Premature .5], 'linewidth', 1.8);
-            plot(ax, this_track_cue.WinPos+s_sep(s_this), this_track_cue.LateRatio,      'linestyle', '-', 'color', [opts.color.Late .5], 'linewidth', 1.8);
+            plot(ax, this_track_cue.WinPos+s_sep(s_this), this_track_cue.CorrectRatio,   'linestyle', '-', 'color', [opts.color.Correct .2], 'linewidth', 1.8);
+            plot(ax, this_track_cue.WinPos+s_sep(s_this), this_track_cue.WrongRatio,     'linestyle', '-', 'color', [opts.color.Wrong .2], 'linewidth', 1.8);
+            plot(ax, this_track_cue.WinPos+s_sep(s_this), this_track_cue.PrematureRatio, 'linestyle', '-', 'color', [opts.color.Premature .2], 'linewidth', 1.8);
+            plot(ax, this_track_cue.WinPos+s_sep(s_this), this_track_cue.LateRatio,      'linestyle', '-', 'color', [opts.color.Late .1], 'linewidth', 1.8);
 
             ind_uncue = find(obj.BehavTable.SessionDate==obj.Sessions(s_this) & eval("obj.Ind.port"+upper(port)) & obj.Ind.uncue);
             this_track_uncue = obj.getPerformanceTrack(obj.BehavTable(ind_uncue, :), obj.Ind(ind_uncue, :));
@@ -381,7 +381,7 @@ text(ha151, 2.2, 1, "Uncue", 'FontSize', 8, 'Color', 'k', 'FontWeight', 'bold');
         for p_this = 1:length(obj.Ports)
             plot(1:obj.NumSessions, ...
                 obj.RTStat.Median(obj.RTStat.Port==obj.Ports(p_this) & obj.RTStat.thisCued==1), ...
-                'Color', eval("opts.color.Port"+obj.Ports(p_this)), 'LineWidth', 1.5, 'LineStyle', '-', ...
+                'Color', [eval("opts.color.Port"+obj.Ports(p_this)) .2], 'LineWidth', 1.5, 'LineStyle', '-', ...
                 'Marker', 'o', 'MarkerSize', 6, 'MarkerFaceColor', eval("opts.color.Port"+obj.Ports(p_this)), 'MarkerEdgeColor', 'w');
             plot(1:obj.NumSessions, ...
                 obj.RTStat.Median(obj.RTStat.Port==obj.Ports(p_this) & obj.RTStat.thisCued==0), ...
@@ -410,7 +410,7 @@ text(ha151, 2.2, 1, "Uncue", 'FontSize', 8, 'Color', 'k', 'FontWeight', 'bold');
         for p_this = 1:length(obj.Ports)
             plot(1:obj.NumSessions, ...
                 obj.HDStat.IQR(obj.HDStat.Port==obj.Ports(p_this) & obj.HDStat.thisCued==1), ...
-                'Color', eval("opts.color.Port"+obj.Ports(p_this)), 'LineWidth', 1.5, 'LineStyle', '-', ...
+                'Color', [eval("opts.color.Port"+obj.Ports(p_this)) .2], 'LineWidth', 1.5, 'LineStyle', '-', ...
                 'Marker', 'o', 'MarkerSize', 6, 'MarkerFaceColor', eval("opts.color.Port"+obj.Ports(p_this)), 'MarkerEdgeColor', 'w');
             plot(1:obj.NumSessions, ...
                 obj.HDStat.IQR(obj.HDStat.Port==obj.Ports(p_this) & obj.HDStat.thisCued==0), ...
@@ -452,13 +452,20 @@ text(ha151, 2.2, 1, "Uncue", 'FontSize', 8, 'Color', 'k', 'FontWeight', 'bold');
         switch port
             case {"L", "l"}
                 imagesc(ax, hd_l);
-                caxis(ax, [0 max(max([hd_l; hd_r]))]);
+                clim(ax, [0 max(max([hd_l; hd_r]))]);
             case {"R", "r"}
                 imagesc(ax, hd_r);
-                caxis(ax, [0 max(max([hd_l; hd_r]))]);
+                clim(ax, [0 max(max([hd_l; hd_r]))]);
         end
 
         yline(ax, this_fp/obj.Bins.width, 'Color', [.7 .7 .7], 'LineWidth', 1.5, 'LineStyle', '-');
+
+        for s_this = 1:obj.NumSessions
+            if obj.Label(s_this)=="Chemo"
+                patch(ax, 'XData', s_this+[-0.5 0.5 0.5 -0.5], 'YData', [-.5 -.5 length(obj.Bins.HoldDuration)+.5 length(obj.Bins.HoldDuration)+.5], 'FaceColor', 'none', ...
+                    'EdgeColor', opts.color.Treat, 'LineWidth', 2, 'LineStyle', ':', 'EdgeAlpha', 0.8);
+            end
+        end
 
         ax.XLabel.FontWeight = 'Bold';
         ax.YLabel.FontWeight = 'Bold';

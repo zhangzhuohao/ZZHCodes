@@ -14,7 +14,7 @@ if ~tf
 end
 
 %% Use the uigetdir function to open a dialog box and allow the user to select the parent directory
-ParentDir = uigetdir("E:\YuLab\Work\GPS\Data", "Select parent directory");
+ParentDir = uigetdir("D:\YuLab\Work\GPS\Data", "Select parent directory");
 if ~ParentDir
     return
 end
@@ -58,6 +58,6 @@ for d = 1:length(Folders)
         ProgressClass.print("ChemoEffect", ProtocolDir);
     end
 
-    BehavCsvName = fullfile(ProtocolDir, "GPSProgressClass_" + ProgressClass.Task + "_" + upper(ProgressClass.Subject) + "_" + ProgressClass.Sessions(1) + "_" + ProgressClass.Sessions(end) + ".csv");
+    BehavCsvName = fullfile(ProtocolDir, "GPSProgressClass_" + ProgressClass.Task + "_" + upper(ProgressClass.Subject) + ".csv");
     writetable(ProgressClass.BehavTable, BehavCsvName);
 end

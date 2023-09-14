@@ -2,7 +2,7 @@
 clear; close all
 
 ScnScale   = 1.5;
-cRange     = [-60 60];
+cRange     = [-90 90];
 lineLength = 60;
 fade_ratio = 0.85;
 
@@ -12,7 +12,7 @@ labelR = 'ear_base_right';
 mycolormap = customcolormap_preset("red-white-blue");
 
 %%
-ClipFolder = uigetdir('E:\YuLab\Work\GPS\Video\');
+ClipFolder = uigetdir('D:\YuLab\Work\GPS\Video\');
 [ViewFolder, dir_name] = fileparts(ClipFolder);
 if ~strcmp(dir_name, 'Clips')
     fprintf("\nPlease select a 'Clips' folder.\n");

@@ -3,7 +3,7 @@ function fig = plotProgress(obj)
 %%
 opts.color = GPSColor(); % Color class for GPS
 opts.mk = ["o", "x"]; % Scatter marker for correct and others
-opts.ls = [":", "-.", "-"]; % Line style for [ShortFP, MedFP, LongFP]
+opts.ls = [":", "-", "-"]; % Line style for [ShortFP, MedFP, LongFP]
 opts.lw = [0.5, 1, 1.5]; % Line width for [ShortFP, MedFP, LongFP]
 opts.trial_ticks = obj.BehavTable.TrialStartTimeProgress + obj.BehavTable.CentInTime;
 
@@ -29,122 +29,128 @@ fig = figure(23); clf(23);
 set(gcf, 'unit', 'centimeters', 'position', [2 .7 39.5 25.4], 'paperpositionmode', 'auto', 'color', 'w');
 
 mycolormap = customcolormap_preset("red-white-blue");
+% mycolormap = "Turbo";
 
 uicontrol('Style', 'text', 'parent', 23, 'units', 'normalized', 'position', [0.25 0.95 0.5 0.04],...
     'string', obj.Subject+" / "+obj.Task+" / "+obj.Sessions(1)+"_"+obj.Sessions(end), 'fontsize', 11, 'fontweight', 'bold', 'backgroundcolor', 'w');
 
 %% Set axes and plot
 % Maze diagram
-ha1 = axes;
-set(ha1, 'units', 'centimeters', 'position', [2+3*(opts.sep_row+opts.plotsize1(1))+5.5 1.35+4*(opts.sep_col+opts.plotsize1(2)), [3 6] ], 'nextplot', 'add', 'fontsize', 8);
-plot_diagram(ha1, opts);
-set(ha1, 'xlim', [0 6]);
+ha_diagram = axes;
+set(ha_diagram, 'units', 'centimeters', 'position', [2+3*(opts.sep_row+opts.plotsize1(1))+5.5 1.35+4*(opts.sep_col+opts.plotsize1(2)), [3 6] ], 'nextplot', 'add', 'fontsize', 8);
+plot_diagram(ha_diagram, opts);
+set(ha_diagram, 'xlim', [0 6]);
 
 % Hold duration scatter
-ha2 = axes;
-set(ha2, 'units', 'centimeters', 'position', [1.5+0*(opts.sep_row+opts.plotsize1(1)) 2+3*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8);
-plot_hold_duration_scatter(ha2, obj, opts);
-set(ha2, 'xtick', [], 'xlabel', []);
+ha_HD_scatter = axes;
+set(ha_HD_scatter, 'units', 'centimeters', 'position', [1.5+0*(opts.sep_row+opts.plotsize1(1)) 2+3*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8);
+plot_hold_duration_scatter(ha_HD_scatter, obj, opts);
+set(ha_HD_scatter, 'xtick', [], 'xlabel', []);
 
 % Reaction time scatter
-ha3 = axes;
-set(ha3, 'units', 'centimeters', 'position', [1.5+0*(opts.sep_row+opts.plotsize1(1)) 2+2*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8);
-plot_reaction_time_scatter(ha3, obj, opts);
-set(ha3, 'xtick', [], 'xlabel', []);
+ha_RT_scatter = axes;
+set(ha_RT_scatter, 'units', 'centimeters', 'position', [1.5+0*(opts.sep_row+opts.plotsize1(1)) 2+2*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8);
+plot_reaction_time_scatter(ha_RT_scatter, obj, opts);
+set(ha_RT_scatter, 'xtick', [], 'xlabel', []);
 
 % Performance track
-ha4 = axes;
-set(ha4, 'units', 'centimeters', 'position', [1.5+0*(opts.sep_row+opts.plotsize1(1)) 2+4*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8);
-plot_performance_track_progress(ha4, obj, opts);
-set(ha4, 'xtick', [], 'xlabel', []);
+ha_perf_track = axes;
+set(ha_perf_track, 'units', 'centimeters', 'position', [1.5+0*(opts.sep_row+opts.plotsize1(1)) 2+4*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8);
+plot_performance_track_progress(ha_perf_track, obj, opts);
+set(ha_perf_track, 'xtick', [], 'xlabel', []);
 
 % Performance progress
-ha5 = axes;
-set(ha5, 'units', 'centimeters', 'position', [.5+1*(opts.sep_row+opts.plotsize1(1)) 2+4*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8);
-plot_performance_progress(ha5, obj, opts);
-set(ha5, 'xtick', [], 'xlabel', [], 'yticklabel', [], 'ylabel', []);
+ha_perf_progress = axes;
+set(ha_perf_progress, 'units', 'centimeters', 'position', [.5+1*(opts.sep_row+opts.plotsize1(1)) 2+4*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8);
+plot_performance_progress(ha_perf_progress, obj, opts);
+set(ha_perf_progress, 'xtick', [], 'xlabel', [], 'yticklabel', [], 'ylabel', []);
 
 % Reaction time violin plot
-ha6 = axes;
-set(ha6, 'units', 'centimeters', 'position', [.5+1*(opts.sep_row+opts.plotsize1(1)) 2+2*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8);
-plot_reaction_time_violin(ha6, obj, opts);
-set(ha6, 'xtick', [], 'xlabel', [], 'yticklabel', [], 'ylabel', []);
+ha_RT_violin = axes;
+set(ha_RT_violin, 'units', 'centimeters', 'position', [.5+1*(opts.sep_row+opts.plotsize1(1)) 2+2*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8);
+plot_reaction_time_violin(ha_RT_violin, obj, opts);
+set(ha_RT_violin, 'xtick', [], 'xlabel', [], 'yticklabel', [], 'ylabel', []);
 
 %
-ha7 = axes;
-set(ha7, 'units', 'centimeters', 'position', [.5+3*(opts.sep_row+opts.plotsize1(1))+1.5 2+3*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8);
-plot_reaction_time_median(ha7, obj, opts);
-set(ha7, 'xtick', [], 'xlabel', []);
+ha_RT_median = axes;
+set(ha_RT_median, 'units', 'centimeters', 'position', [.5+3*(opts.sep_row+opts.plotsize1(1))+1.5 2+3*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8);
+plot_reaction_time_median(ha_RT_median, obj, opts);
+set(ha_RT_median, 'xtick', [], 'xlabel', []);
 
 %
-ha8 = axes;
-set(ha8, 'units', 'centimeters', 'position', [.5+3*(opts.sep_row+opts.plotsize1(1))+1.5 2+2*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8);
-plot_hold_duration_iqr(ha8, obj, opts);
+ha_HD_IQR = axes;
+set(ha_HD_IQR, 'units', 'centimeters', 'position', [.5+3*(opts.sep_row+opts.plotsize1(1))+1.5 2+2*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8);
+plot_hold_duration_iqr(ha_HD_IQR, obj, opts);
 
 %
-ha9 = axes;
-set(ha9, 'units', 'centimeters', 'position', [.5+2*(opts.sep_row+opts.plotsize1(1)) 2+4*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8);
-plot_hold_duration_heatmap(ha9, obj, "R", opts)
-set(ha9, 'xtick', [], 'xlabel', []);
+ha_HD_heatmap_R = axes;
+set(ha_HD_heatmap_R, 'units', 'centimeters', 'position', [.5+2*(opts.sep_row+opts.plotsize1(1)) 2+4*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8);
+plot_hold_duration_heatmap(ha_HD_heatmap_R, obj, "R", opts)
+set(ha_HD_heatmap_R, 'xtick', [], 'xlabel', []);
+clim(ha_HD_heatmap_R, [0, 10]);
 
-colormap(mycolormap);
-cb9 = colorbar(ha9, 'units', 'centimeters', 'position', [.5+3*(opts.sep_row+opts.plotsize1(1))-opts.sep_row+0.2 2+4*(opts.sep_col+opts.plotsize1(2)), [.3 opts.plotsize1(2)]]);
-cb9.Limits = [0 cb9.Limits(2)];
+colormap(ha_HD_heatmap_R, "Turbo");
+cb9 = colorbar(ha_HD_heatmap_R, 'units', 'centimeters', 'position', [.5+3*(opts.sep_row+opts.plotsize1(1))-opts.sep_row+0.2 2+4*(opts.sep_col+opts.plotsize1(2)), [.3 opts.plotsize1(2)]]);
+% cb9.Limits = [0 cb9.Limits(2)];
+cb9.Limits = [0 10];
 cb9.Label.String = "Prob. density (1/s)";
 cb9.FontSize = 8;
 
 %
-ha10 = axes;
-set(ha10, 'units', 'centimeters', 'position', [.5+2*(opts.sep_row+opts.plotsize1(1)) 2+3*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8);
-plot_hold_duration_heatmap(ha10, obj, "L", opts)
-set(ha10, 'xtick', [], 'xlabel', []);
+ha_HD_heatmap_L = axes;
+set(ha_HD_heatmap_L, 'units', 'centimeters', 'position', [.5+2*(opts.sep_row+opts.plotsize1(1)) 2+3*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8);
+plot_hold_duration_heatmap(ha_HD_heatmap_L, obj, "L", opts)
+set(ha_HD_heatmap_L, 'xtick', [], 'xlabel', []);
+clim(ha_HD_heatmap_L, [0, 10]);
 
-colormap(mycolormap);
-cb10 = colorbar(ha10, 'units', 'centimeters', 'position', [.5+3*(opts.sep_row+opts.plotsize1(1))-opts.sep_row+0.2 2+3*(opts.sep_col+opts.plotsize1(2)), [.3 opts.plotsize1(2)]]);
-cb10.Limits = [0 cb10.Limits(2)];
+colormap(ha_HD_heatmap_L, "Turbo");
+cb10 = colorbar(ha_HD_heatmap_L, 'units', 'centimeters', 'position', [.5+3*(opts.sep_row+opts.plotsize1(1))-opts.sep_row+0.2 2+3*(opts.sep_col+opts.plotsize1(2)), [.3 opts.plotsize1(2)]]);
+% cb10.Limits = [0 cb10.Limits(2)];
+cb10.Limits = [0 10];
 cb10.Label.String = "Prob. density (1/s)";
 cb10.FontSize = 8;
 
 %
-ha11 = axes;
-set(ha11, 'units', 'centimeters', 'position', [.5+2*(opts.sep_row+opts.plotsize1(1)) 2+2*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8);
-plot_hold_duration_heatmap(ha11, obj, "L-R", opts);
+ha_HD_heatmap_diff = axes;
+set(ha_HD_heatmap_diff, 'units', 'centimeters', 'position', [.5+2*(opts.sep_row+opts.plotsize1(1)) 2+2*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8);
+plot_hold_duration_heatmap(ha_HD_heatmap_diff, obj, "L-R", opts);
+clim(ha_HD_heatmap_diff, [-8 8]);
 
-colormap(mycolormap);
-cb11 = colorbar(ha11, 'units', 'centimeters', 'position', [.5+3*(opts.sep_row+opts.plotsize1(1))-opts.sep_row+0.2 2+2*(opts.sep_col+opts.plotsize1(2)), [.3 4]]);
+colormap(ha_HD_heatmap_diff, mycolormap);
+cb11 = colorbar(ha_HD_heatmap_diff, 'units', 'centimeters', 'position', [.5+3*(opts.sep_row+opts.plotsize1(1))-opts.sep_row+0.2 2+2*(opts.sep_col+opts.plotsize1(2)), [.3 4]]);
 cb11.Label.String = "Δ Prob. density (1/s)";
 cb11.FontSize = 8;
 
 %
-ha121 = axes;
-set(ha121, 'units', 'centimeters', 'position', [.5+2*(opts.sep_row+opts.plotsize1(1)) 1.5+1*(opts.sep_col+opts.plotsize1(2)), opts.plotsize2], 'nextplot', 'add', 'fontsize', 8);
-plot_hold_duration_pdf_early_late(ha121, obj, "R", opts);
+ha_HD_heatmap_colorbar = axes;
+set(ha_HD_heatmap_colorbar, 'units', 'centimeters', 'position', [.5+2*(opts.sep_row+opts.plotsize1(1)) 1.5+1*(opts.sep_col+opts.plotsize1(2)), opts.plotsize2], 'nextplot', 'add', 'fontsize', 8);
+plot_hold_duration_pdf_early_late(ha_HD_heatmap_colorbar, obj, "R", opts);
 
 ha122 = axes;
 set(ha122, 'units', 'centimeters', 'position', [.5+2*(opts.sep_row+opts.plotsize1(1)) 1.9+0*(opts.sep_col+opts.plotsize1(2)), opts.plotsize2], 'nextplot', 'add', 'fontsize', 8);
 plot_hold_duration_pdf_early_late(ha122, obj, "L", opts);
 
-density_max = max([ha121.YLim(2) ha122.YLim(2)]);
-set(ha121, 'ylim', [0 density_max], 'xticklabel', [], 'xlabel', []);
+density_max = max([ha_HD_heatmap_colorbar.YLim(2) ha122.YLim(2)]);
+set(ha_HD_heatmap_colorbar, 'ylim', [0 density_max], 'xticklabel', [], 'xlabel', []);
 set(ha122, 'ylim', [0 density_max]);
 
 %
-ha131 = axes;
-set(ha131, 'units', 'centimeters', 'position', [1+3*(opts.sep_row+opts.plotsize1(1)) 1.5+1*(opts.sep_col+opts.plotsize1(2)), opts.plotsize2], 'nextplot', 'add', 'fontsize', 8);
-plot_hold_duration_cdf_early_late(ha131, obj, "R", opts);
-set(ha131, 'xticklabel', [], 'xlabel', []);
+ha_HD_CDF_R = axes;
+set(ha_HD_CDF_R, 'units', 'centimeters', 'position', [1+3*(opts.sep_row+opts.plotsize1(1)) 1.5+1*(opts.sep_col+opts.plotsize1(2)), opts.plotsize2], 'nextplot', 'add', 'fontsize', 8);
+plot_hold_duration_cdf_early_late(ha_HD_CDF_R, obj, "R", opts);
+set(ha_HD_CDF_R, 'xticklabel', [], 'xlabel', []);
 
-ha132 = axes;
-set(ha132, 'units', 'centimeters', 'position', [1+3*(opts.sep_row+opts.plotsize1(1)) 1.9+0*(opts.sep_col+opts.plotsize1(2)), opts.plotsize2], 'nextplot', 'add', 'fontsize', 8);
-plot_hold_duration_cdf_early_late(ha132, obj, "L", opts);
+ha_HD_CDF_L = axes;
+set(ha_HD_CDF_L, 'units', 'centimeters', 'position', [1+3*(opts.sep_row+opts.plotsize1(1)) 1.9+0*(opts.sep_col+opts.plotsize1(2)), opts.plotsize2], 'nextplot', 'add', 'fontsize', 8);
+plot_hold_duration_cdf_early_late(ha_HD_CDF_L, obj, "L", opts);
 
-ha1321 = axes;
-set(ha1321, 'units', 'centimeters', 'position', [.5+3*(opts.sep_row+opts.plotsize1(1))+5*opts.plotsize2(1)/6 1.5+0*(opts.sep_col+opts.plotsize1(2))+1*opts.plotsize2(2)/6, opts.plotsize2 ./ [5 3]], ...
+ha_HD_legend = axes;
+set(ha_HD_legend, 'units', 'centimeters', 'position', [.5+3*(opts.sep_row+opts.plotsize1(1))+5*opts.plotsize2(1)/6 1.5+0*(opts.sep_col+opts.plotsize1(2))+1*opts.plotsize2(2)/6, opts.plotsize2 ./ [5 3]], ...
     'nextplot', 'add', 'fontsize', 8, 'color', 'none', 'xcolor', 'none', 'ycolor', 'none', 'xlim', [0 3], 'ylim', [0 3]);
-line(ha1321, [1 2], [2 2], 'Color', opts.color.PhaseEarly, 'LineWidth', 1, 'LineStyle', '-');
-line(ha1321, [1 2], [1 1], 'Color', opts.color.PhaseLate, 'LineWidth', 1, 'LineStyle', '-');
-text(ha1321, 2.2, 2, "Early", 'FontSize', 8);
-text(ha1321, 2.2, 1, "Late", 'FontSize', 8);
+line(ha_HD_legend, [1 2], [2 2], 'Color', opts.color.PhaseEarly, 'LineWidth', 1, 'LineStyle', '-');
+line(ha_HD_legend, [1 2], [1 1], 'Color', opts.color.PhaseLate, 'LineWidth', 1, 'LineStyle', '-');
+text(ha_HD_legend, 2.2, 2, "Early", 'FontSize', 8);
+text(ha_HD_legend, 2.2, 1, "Late", 'FontSize', 8);
 
 %
 ha14 = axes;
@@ -190,10 +196,10 @@ plot_interruption_early_late(ha19, obj, opts)
         viscircles(ax, [3, 3.5], 0.3,  'color', 'k', 'LineWidth', 1);
         text(ax, 3, 4.5, 'Cent', 'FontWeight', 'bold', 'HorizontalAlignment', 'center');
 
-        viscircles(ax, [1.5, 3], 0.3, 'color', opts.color.PortL);
-        text(ax, 1.5, 2.2, 'Left', 'FontWeight','bold', 'HorizontalAlignment', 'center', 'Color', opts.color.PortL);
-        viscircles(ax, [4.5, 3], 0.3,  'color', opts.color.PortR);
-        text(ax, 4.5, 2.2, 'Right', 'FontWeight', 'bold', 'HorizontalAlignment', 'center', 'Color', opts.color.PortR);
+        viscircles(ax, [1.5, 3], 0.3, 'color', opts.color.PortR);
+        text(ax, 1.5, 2.2, 'Right', 'FontWeight','bold', 'HorizontalAlignment', 'center', 'Color', opts.color.PortR);
+        viscircles(ax, [4.5, 3], 0.3,  'color', opts.color.PortL);
+        text(ax, 4.5, 2.2, 'Left', 'FontWeight', 'bold', 'HorizontalAlignment', 'center', 'Color', opts.color.PortL);
 
         set(ax, 'Color', 'none', 'XColor', 'none', 'YColor', 'none', 'ylim', [0 12], 'xlim', [0 6]);
     end
@@ -387,13 +393,13 @@ plot_interruption_early_late(ha19, obj, opts)
 
                 ind_this = find(obj.Performance.Foreperiod==obj.MixedFP(fp_this) & obj.Performance.TargetPort==obj.Ports(p_this));
                 
-                scatter(ax, session_id+(1.5-p_this)/3, obj.Performance.PrematureRatio(ind_this), ...
+                scatter(ax, session_id+(-1.5+p_this)/3, obj.Performance.PrematureRatio(ind_this), ...
                     9*fp_this, 'Marker', '^', 'MarkerEdgeColor', 'none', 'MarkerFaceColor', opts.color.Premature, 'MarkerFaceAlpha', .3);
-                scatter(ax, session_id+(1.5-p_this)/3, obj.Performance.LateRatio(ind_this), ...
+                scatter(ax, session_id+(-1.5+p_this)/3, obj.Performance.LateRatio(ind_this), ...
                     9*fp_this, 'Marker', '^', 'MarkerEdgeColor', 'none', 'MarkerFaceColor', opts.color.Late, 'MarkerFaceAlpha', .3);
-                scatter(ax, session_id+(1.5-p_this)/3, obj.Performance.WrongRatio(ind_this), ...
+                scatter(ax, session_id+(-1.5+p_this)/3, obj.Performance.WrongRatio(ind_this), ...
                     9*fp_this, 'Marker', '^', 'MarkerEdgeColor', 'none', 'MarkerFaceColor', opts.color.Wrong, 'MarkerFaceAlpha', .3);
-                scatter(ax, session_id+(1.5-p_this)/3, obj.Performance.CorrectRatio(ind_this), ...
+                scatter(ax, session_id+(-1.5+p_this)/3, obj.Performance.CorrectRatio(ind_this), ...
                     9*fp_this, 'Marker', '^', 'MarkerEdgeColor', 'none', 'MarkerFaceColor', opts.color.Correct, 'MarkerFaceAlpha', .5);
             end
         end
@@ -647,18 +653,18 @@ plot_interruption_early_late(ha19, obj, opts)
             case {"L", "l"}
                 imagesc(ax, hd_l);
                 ax.YLabel.String = 'Hold duration Left (s)';
-                caxis(ax, [-max(max([hd_l; hd_r])) max(max([hd_l; hd_r]))]);
+                clim(ax, [-max(max([hd_l; hd_r])) max(max([hd_l; hd_r]))]);
             case {"R", "r"}
                 imagesc(ax, hd_r);
                 ax.YLabel.String = 'Hold duration Right (s)';
-                caxis(ax, [-max(max([hd_l; hd_r])) max(max([hd_l; hd_r]))]);
+                clim(ax, [-max(max([hd_l; hd_r])) max(max([hd_l; hd_r]))]);
             case {"Diff", "diff", "L-R", "l-r"}
                 imagesc(ax, hd_l-hd_r);
                 ax.YLabel.String = 'Hold duration L - R (s)';
                 if abs(min(min(hd_l-hd_r))) < abs(max(max(hd_l-hd_r)))
-                    caxis(ax, [-abs(max(max(hd_l-hd_r))) abs(max(max(hd_l-hd_r)))]);
+                    clim(ax, [-abs(max(max(hd_l-hd_r))) abs(max(max(hd_l-hd_r)))]);
                 else
-                    caxis(ax, [-abs(min(min(hd_l-hd_r))) abs(min(min(hd_l-hd_r)))]);
+                    clim(ax, [-abs(min(min(hd_l-hd_r))) abs(min(min(hd_l-hd_r)))]);
                 end
         end
 
@@ -667,6 +673,15 @@ plot_interruption_early_late(ha19, obj, opts)
         line(ax, [2*obj.NumSessions+.5 3*obj.NumSessions+.5], [obj.MixedFP(3) obj.MixedFP(3)]/obj.Bins.width, 'Color', [.5 .5 .5], 'LineWidth', 1, 'LineStyle', ':');
 
         xline(ax, (1:2)*obj.NumSessions + .5, 'Color', [.5 .5 .5], 'LineWidth', 1, 'LineStyle', '--');
+
+        for s_this = 1:obj.NumSessions
+            if obj.Label(s_this) == "Chemo"
+                for fp_this = 1:length(obj.MixedFP)
+                    patch(ax, 'XData', s_this + obj.NumSessions*(fp_this-1)+[-0.5 0.5 0.5 -0.5], 'YData', [-.5 -.5 length(obj.Bins.HoldDuration)+.5 length(obj.Bins.HoldDuration)+.5], 'FaceColor', 'none', ...
+                        'EdgeColor', opts.color.Treat, 'LineWidth', 0.5, 'LineStyle', ':', 'EdgeAlpha', 0.8);
+                end
+            end
+        end
 
         ax.XLabel.String = 'Sessions';
         set(ax, 'xlim', [.5 3*obj.NumSessions+.5], 'ylim', [-.5 length(obj.Bins.HoldDuration)+.5], ...
@@ -722,7 +737,7 @@ plot_interruption_early_late(ha19, obj, opts)
     end
 
     function plot_hold_duration_cdf_early_late(ax, obj, port, opts)
- 
+
         p_this = obj.Ports==upper(string(port));
 
         if all(all(cellfun(@(x) length(x)>=100, obj.HDSortedNone)))

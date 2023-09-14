@@ -1195,7 +1195,7 @@ classdef GPSProgressKbClass
         %%
         function save(obj, savePath)
 
-            saveName = fullfile(savePath, "GPSProgressClass_" + obj.Task + "_" + upper(obj.Subject) + "_" + obj.Sessions(1) + "_" + obj.Sessions(end) + ".mat");
+            saveName = fullfile(savePath, "GPSProgressClass_" + obj.Task + "_" + upper(obj.Subject) + ".mat");
             save(saveName, 'obj');
         end
 
@@ -1222,7 +1222,7 @@ classdef GPSProgressKbClass
                         mkdir(targetDir)
                     end
                 end
-                savename = fullfile(targetDir, "GPSProgressClass_" + obj.Task + "_" + Func + "_" + upper(obj.Subject) + "_" + obj.Sessions(1) + "_" + obj.Sessions(end));
+                savename = fullfile(targetDir, "GPSProgressClass_" + obj.Task + "_" + Func + "_" + upper(obj.Subject));
                 print(hf, '-dpdf', savename, '-bestfit')
                 print(hf, '-dpng', savename)
                 saveas(hf, savename, 'fig')

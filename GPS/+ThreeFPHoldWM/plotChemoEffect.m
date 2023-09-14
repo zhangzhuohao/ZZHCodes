@@ -229,7 +229,7 @@ plot_interruption(ha14, obj, cp, opts);
         for fp_this = 1:length(obj.MixedFP)
             yline(ax, obj.MixedFP(fp_this), 'Color', [.8 .8 .8], 'LineWidth', opts.lw(fp_this), 'LineStyle', ':', 'Alpha', 0.4);
         end
-        xline(ax, cp.session_sep, 'Color', [.7 .7 .7], 'LineWidth', 1, 'LineStyle', '-');
+%         xline(ax, cp.session_sep, 'Color', [.7 .7 .7], 'LineWidth', 1, 'LineStyle', '-');
 
         switch lower(lb)
             case {'control', 'ctrl'}
@@ -304,7 +304,7 @@ plot_interruption(ha14, obj, cp, opts);
 %% ha3. Plot performance track of each session
     function plot_performance_track(ax, obj, cp, opts)
 
-        xline(ax, cp.session_sep, 'Color', [.7 .7 .7], 'LineWidth', 1, 'LineStyle', '-')
+%         xline(ax, cp.session_sep, 'Color', [.7 .7 .7], 'LineWidth', 1, 'LineStyle', '-')
 
         s_sep = [0 cp.session_sep];
 

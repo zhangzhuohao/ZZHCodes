@@ -8,6 +8,7 @@ arguments
     opts.color (1, 1) GPSColor = GPSColor()
     opts.PortChosen (1, 1) {mustBeMember(opts.PortChosen, ["L", "R", "Both"])} = "Both"
     opts.Performance (1, 1) {mustBeMember(opts.Performance, ["Correct", "Wrong", "Valid"])} = "Correct"
+    opts.Label (1, 1) {mustBeMember(opts.Label, ["All", "None", "Saline", "Control", "Chemo"])} = "All"
 end
 
 switch opts.PortChosen
@@ -32,7 +33,6 @@ switch ForePeriod
     case {'Long'}
         fp = 1.5;
 end
-
 
 time_bin_center = obj.("AngleHeadTrace"+AlignTo).("TimePoints_"+ForePeriod);
 
@@ -86,7 +86,7 @@ switch AlignTo
         patch(ax, 'XData', [0 1000*fp 1000*fp 0], 'YData', [-100 -100 100 100], ...
             'FaceColor', 'm', 'FaceAlpha', 0.05, 'EdgeColor', 'none');
 
-        set(ax, 'xlim', [-100 fp*1000+300], 'xtick', 0:500:2000, 'ylim', [-90 90], 'ytick', -60:20:60);
+        set(ax, 'xlim', [-100 fp*1000+300], 'xtick', 0:500:2000, 'ylim', [-90 90], 'ytick', -90:30:90);
     case {'Out'}
         plot(ax, [-2000 2000], [0 0], ':', 'LineWidth', 1.2, 'Color', [.2 .2 .2 .8]);
         switch obj.Task
