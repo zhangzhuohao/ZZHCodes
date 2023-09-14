@@ -12,12 +12,12 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear; clc;
 
-ScnScale = 1.5;
+ScnScale = 1.25;
 
 %%
 fprintf("\nGPS video clipping ...\n");
 
-VideoFolder = uigetdir("E:\YuLab\Work\GPS\Video\", "Choose target vedio folder");
+VideoFolder = uigetdir("D:\YuLab\Work\GPS\Video\", "Choose target vedio folder");
 if ~VideoFolder
     return;
 end
@@ -31,9 +31,9 @@ if exist(SaveNameUsedData, "file")
     fprintf("\n----------------------------------------");
     fprintf("\n----------------------------------------");
 
-    ExportVideoClipFromAvi(BehTable, IntTable, FrameTable, SessionInfo, ClipInfo, ScnScale, 0);
+    ExportVideoClipFromAvi(BehTable, IntTable, FrameTable, SessionInfo, ClipInfo, ScnScale, 0, "Top", 0);
 
-    ExportVideoClipFromAvi(BehTable, IntTable, FrameTableFront, SessionInfo, ClipInfo, ScnScale, 0);
+    ExportVideoClipFromAvi(BehTable, IntTable, FrameTableFront, SessionInfo, ClipInfo, ScnScale, 0, "Front", 1);
 
     fprintf("\n----------------------------------------");
     fprintf("\n----------------------------------------");
@@ -58,6 +58,9 @@ for i = 1:length(ViewFolders)
             case {'TOP'}
                 view_top            =   1;
                 VideoFolderTop      =   entry;
+            case {'FIELD'}
+                view_field          =   1;
+                VideoFolderField    =   entry;
         end
     end
 end
@@ -68,7 +71,7 @@ if ~view_top
     return
 else
     fprintf("\nTop-view vedios folder: \n%s\n", VideoFolderTop);
-    [vidFilesTop, tsFilesTop, ~] = ShowAviFiles(VideoFolderTop);
+    [vidFilesTop, tsFilesTop, ~] = ShowAviFiles(VideoFolderTop, 'Top');
     fprintf(" Videos\t\tTimestamps\n");
     cellfun(@(vid, ts) fprintf(" %s\t%s\n", vid, ts), vidFilesTop, tsFilesTop);
 end
@@ -77,9 +80,20 @@ if ~view_front
     fprintf("\nFind no front-view vedios.\n");
 else
     fprintf("\nFront-view vedios folder: \n%s\n", VideoFolderFront);
-    [vidFilesFront, tsFilesFront, ~] = ShowAviFiles(VideoFolderFront);
+    [vidFilesFront, tsFilesFront, ~] = ShowAviFiles(VideoFolderFront, 'Front');
     fprintf(" Videos\t\tTimestamps\n");
     cellfun(@(vid, ts) fprintf(" %s\t%s\n", vid, ts), vidFilesFront, tsFilesFront);
+end
+
+if ~view_field
+    fprintf("\nFind no field-view vedios.\n");
+else
+    fprintf("\nField-view vedios folder: \n%s\n", VideoFolderField);
+    [vidFilesField, tsFilesField, ~] = ShowAviFiles(VideoFolderField, 'Field');
+    fprintf(" Videos\n");
+    cellfun(@(vid) fprintf(" %s\n", vid), vidFilesField);
+    fprintf("Timestamps\n");
+    cellfun(@(ts) fprintf(" %s\n", ts), tsFilesField);
 end
 
 %%
@@ -87,7 +101,7 @@ vidInfo         =   split(VideoFolder, filesep);
 ANM             =   string(vidInfo{end-1});
 Session         =   string(vidInfo{end});
 
-ANMInfoFile     =   "E:\YuLab\Work\GPS\Data\ANMInfo.xlsx";
+ANMInfoFile     =   "D:\YuLab\Work\GPS\Data\ANMInfo.xlsx";
 ANMInfo         =   readtable(ANMInfoFile, "Sheet", ANM, "TextType", "string");
 ANMInfo.Session =   string(ANMInfo.Session);
 
@@ -125,6 +139,11 @@ ClipInfo.CheckingEvent      =   CheckingEvent;
 ClipInfo.VideoEvent         =   VideoEvent;
 ClipInfo.Pre                =   Pre;
 ClipInfo.Post               =   Post;
+
+ClipInfoField                   =   ClipInfo;
+ClipInfoField.Pre               =   10000;
+ClipInfoField.VideoFolderField  =   VideoFolderField;
+ClipInfoField.Post              =   0;
 
 %%
 csvFileBehavior     =   dir(SessionInfo.SessionFolder+"\*SessionTable*.csv");
@@ -246,7 +265,7 @@ if view_front
     AviFileIndxFront    =   zeros(length(AviFileIndx), 1);
     AviFrameIndxFront   =   zeros(length(AviFileIndx), 1);
     for i = 1:length(AviFileIndx)
-        [~, id] = min(abs(tsROIFront_org - tsROI(i)));
+        [~, id] = min(abs(tsROIFront_org - FrameInfo.tframe(i)));
         tsROIFront(i)          =   tsROIFront_org(id);
         AviFileIndxFront(i)    =   AviFileIndxFront_org(id);
         AviFrameIndxFront(i)   =   AviFrameIndxFront_org(id);
@@ -264,6 +283,66 @@ if view_front
     MyVidFilesFront = cell(length(AviFileIndx), 1);
     for i = 1:length(MyVidFiles)
         MyVidFilesFront{i} = vidFilesFront{AviFileIndxFront(i)};
+    end
+    clear i
+end
+
+%%
+if view_field
+    tsROIField_org          =   [];
+    AviFileIndxField_org    =   [];
+    AviFrameIndxField_org   =   [];
+
+    for i = 1:length(tsFilesField)
+
+        fileID          =   fopen(fullfile(VideoFolderField, tsFilesField{i}), 'r');
+        formatSpec      =   '%f' ;
+        NumOuts         =   fscanf(fileID, formatSpec); % this contains frame time (in ms) and frame index
+        fclose(fileID);
+
+        ind_brk         =   find(NumOuts==0);
+        FrameTs         =   NumOuts(1:ind_brk-1);   % frame timestamps
+        FrameIdx        =   NumOuts(ind_brk+1:end); % frame index
+    end
+
+    j = 0;
+    for i = 1:length(vidFilesField)
+        
+        filename = fullfile(VideoFolderField, vidFilesField{i});
+        vidObj   = VideoReader(filename);
+        
+        for k = 1:vidObj.NumFrames
+            j = j + 1;
+            tsROIField_org          =   [tsROIField_org; FrameTs(j)];
+            AviFileIndxField_org    =   [AviFileIndxField_org; i];
+            AviFrameIndxField_org   =   [AviFrameIndxField_org; k];
+        end
+    end
+    clear i
+    tsROIField_org  = tsROIField_org - tsStart;
+
+    tsROIField          =   zeros(length(AviFileIndx), 1);
+    AviFileIndxField    =   zeros(length(AviFileIndx), 1);
+    AviFrameIndxField   =   zeros(length(AviFileIndx), 1);
+    for i = 1:length(AviFileIndx)
+        [~, id] = min(abs(tsROIField_org - tsROI(i)));
+        tsROIField(i)          =   tsROIField_org(id);
+        AviFileIndxField(i)    =   AviFileIndxField_org(id);
+        AviFrameIndxField(i)   =   AviFrameIndxField_org(id);
+    end
+    clear i id
+
+    FrameInfoField              =   struct();
+    FrameInfoField.tframe       =   tsROIField;
+    FrameInfoField.AviFileIndx  =   AviFileIndxField;
+    FrameInfoField.AviFrameIndx =   AviFrameIndxField;
+
+    SaveNameFrameInfoField      =   fullfile(VideoFolder, "FrameInfoField.mat");
+    save(SaveNameFrameInfoField, "FrameInfoField");
+
+    MyVidFilesField = cell(length(AviFileIndx), 1);
+    for i = 1:length(MyVidFiles)
+        MyVidFilesField{i} = vidFilesField{AviFileIndxField(i)};
     end
     clear i
 end
@@ -304,12 +383,23 @@ FrameInfo.tFramesInBpod = tFrames2Bpodms;
 %%
 if view_front
     FrameTableFront = table(tsROIFront, tFrames2Bpodms, AviFileIndxFront, AviFrameIndxFront, MyVidFilesFront, ...
-        'VariableNames', {'tsROI', 'tFrames2Bpodms', 'AviAviFileIndx', 'AviFrameIndx', 'MyVidFiles'});
+        'VariableNames', {'tsROI', 'tFrames2Bpodms', 'AviFileIndx', 'AviFrameIndx', 'MyVidFiles'});
     [~, ia] = unique(FrameTableFront.tsROI);
     FrameTableFront = FrameTableFront(ia, :);
 
     SaveNameFrameTableFront = fullfile(VideoFolder, "FrameInfoFront.csv");
     writetable(FrameTableFront, SaveNameFrameTableFront);
+end
+
+%%
+if view_field
+    FrameTableField = table(tsROIField, tFrames2Bpodms, AviFileIndxField, AviFrameIndxField, MyVidFilesField, ...
+        'VariableNames', {'tsROI', 'tFrames2Bpodms', 'AviFileIndx', 'AviFrameIndx', 'MyVidFiles'});
+    [~, ia] = unique(FrameTableField.tsROI);
+    FrameTableField = FrameTableField(ia, :);
+
+    SaveNameFrameTableField = fullfile(VideoFolder, "FrameInfoField.csv");
+    writetable(FrameTableField, SaveNameFrameTableField);
 end
 
 %% Check if another event is also aligned
@@ -330,7 +420,12 @@ end
 
 switch view_front
     case 1
-        save(SaveNameUsedData, 'BehTable', 'IntTable', 'FrameTable', 'FrameTableFront', 'SessionInfo', 'ClipInfo', 'ScnScale');
+        switch view_field
+            case 1
+                save(SaveNameUsedData, 'BehTable', 'IntTable', 'FrameTable', 'FrameTableFront', 'FrameTableField', 'SessionInfo', 'ClipInfo', 'ClipInfoField', 'ScnScale');
+            case 0
+                save(SaveNameUsedData, 'BehTable', 'IntTable', 'FrameTable', 'FrameTableFront', 'SessionInfo', 'ClipInfo', 'ScnScale');
+        end
     case 0
         save(SaveNameUsedData, 'BehTable', 'IntTable', 'FrameTable', 'SessionInfo', 'ClipInfo', 'ScnScale');
 end
@@ -341,7 +436,12 @@ load(SaveNameUsedData);
 %%
 fprintf("\n----------------------------------------");
 fprintf("\n----------------------------------------");
-ExportVideoClipFromAvi(BehTable, IntTable, FrameTable, SessionInfo, ClipInfo, ScnScale, 0);
+
+ExportVideoClipFromAvi(BehTable, IntTable, FrameTable, SessionInfo, ClipInfo, ScnScale, 0, "Top", 0);
+
+ExportVideoClipFromAvi(BehTable, IntTable, FrameTableFront, SessionInfo, ClipInfo, ScnScale, 0, "Front", 1);
+
+ExportVideoClipFromAvi_Field(BehTable, IntTable, FrameTableField, SessionInfo, ClipInfoField, ScnScale, 0, "Field", 0);
 
 fprintf("\n----------------------------------------");
 fprintf("\n----------------------------------------");
