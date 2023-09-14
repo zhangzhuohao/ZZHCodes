@@ -24,7 +24,7 @@ classdef GPSTrajectoryClass
     end
 
     properties (Constant)
-        ANMInfoFile = "E:\YuLab\Work\GPS\Data\ANMInfo.xlsx";
+        ANMInfoFile = "D:\YuLab\Work\GPS\Data\ANMInfo.xlsx";
         ForePeriods = ["Short", "Med", "Long"];
         MixedFPs    = [.5 1 1.5];
         Ports = ["L", "R"];
@@ -482,7 +482,7 @@ classdef GPSTrajectoryClass
             cb.Label.String = "Head angle (°)";
             cb.Label.FontSize = 9;
             cb.Label.FontWeight = "Bold";
-            cb.Ticks = -60:20:60;
+            cb.Ticks = -90:30:90;
 
             % Chose R
             h3 = h2 + ax2.Position(4) + .8;
@@ -543,14 +543,14 @@ classdef GPSTrajectoryClass
 
             h_fig = h6 + ax6.Position(4) + 1.3;
 
-%             cLimits = max([caxis(ax1) caxis(ax2) caxis(ax3) caxis(ax4)]);
-            cLimits = 60;
-            caxis(ax1, [-1 1]*cLimits); caxis(ax11, [-1 1]*cLimits);
-            caxis(ax2, [-1 1]*cLimits); caxis(ax21, [-1 1]*cLimits);
-            caxis(ax3, [-1 1]*cLimits); caxis(ax31, [-1 1]*cLimits);
-            caxis(ax4, [-1 1]*cLimits); caxis(ax41, [-1 1]*cLimits);
-            caxis(ax5, [-1 1]*cLimits); caxis(ax51, [-1 1]*cLimits);
-            caxis(ax6, [-1 1]*cLimits); caxis(ax61, [-1 1]*cLimits);
+%             cLimits = max([clim(ax1) clim(ax2) clim(ax3) clim(ax4)]);
+            cLimits = 90;
+            clim(ax1, [-1 1]*cLimits); clim(ax11, [-1 1]*cLimits);
+            clim(ax2, [-1 1]*cLimits); clim(ax21, [-1 1]*cLimits);
+            clim(ax3, [-1 1]*cLimits); clim(ax31, [-1 1]*cLimits);
+            clim(ax4, [-1 1]*cLimits); clim(ax41, [-1 1]*cLimits);
+            clim(ax5, [-1 1]*cLimits); clim(ax51, [-1 1]*cLimits);
+            clim(ax6, [-1 1]*cLimits); clim(ax61, [-1 1]*cLimits);
             
             fig.Position(4) = h_fig;
             

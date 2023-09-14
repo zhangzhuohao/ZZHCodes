@@ -135,7 +135,7 @@ switch opts.AlignTo
         set(ax, 'xtick', point_out + (-25000:5000:6000), 'xticklabel', ["-2500", "-2000", "-1500", "-1000", "-500", "0", "500"]);
 end
 
-caxis(ax, [-1 1]*max(max(abs(M))));
+clim(ax, [-90 90]);
 
 ax.Position(4) = min([ax.Position(4) size(M, 1)*0.05]);
 

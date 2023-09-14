@@ -3,7 +3,7 @@ clear; close all;
 
 View = "Top";
 
-ParentDir = uigetdir("E:\YuLab\Work\GPS\Video", "Select parent directory");
+ParentDir = uigetdir("D:\YuLab\Work\GPS\Video", "Select parent directory");
 if ~ParentDir
     return
 end

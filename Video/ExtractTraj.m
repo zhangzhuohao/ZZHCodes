@@ -55,6 +55,8 @@ anm      = ClipInfo{end-3};
 ANMInfoFile = 'D:\YuLab\Work\GPS\Data\ANMInfo.xlsx';
 ANMInfo     = readtable(ANMInfoFile, 'Sheet', anm);
 SessionInfo = ANMInfo(ANMInfo.Session==str2double(session), :);
+SessionInfo.Session = int2str(SessionInfo.Session);
+disp(SessionInfo);
 
 BehTableFile = dir(fullfile(SessionInfo.SessionFolder{1}, '*SessionTable*.csv'));
 BehTable     = readtable(fullfile(SessionInfo.SessionFolder{1}, BehTableFile.name));
@@ -123,6 +125,12 @@ for i = 1:NumClips
     end
 
     DropOut = 0;
+    if size(D, 1) < 198
+        DropOut = 1;
+        fprintf("\nDrop %d for frame loss\n", i);
+        continue;
+    end
+
     for j = 1:length(BodyParts)
 
         body_part =     BodyParts{j};
@@ -138,6 +146,7 @@ for i = 1:NumClips
         end
     end
     if DropOut
+        fprintf("\nDrop %d for bad labelling\n", i);
         continue;
     end
 

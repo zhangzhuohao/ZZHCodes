@@ -3,7 +3,7 @@ clear; close all;
 
 View = "Top";
 
-ParentDir = uigetdir("E:\YuLab\Work\GPS\Video", "Select parent directory");
+ParentDir = uigetdir("D:\YuLab\Work\GPS\Video", "Select parent directory");
 if ~ParentDir
     return
 end
@@ -39,11 +39,11 @@ for i = 1:length(ClipFolders)
 
     fprintf("\n%s\n", TrajectoryClass.Session);
 
-%     TrajectoryClass.print("HeatMap", TrajSessionFolder);
-%     TrajectoryClass.print("Trace", TrajSessionFolder);
+    TrajectoryClass.print("HeatMap", TrajSessionFolder);
+    TrajectoryClass.print("Trace", TrajSessionFolder);
 
-    TrajectoryClass.AngleHeadTraceInTest = TrajectoryClass.testTrace("In", 2000);
-    TrajectoryClass.AngleHeadTraceOutTest = TrajectoryClass.testTrace("Out", 2000);
+%     TrajectoryClass.AngleHeadTraceInTest = TrajectoryClass.testTrace("In", 2000);
+%     TrajectoryClass.AngleHeadTraceOutTest = TrajectoryClass.testTrace("Out", 2000);
 
     TrajectoryClass.save(TrajSessionFolder);
 
