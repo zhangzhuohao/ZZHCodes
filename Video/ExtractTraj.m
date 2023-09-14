@@ -1,12 +1,11 @@
 clear;
 
-DLCCrop = [120 1180 0 1000];
+DLCCrop = [0 1280 0 1024];
 
 BodyParts = {
     'ear_base_left', ...
     'ear_base_right', ...
-    'pattern_left', ...
-    'pattern_right', ...
+    'body_1'
     };
 
 Ports = {
@@ -15,19 +14,32 @@ Ports = {
     };
 
 %%
-opts = delimitedTextImportOptions("NumVariables", 28);
+opts = delimitedTextImportOptions("NumVariables", 37);
 
 opts.DataLines = [4, Inf];
 opts.Delimiter = ",";
 
-opts.VariableNames = ["frame", "ear_tip_left_x", "ear_tip_left_y", "ear_tip_left_lh", "ear_base_left_x", "ear_base_left_y", "ear_base_left_lh", "ear_tip_right_x", "ear_tip_right_y", "ear_tip_right_lh", "ear_base_right_x", "ear_base_right_y", "ear_base_right_lh", "pattern_left_x", "pattern_left_y", "pattern_left_lh", "pattern_right_x", "pattern_right_y", "pattern_right_lh", "port_left_x", "port_left_y", "port_left_lh", "port_right_x", "port_right_y", "port_right_lh", "port_center_x", "port_center_y", "port_center_lh"];
-opts.VariableTypes = ["double", "double", "double", "double", "double", "double", "double", "double", "double", "double", "double", "double", "double", "double", "double", "double", "double", "double", "double", "double", "double", "double", "double", "double", "double", "double", "double", "double"];
+opts.VariableNames = ["frame", ...
+    "ear_tip_left_x",   "ear_tip_left_y",   "ear_tip_left_lh", ...
+    "ear_base_left_x",  "ear_base_left_y",  "ear_base_left_lh", ...
+    "ear_tip_right_x",  "ear_tip_right_y",  "ear_tip_right_lh", ...
+    "ear_base_right_x", "ear_base_right_y", "ear_base_right_lh", ...
+    "body_1_x",         "body_1_y",         "body_1_lh", ...
+    "body_2_x",         "body_2_y",         "body_2_lh", ...
+    "body_3_x",         "body_3_y",         "body_3_lh", ...
+    "tail_left_x",      "tail_left_y",      "tail_left_lh", ...
+    "tail_right_x",     "tail_right_y",     "tail_right_lh", ...
+    "port_left_x",      "port_left_y",      "port_left_lh", ...
+    "port_right_x",     "port_right_y",     "port_right_lh", ...
+    "port_center_x",    "port_center_y",    "port_center_lh"];
+
+opts.VariableTypes = repmat("double", 1, 37);
 
 opts.ExtraColumnsRule = "ignore";
 opts.EmptyLineRule = "read";
 
 %%
-ClipFolder  = uigetdir('E:\YuLab\Work\GPS\Video\');
+ClipFolder  = uigetdir('D:\YuLab\Work\GPS\Video\');
 [ViewFolder, dir_name] = fileparts(ClipFolder);
 if ~strcmp(dir_name, 'Clips')
     fprintf("\nPlease select a 'Clips' folder.\n");
@@ -40,7 +52,7 @@ view     = ClipInfo{end-1};
 session  = ClipInfo{end-2};
 anm      = ClipInfo{end-3};
 
-ANMInfoFile = 'E:\YuLab\Work\GPS\Data\ANMInfo.xlsx';
+ANMInfoFile = 'D:\YuLab\Work\GPS\Data\ANMInfo.xlsx';
 ANMInfo     = readtable(ANMInfoFile, 'Sheet', anm);
 SessionInfo = ANMInfo(ANMInfo.Session==str2double(session), :);
 

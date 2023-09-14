@@ -1,4 +1,4 @@
-function ExportVideoClipFromAvi(BehTable, IntTable, FrameTable, SessionInfo, ClipInfo, scn_scale, remake, view, x_rev)
+function ExportVideoClipFromAvi_Field(BehTable, IntTable, FrameTable, SessionInfo, ClipInfo, scn_scale, remake, view, x_rev)
 
 % ExportVideoClipFromAvi(thisTable, FrameTable, 'Event', VideoEvent,'ANM', ANM, ...
 %     'Pre', Pre, 'Post', Post, 'BehaviorType', BehaviorType, 'Session', Session, 'Remake', 1)
@@ -259,7 +259,7 @@ for i = 1:length(tBehEvent) % i is also the trial number
     clear img_extracted
 
     writerObj = VideoWriter(VidClipFileName);
-    writerObj.FrameRate = 0.5 * median(1000./diff(iFrameTimesBpod));
+    writerObj.FrameRate = 1 * median(1000./diff(iFrameTimesBpod));
     % set the seconds per image
     % open the video writer
     open(writerObj);

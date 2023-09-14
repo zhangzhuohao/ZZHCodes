@@ -1,4 +1,4 @@
-function [vidFiles, tsFiles, cfolder]=ShowAviFiles(cfolder)
+function [vidFiles, tsFiles, cfolder]=ShowAviFiles(cfolder, view)
 
 
 if nargin<1
@@ -26,9 +26,15 @@ if ~isempty(alltsFiles)
 end
 
 % Sometimes the recording program interrupts early, causing the last video file to have no corresponding timestamp file
-if length(vidFiles)>length(tsFiles)
-    fprintf("\nVideo files do not match to timestamp files, ")
-    vidFiles(end) = [];
+switch view
+    case {'Top', 'Front'}
+        if length(vidFiles)>length(tsFiles)
+            fprintf("\nVideo files do not match to timestamp files, ")
+            vidFiles(end) = [];
+        end
+    case {'Field', 'Init'}
+        if length(vidFiles)>length(tsFiles)
+            fprintf("\nVideo files do not match to timestamp files, ")
+        end
 end
-
 sprintf('%s',cfolder);
