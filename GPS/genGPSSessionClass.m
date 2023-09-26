@@ -21,7 +21,7 @@ end
 
 %%
 % Use the uigetdir function to open a dialog box and allow the user to select the parent directory
-ParentDir = 'D:\YuLab\Work\GPS\Data';
+ParentDir = 'E:\YuLab\Work\GPS\Data';
 
 Entry = dir(ParentDir);
 ANMFolders = [];

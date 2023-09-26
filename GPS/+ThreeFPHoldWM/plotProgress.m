@@ -771,9 +771,9 @@ plot_interruption_early_late(ha19, obj, opts)
 
         switch upper(string(port))
             case {"L"}
-                ax.YLabel.String = "Cum. density Left";
+                ax.YLabel.String = "Cum. distribution Left";
             case {"R"}
-                ax.YLabel.String = "Cum. density Right";
+                ax.YLabel.String = "Cum. distribution Right";
         end
         
         ax.XLabel.String = "Hold duration (s)";

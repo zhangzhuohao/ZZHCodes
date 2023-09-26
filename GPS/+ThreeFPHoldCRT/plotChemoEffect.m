@@ -614,7 +614,7 @@ plot_interruption(ha14, obj, cp, opts);
         set(ax, 'xlim', [0 obj.Bins.HoldDuration(end)], 'ylimmode', 'auto');
     end
 
-% Cum. density
+% Cum. distribution
     function plot_hold_duration_cdf(ax, obj, port, opts)
 
         p_this = obj.Ports==upper(string(port));
@@ -646,7 +646,7 @@ plot_interruption(ha14, obj, cp, opts);
         end
         ax.XLabel.FontWeight = "Bold";
 
-        ax.YLabel.String = "Cum. density";
+        ax.YLabel.String = "Cum. distribution";
         set(ax, 'xlim', [0 obj.Bins.HoldDuration(end)], 'ylim', [0 1]);
     end
 

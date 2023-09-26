@@ -271,7 +271,7 @@ plot_reaction_time_collected(ha13, obj, opts);
             end
         end
 
-        ax.XLabel.String = 'Cum. density';
+        ax.XLabel.String = 'Cum. distribution';
         set(ax, 'xlimmode', 'auto', 'ylim', [0 2.5], 'yticklabel', [], 'ticklength', [0.02 0.1]);
     end
 

@@ -279,12 +279,12 @@ text(ha151, 2.2, 1, "Uncue", 'FontSize', 8, 'Color', 'k', 'FontWeight', 'bold');
         s_sep = [0 session_sep];
 
         for s_this = 1:obj.NumSessions
-            ind_cue = find(obj.BehavTable.SessionDate==obj.Sessions(s_this) & eval("obj.Ind.port"+upper(port)) & obj.Ind.cue);
-            this_track_cue = obj.getPerformanceTrack(obj.BehavTable(ind_cue, :), obj.Ind(ind_cue, :));
-            plot(ax, this_track_cue.WinPos+s_sep(s_this), this_track_cue.CorrectRatio,   'linestyle', '-', 'color', [opts.color.Correct .2], 'linewidth', 1.8);
-            plot(ax, this_track_cue.WinPos+s_sep(s_this), this_track_cue.WrongRatio,     'linestyle', '-', 'color', [opts.color.Wrong .2], 'linewidth', 1.8);
-            plot(ax, this_track_cue.WinPos+s_sep(s_this), this_track_cue.PrematureRatio, 'linestyle', '-', 'color', [opts.color.Premature .2], 'linewidth', 1.8);
-            plot(ax, this_track_cue.WinPos+s_sep(s_this), this_track_cue.LateRatio,      'linestyle', '-', 'color', [opts.color.Late .1], 'linewidth', 1.8);
+%             ind_cue = find(obj.BehavTable.SessionDate==obj.Sessions(s_this) & eval("obj.Ind.port"+upper(port)) & obj.Ind.cue);
+%             this_track_cue = obj.getPerformanceTrack(obj.BehavTable(ind_cue, :), obj.Ind(ind_cue, :));
+%             plot(ax, this_track_cue.WinPos+s_sep(s_this), this_track_cue.CorrectRatio,   'linestyle', '-', 'color', [opts.color.Correct .2], 'linewidth', 1.8);
+%             plot(ax, this_track_cue.WinPos+s_sep(s_this), this_track_cue.WrongRatio,     'linestyle', '-', 'color', [opts.color.Wrong .2], 'linewidth', 1.8);
+%             plot(ax, this_track_cue.WinPos+s_sep(s_this), this_track_cue.PrematureRatio, 'linestyle', '-', 'color', [opts.color.Premature .2], 'linewidth', 1.8);
+%             plot(ax, this_track_cue.WinPos+s_sep(s_this), this_track_cue.LateRatio,      'linestyle', '-', 'color', [opts.color.Late .1], 'linewidth', 1.8);
 
             ind_uncue = find(obj.BehavTable.SessionDate==obj.Sessions(s_this) & eval("obj.Ind.port"+upper(port)) & obj.Ind.uncue);
             this_track_uncue = obj.getPerformanceTrack(obj.BehavTable(ind_uncue, :), obj.Ind(ind_uncue, :));
