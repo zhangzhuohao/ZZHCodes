@@ -948,6 +948,17 @@ classdef GPSSessionKbClass
                 outcome           = [outcome           ; repmat(obj.Outcome(t), length(inter_on{t}), 1)];
             end
 
+            if isempty(trial)
+                inter_on_collect  = zeros(1,1);
+                inter_dur_collect = zeros(1,1);
+                trial             = zeros(1,1);
+                port_correct      = zeros(1,1);
+                fp                = zeros(1,1);
+                cued              = zeros(1,1);
+                hold_duration     = zeros(1,1);
+                outcome           = zeros(1,1);
+            end
+
             Subjects = repmat(string(obj.Subject), length(trial), 1);
             Sessions = repmat(string(obj.Session), length(trial), 1);
 
