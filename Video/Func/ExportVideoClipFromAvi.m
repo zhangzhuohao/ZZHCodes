@@ -88,7 +88,7 @@ for i = 1:length(tBehEvent) % i is also the trial number
             ClipName = sprintf('%s_%s_CenterPokeTrial%03d', anm, session, i);
 
         case 'CentInTime'
-            ClipName = sprintf('%s_%s_HoldTrial%03d', anm, session, i);
+            ClipName = sprintf('%s_%s_HoldTrial%03d_%sView', anm, session, i, view);
     end
 
     VidClipFileName = fullfile(thisFolder, [ClipName '.avi']);
@@ -170,8 +170,15 @@ for i = 1:length(tBehEvent) % i is also the trial number
     this_video = fullfile(viewFolder, FrameTable.MyVidFiles{IndThisFrame});
     vidObj = VideoReader(this_video);
     img_extracted = [];
-    for ii = 1:length(VidFrameIndx_thisfile)
-        img_extracted = cat(3, img_extracted, rgb2gray(read(vidObj, VidFrameIndx_thisfile(ii))));
+    if x_rev==1
+        for ii = 1:length(VidFrameIndx_thisfile)
+            img_this = rgb2gray(read(vidObj, VidFrameIndx_thisfile(ii)));
+            img_extracted = cat(3, img_extracted, img_this(:, end:-1:1));
+        end
+    else
+        for ii = 1:length(VidFrameIndx_thisfile)
+            img_extracted = cat(3, img_extracted, rgb2gray(read(vidObj, VidFrameIndx_thisfile(ii))));
+        end
     end
     clear frames_ifile vidObj
 
@@ -188,13 +195,11 @@ for i = 1:length(tBehEvent) % i is also the trial number
 
     ha = axes;
     set(ha, 'units', 'pixels', 'position', [0 .3*scale_ratio*H + 1 scale_ratio*W scale_ratio*H], 'nextplot', 'add', 'xlim', [.5 W+.5], 'ylim', [.5 H+.5], 'ydir', 'reverse')
-    if x_rev==1
-        set(ha, 'xdir', 'reverse');
-    end
     axis off
 
     % plot this frame:
     img = imagesc(ha, img_extracted(:, :, k), [0 250]);
+
     colormap('gray');
 
     % plot some behavior data

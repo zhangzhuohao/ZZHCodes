@@ -14,13 +14,13 @@ if ~tf
 end
 
 %% Use the uigetdir function to open a dialog box and allow the user to select the parent directory
-ParentDir = uigetdir("E:\YuLab\Work\GPS\Data", "Select parent directory");
+ParentDir = uigetdir("D:\YuLab\Work\GPS\Data", "Select parent directory");
 if ~ParentDir
     return
 end
 
 % indx = 5;
-% ParentDir = "E:\YuLab\Work\GPS\Data\Gena";
+% ParentDir = "D:\YuLab\Work\GPS\Data\Gena";
 Folders = get_folders(ParentDir, "FolderType", 'Protocol', "Tasks", Tasks(indx));
 
 %%
