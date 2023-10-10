@@ -98,7 +98,7 @@ end
 
 %%
 vidInfo         =   split(VideoFolder, filesep);
-ANM             =   string(vidInfo{end-1});
+ANM             =   string(vidInfo{end-2});
 Session         =   string(vidInfo{end});
 
 ANMInfoFile     =   "D:\YuLab\Work\GPS\Data\ANMInfo.xlsx";
@@ -169,7 +169,7 @@ tCheckingEvent      =   BehTable.(CheckingEvent) + BehTable.TrialStartTime; % in
 % Define mask
 fprintf("\n----------------------------------------");
 fprintf("\n----------------------------------------");
-[Mask, FigMask] = ExtractMask(fullfile(VideoFolderTop, vidFilesTop{1}), [1000 2000]);
+[Mask, FigMask] = ExtractMask(fullfile(VideoFolderTop, vidFilesTop{1}), [1000 3000]);
 % save this fig
 SaveNameFigMask = fullfile(VideoFolder, "ROI_Mask");
 print(FigMask, '-dpng', SaveNameFigMask);
@@ -441,7 +441,7 @@ ExportVideoClipFromAvi(BehTable, IntTable, FrameTable, SessionInfo, ClipInfo, Sc
 
 ExportVideoClipFromAvi(BehTable, IntTable, FrameTableFront, SessionInfo, ClipInfo, ScnScale, 0, "Front", 1);
 
-ExportVideoClipFromAvi_Field(BehTable, IntTable, FrameTableField, SessionInfo, ClipInfoField, ScnScale, 0, "Field", 0);
+% ExportVideoClipFromAvi_Field(BehTable, IntTable, FrameTableField, SessionInfo, ClipInfoField, ScnScale, 0, "Field", 0);
 
 fprintf("\n----------------------------------------");
 fprintf("\n----------------------------------------");
