@@ -48,7 +48,7 @@ classdef GPSSessionClass
             'HoldDuration: Time from port_cent poke out to port_choice poke in (for hold paradigm only)';
             };
         Ports = ["L", "R"];
-        ANMInfoFile = "E:\YuLab\Work\GPS\Data\ANMInfo.xlsx";
+        ANMInfoFile = "D:\YuLab\Work\GPS\Data\ANMInfo.xlsx";
     end
 
     properties (Dependent)
