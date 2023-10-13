@@ -50,7 +50,7 @@ classdef GPSSessionKbClass
             };
         Ports = ["L", "R"];
         CueUncue = [1 0];
-        ANMInfoFile = "D:\YuLab\Work\GPS\Data\ANMInfo.xlsx";
+        ANMInfoFile = "E:\YuLab\Work\GPS\Data\ANMInfo.xlsx";
     end
 
     properties (Dependent)
