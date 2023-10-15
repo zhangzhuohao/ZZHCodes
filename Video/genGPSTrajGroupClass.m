@@ -3,6 +3,8 @@ clear; close all;
 
 View = "Top";
 
+AnmInfoFile = 'E:\YuLab\Work\GPS\Data\ANMInfo.xlsx';
+
 ParentDir = uigetdir("D:\YuLab\Work\GPS\Video", "Select parent directory");
 if ~ParentDir
     return
@@ -25,9 +27,9 @@ ClipFolders = arrayfun(@(x) x+"\Top\Clips", SessionFolders(indx));
 TrajClassFiles = arrayfun(@(x) dir(fullfile(x, "GPSTrajectoryClass*.mat")), ClipFolders);
 AllTrajClass = arrayfun(@(x, y) load(fullfile(x, y.name), "obj"), ClipFolders, TrajClassFiles);
 
-TrajGroupClass = GPSTrajGroupClass(AllTrajClass);
-TrajGroupClass.save();
+TrajGroupClass = GPSTrajGroupClass(AllTrajClass, AnmInfoFile);
+TrajGroupClass.save(ParentDir);
 
-TrajGroupClass.print("HeatMap");
-TrajGroupClass.print("Trace");
+TrajGroupClass.print("HeatMap", ParentDir);
+TrajGroupClass.print("Trace", ParentDir);
 

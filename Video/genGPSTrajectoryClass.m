@@ -3,7 +3,9 @@ clear; close all;
 
 View = "Top";
 
-ParentDir = uigetdir("D:\YuLab\Work\GPS\Video", "Select parent directory");
+AnmInfoFile = 'E:\YuLab\Work\GPS\Data\ANMInfo.xlsx';
+
+ParentDir = uigetdir("F:\YuLab\Work\GPS\Video", "Select parent directory");
 if ~ParentDir
     return
 end
@@ -35,7 +37,7 @@ for i = 1:length(ClipFolders)
         continue;
     end
 
-    TrajectoryClass = GPSTrajectoryClass(fullfile(ClipFolders(i), tracking_file.name));
+    TrajectoryClass = GPSTrajectoryClass(fullfile(ClipFolders(i), tracking_file.name), AnmInfoFile);
 
     fprintf("\n%s\n", TrajectoryClass.Session);
 

@@ -4,6 +4,8 @@ classdef GPSTrajGroupClass
 
     properties
 
+        ANMInfoFile
+
         Sessions
         NumSessions
         ANM
@@ -41,7 +43,6 @@ classdef GPSTrajGroupClass
     end
 
     properties (Constant)
-        ANMInfoFile = "D:\YuLab\Work\GPS\Data\ANMInfo.xlsx";
         ForePeriods = ["Short", "Med", "Long"];
         MixedFPs    = [.5 1 1.5];
         Ports = ["L", "R"];
@@ -56,9 +57,11 @@ classdef GPSTrajGroupClass
     end
 
     methods
-        function obj = GPSTrajGroupClass(TrajClassAll)
+        function obj = GPSTrajGroupClass(TrajClassAll, AnmInfoFile)
             %UNTITLED Construct an instance of this class
             %   Detailed explanation goes here
+
+            obj.ANMInfoFile = AnmInfoFile;
             
             obj.ANM             = unique(arrayfun(@(x) x.obj.ANM, TrajClassAll));
             obj.Sessions        = arrayfun(@(x) x.obj.Session, TrajClassAll);

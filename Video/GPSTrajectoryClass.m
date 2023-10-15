@@ -5,6 +5,8 @@ classdef GPSTrajectoryClass
     properties
         DLCTrackingOutFile
 
+        ANMInfoFile
+
         Session
         ANM
         Treatment
@@ -24,7 +26,6 @@ classdef GPSTrajectoryClass
     end
 
     properties (Constant)
-        ANMInfoFile = "D:\YuLab\Work\GPS\Data\ANMInfo.xlsx";
         ForePeriods = ["Short", "Med", "Long"];
         MixedFPs    = [.5 1 1.5];
         Ports = ["L", "R"];
@@ -59,14 +60,15 @@ classdef GPSTrajectoryClass
     end
 
     methods
-        function obj = GPSTrajectoryClass(DLCTrackingOutFile)
+        function obj = GPSTrajectoryClass(DLCTrackingOutFile, AnmInfoFile)
             %UNTITLED Construct an instance of this class
             %   Detailed explanation goes here
             
             obj.DLCTrackingOutFile = DLCTrackingOutFile;
+            obj.ANMInfoFile = AnmInfoFile;
             file_info = split(string(DLCTrackingOutFile), filesep);
             obj.Session = file_info(end-3);
-            obj.ANM     = file_info(end-4);
+            obj.ANM     = file_info(end-5);
 
             ANMInfoTable = readtable(obj.ANMInfoFile, "Sheet", obj.ANM, "TextType", "string");
             SessionInfo  = ANMInfoTable(ANMInfoTable.Session==str2double(obj.Session), :);

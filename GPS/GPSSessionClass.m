@@ -10,6 +10,8 @@ classdef GPSSessionClass
         BpodFileName
         Subject % Name of the animal, extrated from data file name
 
+        ANMInfoFile;
+
         Task % Name of task, extrated from data file name and set as {'Autoshaping', 'Wait1Hold', 'Wait1HoldCRT', 'Wait2HoldCRT', 'ThreeFPHoldCRT', 'ThreeFPHoldSRT', 'Kornblum'}
         Session % Date of this session, extrated from data file name
 
@@ -48,7 +50,7 @@ classdef GPSSessionClass
             'HoldDuration: Time from port_cent poke out to port_choice poke in (for hold paradigm only)';
             };
         Ports = ["L", "R"];
-        ANMInfoFile = "D:\YuLab\Work\GPS\Data\ANMInfo.xlsx";
+        
     end
 
     properties (Dependent)
@@ -107,7 +109,7 @@ classdef GPSSessionClass
 
     methods
         %% Initiate
-        function obj = GPSSessionClass(BpodFile)
+        function obj = GPSSessionClass(BpodFile, AnmInfoFile)
             % Process SessionData to get properties
             load(BpodFile, 'SessionData');
             obj.BpodFile = BpodFile;
@@ -138,6 +140,8 @@ classdef GPSSessionClass
                 case {'GPS_08_KornblumHold'}
                     obj.Task = 'KornblumSRT';
             end
+
+            obj.ANMInfoFile = AnmInfoFile;
 
             % Session meta-information
             obj.Session = Protocol(end-14:end-7);

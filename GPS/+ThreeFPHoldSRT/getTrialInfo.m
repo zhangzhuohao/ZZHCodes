@@ -114,7 +114,11 @@ for i = 1:obj.NumTrials
     elseif ~isnan(iStates.WrongPort(1)) % selected the wrong port
         obj.Outcome{i} = 'Wrong';
         if isfield(iStates, 'Wait4Out')
-            obj.CentPokeOutTime{i} = [iStates.FP(1:end-1, 2); iStates.Wait4Out(:, 2)];
+            if ~isnan(iStates.Wait4Out(2))
+                obj.CentPokeOutTime{i} = [iStates.FP(1:end-1, 2); iStates.Wait4Out(:, 2)];
+            else
+                obj.CentPokeOutTime{i} = [iStates.FP(1:end-1, 2); iStates.ChoiceCue(2)];
+            end        
         else
             obj.CentPokeOutTime{i} = [iStates.FP(1:end-1, 2); iStates.Wait4Choice(1)];
         end
@@ -134,7 +138,11 @@ for i = 1:obj.NumTrials
     elseif ~isnan(iStates.Wait4Reward(1))
         obj.Outcome{i} = 'Correct';
         if isfield(iStates, 'Wait4Out')
-            obj.CentPokeOutTime{i} = [iStates.FP(1:end-1, 2); iStates.Wait4Out(:, 2)];
+            if ~isnan(iStates.Wait4Out(2))
+                obj.CentPokeOutTime{i} = [iStates.FP(1:end-1, 2); iStates.Wait4Out(:, 2)];
+            else
+                obj.CentPokeOutTime{i} = [iStates.FP(1:end-1, 2); iStates.ChoiceCue(2)];
+            end
         else
             obj.CentPokeOutTime{i} = [iStates.FP(1:end-1, 2); iStates.Wait4Choice(1)];
         end
