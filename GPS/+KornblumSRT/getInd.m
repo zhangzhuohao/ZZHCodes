@@ -23,4 +23,8 @@ ind.premature   = strcmp(obj.Outcome, 'Premature');
 ind.prematureL  = ind.portL & ind.premature;
 ind.prematureR  = ind.portR & ind.premature;
 
+ind.valid       = ind.correct & ind.wrong;
+ind.validL      = ind.correctL & ind.wrongL;
+ind.validR      = ind.correctR & ind.wrongR;
+
 end

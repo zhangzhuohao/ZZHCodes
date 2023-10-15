@@ -26,131 +26,90 @@ opts.sep_row = 1.5;
 
 %%
 fig = figure(23); clf(23);
-set(gcf, 'unit', 'centimeters', 'position', [2 1.5 39.5 22.5], 'paperpositionmode', 'auto', 'color', 'w');
-
-mycolormap = customcolormap_preset("red-white-blue");
+set(gcf, 'unit', 'centimeters', 'position', [2 1.5 39.5 17.3], 'paperpositionmode', 'auto', 'color', 'w');
 
 uicontrol('Style', 'text', 'parent', 23, 'units', 'normalized', 'position', [0.3 0.96 0.4 0.03],...
     'string', obj.Subject+" / "+obj.Task+" / "+obj.Sessions(1)+"_"+obj.Sessions(end), 'fontsize', 11, 'fontweight', 'bold', 'backgroundcolor', 'w');
 
 %% Set axes and plot
 ha_perf_track_l = axes;
-set(ha_perf_track_l, 'units', 'centimeters', 'position', [1.5+0*(opts.sep_row+opts.plotsize1(1)) 2+3*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
+set(ha_perf_track_l, 'units', 'centimeters', 'position', [1.5+0*(opts.sep_row+opts.plotsize1(1)) 2+2*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
 plot_performance_track(ha_perf_track_l, obj, opts, "L");
 
 ha_perf_track_r = axes;
-set(ha_perf_track_r, 'units', 'centimeters', 'position', [.5+1*(opts.sep_row+opts.plotsize1(1)) 2+3*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
+set(ha_perf_track_r, 'units', 'centimeters', 'position', [.5+1*(opts.sep_row+opts.plotsize1(1)) 2+2*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
 plot_performance_track(ha_perf_track_r, obj, opts, "R");
 set(ha_perf_track_r, 'yticklabel', [], 'ylabel', []);
 
-
 % Performance progress
-ha1 = axes;
-set(ha1, 'units', 'centimeters', 'position', [1.5+0*(opts.sep_row+opts.plotsize1(1)) 1.5+2*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
-plot_performance_progress(ha1, obj, opts, "L");
+ha_perf_l = axes;
+set(ha_perf_l, 'units', 'centimeters', 'position', [1.5+0*(opts.sep_row+opts.plotsize1(1)) 1.5+1*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
+plot_performance_progress(ha_perf_l, obj, opts, "L");
+set(ha_perf_l, 'xticklabel', [], 'xlabel', [], 'Title', []);
 
-ha2 = axes;
-set(ha2, 'units', 'centimeters', 'position', [.5+1*(opts.sep_row+opts.plotsize1(1)) 1.5+2*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
-plot_performance_progress(ha2, obj, opts, "R");
-set(ha2, 'yticklabel', [], 'ylabel', []);
+ha_perf_r = axes;
+set(ha_perf_r, 'units', 'centimeters', 'position', [.5+1*(opts.sep_row+opts.plotsize1(1)) 1.5+1*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
+plot_performance_progress(ha_perf_r, obj, opts, "R");
+set(ha_perf_r, 'xticklabel', [], 'xlabel', [], 'yticklabel', [], 'ylabel', [], 'Title', []);
 
 % Hold duration scatter
-ha3 = axes;
-set(ha3, 'units', 'centimeters', 'position', [1.5+2*(opts.sep_row+opts.plotsize1(1)) 2+3*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
-plot_hold_duration_scatter(ha3, obj, opts, 'cue');
-set(ha3, 'xtick', [], 'xlabel', []);
-
-ha4 = axes;
-set(ha4, 'units', 'centimeters', 'position', [1.5+2*(opts.sep_row+opts.plotsize1(1)) 2.2+2*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
-plot_hold_duration_scatter(ha4, obj, opts, 'uncue');
+ha_hd_scatter = axes;
+set(ha_hd_scatter, 'units', 'centimeters', 'position', [1.5+2*(opts.sep_row+opts.plotsize1(1)) 2+2*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
+plot_hold_duration_scatter(ha_hd_scatter, obj, opts, 'uncue');
 
 % Hold duration violin plot
-ha5 = axes;
-set(ha5, 'units', 'centimeters', 'position', [1+3*(opts.sep_row+opts.plotsize1(1)) 2+3*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
-plot_hold_duration_violin(ha5, obj, opts, 'cue');
-set(ha5, 'xtick', [], 'xlabel', [], 'yticklabel', [], 'ylabel', []);
-
-ha6 = axes;
-set(ha6, 'units', 'centimeters', 'position', [1+3*(opts.sep_row+opts.plotsize1(1)) 2.2+2*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
-plot_hold_duration_violin(ha6, obj, opts, 'uncue');
-set(ha6, 'yticklabel', [], 'ylabel', []);
+ha_hd_violin = axes;
+set(ha_hd_violin, 'units', 'centimeters', 'position', [1.5+3*(opts.sep_row+opts.plotsize1(1)) 2+2*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
+plot_hold_duration_violin(ha_hd_violin, obj, opts, 'uncue');
 
 % Heatmap
-ha7 = axes;
-set(ha7, 'units', 'centimeters', 'position', [1.5+0*(opts.sep_row+opts.plotsize1(1)) .7+1*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
-plot_hold_duration_heatmap(ha7, obj, opts, "L", 'cue')
-set(ha7, 'xtick', [], 'xlabel', []);
+ha_hd_heatmap_l = axes;
+set(ha_hd_heatmap_l, 'units', 'centimeters', 'position', [1.5+0*(opts.sep_row+opts.plotsize1(1)) 2+0*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
+plot_hold_duration_heatmap(ha_hd_heatmap_l, obj, opts, "L", 'uncue')
+set(ha_hd_heatmap_l, 'Title', []);
 
-ha8 = axes;
-set(ha8, 'units', 'centimeters', 'position', [1.5+0*(opts.sep_row+opts.plotsize1(1)) 1.2+0*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
-plot_hold_duration_heatmap(ha8, obj, opts, "L", 'uncue')
-set(ha8, 'Title', []);
+ha_hd_heatmap_r = axes;
+set(ha_hd_heatmap_r, 'units', 'centimeters', 'position', [.5+1*(opts.sep_row+opts.plotsize1(1)) 2+0*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
+plot_hold_duration_heatmap(ha_hd_heatmap_r, obj, opts, "R", 'uncue')
+set(ha_hd_heatmap_r, 'yticklabel', [], 'ylabel', [], 'Title', []);
 
-ha9 = axes;
-set(ha9, 'units', 'centimeters', 'position', [.5+1*(opts.sep_row+opts.plotsize1(1)) .7+1*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
-plot_hold_duration_heatmap(ha9, obj, opts, "R", 'cue')
-set(ha9, 'xtick', [], 'xlabel', [], 'yticklabel', [], 'ylabel', []);
+ha_hd_heatmap_l.CLim(2) = 5;
+ha_hd_heatmap_r.CLim(2) = ha_hd_heatmap_l.CLim(2);
 
-ha10 = axes;
-set(ha10, 'units', 'centimeters', 'position', [.5+1*(opts.sep_row+opts.plotsize1(1)) 1.2+0*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
-plot_hold_duration_heatmap(ha10, obj, opts, "R", 'uncue')
-set(ha10, 'yticklabel', [], 'ylabel', [], 'Title', []);
+cb_heatmap_cb = colorbar(ha_hd_heatmap_r, 'units', 'centimeters', 'position', [.5+2*(opts.sep_row+opts.plotsize1(1))-opts.sep_row+0.2 2+0*(opts.sep_col+opts.plotsize1(2)), [.3 opts.plotsize1(2)]]);
+cb_heatmap_cb.Limits = [0 cb_heatmap_cb.Limits(2)];
+cb_heatmap_cb.Label.String = "Prob. density (1/s)";
+cb_heatmap_cb.FontSize = 8;
 
-% ha7.CLim(2) = max([ha7.CLim(2) ha8.CLim(2) ha9.CLim(2) ha10.CLim(2)]);
-% ha8.CLim(2) = ha7.CLim(2);
-% ha9.CLim(2) = ha7.CLim(2);
-% ha10.CLim(2) = ha7.CLim(2);
+% density
+ha_hd_pdf_l = axes;
+set(ha_hd_pdf_l, 'units', 'centimeters', 'position', [2+2*(opts.sep_row+opts.plotsize1(1)) 1.2+0*(opts.sep_col+opts.plotsize1(2)), opts.plotsize2], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
+plot_hold_duration_pdf_early_late(ha_hd_pdf_l, obj, opts, "L");
 
-%
-ha121 = axes;
-set(ha121, 'units', 'centimeters', 'position', [2+2*(opts.sep_row+opts.plotsize1(1)) 1.2+0*(opts.sep_col+opts.plotsize1(2)), opts.plotsize2], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
-plot_hold_duration_pdf_early_late(ha121, obj, opts, "L");
+ha_hd_pdf_r = axes;
+set(ha_hd_pdf_r, 'units', 'centimeters', 'position', [1.5+3*(opts.sep_row+opts.plotsize1(1)) 1.2+0*(opts.sep_col+opts.plotsize1(2)), opts.plotsize2], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
+plot_hold_duration_pdf_early_late(ha_hd_pdf_r, obj, opts, "R");
 
-ha122 = axes;
-set(ha122, 'units', 'centimeters', 'position', [1.5+3*(opts.sep_row+opts.plotsize1(1)) 1.2+0*(opts.sep_col+opts.plotsize1(2)), opts.plotsize2], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
-plot_hold_duration_pdf_early_late(ha122, obj, opts, "R");
+density_max = max([ha_hd_pdf_l.YLim(2) ha_hd_pdf_r.YLim(2)]);
+set(ha_hd_pdf_l, 'ylim', [0 density_max]);
+set(ha_hd_pdf_r, 'ylim', [0 density_max], 'yticklabel', [], 'ylabel', []);
 
-density_max = max([ha121.YLim(2) ha122.YLim(2)]);
-set(ha121, 'ylim', [0 density_max]);
-set(ha122, 'ylim', [0 density_max], 'yticklabel', [], 'ylabel', []);
-
-ha123 = axes;
-set(ha123, 'units', 'centimeters', 'position', [1.2+3*(opts.sep_row+opts.plotsize1(1))+5*opts.plotsize2(1)/6 .7*(opts.sep_col+opts.plotsize1(2))+1*opts.plotsize2(2)/6, opts.plotsize2 ./ [5 3]], ...
+ha_e_l_legend = axes;
+set(ha_e_l_legend, 'units', 'centimeters', 'position', [1.2+3*(opts.sep_row+opts.plotsize1(1))+5*opts.plotsize2(1)/6 .7*(opts.sep_col+opts.plotsize1(2))+1*opts.plotsize2(2)/6, opts.plotsize2 ./ [5 3]], ...
     'nextplot', 'add', 'fontsize', 8, 'color', 'none', 'xcolor', 'none', 'ycolor', 'none', 'xlim', [0 3], 'ylim', [0 3]);
-line(ha123, [1 2], [2 2], 'Color', opts.color.PhaseEarly, 'LineWidth', 1.5, 'LineStyle', '-');
-line(ha123, [1 2], [1 1], 'Color', opts.color.PhaseLate, 'LineWidth', 1.5, 'LineStyle', '-');
-text(ha123, 2.2, 2, "Early", 'FontSize', 8, 'Color', opts.color.PhaseEarly, 'FontWeight', 'bold');
-text(ha123, 2.2, 1, "Late", 'FontSize', 8, 'Color', opts.color.PhaseLate, 'FontWeight', 'bold');
+line(ha_e_l_legend, [1 2], [2 2], 'Color', opts.color.PhaseEarly, 'LineWidth', 1.5, 'LineStyle', '-');
+line(ha_e_l_legend, [1 2], [1 1], 'Color', opts.color.PhaseLate, 'LineWidth', 1.5, 'LineStyle', '-');
+text(ha_e_l_legend, 2.2, 2, "Early", 'FontSize', 8, 'Color', opts.color.PhaseEarly, 'FontWeight', 'bold');
+text(ha_e_l_legend, 2.2, 1, "Late", 'FontSize', 8, 'Color', opts.color.PhaseLate, 'FontWeight', 'bold');
 
 %
-ha7.CLim(2) = 5;
-ha8.CLim(2) = ha7.CLim(2);
-ha9.CLim(2) = ha7.CLim(2);
-ha10.CLim(2) = ha7.CLim(2);
+ha_hd_iqr = axes;
+set(ha_hd_iqr, 'units', 'centimeters', 'position', [1.5+2*(opts.sep_row+opts.plotsize1(1)) 1.5+1*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
+plot_hold_duration_iqr(ha_hd_iqr, obj, opts);
 
-cb10 = colorbar(ha10, 'units', 'centimeters', 'position', [.5+2*(opts.sep_row+opts.plotsize1(1))-opts.sep_row+0.2 1.2+0*(opts.sep_col+opts.plotsize1(2)), [.3 opts.plotsize1(2)]]);
-cb10.Limits = [0 cb10.Limits(2)];
-cb10.Label.String = "Prob. density (1/s)";
-cb10.FontSize = 8;
-
-%
-ha14 = axes;
-set(ha14, 'units', 'centimeters', 'position', [1.5+2*(opts.sep_row+opts.plotsize1(1)) 1.5+1*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
-plot_hold_duration_iqr(ha14, obj, opts);
-
-ha15 = axes;
-set(ha15, 'units', 'centimeters', 'position', [1.5+3*(opts.sep_row+opts.plotsize1(1)) 1.5+1*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
-plot_reaction_time_median(ha15, obj, opts);
-
-ha151 = axes;
-set(ha151, 'units', 'centimeters', 'position', [1.2+3*(opts.sep_row+opts.plotsize1(1))+5*opts.plotsize1(1)/6 1.7*(opts.sep_col+opts.plotsize1(2))+1*opts.plotsize1(2)/6, opts.plotsize2 ./ [5 3]], ...
-    'nextplot', 'add', 'fontsize', 8, 'color', 'none', 'xcolor', 'none', 'ycolor', 'none', 'xlim', [0 3], 'ylim', [0 3]);
-line(ha151, [1 2], [2 2], 'Color', 'k', 'LineWidth', 1.5, 'LineStyle', '-');
-line(ha151, [1 2], [1 1], 'Color', 'k', 'LineWidth', 1.5, 'LineStyle', ':');
-line(ha151, 1.5, 2, 'Color', 'k', 'LineWidth', 1.5, 'LineStyle', '-', 'marker', 'o', 'markersize', 6, 'markerfacecolor', 'k', 'markeredgecolor', 'w');
-line(ha151, 1.5, 1, 'Color', 'k', 'LineWidth', 1.5, 'LineStyle', ':', 'marker', 'o', 'markersize', 4, 'markeredgecolor', 'k', 'markerfacecolor', 'w');
-text(ha151, 2.2, 2, "Cue", 'FontSize', 8, 'Color', 'k', 'FontWeight', 'bold');
-text(ha151, 2.2, 1, "Uncue", 'FontSize', 8, 'Color', 'k', 'FontWeight', 'bold');
+ha_hd_median = axes;
+set(ha_hd_median, 'units', 'centimeters', 'position', [1.5+3*(opts.sep_row+opts.plotsize1(1)) 1.5+1*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
+plot_hold_duration_median(ha_hd_median, obj, opts);
 
 %% ha2. Plot every trial's hold duration during training
     function plot_hold_duration_scatter(ax, obj, opts, cued)
@@ -208,11 +167,6 @@ text(ha151, 2.2, 1, "Uncue", 'FontSize', 8, 'Color', 'k', 'FontWeight', 'bold');
         ax.YLabel.FontWeight = 'Bold';
         set(ax, 'xlim', [0 opts.trial_ticks(end)+5], 'ylim', [0 obj.Bins.HoldDuration(end)], 'ticklength', [0.01 0.1]);
 
-        t = cued;
-        t(1) = upper(t(1));
-        ax.Title.String = t;
-        ax.Title.FontWeight = 'Bold';
-
     end
 
 %% ha5. Plot performance progress
@@ -226,29 +180,17 @@ text(ha151, 2.2, 1, "Uncue", 'FontSize', 8, 'Color', 'k', 'FontWeight', 'bold');
         patch(ax, 'XData', [dcz_ind-.5 dcz_ind-.5 dcz_ind+.5 dcz_ind+.5]', 'YData', repmat([0; 100; 100; 0], 1, num_dcz), ...
             'FaceColor', opts.color.Treat, 'FaceAlpha', 0.2, 'EdgeColor', 'none');
 
-        c = 1;
-        ind_this = find(obj.Performance.Cued_this==obj.CueUncue(c) & obj.Performance.TargetPort==port);
-
-        plot(ax, session_id, obj.Performance.PrematureRatio(ind_this), 'o', 'linestyle', opts.ls(c), 'color', [opts.color.Premature .2], ...
-            'markersize', 6, 'linewidth', 2, 'markerfacecolor', opts.color.Premature, 'markeredgecolor', 'w');
-        plot(ax, session_id, obj.Performance.LateRatio(ind_this), 'o', 'linestyle', opts.ls(c), 'color', [opts.color.Late .2], ...
-            'markersize', 6, 'linewidth', 2, 'markerfacecolor', opts.color.Late, 'markeredgecolor', 'w');
-        plot(ax, session_id, obj.Performance.WrongRatio(ind_this), 'o', 'linestyle', opts.ls(c), 'color', [opts.color.Wrong .2], ...
-            'markersize', 6, 'linewidth', 2, 'markerfacecolor', opts.color.Wrong, 'markeredgecolor', 'w');
-        plot(ax, session_id, obj.Performance.CorrectRatio(ind_this), 'o', 'linestyle', opts.ls(c), 'color', [opts.color.Correct .2], ...
-            'markersize', 6, 'linewidth', 2, 'markerfacecolor', opts.color.Correct, 'markeredgecolor', 'w');
-
         c = 2;
         ind_this = find(obj.Performance.Cued_this==obj.CueUncue(c) & obj.Performance.TargetPort==port);
 
-        plot(ax, session_id, obj.Performance.PrematureRatio(ind_this), 'o', 'linestyle', opts.ls(c), 'color', .8*opts.color.Premature, ...
-            'markersize', 4, 'linewidth', 2, 'markeredgecolor', .8*opts.color.Premature, 'markerfacecolor', 'w');
-        plot(ax, session_id, obj.Performance.LateRatio(ind_this), 'o', 'linestyle', opts.ls(c), 'color', .8*opts.color.Late, ...
-            'markersize', 4, 'linewidth', 2, 'markeredgecolor', .8*opts.color.Late, 'markerfacecolor', 'w');
-        plot(ax, session_id, obj.Performance.WrongRatio(ind_this), 'o', 'linestyle', opts.ls(c), 'color', .8*opts.color.Wrong, ...
-            'markersize', 4, 'linewidth', 2, 'markeredgecolor', .8*opts.color.Wrong, 'markerfacecolor', 'w');
-        plot(ax, session_id, obj.Performance.CorrectRatio(ind_this), 'o', 'linestyle', opts.ls(c), 'color', .8*opts.color.Correct, ...
-            'markersize', 4, 'linewidth', 2, 'markeredgecolor', .8*opts.color.Correct, 'markerfacecolor', 'w');
+        plot(ax, session_id, obj.Performance.PrematureRatio(ind_this), '-o', 'color', [opts.color.Premature .8], ...
+            'markersize', 4, 'linewidth', 2, 'markerfacecolor', opts.color.Premature, 'markeredgecolor', 'w');
+        plot(ax, session_id, obj.Performance.LateRatio(ind_this), '-o', 'color', [opts.color.Late .8], ...
+            'markersize', 4, 'linewidth', 2, 'markerfacecolor', opts.color.Late, 'markeredgecolor', 'w');
+        plot(ax, session_id, obj.Performance.WrongRatio(ind_this), '-o', 'color', [opts.color.Wrong .8], ...
+            'markersize', 4, 'linewidth', 2, 'markerfacecolor', opts.color.Wrong, 'markeredgecolor', 'w');
+        plot(ax, session_id, obj.Performance.CorrectRatio(ind_this), '-o', 'color', [opts.color.Correct .8], ...
+            'markersize', 4, 'linewidth', 2, 'markerfacecolor', opts.color.Correct, 'markeredgecolor', 'w');
 
         ax.XLabel.String = 'Sessions';
         ax.YLabel.String = 'Performance (%)';
@@ -279,19 +221,12 @@ text(ha151, 2.2, 1, "Uncue", 'FontSize', 8, 'Color', 'k', 'FontWeight', 'bold');
         s_sep = [0 session_sep];
 
         for s_this = 1:obj.NumSessions
-%             ind_cue = find(obj.BehavTable.SessionDate==obj.Sessions(s_this) & eval("obj.Ind.port"+upper(port)) & obj.Ind.cue);
-%             this_track_cue = obj.getPerformanceTrack(obj.BehavTable(ind_cue, :), obj.Ind(ind_cue, :));
-%             plot(ax, this_track_cue.WinPos+s_sep(s_this), this_track_cue.CorrectRatio,   'linestyle', '-', 'color', [opts.color.Correct .2], 'linewidth', 1.8);
-%             plot(ax, this_track_cue.WinPos+s_sep(s_this), this_track_cue.WrongRatio,     'linestyle', '-', 'color', [opts.color.Wrong .2], 'linewidth', 1.8);
-%             plot(ax, this_track_cue.WinPos+s_sep(s_this), this_track_cue.PrematureRatio, 'linestyle', '-', 'color', [opts.color.Premature .2], 'linewidth', 1.8);
-%             plot(ax, this_track_cue.WinPos+s_sep(s_this), this_track_cue.LateRatio,      'linestyle', '-', 'color', [opts.color.Late .1], 'linewidth', 1.8);
-
             ind_uncue = find(obj.BehavTable.SessionDate==obj.Sessions(s_this) & eval("obj.Ind.port"+upper(port)) & obj.Ind.uncue);
             this_track_uncue = obj.getPerformanceTrack(obj.BehavTable(ind_uncue, :), obj.Ind(ind_uncue, :));
-            plot(ax, this_track_uncue.WinPos+s_sep(s_this), this_track_uncue.CorrectRatio,   'linestyle', ':', 'color', .8*opts.color.Correct, 'linewidth', 1.8);
-            plot(ax, this_track_uncue.WinPos+s_sep(s_this), this_track_uncue.WrongRatio,     'linestyle', ':', 'color', .8*opts.color.Wrong, 'linewidth', 1.8);
-            plot(ax, this_track_uncue.WinPos+s_sep(s_this), this_track_uncue.PrematureRatio, 'linestyle', ':', 'color', .8*opts.color.Premature, 'linewidth', 1.8);
-            plot(ax, this_track_uncue.WinPos+s_sep(s_this), this_track_uncue.LateRatio,      'linestyle', ':', 'color', .8*opts.color.Late, 'linewidth', 1.8);
+            plot(ax, this_track_uncue.WinPos+s_sep(s_this), this_track_uncue.CorrectRatio,   'linestyle', '-', 'color', [opts.color.Correct .7], 'linewidth', 1);
+            plot(ax, this_track_uncue.WinPos+s_sep(s_this), this_track_uncue.WrongRatio,     'linestyle', '-', 'color', [opts.color.Wrong .7], 'linewidth', 1);
+            plot(ax, this_track_uncue.WinPos+s_sep(s_this), this_track_uncue.PrematureRatio, 'linestyle', '-', 'color', [opts.color.Premature .7], 'linewidth', 1);
+            plot(ax, this_track_uncue.WinPos+s_sep(s_this), this_track_uncue.LateRatio,      'linestyle', '-', 'color', [opts.color.Late .7], 'linewidth', 1);
         end
 
         ax.XLabel.String = 'Time in training (s)';
@@ -356,22 +291,16 @@ text(ha151, 2.2, 1, "Uncue", 'FontSize', 8, 'Color', 'k', 'FontWeight', 'bold');
         ax.YLabel.FontWeight = 'Bold';
         set(ax, 'xlim', [0 opts.trial_ticks(end)+5], 'ylim', [0 2.5], 'ticklength', [0.01 0.1]);
 
-        t = cued;
-        t(1) = upper(t(1));
-        ax.Title.String = t;
-        ax.Title.FontWeight = 'Bold';
-
         set(ax, 'xlim', [.5 obj.NumSessions+.5], 'ylim', [0 obj.Bins.HoldDuration(end)], 'xtick', 1:obj.NumSessions, ...
             'xticklabel', opts.session_date, 'ticklength', [0.01 0.1], 'box', 'off');
     end
 
-
 %%
-    function plot_reaction_time_median(ax, obj, opts)
+    function plot_hold_duration_median(ax, obj, opts)
 
         xline(ax, (1:obj.NumSessions-1)+0.5, 'Color', [.9 .9 .9], 'LineWidth', 1, 'LineStyle', '-');
-        yline(ax, 0.5, 'Color', [.7 .7 .7], 'LineWidth', 1.5, 'LineStyle', '--');
-        yline(ax, 0.8, 'Color', [.7 .7 .7], 'LineWidth', 1.5, 'LineStyle', ':');
+        yline(ax, obj.MixedFP, 'Color', [.7 .7 .7], 'LineWidth', 1, 'LineStyle', '-');
+        yline(ax, obj.MixedFP+0.8, 'Color', [.7 .7 .7], 'LineWidth', 1, 'LineStyle', ':');
 
         dcz_ind = find(obj.Treatment == "DCZ");
         num_dcz = length(dcz_ind);
@@ -380,20 +309,16 @@ text(ha151, 2.2, 1, "Uncue", 'FontSize', 8, 'Color', 'k', 'FontWeight', 'bold');
 
         for p_this = 1:length(obj.Ports)
             plot(1:obj.NumSessions, ...
-                obj.RTStat.Median(obj.RTStat.Port==obj.Ports(p_this) & obj.RTStat.thisCued==1), ...
-                'Color', [eval("opts.color.Port"+obj.Ports(p_this)) .2], 'LineWidth', 1.5, 'LineStyle', '-', ...
-                'Marker', 'o', 'MarkerSize', 6, 'MarkerFaceColor', eval("opts.color.Port"+obj.Ports(p_this)), 'MarkerEdgeColor', 'w');
-            plot(1:obj.NumSessions, ...
-                obj.RTStat.Median(obj.RTStat.Port==obj.Ports(p_this) & obj.RTStat.thisCued==0), ...
-                'Color', eval("opts.color.Port"+obj.Ports(p_this)), 'LineWidth', 1.5, 'LineStyle', ':', ...
-                'Marker', 'o', 'MarkerSize', 4, 'MarkerEdgeColor', eval("opts.color.Port"+obj.Ports(p_this)), 'MarkerFaceColor', 'w');
+                obj.HDStat.Median(obj.HDStat.Port==obj.Ports(p_this) & obj.HDStat.thisCued==0), ...
+                'Color', eval("opts.color.Port"+obj.Ports(p_this)), 'LineWidth', 1.2, 'LineStyle', '-', ...
+                'Marker', 'o', 'MarkerSize', 4, 'MarkerFaceColor', eval("opts.color.Port"+obj.Ports(p_this)), 'MarkerEdgeColor', 'w');
         end
 
         ax.XLabel.String = 'Sessions';
         ax.YLabel.String = 'Reaction time median (s)';
         ax.XLabel.FontWeight = 'Bold';
         ax.YLabel.FontWeight = 'Bold';
-        set(ax, 'xlim', [.5 obj.NumSessions+.5], 'ylim', [0 .8], 'xtick', 1:obj.NumSessions, ...
+        set(ax, 'xlim', [.5 obj.NumSessions+.5], 'ylim', [0 3], 'xtick', 1:obj.NumSessions, ...
             'xticklabel', opts.session_date, 'ticklength', [0.01 0.1], 'box', 'off');
     end
 
@@ -404,19 +329,16 @@ text(ha151, 2.2, 1, "Uncue", 'FontSize', 8, 'Color', 'k', 'FontWeight', 'bold');
 
         dcz_ind = find(obj.Treatment == "DCZ");
         num_dcz = length(dcz_ind);
-        patch(ax, 'XData', [dcz_ind-.5 dcz_ind-.5 dcz_ind+.5 dcz_ind+.5]', 'YData', repmat([0; 100; 100; 0], 1, num_dcz), ...
-            'FaceColor', opts.color.Treat, 'FaceAlpha', 0.2, 'EdgeColor', 'none');
 
         for p_this = 1:length(obj.Ports)
             plot(1:obj.NumSessions, ...
-                obj.HDStat.IQR(obj.HDStat.Port==obj.Ports(p_this) & obj.HDStat.thisCued==1), ...
-                'Color', [eval("opts.color.Port"+obj.Ports(p_this)) .2], 'LineWidth', 1.5, 'LineStyle', '-', ...
-                'Marker', 'o', 'MarkerSize', 6, 'MarkerFaceColor', eval("opts.color.Port"+obj.Ports(p_this)), 'MarkerEdgeColor', 'w');
-            plot(1:obj.NumSessions, ...
                 obj.HDStat.IQR(obj.HDStat.Port==obj.Ports(p_this) & obj.HDStat.thisCued==0), ...
-                'Color', eval("opts.color.Port"+obj.Ports(p_this)), 'LineWidth', 1.5, 'LineStyle', ':', ...
-                'Marker', 'o', 'MarkerSize', 4, 'MarkerEdgeColor', eval("opts.color.Port"+obj.Ports(p_this)), 'MarkerFaceColor', 'w');
+                'Color', eval("opts.color.Port"+obj.Ports(p_this)), 'LineWidth', 1.2, 'LineStyle', '-', ...
+                'Marker', 'o', 'MarkerSize', 4, 'MarkerFaceColor', eval("opts.color.Port"+obj.Ports(p_this)), 'MarkerEdgeColor', 'w');
         end
+
+        patch(ax, 'XData', [dcz_ind-.5 dcz_ind-.5 dcz_ind+.5 dcz_ind+.5]', 'YData', repmat([0; 100; 100; 0], 1, num_dcz), ...
+            'FaceColor', opts.color.Treat, 'FaceAlpha', 0.2, 'EdgeColor', 'none');
 
         ax.XLabel.String = 'Sessions';
         ax.YLabel.String = 'Hold duration IQR (s)';
@@ -499,16 +421,6 @@ text(ha151, 2.2, 1, "Uncue", 'FontSize', 8, 'Color', 'k', 'FontWeight', 'bold');
         xline(ax, fp_this+.5, 'Color', [.7 .7 .7], 'LineWidth', 1.5, 'LineStyle', '--');
         xline(ax, fp_this+.8, 'Color', [.7 .7 .7], 'LineWidth', 1.5, 'LineStyle', ':');
 
-        hd_cue   = HDs{1, p_this};
-        if length(hd_cue) >= 2*obj.PhaseCount
-            hd_cue_early_pdf = ksdensity(hd_cue(1:obj.PhaseCount), obj.Bins.HoldDuration, 'Function', 'pdf');
-            hd_cue_late_pdf  = ksdensity(hd_cue(end-obj.PhaseCount+1:end), obj.Bins.HoldDuration, 'Function', 'pdf');
-        else
-            l_cue = length(hd_cue);
-            hd_cue_early_pdf = ksdensity(hd_cue(1:floor(l_cue/2)), obj.Bins.HoldDuration, 'Function', 'pdf');
-            hd_cue_late_pdf  = ksdensity(hd_cue(end-floor(l_cue/2)+1:end), obj.Bins.HoldDuration, 'Function', 'pdf');
-        end
-        
         hd_uncue = HDs{2, p_this};
         if length(hd_uncue) >= 2*obj.PhaseCount
             hd_uncue_early_pdf = ksdensity(hd_uncue(1:obj.PhaseCount), obj.Bins.HoldDuration, 'Function', 'pdf');
@@ -519,14 +431,10 @@ text(ha151, 2.2, 1, "Uncue", 'FontSize', 8, 'Color', 'k', 'FontWeight', 'bold');
             hd_uncue_late_pdf  = ksdensity(hd_uncue(end-floor(l_uncue/2)+1:end), obj.Bins.HoldDuration, 'Function', 'pdf');
         end
 
-        plot(ax, obj.Bins.HoldDuration, hd_cue_early_pdf, ...
-            'color', [opts.color.PhaseEarly .3], 'linewidth', 2, 'LineStyle', '-');
-        plot(ax, obj.Bins.HoldDuration, hd_cue_late_pdf, ...
-            'color', [opts.color.PhaseLate .3], 'linewidth', 2, 'LineStyle', '-');
         plot(ax, obj.Bins.HoldDuration, hd_uncue_early_pdf, ...
-            'color', .9*opts.color.PhaseEarly, 'linewidth', 2, 'LineStyle', ':');
+            'color', opts.color.PhaseEarly, 'linewidth', 2, 'LineStyle', '-');
         plot(ax, obj.Bins.HoldDuration, hd_uncue_late_pdf, ...
-            'color', .9*opts.color.PhaseLate, 'linewidth', 2, 'LineStyle', ':');
+            'color', opts.color.PhaseLate, 'linewidth', 2, 'LineStyle', '-');
         
         ax.XLabel.String = "Hold duration (s)";
         ax.YLabel.String = "Prob. density (1/s)";

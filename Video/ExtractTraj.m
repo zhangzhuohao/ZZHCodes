@@ -39,7 +39,7 @@ opts.ExtraColumnsRule = "ignore";
 opts.EmptyLineRule = "read";
 
 %%
-ClipFolder  = uigetdir('D:\YuLab\Work\GPS\Video\');
+ClipFolder  = uigetdir('F:\YuLab\Work\GPS\Video\Kennard\GPS_05_ThreeFPHoldSRT');
 [ViewFolder, dir_name] = fileparts(ClipFolder);
 if ~strcmp(dir_name, 'Clips')
     fprintf("\nPlease select a 'Clips' folder.\n");
@@ -50,7 +50,7 @@ end
 ClipInfo = split(ClipFolder, '\');
 view     = ClipInfo{end-1};
 session  = ClipInfo{end-2};
-anm      = ClipInfo{end-3};
+anm      = ClipInfo{end-4};
 
 ANMInfoFile = 'D:\YuLab\Work\GPS\Data\ANMInfo.xlsx';
 ANMInfo     = readtable(ANMInfoFile, 'Sheet', anm);
@@ -140,9 +140,11 @@ for i = 1:NumClips
         y_pos     =     D.([body_part '_y'])(FrameBeg:FrameEnd) + DLCCrop(3);
         lh        =     D.([body_part '_lh'])(FrameBeg:FrameEnd);
 
-        bad_label =     find(lh < 0.8);
-        if ~isempty(bad_label)
-            DropOut = 1;
+        if j <=2
+            bad_label =     find(lh < 0.8);
+            if ~isempty(bad_label)
+                DropOut = 1;
+            end
         end
     end
     if DropOut
@@ -159,7 +161,9 @@ for i = 1:NumClips
         y_pos     =     D.([body_part '_y'])(FrameBeg:FrameEnd) + DLCCrop(3);
         lh        =     D.([body_part '_lh'])(FrameBeg:FrameEnd);
 
-        bad_label =     find(lh < 0.8);
+        if j <=2
+            bad_label = find(lh < 0.8);
+        end
         if ~isempty(bad_label)
             fh    =     figure(31); clf(fh);
             set(fh, 'name', body_part, 'units', 'centimeter', 'position', [5 2 20 1.3*20*1024/1280]);

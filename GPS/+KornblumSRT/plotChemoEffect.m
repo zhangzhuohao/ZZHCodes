@@ -10,7 +10,7 @@ opts.session_date = char(obj.Sessions);
 opts.session_date = opts.session_date(:, 5:8);
 
 opts.plotsize = [8    4;
-                 8.5  3.5;
+                 6.5  3.5;
                  8    2;
                  8.5  5;
                  5    5;
@@ -65,142 +65,84 @@ end
 
 %%
 fig = figure(24); clf(24);
-set(gcf, 'unit', 'centimeters', 'position', [2 1 35.5 23.4], 'paperpositionmode', 'auto', 'color', 'w');
+set(gcf, 'unit', 'centimeters', 'position', [2 1 28.5 18.4], 'paperpositionmode', 'auto', 'color', 'w');
 
 uicontrol('Style', 'text', 'parent', 24, 'units', 'normalized', 'position', [0.3 0.95 0.4 0.04],...
     'string', obj.Subject+" / "+obj.Task+" / "+obj.Sessions(1)+"_"+obj.Sessions(end)+" / ChemoEffect", 'fontsize', 11, 'fontweight', 'bold', 'backgroundcolor', 'w');
 
 %% Set axes and plot
 %% Maze diagram
-ha1 = axes;
-set(ha1, 'units', 'centimeters', 'position', [2.8+2*(opts.sep_row+opts.plotsize(1, 1))+5.5 1.5+3*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(1, :) ], 'nextplot', 'add', 'fontsize', 8);
-plot_diagram(ha1, opts);
+ha_diagram = axes;
+set(ha_diagram, 'units', 'centimeters', 'position', [1.2+2*(opts.sep_row+opts.plotsize(1, 1)) 2+2*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(1, :) ], 'nextplot', 'add', 'fontsize', 8);
+plot_diagram(ha_diagram, opts);
 
 %% Performance
 % Hold duration scatter
 % Control
-ha21 = axes;
-set(ha21, 'units', 'centimeters', 'position', [1.5+0*(opts.sep_row+opts.plotsize(1, 1)) 1.5+3*(opts.sep_col+opts.plotsize(1, 2))+2.7, opts.plotsize(3, :) ], 'nextplot', 'add', 'fontsize', 8);
-plot_hold_duration_scatter(ha21, obj, cp, "Control", opts);
-set(ha21, 'xtick', [], 'xlabel', []);
+ha_hd_scatter_control = axes;
+set(ha_hd_scatter_control, 'units', 'centimeters', 'position', [1.5+0*(opts.sep_row+opts.plotsize(1, 1)) 2+2*(opts.sep_col+opts.plotsize(1, 2))+2.7, opts.plotsize(3, :) ], 'nextplot', 'add', 'fontsize', 8);
+plot_hold_duration_scatter(ha_hd_scatter_control, obj, cp, "Control", opts);
+set(ha_hd_scatter_control, 'xtick', [], 'xlabel', []);
 
 % Chemo
-ha22 = axes;
-set(ha22, 'units', 'centimeters', 'position', [1.5+0*(opts.sep_row+opts.plotsize(1, 1)) 1.5+3*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(3, :) ], 'nextplot', 'add', 'fontsize', 8);
-plot_hold_duration_scatter(ha22, obj, cp, "Chemo", opts);
+ha_hd_scatter_chemo = axes;
+set(ha_hd_scatter_chemo, 'units', 'centimeters', 'position', [1.5+0*(opts.sep_row+opts.plotsize(1, 1)) 2+2*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(3, :) ], 'nextplot', 'add', 'fontsize', 8);
+plot_hold_duration_scatter(ha_hd_scatter_chemo, obj, cp, "Chemo", opts);
 
 % Performance track
-ha3 = axes;
-set(ha3, 'units', 'centimeters', 'position', [1.5+1*(opts.sep_row+opts.plotsize(1, 1)) 1.5+3*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(4, :) ], 'nextplot', 'add', 'fontsize', 8);
-plot_performance_track(ha3, obj, cp, opts);
-
-% Performance compare
-ha4 = axes;
-set(ha4, 'units', 'centimeters', 'position', [2+2*(opts.sep_row+opts.plotsize(1, 1)) 1.5+3*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(5, :) ], 'nextplot', 'add', 'fontsize', 8);
-plot_performance_compare(ha4, obj, opts);
-
-ha41 = axes;
-set(ha41, 'units', 'centimeters', 'position', [2+2*(opts.sep_row+opts.plotsize(1, 1))+3 1.5+3*(opts.sep_col+opts.plotsize(1, 2))+.5, 0.4*opts.plotsize(5, :) ], 'nextplot', 'add', 'fontsize', 7);
-plot_performance_compare(ha41, obj, opts);
-set(ha41, 'xlim', [0 8], 'ylim', [0 8], 'xlabel', [], 'ylabel', [], 'xtick', 0:2:8, 'ytick', 0:2:8, 'title', []);
-
-% legend
-ha42 = axes;
-set(ha42, 'units', 'centimeters', 'position', [2+2*(opts.sep_row+opts.plotsize(1, 1))+5.1 1.5+3*(opts.sep_col+opts.plotsize(1, 2))+2, [1.5 3] ], 'nextplot', 'add', 'fontsize', 7);
-line(ha42, [0 .6], [0 0], 'Color', opts.color.Correct, 'LineWidth', 1);
-text(ha42, .7, 0, 'Correct', 'FontSize', 8, 'Color', opts.color.Correct);
-line(ha42, [0 .6], [1 1], 'Color', opts.color.Premature, 'LineWidth', 1);
-text(ha42, .7, 1, 'Premature', 'FontSize', 8, 'Color', opts.color.Premature);
-line(ha42, [0 .6], [2 2], 'Color', opts.color.Wrong, 'LineWidth', 1);
-text(ha42, .7, 2, 'Wrong', 'FontSize', 8, 'Color', opts.color.Wrong);
-line(ha42, [0 .6], [3 3], 'Color', opts.color.Late, 'LineWidth', 1);
-text(ha42, .7, 3, 'Late', 'FontSize', 8, 'Color', opts.color.Late);
-
-line(ha42, [0 .6], [5 5], 'Color', 'k', 'LineWidth', 1, 'LineStyle', '-')
-scatter(ha42, 0.3, 5, 12, 'MarkerFaceColor', 'k', 'MarkerEdgeColor', 'k', 'LineWidth', 1);
-text(ha42, .7, 5, 'Control', 'FontSize', 8, 'Color', 'k');
-line(ha42, [0 .6], [6 6], 'Color', 'k', 'LineWidth', 1, 'LineStyle', ':')
-scatter(ha42, 0.3, 6, 12, 'MarkerFaceColor', 'w', 'MarkerEdgeColor', 'k', 'LineWidth', 1);
-text(ha42, .7, 6, 'Chemo', 'FontSize', 8, 'Color', 'k');
-
-set(ha42, 'xlim', [0 2], 'ylim', [0 7], 'xcolor', 'none', 'ycolor', 'none', 'ydir', 'reverse', 'color', 'none');
+ha_perf_track = axes;
+set(ha_perf_track, 'units', 'centimeters', 'position', [1.5+1*(opts.sep_row+opts.plotsize(1, 1)) 2+2*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(4, :) ], 'nextplot', 'add', 'fontsize', 8);
+plot_performance_track(ha_perf_track, obj, cp, opts);
 
 %% Hold duration
 % Hold duration violin plot
-ha5 = axes;
-set(ha5, 'units', 'centimeters', 'position', [1.5+0*(opts.sep_row+opts.plotsize(1, 1)) 1.5+2*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(1, :) ], 'nextplot', 'add', 'fontsize', 8);
-plot_hold_duration_violin(ha5, obj, opts);
+ha_hd_violin = axes;
+set(ha_hd_violin, 'units', 'centimeters', 'position', [1.5+0*(opts.sep_row+opts.plotsize(1, 1)) 1.5+1*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(6, :) ], 'nextplot', 'add', 'fontsize', 8);
+plot_hold_duration_violin(ha_hd_violin, obj, opts);
 
 % Hold duration statistic
 % Median
-ha61 = axes;
-set(ha61, 'units', 'centimeters', 'position', [1.5+1*(opts.sep_row+opts.plotsize(1, 1)) 1.5+2*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(6, :) ], 'nextplot', 'add', 'fontsize', 8);
-plot_hold_duration_median_compare(ha61, obj, opts);
+ha_hd_median = axes;
+set(ha_hd_median, 'units', 'centimeters', 'position', [1.5+1*(opts.sep_row+opts.plotsize(6, 1)) 1.5+1*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(6, :) ], 'nextplot', 'add', 'fontsize', 8);
+plot_hold_duration_median_compare(ha_hd_median, obj, opts);
 
 % IQR
-ha62 = axes;
-set(ha62, 'units', 'centimeters', 'position', [1.8+1*(opts.sep_row+opts.plotsize(1, 1))+4.5 1.5+2*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(6, :) ], 'nextplot', 'add', 'fontsize', 8);
-plot_hold_duration_iqr_compare(ha62, obj, opts);
-set(ha62, 'ylabel', []);
+ha_hd_iqr = axes;
+set(ha_hd_iqr, 'units', 'centimeters', 'position', [1.8+1*(opts.sep_row+opts.plotsize(6, 1))+4.5 1.5+1*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(6, :) ], 'nextplot', 'add', 'fontsize', 8);
+plot_hold_duration_iqr_compare(ha_hd_iqr, obj, opts);
+set(ha_hd_iqr, 'ylabel', []);
 
 % Hold duration PDF
-% Right
-ha71 = axes;
-set(ha71, 'units', 'centimeters', 'position', [1.5+0*(opts.sep_row+opts.plotsize(1, 1)) 1.5+1*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(2, :) ], 'nextplot', 'add', 'fontsize', 8);
-plot_hold_duration_pdf(ha71, obj, "R", opts);
-
 % Left
-ha72 = axes;
-set(ha72, 'units', 'centimeters', 'position', [1.5+0*(opts.sep_row+opts.plotsize(1, 1)) 1.5+0*(opts.sep_col+opts.plotsize(1, 2))+0.5, opts.plotsize(2, :) ], 'nextplot', 'add', 'fontsize', 8);
-plot_hold_duration_pdf(ha72, obj, "L", opts);
+ha_hd_pdf_l = axes;
+set(ha_hd_pdf_l, 'units', 'centimeters', 'position', [1.5+0*(opts.sep_row+opts.plotsize(2, 1)) 1.5+0*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(2, :) ], 'nextplot', 'add', 'fontsize', 8);
+plot_hold_duration_pdf(ha_hd_pdf_l, obj, "L", opts);
 
-ha71.YLim(2) = max([ha71.YLim(2) ha72.YLim(2)]);
-ha72.YLim(2) = ha71.YLim(2);
-
-% Hold duration CDF
 % Right
-ha81 = axes;
-set(ha81, 'units', 'centimeters', 'position', [1.5+1*(opts.sep_row+opts.plotsize(1, 1)) 1.5+1*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(2, :) ], 'nextplot', 'add', 'fontsize', 8);
-plot_hold_duration_cdf(ha81, obj, "R", opts);
+ha_hd_pdf_r = axes;
+set(ha_hd_pdf_r, 'units', 'centimeters', 'position', [1+1*(opts.sep_row+opts.plotsize(2, 1)) 1.5+0*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(2, :) ], 'nextplot', 'add', 'fontsize', 8);
+plot_hold_duration_pdf(ha_hd_pdf_r, obj, "R", opts);
+set(ha_hd_pdf_r, 'ylabel', [], 'yticklabel', []);
 
-% Left
-ha82 = axes;
-set(ha82, 'units', 'centimeters', 'position', [1.5+1*(opts.sep_row+opts.plotsize(1, 1)) 1.5+0*(opts.sep_col+opts.plotsize(1, 2))+0.5, opts.plotsize(2, :) ], 'nextplot', 'add', 'fontsize', 8);
-plot_hold_duration_cdf(ha82, obj, "L", opts);
-
-%% Reaction time
-% Reaction time violin
-ha9 = axes;
-set(ha9, 'units', 'centimeters', 'position', [2+2*(opts.sep_row+opts.plotsize(1, 1)) 1.5+2*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(1, :) ], 'nextplot', 'add', 'fontsize', 8);
-plot_reaction_time_violin(ha9, obj, opts);
-
-% reaction time compare
-ha10 = axes;
-set(ha10, 'units', 'centimeters', 'position', [2+3*(opts.sep_row+opts.plotsize(1, 1)) 1.5+2*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(6, :) ], 'nextplot', 'add', 'fontsize', 8);
-plot_reaction_time_median_compare(ha10, obj, opts);
+ha_hd_pdf_l.YLim(2) = max([ha_hd_pdf_l.YLim(2) ha_hd_pdf_r.YLim(2)]);
+ha_hd_pdf_r.YLim(2) = ha_hd_pdf_l.YLim(2);
 
 %% Movement time
 % movement time violin
-ha11 = axes;
-set(ha11, 'units', 'centimeters', 'position', [2+2*(opts.sep_row+opts.plotsize(1, 1)) 1.5+1*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(1, :) ], 'nextplot', 'add', 'fontsize', 8);
-plot_movement_time_violin(ha11, obj, opts);
+ha_mt_violin = axes;
+set(ha_mt_violin, 'units', 'centimeters', 'position', [1.5+3*(opts.sep_row+opts.plotsize(6, 1)) 1.5+1*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(6, :) ], 'nextplot', 'add', 'fontsize', 8);
+plot_movement_time_violin(ha_mt_violin, obj, opts);
 
 % movement time median
-ha12 = axes;
-set(ha12, 'units', 'centimeters', 'position', [2+3*(opts.sep_row+opts.plotsize(1, 1)) 1.5+1*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(6, :) ], 'nextplot', 'add', 'fontsize', 8);
-plot_movement_time_median_compare(ha12, obj, opts);
+ha_mt_median = axes;
+set(ha_mt_median, 'units', 'centimeters', 'position', [1.5+4*(opts.sep_row+opts.plotsize(6, 1)) 1.5+1*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(6, :) ], 'nextplot', 'add', 'fontsize', 8);
+plot_movement_time_median_compare(ha_mt_median, obj, opts);
 
 %% Shuttle time
 % log shuttle time violin
-ha13 = axes;
-set(ha13, 'units', 'centimeters', 'position', [2+2*(opts.sep_row+opts.plotsize(1, 1)) 1.5+0*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(1, :) .* [1/3, 1] ], 'nextplot', 'add', 'fontsize', 8);
-plot_shuttle_time_violin(ha13, obj, cp, opts);
-
-%% Interruption
-% Interruption histogram
-ha14 = axes;
-set(ha14, 'units', 'centimeters', 'position', [2+2*(opts.sep_row+opts.plotsize(1, 1))+4.5 2+0*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(2, :) .* [3/5 1] ], 'nextplot', 'add', 'fontsize', 8);
-plot_interruption(ha14, obj, cp, opts);
+ha_st_violin = axes;
+set(ha_st_violin, 'units', 'centimeters', 'position', [1.5+3*(opts.sep_row+opts.plotsize(6, 1)) 1.5+0*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(6, :) ], 'nextplot', 'add', 'fontsize', 8);
+plot_shuttle_time_violin(ha_st_violin, obj, cp, opts);
 
 %% ha1. Make a diagram of the setup
     function plot_diagram(ax, opts)
@@ -298,6 +240,8 @@ plot_interruption(ha14, obj, cp, opts);
 
         ax.XLabel.String = 'Time in training (s)';
         ax.YLabel.String = 'Hold duration (s)';
+        ax.XLabel.FontWeight = "Bold";
+        ax.YLabel.FontWeight = "Bold";
         set(ax, 'xlim', [0 max([cp.trial_control(end) cp.trial_chemo(end)])+5], 'ylim', [0 2.5], 'ticklength', [0.01 0.1]);
     end
 
@@ -309,137 +253,32 @@ plot_interruption(ha14, obj, cp, opts);
         s_sep = [0 cp.session_sep];
 
         for s_this = 1:cp.num_session_pairs
-            ind_control = find(obj.PerformanceTrack.Sessions==cp.session_control(s_this));
-            plot(ax, obj.PerformanceTrack.WinPos(ind_control)+s_sep(s_this), obj.PerformanceTrack.CorrectRatio(ind_control),   'linestyle', '-', 'color', opts.color.Correct, ...
+            ind_control = find(obj.PerformanceTrackUncue.Sessions==cp.session_control(s_this));
+            plot(ax,  obj.PerformanceTrackUncue.WinPos(ind_control)+s_sep(s_this),  obj.PerformanceTrackUncue.CorrectRatio(ind_control),   'linestyle', '-', 'color', opts.color.Correct, ...
                 'markersize', 5, 'linewidth', 1, 'markerfacecolor', opts.color.Correct,   'markeredgecolor', 'w');
-            plot(ax, obj.PerformanceTrack.WinPos(ind_control)+s_sep(s_this), obj.PerformanceTrack.WrongRatio(ind_control),     'linestyle', '-', 'color', opts.color.Wrong, ...
+            plot(ax,  obj.PerformanceTrackUncue.WinPos(ind_control)+s_sep(s_this),  obj.PerformanceTrackUncue.WrongRatio(ind_control),     'linestyle', '-', 'color', opts.color.Wrong, ...
                 'markersize', 5, 'linewidth', 1, 'markerfacecolor', opts.color.Wrong,     'markeredgecolor', 'w');
-            plot(ax, obj.PerformanceTrack.WinPos(ind_control)+s_sep(s_this), obj.PerformanceTrack.PrematureRatio(ind_control), 'linestyle', '-', 'color', opts.color.Premature, ...
+            plot(ax,  obj.PerformanceTrackUncue.WinPos(ind_control)+s_sep(s_this),  obj.PerformanceTrackUncue.PrematureRatio(ind_control), 'linestyle', '-', 'color', opts.color.Premature, ...
                 'markersize', 5, 'linewidth', 1, 'markerfacecolor', opts.color.Premature, 'markeredgecolor', 'w');
-            plot(ax, obj.PerformanceTrack.WinPos(ind_control)+s_sep(s_this), obj.PerformanceTrack.LateRatio(ind_control),      'linestyle', '-', 'color', opts.color.Late, ...
+            plot(ax,  obj.PerformanceTrackUncue.WinPos(ind_control)+s_sep(s_this),  obj.PerformanceTrackUncue.LateRatio(ind_control),      'linestyle', '-', 'color', opts.color.Late, ...
                 'markersize', 5, 'linewidth', 1, 'markerfacecolor', opts.color.Late,      'markeredgecolor', 'w');
 
-            ind_chemo = find(obj.PerformanceTrack.Sessions==cp.session_chemo(s_this));
-            plot(ax, obj.PerformanceTrack.WinPos(ind_chemo)+s_sep(s_this), obj.PerformanceTrack.CorrectRatio(ind_chemo),   'linestyle', ':', 'color', opts.color.Correct, ...
-                'markersize', 5, 'linewidth', 1, 'markerfacecolor', opts.color.Correct,   'markeredgecolor', 'w');
-            plot(ax, obj.PerformanceTrack.WinPos(ind_chemo)+s_sep(s_this), obj.PerformanceTrack.WrongRatio(ind_chemo),     'linestyle', ':', 'color', opts.color.Wrong, ...
-                'markersize', 5, 'linewidth', 1, 'markerfacecolor', opts.color.Wrong,     'markeredgecolor', 'w');
-            plot(ax, obj.PerformanceTrack.WinPos(ind_chemo)+s_sep(s_this), obj.PerformanceTrack.PrematureRatio(ind_chemo), 'linestyle', ':', 'color', opts.color.Premature, ...
-                'markersize', 5, 'linewidth', 1, 'markerfacecolor', opts.color.Premature, 'markeredgecolor', 'w');
-            plot(ax, obj.PerformanceTrack.WinPos(ind_chemo)+s_sep(s_this), obj.PerformanceTrack.LateRatio(ind_chemo),      'linestyle', ':', 'color', opts.color.Late, ...
-                'markersize', 5, 'linewidth', 1, 'markerfacecolor', opts.color.Late,      'markeredgecolor', 'w');
+            ind_chemo = find(obj.PerformanceTrackUncue.Sessions==cp.session_chemo(s_this));
+            plot(ax,  obj.PerformanceTrackUncue.WinPos(ind_chemo)+s_sep(s_this),  obj.PerformanceTrackUncue.CorrectRatio(ind_chemo),   'linestyle', ':', 'color', .8*opts.color.Correct, ...
+                'markersize', 5, 'linewidth', 1.5, 'markerfacecolor', .8*opts.color.Correct,   'markeredgecolor', 'w');
+            plot(ax,  obj.PerformanceTrackUncue.WinPos(ind_chemo)+s_sep(s_this),  obj.PerformanceTrackUncue.WrongRatio(ind_chemo),     'linestyle', ':', 'color', .8*opts.color.Wrong, ...
+                'markersize', 5, 'linewidth', 1.5, 'markerfacecolor', .8*opts.color.Wrong,     'markeredgecolor', 'w');
+            plot(ax,  obj.PerformanceTrackUncue.WinPos(ind_chemo)+s_sep(s_this),  obj.PerformanceTrackUncue.PrematureRatio(ind_chemo), 'linestyle', ':', 'color', .8*opts.color.Premature, ...
+                'markersize', 5, 'linewidth', 1.5, 'markerfacecolor', .8*opts.color.Premature, 'markeredgecolor', 'w');
+            plot(ax,  obj.PerformanceTrackUncue.WinPos(ind_chemo)+s_sep(s_this),  obj.PerformanceTrackUncue.LateRatio(ind_chemo),      'linestyle', ':', 'color', .8*opts.color.Late, ...
+                'markersize', 5, 'linewidth', 1.5, 'markerfacecolor', .8*opts.color.Late,      'markeredgecolor', 'w');
         end
 
         ax.XLabel.String = 'Time in training (s)';
         ax.YLabel.String = 'Performance (%)';
-        set(ax, 'XLim', [0 max([cp.trial_control(end) cp.trial_chemo(end)])+5], 'YLim', [0 100]);
-    end
-
-%% ha4. Plot performance comparation
-    function plot_performance_compare(ax, obj, opts)
-
-        line(ax, [0 100], [0 100], 'LineStyle', ':', 'LineWidth', 1, 'Color', 'k');
-
-        perf_control = obj.PerformanceControl;
-        perf_chemo   = obj.PerformanceChemo;
-
-        r_short = obj.PerformanceControl.Foreperiod==0.5 & obj.PerformanceControl.TargetPort=="R";
-        l_short = obj.PerformanceControl.Foreperiod==0.5 & obj.PerformanceControl.TargetPort=="L";
-        r_med   = obj.PerformanceControl.Foreperiod==1   & obj.PerformanceControl.TargetPort=="R";
-        l_med   = obj.PerformanceControl.Foreperiod==1   & obj.PerformanceControl.TargetPort=="L";
-        r_long  = obj.PerformanceControl.Foreperiod==1.5 & obj.PerformanceControl.TargetPort=="R";
-        l_long  = obj.PerformanceControl.Foreperiod==1.5 & obj.PerformanceControl.TargetPort=="L";
-
-        r_all   = obj.PerformanceControl.Foreperiod==0   & obj.PerformanceControl.TargetPort=="R";
-        l_all   = obj.PerformanceControl.Foreperiod==0   & obj.PerformanceControl.TargetPort=="L";
-
-        scatter(ax, perf_control.PrematureRatio(r_short | r_med | r_long), perf_chemo.PrematureRatio(r_short | r_med | r_long), ...
-            [.5 1 1.5]*14, 'Marker', '^', 'MarkerFaceColor', opts.color.Premature, 'MarkerEdgeColor', opts.color.PortR, ...
-            'MarkerFaceAlpha', 0.4, 'MarkerEdgeAlpha', 0.5, ...
-            'LineWidth', 1);
-        scatter(ax, perf_control.PrematureRatio(l_short | l_med | l_long), perf_chemo.PrematureRatio(l_short | l_med | l_long), ...
-            [.5 1 1.5]*14, 'Marker', '^', 'MarkerFaceColor', opts.color.Premature, 'MarkerEdgeColor', opts.color.PortL, ...
-            'MarkerFaceAlpha', 0.4, 'MarkerEdgeAlpha', 0.5, ...
-            'LineWidth', 1);
-%         plot(ax, [perf_control.PrematureRatio(r_all) perf_chemo.PrematureRatio(r_all)], [perf_control.PrematureRatio(l_all) perf_chemo.PrematureRatio(l_all)], ...
-%             'Color', [opts.color.Premature 0.6], 'LineWidth', 1.5);
-        scatter(ax, perf_control.PrematureRatio(r_all), perf_chemo.PrematureRatio(r_all), 28, ...
-            'Marker', 'o', 'MarkerFaceColor', opts.color.Premature, 'MarkerEdgeColor', opts.color.PortR, ...
-            'MarkerFaceAlpha', 0.8, 'MarkerEdgeAlpha', 0.9, ...
-            'LineWidth', 1);
-        scatter(ax, perf_control.PrematureRatio(l_all), perf_chemo.PrematureRatio(l_all), 28, ...
-            'Marker', 'o', 'MarkerFaceColor', opts.color.Premature, 'MarkerEdgeColor', opts.color.PortL, ...
-            'MarkerFaceAlpha', 0.8, 'MarkerEdgeAlpha', 0.9, ...
-            'LineWidth', 1);
-
-        scatter(ax, perf_control.WrongRatio(r_short | r_med | r_long), perf_chemo.WrongRatio(r_short | r_med | r_long), ...
-            [.5 1 1.5]*14, 'Marker', '^', 'MarkerFaceColor', opts.color.Wrong, 'MarkerEdgeColor', opts.color.PortR, ...
-            'MarkerFaceAlpha', 0.5, 'MarkerEdgeAlpha', 0.5, ...
-            'LineWidth', 1);
-        scatter(ax, perf_control.WrongRatio(l_short | l_med | l_long), perf_chemo.WrongRatio(l_short | l_med | l_long), ...
-            [.5 1 1.5]*14, 'Marker', '^', 'MarkerFaceColor', opts.color.Wrong, 'MarkerEdgeColor', opts.color.PortL, ...
-            'MarkerFaceAlpha', 0.5, 'MarkerEdgeAlpha', 0.5, ...
-            'LineWidth', 1);
-%         plot(ax, [perf_control.WrongRatio(r_all) perf_chemo.WrongRatio(r_all)], [perf_control.WrongRatio(l_all) perf_chemo.WrongRatio(l_all)], ...
-%             'Color', [opts.color.Wrong 0.6], 'LineWidth', 1.5);
-        scatter(ax, perf_control.WrongRatio(r_all), perf_chemo.WrongRatio(r_all), 28, ...
-            'Marker', 'o', 'MarkerFaceColor', opts.color.Wrong, 'MarkerEdgeColor', opts.color.PortR, ...
-            'MarkerFaceAlpha', 0.7, 'MarkerEdgeAlpha', 0.9, ...
-            'LineWidth', 1);
-        scatter(ax, perf_control.WrongRatio(l_all), perf_chemo.WrongRatio(l_all), 28, ...
-            'Marker', 'o', 'MarkerFaceColor', opts.color.Wrong, 'MarkerEdgeColor', opts.color.PortL, ...
-            'MarkerFaceAlpha', 0.7, 'MarkerEdgeAlpha', 0.9, ...
-            'LineWidth', 1);
-
-        scatter(ax, perf_control.LateRatio(r_short | r_med | r_long), perf_chemo.LateRatio(r_short | r_med | r_long), ...
-            [.5 1 1.5]*14, 'Marker', '^', 'MarkerFaceColor', opts.color.Late, 'MarkerEdgeColor', opts.color.PortR, ...
-            'MarkerFaceAlpha', 0.4, 'MarkerEdgeAlpha', 0.5, ...
-            'LineWidth', 1);
-        scatter(ax, perf_control.LateRatio(l_short | l_med | l_long), perf_chemo.LateRatio(l_short | l_med | l_long), ...
-            [.5 1 1.5]*14, 'Marker', '^', 'MarkerFaceColor', opts.color.Late, 'MarkerEdgeColor', opts.color.PortL, ...
-            'MarkerFaceAlpha', 0.4, 'MarkerEdgeAlpha', 0.5, ...
-            'LineWidth', 1);
-%         plot(ax, [perf_control.LateRatio(r_all) perf_chemo.LateRatio(r_all)], [perf_control.LateRatio(l_all) perf_chemo.LateRatio(l_all)], ...
-%             'Color', [opts.color.Late 0.6], 'LineWidth', 1.5);
-        scatter(ax, perf_control.LateRatio(r_all), perf_chemo.LateRatio(r_all), 28, ...
-            'Marker', 'o', 'MarkerFaceColor', opts.color.Late, 'MarkerEdgeColor', opts.color.PortR, ...
-            'MarkerFaceAlpha', 0.9, 'MarkerEdgeAlpha', 0.9, ...
-            'LineWidth', 1);
-        scatter(ax, perf_control.LateRatio(l_all), perf_chemo.LateRatio(l_all), 28, ...
-            'Marker', 'o', 'MarkerFaceColor', opts.color.Late, 'MarkerEdgeColor', opts.color.PortL, ...
-            'MarkerFaceAlpha', 0.9, 'MarkerEdgeAlpha', 0.9, ...
-            'LineWidth', 1);
-
-        scatter(ax, perf_control.CorrectRatio(r_short | r_med | r_long), perf_chemo.CorrectRatio(r_short | r_med | r_long), ...
-            [.5 1 1.5]*14, 'Marker', '^', 'MarkerFaceColor', opts.color.Correct, 'MarkerEdgeColor', opts.color.PortR, ...
-            'MarkerFaceAlpha', 0.4, 'MarkerEdgeAlpha', 0.5, ...
-            'LineWidth', 1);
-        scatter(ax, perf_control.CorrectRatio(l_short | l_med | l_long), perf_chemo.CorrectRatio(l_short | l_med | l_long), ...
-            [.5 1 1.5]*14, 'Marker', '^', 'MarkerFaceColor', opts.color.Correct, 'MarkerEdgeColor', opts.color.PortL, ...
-            'MarkerFaceAlpha', 0.4, 'MarkerEdgeAlpha', 0.5, ...
-            'LineWidth', 1);
-%         plot(ax, [perf_control.CorrectRatio(r_all) perf_chemo.CorrectRatio(r_all)], [perf_control.CorrectRatio(l_all) perf_chemo.CorrectRatio(l_all)], ...
-%             'Color', [opts.color.Correct 0.6], 'LineWidth', 1.5);
-        scatter(ax, perf_control.CorrectRatio(r_all), perf_chemo.CorrectRatio(r_all), 28, ...
-            'Marker', 'o', 'MarkerFaceColor', opts.color.Correct, 'MarkerEdgeColor', opts.color.PortR, ...
-            'MarkerFaceAlpha', 0.8, 'MarkerEdgeAlpha', 0.9, ...
-            'LineWidth', 1);
-        scatter(ax, perf_control.CorrectRatio(l_all), perf_chemo.CorrectRatio(l_all), 28, ...
-            'Marker', 'o', 'MarkerFaceColor', opts.color.Correct, 'MarkerEdgeColor', opts.color.PortL, ...
-            'MarkerFaceAlpha', 0.8, 'MarkerEdgeAlpha', 0.9, ...
-            'LineWidth', 1);
-
-        text(ax, 50, 100, "Performance (%)", 'FontSize', 9, 'FontWeight', 'bold', 'HorizontalAlignment', 'center');
-
-        ax.XLabel.String     = "Control";
-        ax.XLabel.Color      = opts.color.Control;
         ax.XLabel.FontWeight = "Bold";
-
-        ax.YLabel.String     = "Chemo";
-        ax.YLabel.Color      = opts.color.Treat;
         ax.YLabel.FontWeight = "Bold";
-
-        set(ax, 'xlim', [0 100], 'ylim', [0 100]);
+        set(ax, 'XLim', [0 max([cp.trial_control(end) cp.trial_chemo(end)])+5], 'YLim', [0 100]);
     end
 
 %% Hold duration violin
@@ -450,18 +289,15 @@ plot_interruption(ha14, obj, cp, opts);
         patch(ax, 'XData', [dcz_ind-.5 dcz_ind-.5 dcz_ind+.5 dcz_ind+.5]', 'YData', repmat([0; 100; 100; 0], 1, num_dcz), ...
             'FaceColor', opts.color.Treat, 'FaceAlpha', 0.2, 'EdgeColor', 'none');
 
-        for fp_this = 1:length(obj.MixedFP)
-            line(ax, -.5 + 2*[fp_this-0.45 fp_this+0.45], [obj.MixedFP(fp_this) obj.MixedFP(fp_this)], 'Color', 'k', 'LineWidth', .5, 'LineStyle', '-');
-        end
+        line(ax, [0.6 2.4], [obj.MixedFP obj.MixedFP], 'Color', 'k', 'LineWidth', .5, 'LineStyle', '-');
 
         num_violin = length(obj.Ports)*2*length(obj.MixedFP);
         thisHD = nan(height(obj.BehavTable), num_violin);
-
-        for fp_this = 1:length(obj.MixedFP)
-            for p_this = 1:length(obj.Ports)
-                thisHD(1:length(obj.HDSortedControl{fp_this, p_this}), 4*(fp_this-1)+p_this)   = obj.HDSortedControl{fp_this, p_this};
-                thisHD(1:length(obj.HDSortedChemo{fp_this, p_this})  , 4*(fp_this-1)+p_this+2) = obj.HDSortedChemo{fp_this, p_this};
-            end
+        
+        cued_this = find(obj.CueUncue==0);
+        for p_this = 1:length(obj.Ports)
+            thisHD(1:length(obj.HDSortedControl{cued_this, p_this}), p_this)   = obj.HDSortedControl{cued_this, p_this};
+            thisHD(1:length(obj.HDSortedChemo{cued_this, p_this})  , p_this+2) = obj.HDSortedChemo{cued_this, p_this};
         end
 
         thisHD(all(isnan(thisHD), 2), :) = [];
@@ -476,6 +312,8 @@ plot_interruption(ha14, obj, cp, opts);
 
         ax.XLabel.String = 'Foreperiod (s)';
         ax.YLabel.String = 'Hold duration (s)';
+        ax.XLabel.FontWeight = "Bold";
+        ax.YLabel.FontWeight = "Bold";
         set(ax, 'xlim', [.5 2*length(obj.MixedFP)+.5], 'ylim', [0 obj.Bins.HoldDuration(end)], 'xtick', 1.5:2:2*length(obj.MixedFP), ...
             'xticklabel', obj.MixedFP, 'ticklength', [0.01 0.1], 'box', 'off');
     end
@@ -484,20 +322,15 @@ plot_interruption(ha14, obj, cp, opts);
 % median
     function plot_hold_duration_median_compare(ax, obj, opts)
        
-        ind_l = find(ismember(obj.HDStatControl.thisFP, obj.MixedFP) & obj.HDStatControl.Port=="L");
-        ind_r = find(ismember(obj.HDStatControl.thisFP, obj.MixedFP) & obj.HDStatControl.Port=="R");
+        ind_l = find(obj.HDStatControl.thisCued==0 & obj.HDStatControl.Port=="L");
+        ind_r = find(obj.HDStatControl.thisCued==0 & obj.HDStatControl.Port=="R");
 
-%         for i = 1:length(ind_l)
-%             plot(ax, [obj.HDStatControl.Median(ind_l(i)) obj.HDStatChemo.Median(ind_l(i))], [obj.HDStatControl.Median(ind_r(i)) obj.HDStatChemo.Median(ind_r(i))], ...
-%                 'Color', [0 0 0 0.6], 'LineWidth', 1.5);
-%         end
-        
         scatter(ax, obj.HDStatControl.Median(ind_l), obj.HDStatChemo.Median(ind_l), ...
-            [.5 1 1.5]*24, 'Marker', 'o', 'MarkerFaceColor', opts.color.PortL, 'MarkerEdgeColor', opts.color.PortL, ...
+            36, 'Marker', 'o', 'MarkerFaceColor', opts.color.PortL, 'MarkerEdgeColor', opts.color.PortL, ...
             'MarkerFaceAlpha', 0.6, 'MarkerEdgeAlpha', 1, ...
             'LineWidth', 1.5);
         scatter(ax, obj.HDStatControl.Median(ind_r), obj.HDStatChemo.Median(ind_r), ...
-            [.5 1 1.5]*24, 'Marker', 'o', 'MarkerFaceColor', opts.color.PortR, 'MarkerEdgeColor', opts.color.PortR, ...
+            36, 'Marker', 'o', 'MarkerFaceColor', opts.color.PortR, 'MarkerEdgeColor', opts.color.PortR, ...
             'MarkerFaceAlpha', 0.6, 'MarkerEdgeAlpha', 1, ...
             'LineWidth', 1.5);
 
@@ -510,25 +343,24 @@ plot_interruption(ha14, obj, cp, opts);
         ax.XLabel.FontWeight = "Bold";
 
         set(ax, 'xlimmode', 'auto', 'ylimmode', 'auto');
-        ax.XLim = [min([ax.XLim(1) ax.YLim(1)]) max([ax.XLim(2) ax.YLim(2)])] .* [.95 1.05];
+%         ax.XLim = [min([ax.XLim(1) ax.YLim(1)]) max([ax.XLim(2) ax.YLim(2)])] .* [.95 1.05];
+        ax.XLim = [0 2];
         ax.YLim = ax.XLim;
         ax.XTick = ax.YTick;
 
         text(ax, mean(ax.XLim), ax.YLim(2), "HD median (s)", 'FontSize', 9, 'FontWeight', 'bold', 'HorizontalAlignment', 'center');
 
         line(ax, [0 100], [0 100], 'Color', 'k', 'LineStyle', ':', 'LineWidth', .5);
+        line(ax, [obj.MixedFP obj.MixedFP], [0 obj.MixedFP], 'Color', 'k', 'LineStyle', ':', 'LineWidth', .5);
+        line(ax, [0 obj.MixedFP], [obj.MixedFP obj.MixedFP], 'Color', 'k', 'LineStyle', ':', 'LineWidth', .5);
+
     end
 
 % IQR
     function plot_hold_duration_iqr_compare(ax, obj, opts)
 
-        ind_l = find(ismember(obj.HDStatControl.thisFP, obj.MixedFP) & obj.HDStatControl.Port=="L");
-        ind_r = find(ismember(obj.HDStatControl.thisFP, obj.MixedFP) & obj.HDStatControl.Port=="R");
-
-%         for i = 1:length(ind_l)
-%             plot(ax, [obj.HDStatControl.IQR(ind_l(i)) obj.HDStatChemo.IQR(ind_l(i))], [obj.HDStatControl.IQR(ind_r(i)) obj.HDStatChemo.IQR(ind_r(i))], ...
-%                 'Color', [0 0 0 0.6], 'LineWidth', 1.5);
-%         end
+        ind_l = find(obj.HDStatControl.thisCued==0 & obj.HDStatControl.Port=="L");
+        ind_r = find(obj.HDStatControl.thisCued==0 & obj.HDStatControl.Port=="R");
 
         ax.YLabel.String     = "Chemo";
         ax.YLabel.Color      = opts.color.Treat;
@@ -539,16 +371,17 @@ plot_interruption(ha14, obj, cp, opts);
         ax.XLabel.FontWeight = "Bold";
         
         scatter(ax, obj.HDStatControl.IQR(ind_l), obj.HDStatChemo.IQR(ind_l), ...
-            [.5 1 1.5]*24, 'Marker', 'o', 'MarkerFaceColor', opts.color.PortL, 'MarkerEdgeColor', opts.color.PortL, ...
+            36, 'Marker', 'o', 'MarkerFaceColor', opts.color.PortL, 'MarkerEdgeColor', opts.color.PortL, ...
             'MarkerFaceAlpha', 0.6, 'MarkerEdgeAlpha', 1, ...
             'LineWidth', 1.5);
         scatter(ax, obj.HDStatControl.IQR(ind_r), obj.HDStatChemo.IQR(ind_r), ...
-            [.5 1 1.5]*24, 'Marker', 'o', 'MarkerFaceColor', opts.color.PortR, 'MarkerEdgeColor', opts.color.PortR, ...
+            36, 'Marker', 'o', 'MarkerFaceColor', opts.color.PortR, 'MarkerEdgeColor', opts.color.PortR, ...
             'MarkerFaceAlpha', 0.6, 'MarkerEdgeAlpha', 1, ...
             'LineWidth', 1.5);
 
         set(ax, 'xlimmode', 'auto', 'ylimmode', 'auto');
-        ax.XLim = [min([ax.XLim(1) ax.YLim(1)]) max([ax.XLim(2) ax.YLim(2)])] .* [.95 1.05];
+        %         ax.XLim = [min([ax.XLim(1) ax.YLim(1)]) max([ax.XLim(2) ax.YLim(2)])] .* [.95 1.05];
+        ax.XLim = [0 1];
         ax.YLim = ax.XLim;
         ax.XTick = ax.YTick;
 
@@ -562,23 +395,20 @@ plot_interruption(ha14, obj, cp, opts);
     function plot_hold_duration_pdf(ax, obj, port, opts)
 
         p_this = obj.Ports==upper(string(port));
+        cued_this = find(obj.CueUncue==0);
 
-        for fp_this = 1:length(obj.MixedFP)
+        xline(ax, obj.MixedFP, 'color', [.7 .7 .7], 'linewidth', 1, 'LineStyle', '-');
 
-            xline(ax, obj.MixedFP(fp_this), 'color', [.7 .7 .7], 'linewidth', opts.lw(fp_this), 'LineStyle', '-');
+        hd_control = obj.HDSortedControl{cued_this, p_this};
+        hd_chemo   = obj.HDSortedChemo{cued_this, p_this};
 
-            hd_control = obj.HDSortedControl{fp_this, p_this};
-            hd_chemo   = obj.HDSortedChemo{fp_this, p_this};
+        hd_control_pdf = ksdensity(hd_control, obj.Bins.HoldDuration, 'Function', 'pdf');
+        hd_chemo_pdf   = ksdensity(hd_chemo,   obj.Bins.HoldDuration, 'Function', 'pdf');
 
-            hd_control_pdf = ksdensity(hd_control, obj.Bins.HoldDuration, 'Function', 'pdf');
-            hd_chemo_pdf   = ksdensity(hd_chemo,   obj.Bins.HoldDuration, 'Function', 'pdf');
-
-            plot(ax, obj.Bins.HoldDuration, hd_control_pdf, ...
-                'color', opts.color.Control, 'linewidth', opts.lw(fp_this), 'LineStyle', '-');
-            plot(ax, obj.Bins.HoldDuration, hd_chemo_pdf, ...
-                'color', opts.color.Treat  , 'linewidth', opts.lw(fp_this), 'LineStyle', '-');
-
-        end
+        plot(ax, obj.Bins.HoldDuration, hd_control_pdf, ...
+            'color', opts.color.Control, 'linewidth', 2, 'LineStyle', '-');
+        plot(ax, obj.Bins.HoldDuration, hd_chemo_pdf, ...
+            'color', opts.color.Treat  , 'linewidth', 2, 'LineStyle', '-');
 
         switch upper(string(port))
             case {"L"}
@@ -589,8 +419,10 @@ plot_interruption(ha14, obj, cp, opts);
                 ax.XLabel.Color  = opts.color.PortR;
         end
         ax.XLabel.FontWeight = "Bold";
-
+        
         ax.YLabel.String = "Prob. density (1/s)";
+        ax.YLabel.FontWeight = "Bold";
+
         set(ax, 'xlim', [0 obj.Bins.HoldDuration(end)], 'ylimmode', 'auto');
     end
 
@@ -610,9 +442,9 @@ plot_interruption(ha14, obj, cp, opts);
             hd_chemo_pdf   = ksdensity(hd_chemo,   obj.Bins.HoldDuration, 'Function', 'cdf');
 
             plot(ax, obj.Bins.HoldDuration, hd_control_pdf, ...
-                'color', opts.color.Control, 'linewidth', opts.lw(fp_this), 'LineStyle', '-');
+                'color', opts.color.Control, 'linewidth', 2, 'LineStyle', '-');
             plot(ax, obj.Bins.HoldDuration, hd_chemo_pdf, ...
-                'color', opts.color.Treat  , 'linewidth', opts.lw(fp_this), 'LineStyle', '-');
+                'color', opts.color.Treat  , 'linewidth', 2, 'LineStyle', '-');
 
         end
 
@@ -626,83 +458,10 @@ plot_interruption(ha14, obj, cp, opts);
         end
         ax.XLabel.FontWeight = "Bold";
 
-        ax.YLabel.String = "Cum. distribution";
-        set(ax, 'xlim', [0 obj.Bins.HoldDuration(end)], 'ylim', [0 1]);
-    end
-
-%% Reaction time violin
-    function plot_reaction_time_violin(ax, obj, opts)
-
-        dcz_ind = 2 * (1:length(obj.MixedFP))';
-        num_dcz = length(obj.MixedFP);
-        patch(ax, 'XData', [dcz_ind-.5 dcz_ind-.5 dcz_ind+.5 dcz_ind+.5]', 'YData', repmat([0; 100; 100; 0], 1, num_dcz), ...
-            'FaceColor', opts.color.Treat, 'FaceAlpha', 0.2, 'EdgeColor', 'none');
-
-        yline(ax, .5, 'Color', [.7 .7 .7], 'LineWidth', 1.5, 'LineStyle', '--')
-
-        num_violin = length(obj.Ports)*2*length(obj.MixedFP);
-        thisRT = nan(height(obj.BehavTable), num_violin);
-
-        for fp_this = 1:length(obj.MixedFP)
-            for p_this = 1:length(obj.Ports)
-                thisRT(1:length(obj.RTSortedControl{fp_this, p_this}), 4*(fp_this-1)+p_this)   = obj.RTSortedControl{fp_this, p_this};
-                thisRT(1:length(obj.RTSortedChemo{fp_this, p_this})  , 4*(fp_this-1)+p_this+2) = obj.RTSortedChemo{fp_this, p_this};
-            end
-        end
-
-        thisRT(all(isnan(thisRT), 2), :) = [];
-
-        violinplot({thisRT(:, 2:2:end), thisRT(:, 1:2:end)}, obj.Sessions, ...
-            'ViolinColor', {repmat(opts.color.PortR, num_violin/2, 1), repmat(opts.color.PortL, num_violin/2, 1)}, ...
-            'ScatterSize', 8, 'ShowMedian', false, 'ShowWhisker', false, 'ShowBox', false, 'Bandwidth', 0.1);
-
-        scatter(ax, ceil((1:num_violin)/2) + repmat([-.02 .02], 1, num_violin/2), median(thisRT, 'omitnan'), 32, ...
-            repmat([opts.color.PortL; opts.color.PortR], num_violin/2, 1), ...
-            'filled', 'LineWidth', 1, 'MarkerEdgeColor', [.3 .3 .3], 'MarkerFaceAlpha', 0.6);
-
-        ax.XLabel.String = 'Foreperiod (s)';
-        ax.YLabel.String = 'Reaction time (s)';
-        set(ax, 'xlim', [.5 2*length(obj.MixedFP)+.5], 'ylim', [0 obj.Bins.RT(end)], 'xtick', 1.5:2:2*length(obj.MixedFP), ...
-            'xticklabel', obj.MixedFP, 'ticklength', [0.01 0.1], 'box', 'off');
-    end
-
-%% Reaction time comparation
-% median
-    function plot_reaction_time_median_compare(ax, obj, opts)
-       
-        ind_l = find(ismember(obj.RTStatControl.thisFP, obj.MixedFP) & obj.RTStatControl.Port=="L");
-        ind_r = find(ismember(obj.RTStatControl.thisFP, obj.MixedFP) & obj.RTStatControl.Port=="R");
-
-%         for i = 1:length(ind_l)
-%             plot(ax, [obj.RTStatControl.Median(ind_l(i)) obj.RTStatChemo.Median(ind_l(i))], [obj.RTStatControl.Median(ind_r(i)) obj.RTStatChemo.Median(ind_r(i))], ...
-%                 'Color', [0 0 0 0.6], 'LineWidth', 1.5);
-%         end
-        
-        scatter(ax, obj.RTStatControl.Median(ind_l), obj.RTStatChemo.Median(ind_l), ...
-            [.5 1 1.5]*24, 'Marker', 'o', 'MarkerFaceColor', opts.color.PortL, 'MarkerEdgeColor', opts.color.PortL, ...
-            'MarkerFaceAlpha', 0.6, 'MarkerEdgeAlpha', 1, ...
-            'LineWidth', 1.5);
-        scatter(ax, obj.RTStatControl.Median(ind_r), obj.RTStatChemo.Median(ind_r), ...
-            [.5 1 1.5]*24, 'Marker', 'o', 'MarkerFaceColor', opts.color.PortR, 'MarkerEdgeColor', opts.color.PortR, ...
-            'MarkerFaceAlpha', 0.6, 'MarkerEdgeAlpha', 1, ...
-            'LineWidth', 1.5);
-
-        ax.YLabel.String     = "Chemo";
-        ax.YLabel.Color      = opts.color.Treat;
+        ax.YLabel.String = "Cumulative distribution";
         ax.YLabel.FontWeight = "Bold";
 
-        ax.XLabel.String     = "Control";
-        ax.XLabel.Color      = opts.color.Control;
-        ax.XLabel.FontWeight = "Bold";
-
-        set(ax, 'xlimmode', 'auto', 'ylimmode', 'auto');
-        ax.XLim = [min([ax.XLim(1) ax.YLim(1)]) max([ax.XLim(2) ax.YLim(2)])] .* [.95 1.05];
-        ax.YLim = ax.XLim;
-        ax.YTick = ax.XTick;
-
-        text(ax, mean(ax.XLim), ax.YLim(2), "RT median (s)", 'FontSize', 9, 'FontWeight', 'bold', 'HorizontalAlignment', 'center');
-
-        line(ax, [0 100], [0 100], 'Color', 'k', 'LineStyle', ':', 'LineWidth', 1);
+        set(ax, 'xlim', [0 obj.Bins.HoldDuration(end)], 'ylim', [0 1]);
     end
 
 %% Movement time violin
@@ -713,18 +472,17 @@ plot_interruption(ha14, obj, cp, opts);
         patch(ax, 'XData', [dcz_ind-.5 dcz_ind-.5 dcz_ind+.5 dcz_ind+.5]', 'YData', repmat([0; 100; 100; 0], 1, num_dcz), ...
             'FaceColor', opts.color.Treat, 'FaceAlpha', 0.2, 'EdgeColor', 'none');
 
-
         num_violin = length(obj.Ports)*2*length(obj.MixedFP);
         thisMT = nan(height(obj.BehavTable), num_violin);
 
-        for fp_this = 1:length(obj.MixedFP)
-            for p_this = 1:length(obj.Ports)
-                thisMT(1:length(obj.MTSortedControl{fp_this, p_this}), 4*(fp_this-1)+p_this)   = obj.MTSortedControl{fp_this, p_this};
-                thisMT(1:length(obj.MTSortedChemo{fp_this, p_this})  , 4*(fp_this-1)+p_this+2) = obj.MTSortedChemo{fp_this, p_this};
-            end
+        cued_this = find(obj.CueUncue==0);
+        for p_this = 1:length(obj.Ports)
+            thisMT(1:length(obj.MTSortedControl{cued_this, p_this}), p_this)   = obj.MTSortedControl{cued_this, p_this};
+            thisMT(1:length(obj.MTSortedChemo{cued_this, p_this})  , p_this+2) = obj.MTSortedChemo{cued_this, p_this};
         end
 
         thisMT(all(isnan(thisMT), 2), :) = [];
+        thisMT = rmoutliers(thisMT, 1);
 
         violinplot({thisMT(:, 2:2:end), thisMT(:, 1:2:end)}, obj.Sessions, ...
             'ViolinColor', {repmat(opts.color.PortR, num_violin/2, 1), repmat(opts.color.PortL, num_violin/2, 1)}, ...
@@ -736,6 +494,9 @@ plot_interruption(ha14, obj, cp, opts);
 
         ax.XLabel.String = 'Foreperiod (s)';
         ax.YLabel.String = 'Movement time (s)';
+        ax.XLabel.FontWeight = "Bold";
+        ax.YLabel.FontWeight = "Bold";
+
         set(ax, 'xlim', [.5 2*length(obj.MixedFP)+.5], 'ylim', [0 obj.Bins.MovementTime(end)], 'xtick', 1.5:2:2*length(obj.MixedFP), ...
             'xticklabel', obj.MixedFP, 'ticklength', [0.01 0.1], 'box', 'off');
     end
@@ -743,20 +504,15 @@ plot_interruption(ha14, obj, cp, opts);
 %% Movement time comparation
     function plot_movement_time_median_compare(ax, obj, opts)
        
-        ind_l = find(ismember(obj.MTStatControl.thisFP, obj.MixedFP) & obj.MTStatControl.Port=="L");
-        ind_r = find(ismember(obj.MTStatControl.thisFP, obj.MixedFP) & obj.MTStatControl.Port=="R");
-
-%         for i = 1:length(ind_l)
-%             plot(ax, [obj.MTStatControl.Median(ind_l(i)) obj.MTStatChemo.Median(ind_l(i))], [obj.MTStatControl.Median(ind_r(i)) obj.MTStatChemo.Median(ind_r(i))], ...
-%                 'Color', [0 0 0 0.6], 'LineWidth', 1.5);
-%         end
+        ind_l = find(obj.HDStatControl.thisCued==0 & obj.HDStatControl.Port=="L");
+        ind_r = find(obj.HDStatControl.thisCued==0 & obj.HDStatControl.Port=="R");
         
         scatter(ax, obj.MTStatControl.Median(ind_l), obj.MTStatChemo.Median(ind_l), ...
-            [.5 1 1.5]*24, 'Marker', 'o', 'MarkerFaceColor', opts.color.PortL, 'MarkerEdgeColor', opts.color.PortL, ...
+            36, 'Marker', 'o', 'MarkerFaceColor', opts.color.PortL, 'MarkerEdgeColor', opts.color.PortL, ...
             'MarkerFaceAlpha', 0.6, 'MarkerEdgeAlpha', 1, ...
             'LineWidth', 1.5);
         scatter(ax, obj.MTStatControl.Median(ind_r), obj.MTStatChemo.Median(ind_r), ...
-            [.5 1 1.5]*24, 'Marker', 'o', 'MarkerFaceColor', opts.color.PortR, 'MarkerEdgeColor', opts.color.PortR, ...
+            36, 'Marker', 'o', 'MarkerFaceColor', opts.color.PortR, 'MarkerEdgeColor', opts.color.PortR, ...
             'MarkerFaceAlpha', 0.6, 'MarkerEdgeAlpha', 1, ...
             'LineWidth', 1.5);
 
@@ -769,7 +525,8 @@ plot_interruption(ha14, obj, cp, opts);
         ax.XLabel.FontWeight = "Bold";
 
         set(ax, 'xlimmode', 'auto', 'ylimmode', 'auto');
-        ax.XLim = [min([ax.XLim(1) ax.YLim(1)]) max([ax.XLim(2) ax.YLim(2)])] .* [.95 1.05];
+%         ax.XLim = [min([ax.XLim(1) ax.YLim(1)]) max([ax.XLim(2) ax.YLim(2)])] .* [.95 1.05];
+        ax.XLim = [0 2];
         ax.YLim = ax.XLim;
         ax.YTick = ax.XTick;
 
@@ -807,40 +564,13 @@ plot_interruption(ha14, obj, cp, opts);
 
         ax.XLabel.String = 'Treatment';
         ax.YLabel.String = 'Shuttle time (s)';
+        ax.XLabel.FontWeight = "Bold";
+        ax.YLabel.FontWeight = "Bold";
+
         set(ax, 'xlim', [.5 2.5], 'ylim', [-1 obj.Bins.ShuttleTimeLog(end)], 'xtick', 1:2, ...
             'xticklabel', ["Control", "Chemo"], ...
             'ytick', -1:3, 'yticklabel', ["10^-1", "10^0", "10^1", "10^2", "10^3"], ...
             'ticklength', [0.01 0.1], 'box', 'off');
-    end
-
-%% Interruption
-    function plot_interruption(ax, obj, cp, opts)
-
-        for fp_this = 1:length(obj.MixedFP)
-            xline(ax, obj.MixedFP(fp_this), 'color', [.7 .7 .7], 'linewidth', opts.lw(fp_this), 'LineStyle', '-');
-        end
-
-        nums_control = zeros(1, length(obj.Bins.Interruption)-1);
-        nums_chemo   = zeros(1, length(obj.Bins.Interruption)-1);
-        for i = 1:length(nums_control)
-            nums_control(i) = sum(cp.behav_control.HoldDuration(cp.behav_control.Stage==1) >= obj.Bins.Interruption(i));
-            nums_chemo(i)   = sum(cp.behav_chemo.HoldDuration(cp.behav_control.Stage==1) >= obj.Bins.Interruption(i));
-        end
-
-        h_control = histcounts(obj.InterruptionControl.On, "BinEdges", obj.Bins.Interruption) ./ nums_control;
-        bar(ax, obj.Bins.Interruption(1:end-1)+.5*obj.Bins.widthInter, h_control, 1, 'FaceColor', opts.color.Control , 'FaceAlpha', 0.25, 'EdgeColor', 'k', 'EdgeAlpha', 0.6);
-        h_chemo   = histcounts(obj.InterruptionChemo.On  , "BinEdges", obj.Bins.Interruption) ./ nums_chemo;
-        bar(ax, obj.Bins.Interruption(1:end-1)+.5*obj.Bins.widthInter, h_chemo  , 1, 'FaceColor', opts.color.Treat   , 'FaceAlpha', 0.25, 'EdgeColor', 'k', 'EdgeAlpha', 0.6);
-
-        y_control = smoothdata(h_control, 'gaussian', 0.18*(length(h_control)));
-        y_chemo   = smoothdata(h_chemo  , 'gaussian', 0.18*(length(h_chemo)));
-
-        plot(ax, obj.Bins.Interruption(1:end-1)+.5*obj.Bins.widthInter, y_control, 'Color', opts.color.Control, 'LineStyle', '-', 'LineWidth', 1.5);
-        plot(ax, obj.Bins.Interruption(1:end-1)+.5*obj.Bins.widthInter, y_chemo  , 'Color', opts.color.Treat  , 'LineStyle', '-', 'LineWidth', 1.5);
-
-        ax.YLabel.String = "Interruptions / trial";
-        ax.XLabel.String = "Hold duration (s)";
-        set(ax, 'xlim', [0 1.5]);
     end
 
 end
