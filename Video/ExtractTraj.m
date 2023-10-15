@@ -39,7 +39,7 @@ opts.ExtraColumnsRule = "ignore";
 opts.EmptyLineRule = "read";
 
 %%
-ClipFolder  = uigetdir('F:\YuLab\Work\GPS\Video\Kennard\GPS_05_ThreeFPHoldSRT');
+ClipFolder  = uigetdir('F:\YuLab\Work\GPS\Video\Morad\GPS_08_Kornblum1500SRTSelf\');
 [ViewFolder, dir_name] = fileparts(ClipFolder);
 if ~strcmp(dir_name, 'Clips')
     fprintf("\nPlease select a 'Clips' folder.\n");
