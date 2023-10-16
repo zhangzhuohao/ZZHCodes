@@ -98,11 +98,11 @@ plot_performance_track(ha3, obj, cp, opts);
 ha4 = axes;
 set(ha4, 'units', 'centimeters', 'position', [2+2*(opts.sep_row+opts.plotsize(1, 1)) 1.5+3*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(5, :) ], 'nextplot', 'add', 'fontsize', 8);
 plot_performance_compare(ha4, obj, opts);
-
-ha41 = axes;
-set(ha41, 'units', 'centimeters', 'position', [2+2*(opts.sep_row+opts.plotsize(1, 1))+3 1.5+3*(opts.sep_col+opts.plotsize(1, 2))+.5, 0.4*opts.plotsize(5, :) ], 'nextplot', 'add', 'fontsize', 7);
-plot_performance_compare(ha41, obj, opts);
-set(ha41, 'xlim', [0 8], 'ylim', [0 8], 'xlabel', [], 'ylabel', [], 'xtick', 0:2:8, 'ytick', 0:2:8, 'title', []);
+% 
+% ha41 = axes;
+% set(ha41, 'units', 'centimeters', 'position', [2+2*(opts.sep_row+opts.plotsize(1, 1))+3 1.5+3*(opts.sep_col+opts.plotsize(1, 2))+.5, 0.4*opts.plotsize(5, :) ], 'nextplot', 'add', 'fontsize', 7);
+% plot_performance_compare(ha41, obj, opts);
+% set(ha41, 'xlim', [0 8], 'ylim', [0 8], 'xlabel', [], 'ylabel', [], 'xtick', 0:2:8, 'ytick', 0:2:8, 'title', []);
 
 % legend
 ha42 = axes;
@@ -196,11 +196,11 @@ ha13 = axes;
 set(ha13, 'units', 'centimeters', 'position', [2+2*(opts.sep_row+opts.plotsize(1, 1)) 1.5+0*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(1, :) .* [1/3, 1] ], 'nextplot', 'add', 'fontsize', 8);
 plot_shuttle_time_violin(ha13, obj, cp, opts);
 
-%% Interruption
-% Interruption histogram
-ha14 = axes;
-set(ha14, 'units', 'centimeters', 'position', [2+2*(opts.sep_row+opts.plotsize(1, 1))+4.5 2+0*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(2, :) .* [3/5 1] ], 'nextplot', 'add', 'fontsize', 8);
-plot_interruption(ha14, obj, cp, opts);
+% %% Interruption
+% % Interruption histogram
+% ha14 = axes;
+% set(ha14, 'units', 'centimeters', 'position', [2+2*(opts.sep_row+opts.plotsize(1, 1))+4.5 2+0*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(2, :) .* [3/5 1] ], 'nextplot', 'add', 'fontsize', 8);
+% plot_interruption(ha14, obj, cp, opts);
 
 %% ha1. Make a diagram of the setup
     function plot_diagram(ax, opts)
