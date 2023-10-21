@@ -88,11 +88,11 @@ function ydata = tsne_p(P, labels, no_dims)
             P = P ./ 4;
         end
         
-        % Print out progress
-        if ~rem(iter, 10)
-            cost = const - sum(P(:) .* log(Q(:)));
-            disp(['Iteration ' num2str(iter) ': error is ' num2str(cost)]);
-        end
+%         % Print out progress
+%         if ~rem(iter, 10)
+%             cost = const - sum(P(:) .* log(Q(:)));
+%             disp(['Iteration ' num2str(iter) ': error is ' num2str(cost)]);
+%         end
         
         % Display scatter plot (maximally first three dimensions)
         if ~rem(iter, 10) && ~isempty(labels)

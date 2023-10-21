@@ -14,8 +14,10 @@ if ~tf
 end
 
 %%
+AnmInfoFile = "F:\YuLab\Work\GPS\Data\ANMInfo.xlsx";
+
 % Use the uigetdir function to open a dialog box and allow the user to select the parent directory
-ParentDir = 'E:\YuLab\Work\GPS\Data';
+ParentDir = 'F:\YuLab\Work\GPS\Data';
 
 Entry = dir(ParentDir);
 ANMFolders = [];
@@ -74,7 +76,7 @@ for d = 1:length(Folders)
             mkdir(SessionDataFigsFolder);
         end
 
-        SessionClass = GPSSessionKbClass(file);
+        SessionClass = GPSSessionKbClass(file, AnmInfoFile);
         SessionClass.save();
         SessionClass.updateANMInfo();
         SessionClass.print(SessionDataFigsFolder);

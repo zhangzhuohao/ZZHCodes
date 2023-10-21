@@ -415,7 +415,11 @@ plot_hold_duration_median(ha_hd_median, obj, opts);
         p_this = obj.Ports==upper(string(port));
         fp_this = unique(obj.MixedFP);
 
-        HDs = obj.HDSortedAll;
+        if all(all(cellfun(@(x) length(x)>=100, obj.HDSortedNone)))
+            HDs = obj.HDSortedNone;
+        else
+            HDs = cellfun(@(x, y) [x; y], obj.HDSortedNone, obj.HDSortedSaline, 'UniformOutput', false);
+        end
 
         xline(ax, fp_this, 'color', [.7 .7 .7], 'linewidth', 1.5, 'LineStyle', '-');
         xline(ax, fp_this+.5, 'Color', [.7 .7 .7], 'LineWidth', 1.5, 'LineStyle', '--');

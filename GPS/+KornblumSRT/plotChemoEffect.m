@@ -67,7 +67,7 @@ end
 fig = figure(24); clf(24);
 set(gcf, 'unit', 'centimeters', 'position', [2 1 28.5 18.4], 'paperpositionmode', 'auto', 'color', 'w');
 
-uicontrol('Style', 'text', 'parent', 24, 'units', 'normalized', 'position', [0.3 0.95 0.4 0.04],...
+uicontrol('Style', 'text', 'parent', 24, 'units', 'normalized', 'position', [0.2 0.95 0.6 0.04],...
     'string', obj.Subject+" / "+obj.Task+" / "+obj.Sessions(1)+"_"+obj.Sessions(end)+" / ChemoEffect", 'fontsize', 11, 'fontweight', 'bold', 'backgroundcolor', 'w');
 
 %% Set axes and plot
@@ -171,7 +171,9 @@ plot_shuttle_time_violin(ha_st_violin, obj, cp, opts);
         for fp_this = 1:length(obj.MixedFP)
             yline(ax, obj.MixedFP(fp_this), 'Color', [.8 .8 .8], 'LineWidth', opts.lw(fp_this), 'LineStyle', ':', 'Alpha', 0.4);
         end
-        xline(ax, cp.session_sep, 'Color', [.7 .7 .7], 'LineWidth', 1, 'LineStyle', '-');
+        if ~isempty(cp.session_sep)
+            xline(ax, cp.session_sep, 'Color', [.7 .7 .7], 'LineWidth', 1, 'LineStyle', '-');
+        end
 
         switch lower(lb)
             case {'control', 'ctrl'}
@@ -248,7 +250,9 @@ plot_shuttle_time_violin(ha_st_violin, obj, cp, opts);
 %% ha3. Plot performance track of each session
     function plot_performance_track(ax, obj, cp, opts)
 
-        xline(ax, cp.session_sep, 'Color', [.7 .7 .7], 'LineWidth', 1, 'LineStyle', '-')
+        if ~isempty(cp.session_sep)
+            xline(ax, cp.session_sep, 'Color', [.7 .7 .7], 'LineWidth', 1, 'LineStyle', '-');
+        end
 
         s_sep = [0 cp.session_sep];
 

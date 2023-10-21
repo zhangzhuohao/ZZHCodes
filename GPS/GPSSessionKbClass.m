@@ -9,6 +9,8 @@ classdef GPSSessionKbClass
         BpodFilePath
         BpodFileName
         Subject % Name of the animal, extrated from data file name
+
+        ANMInfoFile
         
         Task % Name of task, extrated from data file name and set as {'Autoshaping', 'Wait1Hold', 'Wait1HoldCRT', 'Wait2HoldCRT', 'ThreeFPHoldCRT', 'ThreeFPHoldSRT', 'Kornblum'}
         Session % Date of this session, extrated from data file name
@@ -50,7 +52,6 @@ classdef GPSSessionKbClass
             };
         Ports = ["L", "R"];
         CueUncue = [1 0];
-        ANMInfoFile = "E:\YuLab\Work\GPS\Data\ANMInfo.xlsx";
     end
 
     properties (Dependent)
@@ -105,11 +106,13 @@ classdef GPSSessionKbClass
 
     methods
         %% Initiate
-        function obj = GPSSessionKbClass(BpodFile)
+        function obj = GPSSessionKbClass(BpodFile, AnmInfoFile)
             % Process SessionData to get properties
             load(BpodFile, 'SessionData');
             obj.BpodFile = BpodFile;
             [obj.BpodFilePath, obj.BpodFileName] = fileparts(obj.BpodFile);
+
+            obj.ANMInfoFile = AnmInfoFile;
 
             % Rat name
             obj.Subject = extractBefore(obj.BpodFileName, '_');
