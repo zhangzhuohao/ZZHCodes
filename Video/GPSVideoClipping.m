@@ -101,7 +101,7 @@ vidInfo         =   split(VideoFolder, filesep);
 ANM             =   string(vidInfo{end-2});
 Session         =   string(vidInfo{end});
 
-ANMInfoFile     =   "D:\YuLab\Work\GPS\Data\ANMInfo.xlsx";
+ANMInfoFile     =   "F:\YuLab\Work\GPS\Data\ANMInfo.xlsx";
 ANMInfo         =   readtable(ANMInfoFile, "Sheet", ANM, "TextType", "string");
 ANMInfo.Session =   string(ANMInfo.Session);
 

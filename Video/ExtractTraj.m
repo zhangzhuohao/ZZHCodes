@@ -39,7 +39,7 @@ opts.ExtraColumnsRule = "ignore";
 opts.EmptyLineRule = "read";
 
 %%
-ClipFolder  = uigetdir('F:\YuLab\Work\GPS\Video\Morad\GPS_08_Kornblum1500SRTSelf\');
+ClipFolder  = uigetdir('D:\YuLab\Work\GPS\Video\Kennard\GPS_08_Kornblum1500SRTSelf\');
 [ViewFolder, dir_name] = fileparts(ClipFolder);
 if ~strcmp(dir_name, 'Clips')
     fprintf("\nPlease select a 'Clips' folder.\n");
@@ -52,7 +52,7 @@ view     = ClipInfo{end-1};
 session  = ClipInfo{end-2};
 anm      = ClipInfo{end-4};
 
-ANMInfoFile = 'D:\YuLab\Work\GPS\Data\ANMInfo.xlsx';
+ANMInfoFile = 'F:\YuLab\Work\GPS\Data\ANMInfo.xlsx';
 ANMInfo     = readtable(ANMInfoFile, 'Sheet', anm);
 SessionInfo = ANMInfo(ANMInfo.Session==str2double(session), :);
 SessionInfo.Session = int2str(SessionInfo.Session);
@@ -127,7 +127,7 @@ for i = 1:NumClips
     DropOut = 0;
     if size(D, 1) < 198
         DropOut = 1;
-        fprintf("\nDrop %d for frame loss\n", i);
+        fprintf("\nDrop %d for frame loss\n", VidMeta.EventIndex);
         continue;
     end
 
@@ -141,14 +141,14 @@ for i = 1:NumClips
         lh        =     D.([body_part '_lh'])(FrameBeg:FrameEnd);
 
         if j <=2
-            bad_label =     find(lh < 0.8);
+            bad_label = find(lh < 0.8);
             if ~isempty(bad_label)
                 DropOut = 1;
             end
         end
     end
     if DropOut
-        fprintf("\nDrop %d for bad labelling\n", i);
+        fprintf("\nDrop %d for bad labelling\n", VidMeta.EventIndex);
         continue;
     end
 
