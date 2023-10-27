@@ -140,10 +140,29 @@ for i = 1:NumClips
         y_pos     =     D.([body_part '_y'])(FrameBeg:FrameEnd) + DLCCrop(3);
         lh        =     D.([body_part '_lh'])(FrameBeg:FrameEnd);
 
-        if j <=2
+        if j <= 2 % check ear_base_left and ear_base_right
             bad_label = find(lh < 0.8);
             if ~isempty(bad_label)
                 DropOut = 1;
+
+                this_clip = VideoReader(fullfile(ClipFolder, clip_filename));
+
+                for k = 1:length(bad_label)
+
+                    this_frame_bad = read(this_clip, nframes(bad_label(k)));
+
+                    this_frame_filename = sprintf('%s_%03d.jpg', clip_filename(1:end-4), nframes(bad_label(k)));
+                    
+                    bad_label_folder = fullfile(ClipFolder, 'BadLabels');
+                    if ~isfolder(bad_label_folder)
+                        mkdir(bad_label_folder);
+                    end
+
+                    this_frame_filepath = fullfile(bad_label_folder, this_frame_filename);
+
+                    imwrite(this_frame_bad, this_frame_filepath, '.jpg');
+
+                end
             end
         end
     end
