@@ -39,8 +39,13 @@ opts.ExtraColumnsRule = "ignore";
 opts.EmptyLineRule = "read";
 
 %%
-ClipFolder  = uigetdir('D:\YuLab\Work\GPS\Video\Kennard\GPS_08_Kornblum1500SRTSelf\');
+ClipFolder  = uigetdir('D:\YuLab\Work\GPS\Video\Morad\GPS_09_Kornblum2000SRTSelf\');
+if ~ClipFolder
+    return
+end
 [ViewFolder, dir_name] = fileparts(ClipFolder);
+[DateFolder, ~] = fileparts(ViewFolder);
+[TaskFolder, ~] = fileparts(DateFolder);
 if ~strcmp(dir_name, 'Clips')
     fprintf("\nPlease select a 'Clips' folder.\n");
     return
@@ -160,7 +165,7 @@ for i = 1:NumClips
 
                     this_frame_filepath = fullfile(bad_label_folder, this_frame_filename);
 
-                    imwrite(this_frame_bad, this_frame_filepath, '.jpg');
+                    imwrite(this_frame_bad, this_frame_filepath);
 
                 end
             end
