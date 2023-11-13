@@ -358,7 +358,7 @@ print(FigLEDon, '-dpng', SaveNameFigLEDon);
 %% 
 fprintf("\n----------------------------------------");
 fprintf("\n----------------------------------------\n");
-[IndOut, FigAlign] = findseqmatchrev(tMarkingEvent*1000, tLEDon);
+[IndOut, FigAlign] = findseqmatchrev(tMarkingEvent*1000, tLEDon, 1);
 SaveNameFigAlign = fullfile(VideoFolder, "Alignment");
 print(FigAlign, '-dpng', SaveNameFigAlign);
 

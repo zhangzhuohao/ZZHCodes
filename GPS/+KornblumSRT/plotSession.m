@@ -206,8 +206,8 @@ plot_reaction_time_collected(ha13, obj, opts);
 %% ha6. Plot hold duration and FP
     function plot_hold_duration(ax, obj, opts)
 
-        yline(ax, 1.5, 'Color', [.7 .7 .7], 'LineWidth', 1.5, 'LineStyle', '--');
-        yline(ax, 1.8, 'Color', [.7 .7 .7], 'LineWidth', 1.5, 'LineStyle', ':');
+        yline(ax, obj.MixedFP+0.5, 'Color', [.7 .7 .7], 'LineWidth', 1.5, 'LineStyle', '--');
+        yline(ax, obj.MixedFP+0.8, 'Color', [.7 .7 .7], 'LineWidth', 1.5, 'LineStyle', ':');
         line(ax, [opts.ticks opts.ticks]', [0 2.5/20], 'color', 'K')
 
         % FPs
@@ -261,8 +261,8 @@ plot_reaction_time_collected(ha13, obj, opts);
 %% ha7. plot hold duration pdf
     function plot_hold_duration_pdf_l(ax, obj, opts)
 
-        yline(ax, 1.5, 'Color', [.7 .7 .7], 'LineWidth', 1.5, 'LineStyle', '--');
-        yline(ax, 1.8, 'Color', [.7 .7 .7], 'LineWidth', 1.5, 'LineStyle', ':');
+        yline(ax, obj.MixedFP+0.5, 'Color', [.7 .7 .7], 'LineWidth', 1.5, 'LineStyle', '--');
+        yline(ax, obj.MixedFP+0.8, 'Color', [.7 .7 .7], 'LineWidth', 1.5, 'LineStyle', ':');
 
         binEdges = obj.Bins.HoldDuration;
 
@@ -283,8 +283,8 @@ plot_reaction_time_collected(ha13, obj, opts);
 %% ha7.1. plot hold duration cdf
     function plot_hold_duration_pdf_r(ax, obj, opts)
 
-        yline(ax, 1.5, 'Color', [.7 .7 .7], 'LineWidth', 1.5, 'LineStyle', '--');
-        yline(ax, 1.8, 'Color', [.7 .7 .7], 'LineWidth', 1.5, 'LineStyle', ':');
+        yline(ax, obj.MixedFP+0.5, 'Color', [.7 .7 .7], 'LineWidth', 1.5, 'LineStyle', '--');
+        yline(ax, obj.MixedFP+0.8, 'Color', [.7 .7 .7], 'LineWidth', 1.5, 'LineStyle', ':');
 
         binEdges = obj.Bins.HoldDuration;
 
