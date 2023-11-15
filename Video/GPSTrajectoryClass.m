@@ -56,7 +56,6 @@ classdef GPSTrajectoryClass
         AngleHead
         AngleHeadMatIn
         AngleHeadMatOut
-
     end
 
     methods

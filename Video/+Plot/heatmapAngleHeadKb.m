@@ -79,31 +79,32 @@ switch opts.Performance
 end
 
 %%
-M = obj.("AngleHeadMat"+opts.AlignTo)(these_trials, :);
+M = obj.alignMatrix(obj.AngleHead, obj.("TimeFrom"+opts.AlignTo), obj.("TimeMat"+opts.AlignTo));
+M = M(these_trials, :);
 
 if isempty(M)
     set(ax, 'ylim', [0.5 1.5], 'ytick', [], 'xticklabel', [], 'ycolor', 'none');
     ax.Position(4) = 0.05*ax.Position(4);
     switch opts.AlignTo
         case "In"
-            point_in = find(obj.TimePointsIn==0);
+            point_in = find(obj.TimeMatIn==0);
             set(ax, 'xtick', point_in + (-500:500:2500), 'xticklabel', ["-500", "0", "500", "1000", "1500", "2000", "2500"]);
 
         case "Out"
-            point_out = find(obj.TimePointsOut==0);
+            point_out = find(obj.TimeMatOut==0);
             set(ax, 'xtick', point_out + (-2500:500:600), 'xticklabel', ["-2500", "-2000", "-1500", "-1000", "-500", "0", "500"]);
     end
     ax.XLabel.String     = "Time from poke "+opts.AlignTo+" (ms)";
     ax.XLabel.FontWeight = "Bold";
 
-    set(ax, 'ydir', 'reverse', 'xlim', [0 length(obj.("TimePoints"+opts.AlignTo))]);
+    set(ax, 'ydir', 'reverse', 'xlim', [0 length(obj.("TimeMat"+opts.AlignTo))]);
 
     return
 end
 
 switch opts.AlignTo
     case "In"
-        point_in = find(obj.TimePointsIn==0);
+        point_in = find(obj.TimeMatIn==0);
         xline(ax, point_in, '-', 'LineWidth', 1.2);
 
         imagesc(ax, M, "AlphaData", ~isnan(M));
@@ -120,7 +121,7 @@ switch opts.AlignTo
         set(ax, 'xtick', point_in + (-500:500:2500), 'xticklabel', ["-500", "0", "500", "1000", "1500", "2000", "2500"]);
 
     case "Out"
-        point_out = find(obj.TimePointsOut==0);
+        point_out = find(obj.TimeMatOut==0);
         xline(ax, point_out, '-', 'LineWidth', 1.2);
 
         imagesc(ax, M, "AlphaData", ~isnan(M));
@@ -157,5 +158,5 @@ elseif length(these_trials)<160
     set(ax, 'ytick', 0:20:160);
 end
 set(ax, 'ydir', 'reverse', 'ylim', [0.5 length(these_trials)+0.5], ...
-    'xlim', [0 length(obj.("TimePoints"+opts.AlignTo))]);
+    'xlim', [0 length(obj.("TimeMat"+opts.AlignTo))]);
 end

@@ -3,9 +3,9 @@ clear; close all;
 
 View = "Top";
 
-AnmInfoFile = 'D:\YuLab\Work\GPS\Data\ANMInfo.xlsx';
+AnmInfoFile = 'F:\YuLab\Work\GPS\Data\ANMInfo.xlsx';
 
-ParentDir = uigetdir("D:\YuLab\Work\GPS\Video", "Select parent directory");
+ParentDir = uigetdir("F:\YuLab\Work\GPS\Video", "Select parent directory");
 if ~ParentDir
     return
 end
@@ -31,5 +31,5 @@ TrajGroupClass = GPSTrajGroupKbClass(AllTrajClass, AnmInfoFile);
 TrajGroupClass.save(ParentDir);
 
 TrajGroupClass.print("HeatMap", ParentDir);
-TrajGroupClass.print("Trace", ParentDir);
+% TrajGroupClass.print("Trace", ParentDir);
 

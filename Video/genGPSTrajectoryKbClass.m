@@ -3,7 +3,7 @@ clear; close all;
 
 View = "Top";
 
-AnmInfoFile = 'D:\YuLab\Work\GPS\Data\ANMInfo.xlsx';
+AnmInfoFile = 'F:\YuLab\Work\GPS\Data\ANMInfo.xlsx';
 
 ParentDir = uigetdir("F:\YuLab\Work\GPS\Video", "Select parent directory");
 if ~ParentDir
@@ -42,7 +42,7 @@ for i = 1:length(ClipFolders)
     fprintf("\n%s\n", TrajectoryClass.Session);
 
     TrajectoryClass.print("HeatMap", TrajSessionFolder);
-    TrajectoryClass.print("Trace", TrajSessionFolder);
+%     TrajectoryClass.print("Trace", TrajSessionFolder);
 
 %     TrajectoryClass.AngleHeadTraceInTest = TrajectoryClass.testTrace("In", 2000);
 %     TrajectoryClass.AngleHeadTraceOutTest = TrajectoryClass.testTrace("Out", 2000);
