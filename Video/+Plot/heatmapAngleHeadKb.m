@@ -79,7 +79,7 @@ switch opts.Performance
 end
 
 %%
-M = obj.alignMatrix(obj.AngleHead, obj.("TimeFrom"+opts.AlignTo), obj.("TimeMat"+opts.AlignTo));
+M = obj.trace2mat(obj.AngleHead, obj.("TimeFrom"+opts.AlignTo), obj.("TimeMat"+opts.AlignTo));
 M = M(these_trials, :);
 
 if isempty(M)

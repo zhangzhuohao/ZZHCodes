@@ -318,7 +318,7 @@ plot_hold_duration_median(ha_hd_median, obj, opts);
         ax.YLabel.String = 'Reaction time median (s)';
         ax.XLabel.FontWeight = 'Bold';
         ax.YLabel.FontWeight = 'Bold';
-        set(ax, 'xlim', [.5 obj.NumSessions+.5], 'ylim', [0 3], 'xtick', 1:obj.NumSessions, ...
+        set(ax, 'xlim', [.5 obj.NumSessions+.5], 'ylim', [obj.MixedFP-.5 obj.MixedFP+.5], 'xtick', 1:obj.NumSessions, ...
             'xticklabel', opts.session_date, 'ticklength', [0.01 0.1], 'box', 'off');
     end
 
