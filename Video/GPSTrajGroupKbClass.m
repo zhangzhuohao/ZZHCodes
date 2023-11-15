@@ -53,6 +53,9 @@ classdef GPSTrajGroupKbClass
         AccHead
         dPhiHead
 
+        DistMatDtw = [];
+        DistMatLw  = [];
+
 %         AngleHeadTraceIn
 %         AngleHeadTraceOut
 %         AngleHeadTraceInTest
@@ -66,7 +69,7 @@ classdef GPSTrajGroupKbClass
 
         TimeMatIn  = -99:1:3000;
         TimeMatOut = -2099:1:1000;
-        TimeMatWarp = -0.2:0.001:1.6;
+        TimeMatWarp = -0.2+0.002:0.002:1.6;
         
 %         ShuffleIters  = 200;
 %         Alpha         = 0.01;
@@ -74,48 +77,48 @@ classdef GPSTrajGroupKbClass
 
     properties (Dependent)
         Ind
-
-        AngleHeadMatIn
-        AngleHeadMatOut
-        AngleHeadMatWarp
-        AngSpeedHeadMatIn
-        AngSpeedHeadMatOut
-        AngSpeedHeadMatWarp
-        AngAccHeadMatIn
-        AngAccHeadMatOut
-        AngAccHeadMatWarp
-
-        PosXHeadMatIn
-        PosXHeadMatOut
-        PosXHeadMatWarp
-        PosYHeadMatIn
-        PosYHeadMatOut
-        PosYHeadMatWarp
-        SpeedXHeadMatIn
-        SpeedXHeadMatOut
-        SpeedXHeadMatWarp
-        SpeedYHeadMatIn
-        SpeedYHeadMatOut
-        SpeedYHeadMatWarp
-        AccXHeadMatIn
-        AccXHeadMatOut
-        AccXHeadMatWarp
-        AccYHeadMatIn
-        AccYHeadMatOut
-        AccYHeadMatWarp
-
-        SpeedHeadMatIn
-        SpeedHeadMatOut
-        SpeedHeadMatWarp
-        SpeedDirHeadMatIn
-        SpeedDirHeadMatOut
-        SpeedDirHeadMatWarp
-        AccHeadMatIn
-        AccHeadMatOut
-        AccHeadMatWarp
-        dPhiHeadMatIn
-        dPhiHeadMatOut
-        dPhiHeadMatWarp
+        %% Trace matrix
+%         AngleHeadMatIn
+%         AngleHeadMatOut
+%         AngleHeadMatWarp
+%         AngSpeedHeadMatIn
+%         AngSpeedHeadMatOut
+%         AngSpeedHeadMatWarp
+%         AngAccHeadMatIn
+%         AngAccHeadMatOut
+%         AngAccHeadMatWarp
+% 
+%         PosXHeadMatIn
+%         PosXHeadMatOut
+%         PosXHeadMatWarp
+%         PosYHeadMatIn
+%         PosYHeadMatOut
+%         PosYHeadMatWarp
+%         SpeedXHeadMatIn
+%         SpeedXHeadMatOut
+%         SpeedXHeadMatWarp
+%         SpeedYHeadMatIn
+%         SpeedYHeadMatOut
+%         SpeedYHeadMatWarp
+%         AccXHeadMatIn
+%         AccXHeadMatOut
+%         AccXHeadMatWarp
+%         AccYHeadMatIn
+%         AccYHeadMatOut
+%         AccYHeadMatWarp
+% 
+%         SpeedHeadMatIn
+%         SpeedHeadMatOut
+%         SpeedHeadMatWarp
+%         SpeedDirHeadMatIn
+%         SpeedDirHeadMatOut
+%         SpeedDirHeadMatWarp
+%         AccHeadMatIn
+%         AccHeadMatOut
+%         AccHeadMatWarp
+%         dPhiHeadMatIn
+%         dPhiHeadMatOut
+%         dPhiHeadMatWarp
     end
 
     methods
@@ -332,138 +335,138 @@ classdef GPSTrajGroupKbClass
         end
 
         %% Aligna matrix
-        function value = get.AngleHeadMatIn(obj)
-            value = obj.alignMatrix(obj.AngleHead, obj.TimeFromIn, obj.TimeMatIn);
-        end
-        function value = get.AngleHeadMatOut(obj)
-            value = obj.alignMatrix(obj.AngleHead, obj.TimeFromOut, obj.TimeMatOut);
-        end
-        function value = get.AngleHeadMatWarp(obj)
-            value = obj.alignMatrix(obj.AngleHead, obj.TimeWarped, obj.TimeMatWarp);
-        end
+%         function value = get.AngleHeadMatIn(obj)
+%             value = obj.alignMatrix(obj.AngleHead, obj.TimeFromIn, obj.TimeMatIn);
+%         end
+%         function value = get.AngleHeadMatOut(obj)
+%             value = obj.alignMatrix(obj.AngleHead, obj.TimeFromOut, obj.TimeMatOut);
+%         end
+%         function value = get.AngleHeadMatWarp(obj)
+%             value = obj.alignMatrix(obj.AngleHead, obj.TimeWarped, obj.TimeMatWarp);
+%         end
+% 
+%         function value = get.AngSpeedHeadMatIn(obj)
+%             value = obj.alignMatrix(obj.AngSpeedHead, obj.TimeFromIn, obj.TimeMatIn);
+%         end
+%         function value = get.AngSpeedHeadMatOut(obj)
+%             value = obj.alignMatrix(obj.AngSpeedHead, obj.TimeFromOut, obj.TimeMatOut);
+%         end
+%         function value = get.AngSpeedHeadMatWarp(obj)
+%             value = obj.alignMatrix(obj.AngSpeedHead, obj.TimeWarped, obj.TimeMatWarp);
+%         end
+% 
+%         function value = get.AngAccHeadMatIn(obj)
+%             value = obj.alignMatrix(obj.AngAccHead, obj.TimeFromIn, obj.TimeMatIn);
+%         end
+%         function value = get.AngAccHeadMatOut(obj)
+%             value = obj.alignMatrix(obj.AngAccHead, obj.TimeFromOut, obj.TimeMatOut);
+%         end
+%         function value = get.AngAccHeadMatWarp(obj)
+%             value = obj.alignMatrix(obj.AngAccHead, obj.TimeWarped, obj.TimeMatWarp);
+%         end
+% 
+%         function value = get.PosXHeadMatIn(obj)
+%             value = obj.alignMatrix(obj.PosXHead, obj.TimeFromIn, obj.TimeMatIn);
+%         end
+%         function value = get.PosXHeadMatOut(obj)
+%             value = obj.alignMatrix(obj.PosXHead, obj.TimeFromOut, obj.TimeMatOut);
+%         end
+%         function value = get.PosXHeadMatWarp(obj)
+%             value = obj.alignMatrix(obj.PosXHead, obj.TimeWarped, obj.TimeMatWarp);
+%         end
+% 
+%         function value = get.PosYHeadMatIn(obj)
+%             value = obj.alignMatrix(obj.PosYHead, obj.TimeFromIn, obj.TimeMatIn);
+%         end
+%         function value = get.PosYHeadMatOut(obj)
+%             value = obj.alignMatrix(obj.PosYHead, obj.TimeFromOut, obj.TimeMatOut);
+%         end
+%         function value = get.PosYHeadMatWarp(obj)
+%             value = obj.alignMatrix(obj.PosYHead, obj.TimeWarped, obj.TimeMatWarp);
+%         end
+% 
+%         function value = get.SpeedXHeadMatIn(obj)
+%             value = obj.alignMatrix(obj.SpeedXHead, obj.TimeFromIn, obj.TimeMatIn);
+%         end
+%         function value = get.SpeedXHeadMatOut(obj)
+%             value = obj.alignMatrix(obj.SpeedXHead, obj.TimeFromOut, obj.TimeMatOut);
+%         end
+%         function value = get.SpeedXHeadMatWarp(obj)
+%             value = obj.alignMatrix(obj.SpeedXHead, obj.TimeWarped, obj.TimeMatWarp);
+%         end
+% 
+%         function value = get.SpeedYHeadMatIn(obj)
+%             value = obj.alignMatrix(obj.SpeedYHead, obj.TimeFromIn, obj.TimeMatIn);
+%         end
+%         function value = get.SpeedYHeadMatOut(obj)
+%             value = obj.alignMatrix(obj.SpeedYHead, obj.TimeFromOut, obj.TimeMatOut);
+%         end
+%         function value = get.SpeedYHeadMatWarp(obj)
+%             value = obj.alignMatrix(obj.SpeedYHead, obj.TimeWarped, obj.TimeMatWarp);
+%         end
+% 
+%         function value = get.AccXHeadMatIn(obj)
+%             value = obj.alignMatrix(obj.AccXHead, obj.TimeFromIn, obj.TimeMatIn);
+%         end
+%         function value = get.AccXHeadMatOut(obj)
+%             value = obj.alignMatrix(obj.AccXHead, obj.TimeFromOut, obj.TimeMatOut);
+%         end
+%         function value = get.AccXHeadMatWarp(obj)
+%             value = obj.alignMatrix(obj.AccXHead, obj.TimeWarped, obj.TimeMatWarp);
+%         end
+% 
+%         function value = get.AccYHeadMatIn(obj)
+%             value = obj.alignMatrix(obj.AccYHead, obj.TimeFromIn, obj.TimeMatIn);
+%         end
+%         function value = get.AccYHeadMatOut(obj)
+%             value = obj.alignMatrix(obj.AccYHead, obj.TimeFromOut, obj.TimeMatOut);
+%         end
+%         function value = get.AccYHeadMatWarp(obj)
+%             value = obj.alignMatrix(obj.AccYHead, obj.TimeWarped, obj.TimeMatWarp);
+%         end
+% 
+%         function value = get.SpeedHeadMatIn(obj)
+%             value = obj.alignMatrix(obj.SpeedHead, obj.TimeFromIn, obj.TimeMatIn);
+%         end
+%         function value = get.SpeedHeadMatOut(obj)
+%             value = obj.alignMatrix(obj.SpeedHead, obj.TimeFromOut, obj.TimeMatOut);
+%         end
+%         function value = get.SpeedHeadMatWarp(obj)
+%             value = obj.alignMatrix(obj.SpeedHead, obj.TimeWarped, obj.TimeMatWarp);
+%         end
+% 
+%         function value = get.SpeedDirHeadMatIn(obj)
+%             value = obj.alignMatrix(obj.SpeedDirHead, obj.TimeFromIn, obj.TimeMatIn);
+%         end
+%         function value = get.SpeedDirHeadMatOut(obj)
+%             value = obj.alignMatrix(obj.SpeedDirHead, obj.TimeFromOut, obj.TimeMatOut);
+%         end
+%         function value = get.SpeedDirHeadMatWarp(obj)
+%             value = obj.alignMatrix(obj.SpeedDirHead, obj.TimeWarped, obj.TimeMatWarp);
+%         end
+% 
+%         function value = get.AccHeadMatIn(obj)
+%             value = obj.alignMatrix(obj.AccHead, obj.TimeFromIn, obj.TimeMatIn);
+%         end
+%         function value = get.AccHeadMatOut(obj)
+%             value = obj.alignMatrix(obj.AccHead, obj.TimeFromOut, obj.TimeMatOut);
+%         end
+%         function value = get.AccHeadMatWarp(obj)
+%             value = obj.alignMatrix(obj.AccHead, obj.TimeWarped, obj.TimeMatWarp);
+%         end
+% 
+%         function value = get.dPhiHeadMatIn(obj)
+%             value = obj.alignMatrix(obj.dPhiHead, obj.TimeFromIn, obj.TimeMatIn);
+%         end
+%         function value = get.dPhiHeadMatOut(obj)
+%             value = obj.alignMatrix(obj.dPhiHead, obj.TimeFromOut, obj.TimeMatOut);
+%         end
+%         function value = get.dPhiHeadMatWarp(obj)
+%             value = obj.alignMatrix(obj.dPhiHead, obj.TimeWarped, obj.TimeMatWarp);
+%         end
 
-        function value = get.AngSpeedHeadMatIn(obj)
-            value = obj.alignMatrix(obj.AngSpeedHead, obj.TimeFromIn, obj.TimeMatIn);
-        end
-        function value = get.AngSpeedHeadMatOut(obj)
-            value = obj.alignMatrix(obj.AngSpeedHead, obj.TimeFromOut, obj.TimeMatOut);
-        end
-        function value = get.AngSpeedHeadMatWarp(obj)
-            value = obj.alignMatrix(obj.AngSpeedHead, obj.TimeWarped, obj.TimeMatWarp);
-        end
-
-        function value = get.AngAccHeadMatIn(obj)
-            value = obj.alignMatrix(obj.AngAccHead, obj.TimeFromIn, obj.TimeMatIn);
-        end
-        function value = get.AngAccHeadMatOut(obj)
-            value = obj.alignMatrix(obj.AngAccHead, obj.TimeFromOut, obj.TimeMatOut);
-        end
-        function value = get.AngAccHeadMatWarp(obj)
-            value = obj.alignMatrix(obj.AngAccHead, obj.TimeWarped, obj.TimeMatWarp);
-        end
-
-        function value = get.PosXHeadMatIn(obj)
-            value = obj.alignMatrix(obj.PosXHead, obj.TimeFromIn, obj.TimeMatIn);
-        end
-        function value = get.PosXHeadMatOut(obj)
-            value = obj.alignMatrix(obj.PosXHead, obj.TimeFromOut, obj.TimeMatOut);
-        end
-        function value = get.PosXHeadMatWarp(obj)
-            value = obj.alignMatrix(obj.PosXHead, obj.TimeWarped, obj.TimeMatWarp);
-        end
-
-        function value = get.PosYHeadMatIn(obj)
-            value = obj.alignMatrix(obj.PosYHead, obj.TimeFromIn, obj.TimeMatIn);
-        end
-        function value = get.PosYHeadMatOut(obj)
-            value = obj.alignMatrix(obj.PosYHead, obj.TimeFromOut, obj.TimeMatOut);
-        end
-        function value = get.PosYHeadMatWarp(obj)
-            value = obj.alignMatrix(obj.PosYHead, obj.TimeWarped, obj.TimeMatWarp);
-        end
-
-        function value = get.SpeedXHeadMatIn(obj)
-            value = obj.alignMatrix(obj.SpeedXHead, obj.TimeFromIn, obj.TimeMatIn);
-        end
-        function value = get.SpeedXHeadMatOut(obj)
-            value = obj.alignMatrix(obj.SpeedXHead, obj.TimeFromOut, obj.TimeMatOut);
-        end
-        function value = get.SpeedXHeadMatWarp(obj)
-            value = obj.alignMatrix(obj.SpeedXHead, obj.TimeWarped, obj.TimeMatWarp);
-        end
-
-        function value = get.SpeedYHeadMatIn(obj)
-            value = obj.alignMatrix(obj.SpeedYHead, obj.TimeFromIn, obj.TimeMatIn);
-        end
-        function value = get.SpeedYHeadMatOut(obj)
-            value = obj.alignMatrix(obj.SpeedYHead, obj.TimeFromOut, obj.TimeMatOut);
-        end
-        function value = get.SpeedYHeadMatWarp(obj)
-            value = obj.alignMatrix(obj.SpeedYHead, obj.TimeWarped, obj.TimeMatWarp);
-        end
-
-        function value = get.AccXHeadMatIn(obj)
-            value = obj.alignMatrix(obj.AccXHead, obj.TimeFromIn, obj.TimeMatIn);
-        end
-        function value = get.AccXHeadMatOut(obj)
-            value = obj.alignMatrix(obj.AccXHead, obj.TimeFromOut, obj.TimeMatOut);
-        end
-        function value = get.AccXHeadMatWarp(obj)
-            value = obj.alignMatrix(obj.AccXHead, obj.TimeWarped, obj.TimeMatWarp);
-        end
-
-        function value = get.AccYHeadMatIn(obj)
-            value = obj.alignMatrix(obj.AccYHead, obj.TimeFromIn, obj.TimeMatIn);
-        end
-        function value = get.AccYHeadMatOut(obj)
-            value = obj.alignMatrix(obj.AccYHead, obj.TimeFromOut, obj.TimeMatOut);
-        end
-        function value = get.AccYHeadMatWarp(obj)
-            value = obj.alignMatrix(obj.AccYHead, obj.TimeWarped, obj.TimeMatWarp);
-        end
-
-        function value = get.SpeedHeadMatIn(obj)
-            value = obj.alignMatrix(obj.SpeedHead, obj.TimeFromIn, obj.TimeMatIn);
-        end
-        function value = get.SpeedHeadMatOut(obj)
-            value = obj.alignMatrix(obj.SpeedHead, obj.TimeFromOut, obj.TimeMatOut);
-        end
-        function value = get.SpeedHeadMatWarp(obj)
-            value = obj.alignMatrix(obj.SpeedHead, obj.TimeWarped, obj.TimeMatWarp);
-        end
-
-        function value = get.SpeedDirHeadMatIn(obj)
-            value = obj.alignMatrix(obj.SpeedDirHead, obj.TimeFromIn, obj.TimeMatIn);
-        end
-        function value = get.SpeedDirHeadMatOut(obj)
-            value = obj.alignMatrix(obj.SpeedDirHead, obj.TimeFromOut, obj.TimeMatOut);
-        end
-        function value = get.SpeedDirHeadMatWarp(obj)
-            value = obj.alignMatrix(obj.SpeedDirHead, obj.TimeWarped, obj.TimeMatWarp);
-        end
-
-        function value = get.AccHeadMatIn(obj)
-            value = obj.alignMatrix(obj.AccHead, obj.TimeFromIn, obj.TimeMatIn);
-        end
-        function value = get.AccHeadMatOut(obj)
-            value = obj.alignMatrix(obj.AccHead, obj.TimeFromOut, obj.TimeMatOut);
-        end
-        function value = get.AccHeadMatWarp(obj)
-            value = obj.alignMatrix(obj.AccHead, obj.TimeWarped, obj.TimeMatWarp);
-        end
-
-        function value = get.dPhiHeadMatIn(obj)
-            value = obj.alignMatrix(obj.dPhiHead, obj.TimeFromIn, obj.TimeMatIn);
-        end
-        function value = get.dPhiHeadMatOut(obj)
-            value = obj.alignMatrix(obj.dPhiHead, obj.TimeFromOut, obj.TimeMatOut);
-        end
-        function value = get.dPhiHeadMatWarp(obj)
-            value = obj.alignMatrix(obj.dPhiHead, obj.TimeWarped, obj.TimeMatWarp);
-        end
-
-        %%
-        function M = alignMatrix(~, trace, time_points, time_matrix)
+        %% Functions
+        function M = trace2mat(~, trace, time_points, time_matrix)
             
             M = cellfun(@(x, t) interp1(t, x, time_matrix, "linear"), trace, time_points, 'UniformOutput', false);
             M = M';
@@ -476,11 +479,61 @@ classdef GPSTrajGroupKbClass
                 norm_method = 'range';
             end
             trace_all = cell2mat(trace');
-            trace_all_normalized = normalize(trace_all, norm_method);
+            trace_all_normalized = normalize(trace_all, 1, norm_method);
 
-            trace_normalized = mat2cell(trace_all_normalized, cellfun(@(x) length(x), trace));
+            trace_normalized = mat2cell(trace_all_normalized, cellfun(@(x) size(x, 1), trace));
             trace_normalized = trace_normalized';
         end
+
+        function trace_gathered = gatherTrace(obj, body_parts)
+
+            body_parts = string(body_parts);
+            trace_gathered = obj.(body_parts(1));
+
+            for i = 2:length(body_parts)
+                trace_gathered = cellfun(@(x, y) [x y], trace_gathered, obj.(body_parts(i)), 'UniformOutput', false);
+            end
+        end
+
+        %% Calculate distance matrix
+        % dynamic time warp (DTW)
+        function dist_mat = calDistDtw(obj, trace, trace_norm_method, mat_norm_method)
+
+            if nargin > 2
+                if ~strcmpi(trace_norm_method, 'none')
+                    trace = obj.normalizeTrace(trace, trace_norm_method);
+                end
+            end
+
+            num_trials = length(trace);
+            dist_mat = zeros(num_trials);
+
+            num_to_cal = .5*num_trials^2 - num_trials;
+            num_calculated = 0;
+
+            for m = 1:num_trials
+                for n = m+1:num_trials
+                    dist_mat(m, n) = dtw(trace{m}', trace{n}');
+                    num_calculated = num_calculated + 1;
+
+                    if ~mod(num_calculated, floor(num_to_cal/100))
+                        fprintf('%.0f / %.0f    - %.0f%%\n', num_calculated, num_to_cal, 100*num_calculated/num_to_cal);
+                    end
+                end
+            end
+            dist_mat = dist_mat + dist_mat';
+
+            if nargin > 3
+                if ~strcmpi(mat_norm_method, 'none')
+                    dist_mat = normalize(dist_mat(:), mat_norm_method);
+                    dist_mat = reshape(dist_mat, num_trials, num_trials);
+                end
+            end
+        end
+
+        % linear warp (LW)
+
+
         %%
         function AngleHeadTrace = getAngleHeadTrace(obj, AlignTo)
             
