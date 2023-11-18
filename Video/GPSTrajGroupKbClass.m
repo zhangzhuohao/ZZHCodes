@@ -70,13 +70,15 @@ classdef GPSTrajGroupKbClass
         TimeMatIn  = -99:1:3000;
         TimeMatOut = -2099:1:1000;
         TimeMatWarp = -0.2+0.002:0.002:1.6;
-        
+
 %         ShuffleIters  = 200;
 %         Alpha         = 0.01;
     end
 
     properties (Dependent)
         Ind
+
+        TimeWarpAlign
         %% Trace matrix
 %         AngleHeadMatIn
 %         AngleHeadMatOut
@@ -334,6 +336,14 @@ classdef GPSTrajGroupKbClass
             value = ind;
         end
 
+        function value = get.TimeWarpAlign(obj)
+            
+            num_max = max(cellfun(@(x) length(x), obj.TimeWarped));
+            time_warp_align = linspace(0, 1, num_max);
+
+            value = time_warp_align;
+        end
+
         %% Aligna matrix
 %         function value = get.AngleHeadMatIn(obj)
 %             value = obj.alignMatrix(obj.AngleHead, obj.TimeFromIn, obj.TimeMatIn);
@@ -466,13 +476,50 @@ classdef GPSTrajGroupKbClass
 %         end
 
         %% Functions
-        function M = trace2mat(~, trace, time_points, time_matrix)
+        function [M, t_M] = trace2mat(~, trace, time_trace, time_matrix)
             
-            M = cellfun(@(x, t) interp1(t, x, time_matrix, "linear"), trace, time_points, 'UniformOutput', false);
+            num_timepoint = length(time_matrix);
+            num_feature = size(trace{1}, 2);
+
+            M = cellfun(@(trace, t) interp1(t, trace, time_matrix, "linear"), trace, time_trace, 'UniformOutput', false);
             M = M';
+            M = cellfun(@(m) reshape(m, 1, num_timepoint, num_feature), M, 'UniformOutput', false);
             M = cell2mat(M);
+
+            t_M = time_matrix;
         end
 
+        function [T, t_T] = mat2trace(~, mat, time_matrix, time_trace)
+
+            num_trace = size(mat, 1);
+            num_timepoint = length(time_matrix);
+            num_feature = size(mat, 3);
+
+            if nargin<4
+                time_trace = repmat(mat2cell(time_matrix', length(time_matrix)), 1, num_trace);
+            end
+
+            mat = mat2cell(mat, ones(num_trace, 1));
+            mat = cellfun(@(m) reshape(m, num_timepoint, num_feature), mat, 'UniformOutput', false);
+
+            T = cellfun(@(m, t) interp1(time_matrix, m, t, "linear"), mat, time_trace', 'UniformOutput', false);
+            T = T';
+
+            t_T = time_trace;
+        end
+
+        function A = trace2array(~, trace)
+
+            A = cell2mat(trace');
+        end
+
+        function T = array2trace(~, array, time_trace)
+
+            T = mat2cell(array, cellfun(@(x) length(x), time_trace));
+            T = T';
+        end
+
+        %%
         function trace_normalized = normalizeTrace(~, trace, norm_method)
             
             if nargin<3
@@ -497,7 +544,7 @@ classdef GPSTrajGroupKbClass
 
         %% Calculate distance matrix
         % dynamic time warp (DTW)
-        function dist_mat = calDistDtw(obj, trace, trace_norm_method, mat_norm_method)
+        function dist_mat = calDistDtw(obj, trace, trace_norm_method, dist_norm_method)
 
             if nargin > 2
                 if ~strcmpi(trace_norm_method, 'none')
@@ -524,8 +571,8 @@ classdef GPSTrajGroupKbClass
             dist_mat = dist_mat + dist_mat';
 
             if nargin > 3
-                if ~strcmpi(mat_norm_method, 'none')
-                    dist_mat = normalize(dist_mat(:), mat_norm_method);
+                if ~strcmpi(dist_norm_method, 'none')
+                    dist_mat = normalize(dist_mat(:), dist_norm_method);
                     dist_mat = reshape(dist_mat, num_trials, num_trials);
                 end
             end
