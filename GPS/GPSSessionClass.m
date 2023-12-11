@@ -11,6 +11,8 @@ classdef GPSSessionClass
         Subject % Name of the animal, extrated from data file name
 
         ANMInfoFile;
+        ANMInfo;
+        SessionInfo;
 
         Task % Name of task, extrated from data file name and set as {'Autoshaping', 'Wait1Hold', 'Wait1HoldCRT', 'Wait2HoldCRT', 'ThreeFPHoldCRT', 'ThreeFPHoldSRT', 'Kornblum'}
         Session % Date of this session, extrated from data file name
@@ -64,6 +66,8 @@ classdef GPSSessionClass
 
         Stage % warm-up or 3FP
         Engaged
+        InitFail
+
         Ind
         Bins
 
@@ -142,6 +146,10 @@ classdef GPSSessionClass
             end
 
             obj.ANMInfoFile = AnmInfoFile;
+            obj.ANMInfo = readtable(obj.ANMInfoFile, "Sheet", "ANM", "TextType", "string");
+            obj.ANMInfo = obj.ANMInfo(strcmp(obj.ANMInfo.Name, obj.Subject), :);
+            obj.SessionInfo = readtable(obj.ANMInfoFile, "Sheet", obj.Subject, "TextType", "string");
+            obj.SessionInfo = obj.SessionInfo(strcmp(obj.SessionInfo.Session, obj.Session), :);
 
             % Session meta-information
             obj.Session = Protocol(end-14:end-7);
@@ -219,44 +227,32 @@ classdef GPSSessionClass
 
         %% Get animal information
         function value = get.Strain(obj)
-            anm_info = readtable(obj.ANMInfoFile, "Sheet", "ANM", "TextType", "string");
-            strain = anm_info.Strain(strcmp(anm_info.Name, obj.Subject));
-
+            strain = obj.ANMInfo.Strain;
             value = strain;
         end
 
         function value = get.Gender(obj)
-            anm_info = readtable(obj.ANMInfoFile, "Sheet", "ANM", "TextType", "string");
-            gender = anm_info.Gender(strcmp(anm_info.Name, obj.Subject));
-
+            gender = obj.ANMInfo.Gender;
             value = gender;
         end
 
         function value = get.Treatment(obj)
-            anm_info = readtable(obj.ANMInfoFile, "Sheet", obj.Subject, "TextType", "string");
-            treatment = anm_info.Treatment(strcmp(string(anm_info.Session), obj.Session));
-
+            treatment = obj.SessionInfo.Treatment;
             value = treatment;
         end
 
         function value = get.Dose(obj)
-            anm_info = readtable(obj.ANMInfoFile, "Sheet", obj.Subject, "TextType", "string");
-            dose = anm_info.Dose(strcmp(string(anm_info.Session), obj.Session));
-
+            dose = obj.SessionInfo.Dose;
             value = dose;
         end
 
         function value = get.Label(obj)
-            anm_info = readtable(obj.ANMInfoFile, "Sheet", obj.Subject, "TextType", "string");
-            label = anm_info.Label(strcmp(string(anm_info.Session), obj.Session));
-
+            label = obj.SessionInfo.Label;
             value = label;
         end
 
         function value = get.Experimenter(obj)
-            anm_info = readtable(obj.ANMInfoFile, "Sheet", obj.Subject, "TextType", "string");
-            experimenter = anm_info.Experimenter(strcmp(string(anm_info.Session), obj.Session));
-
+            experimenter = obj.SessionInfo.Experimenter;
             value = experimenter;
         end
 
@@ -294,8 +290,12 @@ classdef GPSSessionClass
             %             thres_dur = 0.1;
 
             in_task = obj.ShuttleTime < median_shuttle_time + 5*iqr_shuttle_time;
-
             value = in_task;
+        end
+
+        function value = get.InitFail(obj)
+            init_fail = obj.HoldDuration < 0.5;
+            value = init_fail;
         end
 
         %% Time interval info (same way to get for each paradigm)
@@ -315,7 +315,7 @@ classdef GPSSessionClass
             ST_STD = std(dataout);
 
             Subjects = [string(obj.Subject)];
-            Sessions = [string(obj.Session)];
+            Sessions = [string(obj.Session)]; 
 
             StatVars = {'Subjects', 'Sessions', 'Mean (s)',  'Median (s)', 'IQR (s)', 'STD (s)'};
             thisTable = table(Subjects, Sessions, ST_Mean, ST_Median, ST_IQR, ST_STD, 'VariableNames', StatVars);
@@ -619,7 +619,6 @@ classdef GPSSessionClass
         end
 
         %% Information saving
-
         function save(obj, savepath)
             if nargin<2
                 savepath = obj.BpodFilePath;
@@ -628,29 +627,24 @@ classdef GPSSessionClass
         end
 
         function updateANMInfo(obj, savepath)
-            anm_info = readtable(obj.ANMInfoFile, "Sheet", obj.Subject, "TextType", "string");
-
-            session_ind = strcmp(string(anm_info.Session), obj.Session);
-
-            anm_info.Task(session_ind)      = obj.Task;
-            anm_info.BpodFile(session_ind)  = obj.BpodFile;
-
-
             if nargin<2
                 savepath = obj.BpodFilePath;
             end
-            anm_info.SessionFolder(session_ind) = savepath;
 
+            anm_info = readtable(obj.ANMInfoFile, "Sheet", obj.Subject, "TextType", "string");
+            session_ind = strcmp(string(anm_info.Session), obj.Session);
             session_file = fullfile(savepath, ['GPSSessionClass_' obj.Task '_' upper(obj.Subject) '_' obj.Session]);
-            anm_info.SessionClassFile(session_ind) = session_file;
 
+            anm_info.Task(session_ind)      = obj.Task;
+            anm_info.BpodFile(session_ind)  = obj.BpodFile;
+            anm_info.SessionFolder(session_ind) = savepath;
+            anm_info.SessionClassFile(session_ind) = session_file;
             anm_info.UpdateTime(session_ind) = string(datetime());
 
             writetable(anm_info, obj.ANMInfoFile, "Sheet", obj.Subject);
         end
 
         %% Polt and Print
-
         function print(obj, targetDir)
             savename = fullfile(obj.BpodFilePath, ['GPSSessionClass_' obj.Task '_' upper(obj.Subject) '_' obj.Session]);
             hf = obj.plot();

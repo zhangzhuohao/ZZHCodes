@@ -124,11 +124,8 @@ classdef GPSTrajGroupKbClass
     end
 
     methods
-        function obj = GPSTrajGroupKbClass(TrajClassAll, AnmInfoFile)
-            %UNTITLED Construct an instance of this class
-            %   Detailed explanation goes here
-            obj.ANMInfoFile     = AnmInfoFile;
-
+        function obj = GPSTrajGroupKbClass(TrajClassAll)
+            %GPSTrajGroupKbClass Construct an instance of this class
             %% Session information
             obj.ANM             = unique(arrayfun(@(x) x.obj.ANM, TrajClassAll));
             obj.Sessions        = arrayfun(@(x) x.obj.Session, TrajClassAll);
