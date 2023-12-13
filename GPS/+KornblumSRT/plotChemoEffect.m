@@ -340,8 +340,8 @@ plot_shuttle_time_violin(ha_st_violin, obj, cp, opts);
         n_boot = 1000;
         alpha_ci = .05;
 
-        ind_l = find(obj.HDStatControl.thisCued==0 & obj.HDStatControl.Port=="L");
-        ind_r = find(obj.HDStatControl.thisCued==0 & obj.HDStatControl.Port=="R");
+%         ind_l = find(obj.HDStatControl.thisCued==0 & obj.HDStatControl.Port=="L");
+%         ind_r = find(obj.HDStatControl.thisCued==0 & obj.HDStatControl.Port=="R");
 
         cued_this = find(obj.CueUncue==0);
 
@@ -365,22 +365,22 @@ plot_shuttle_time_violin(ha_st_violin, obj, cp, opts);
         hd_med_ci_chemo_r = bootci(n_boot, {med, hd_chemo_r}, 'Type', 'cper', 'Alpha', alpha_ci);
 
         scatter(ax, hd_med_control_l, hd_med_chemo_l, ...
-            36, 'Marker', 'o', 'MarkerFaceColor', opts.color.PortL, 'MarkerEdgeColor', opts.color.PortL, ...
-            'MarkerFaceAlpha', 0.6, 'MarkerEdgeAlpha', 1, ...
+            24, 'Marker', 'o', 'MarkerFaceColor', opts.color.PortL, 'MarkerEdgeColor', opts.color.PortL, ...
+            'MarkerFaceAlpha', 0.4, 'MarkerEdgeAlpha', .6, ...
             'LineWidth', 1.5);
-        plot(ax, [hd_med_control_l hd_med_control_l], hd_med_ci_control_l, ...
-            'Color', opts.color.PortL, 'LineWidth', 1.5);
-        plot(ax, hd_med_ci_chemo_l, [hd_med_chemo_l hd_med_chemo_l], ...
-            'Color', opts.color.PortL, 'LineWidth', 1.5);
+        plot(ax, hd_med_ci_control_l, [hd_med_chemo_l hd_med_chemo_l], ...
+            'Color', opts.color.PortL, 'LineWidth', 1.2);
+        plot(ax, [hd_med_control_l hd_med_control_l], hd_med_ci_chemo_l, ...
+            'Color', opts.color.PortL, 'LineWidth', 1.2);
 
         scatter(ax, hd_med_control_r, hd_med_chemo_r, ...
-            36, 'Marker', 'o', 'MarkerFaceColor', opts.color.PortR, 'MarkerEdgeColor', opts.color.PortR, ...
-            'MarkerFaceAlpha', 0.6, 'MarkerEdgeAlpha', 1, ...
+            24, 'Marker', 'o', 'MarkerFaceColor', opts.color.PortR, 'MarkerEdgeColor', opts.color.PortR, ...
+            'MarkerFaceAlpha', 0.4, 'MarkerEdgeAlpha', .6, ...
             'LineWidth', 1.5);
-        plot(ax, [hd_med_control_r hd_med_control_r], hd_med_ci_control_r, ...
-            'Color', opts.color.PortR, 'LineWidth', 1.5);
-        plot(ax, hd_med_ci_chemo_r, [hd_med_chemo_r hd_med_chemo_r], ...
-            'Color', opts.color.PortR, 'LineWidth', 1.5);
+        plot(ax, hd_med_ci_control_r, [hd_med_chemo_r hd_med_chemo_r], ...
+            'Color', opts.color.PortR, 'LineWidth', 1.2);
+        plot(ax, [hd_med_control_r hd_med_control_r], hd_med_ci_chemo_r, ...
+            'Color', opts.color.PortR, 'LineWidth', 1.2);
         
         ax.YLabel.String     = "Chemo";
         ax.YLabel.Color      = opts.color.Treat;
@@ -392,9 +392,9 @@ plot_shuttle_time_violin(ha_st_violin, obj, cp, opts);
 
         set(ax, 'xlimmode', 'auto', 'ylimmode', 'auto');
 %         ax.XLim = [min([ax.XLim(1) ax.YLim(1)]) max([ax.XLim(2) ax.YLim(2)])] .* [.95 1.05];
-        ax.XLim = [-.5 .5] + obj.MixedFP;
+        ax.XLim = [-.2 .2] + obj.MixedFP;
         ax.YLim = ax.XLim;
-        ax.XTick = [-.5 0 .5] + obj.MixedFP;
+        ax.XTick = [-.2 0 .2] + obj.MixedFP;
         ax.YTick = ax.XTick;
 
         text(ax, mean(ax.XLim), ax.YLim(2), "HD median (s)", 'FontSize', 9, 'FontWeight', 'bold', 'HorizontalAlignment', 'center');
@@ -408,9 +408,51 @@ plot_shuttle_time_violin(ha_st_violin, obj, cp, opts);
 % IQR
     function plot_hold_duration_iqr_compare(ax, obj, opts)
 
-        ind_l = find(obj.HDStatControl.thisCued==0 & obj.HDStatControl.Port=="L");
-        ind_r = find(obj.HDStatControl.thisCued==0 & obj.HDStatControl.Port=="R");
+        n_boot = 1000;
+        alpha_ci = .05;
 
+%         ind_l = find(obj.HDStatControl.thisCued==0 & obj.HDStatControl.Port=="L");
+%         ind_r = find(obj.HDStatControl.thisCued==0 & obj.HDStatControl.Port=="R");
+
+        cued_this = find(obj.CueUncue==0);
+
+        p_this = obj.Ports=="L";
+        hd_control_l = obj.HDSortedControl{cued_this, p_this};
+        hd_chemo_l   = obj.HDSortedChemo{cued_this, p_this};
+
+        p_this = obj.Ports=="R";
+        hd_control_r = obj.HDSortedControl{cued_this, p_this};
+        hd_chemo_r   = obj.HDSortedChemo{cued_this, p_this};
+
+        iqr_f = @(x) iqr(x);
+        hd_iqr_control_l = iqr_f(hd_control_l);
+        hd_iqr_chemo_l = iqr_f(hd_chemo_l);
+        hd_iqr_control_r = iqr_f(hd_control_r);
+        hd_iqr_chemo_r = iqr_f(hd_chemo_r);
+
+        hd_iqr_ci_control_l = bootci(n_boot, {iqr_f, hd_control_l}, 'Type', 'cper', 'Alpha', alpha_ci);
+        hd_iqr_ci_chemo_l = bootci(n_boot, {iqr_f, hd_chemo_l}, 'Type', 'cper', 'Alpha', alpha_ci);
+        hd_iqr_ci_control_r = bootci(n_boot, {iqr_f, hd_control_r}, 'Type', 'cper', 'Alpha', alpha_ci);
+        hd_iqr_ci_chemo_r = bootci(n_boot, {iqr_f, hd_chemo_r}, 'Type', 'cper', 'Alpha', alpha_ci);
+
+        scatter(ax, hd_iqr_control_l, hd_iqr_chemo_l, ...
+            24, 'Marker', 'o', 'MarkerFaceColor', opts.color.PortL, 'MarkerEdgeColor', opts.color.PortL, ...
+            'MarkerFaceAlpha', 0.4, 'MarkerEdgeAlpha', .6, ...
+            'LineWidth', 1.5);
+        plot(ax, hd_iqr_ci_control_l, [hd_iqr_chemo_l hd_iqr_chemo_l], ...
+            'Color', opts.color.PortL, 'LineWidth', 1.2);
+        plot(ax, [hd_iqr_control_l hd_iqr_control_l], hd_iqr_ci_chemo_l, ...
+            'Color', opts.color.PortL, 'LineWidth', 1.2);
+
+        scatter(ax, hd_iqr_control_r, hd_iqr_chemo_r, ...
+            24, 'Marker', 'o', 'MarkerFaceColor', opts.color.PortR, 'MarkerEdgeColor', opts.color.PortR, ...
+            'MarkerFaceAlpha', 0.4, 'MarkerEdgeAlpha', .6, ...
+            'LineWidth', 1.5);
+        plot(ax, hd_iqr_ci_control_r, [hd_iqr_chemo_r hd_iqr_chemo_r], ...
+            'Color', opts.color.PortR, 'LineWidth', 1.2);
+        plot(ax, [hd_iqr_control_r hd_iqr_control_r], hd_iqr_ci_chemo_r, ...
+            'Color', opts.color.PortR, 'LineWidth', 1.2);
+        
         ax.YLabel.String     = "Chemo";
         ax.YLabel.Color      = opts.color.Treat;
         ax.YLabel.FontWeight = "Bold";
@@ -418,25 +460,20 @@ plot_shuttle_time_violin(ha_st_violin, obj, cp, opts);
         ax.XLabel.String     = "Control";
         ax.XLabel.Color      = opts.color.Control;
         ax.XLabel.FontWeight = "Bold";
-        
-        scatter(ax, obj.HDStatControl.IQR(ind_l), obj.HDStatChemo.IQR(ind_l), ...
-            36, 'Marker', 'o', 'MarkerFaceColor', opts.color.PortL, 'MarkerEdgeColor', opts.color.PortL, ...
-            'MarkerFaceAlpha', 0.6, 'MarkerEdgeAlpha', 1, ...
-            'LineWidth', 1.5);
-        scatter(ax, obj.HDStatControl.IQR(ind_r), obj.HDStatChemo.IQR(ind_r), ...
-            36, 'Marker', 'o', 'MarkerFaceColor', opts.color.PortR, 'MarkerEdgeColor', opts.color.PortR, ...
-            'MarkerFaceAlpha', 0.6, 'MarkerEdgeAlpha', 1, ...
-            'LineWidth', 1.5);
 
         set(ax, 'xlimmode', 'auto', 'ylimmode', 'auto');
-        %         ax.XLim = [min([ax.XLim(1) ax.YLim(1)]) max([ax.XLim(2) ax.YLim(2)])] .* [.95 1.05];
-        ax.XLim = [0 1];
+        ax.XLim = [min([ax.XLim(1) ax.YLim(1)]) max([ax.XLim(2) ax.YLim(2)])] .* [.95 1.05];
+%         ax.XLim = [-.2 .2] + obj.MixedFP;
         ax.YLim = ax.XLim;
-        ax.XTick = ax.YTick;
+%         ax.XTick = [-.2 0 .2] + obj.MixedFP;
+        ax.YTick = ax.XTick;
 
         text(ax, mean(ax.XLim), ax.YLim(2), "HD IQR (s)", 'FontSize', 9, 'FontWeight', 'bold', 'HorizontalAlignment', 'center');
 
         line(ax, [0 100], [0 100], 'Color', 'k', 'LineStyle', ':', 'LineWidth', .5);
+%         line(ax, [obj.MixedFP obj.MixedFP], [0 obj.MixedFP], 'Color', 'k', 'LineStyle', ':', 'LineWidth', .5);
+%         line(ax, [0 obj.MixedFP], [obj.MixedFP obj.MixedFP], 'Color', 'k', 'LineStyle', ':', 'LineWidth', .5);
+
     end
 
 %% Hold duration density

@@ -100,6 +100,8 @@ classdef GPSSessionKbClass
         Performance % Performance table, grouped by PortCorrect (and FP)
         PerformanceTrackCue
         PerformanceTrackUncue
+        PerformanceTrackUncueL
+        PerformanceTrackUncueR
 
         BehavTable
     end
@@ -588,6 +590,15 @@ classdef GPSSessionKbClass
             value = perf_track;
         end
 
+        function value = get.PerformanceTrackUncueL(obj)
+            value = obj.getPerformanceTrack("Uncue", "L");
+        end
+
+        function value = get.PerformanceTrackUncueR(obj)
+            value = obj.getPerformanceTrack("Uncue", "R");
+        end
+        
+%%
         function value = get.BehavTable(obj)
             InitInTime  = cellfun(@(x) x(1),   obj.InitPokeInTime);
             InitOutTime = cellfun(@(x) x(end), obj.InitPokeOutTime);
@@ -854,6 +865,70 @@ classdef GPSSessionKbClass
 
             stats = table(Subjects, Sessions, thisCued, Port, N, Mean, STD, SEM, Median, Median_kde, IQR, Q1, Q3);
         end % getStat
+
+        function perf_track = getPerformanceTrack(obj, cueuncue, port)
+
+            if nargin<2
+                cueuncue = "Both";
+            end
+            if nargin<3
+                port = "Both";
+            end
+
+            switch cueuncue
+                case {'Cue'}
+                    id = obj.Stage==1 & obj.Cued==1;
+                case {'Uncue'}
+                    id = obj.Stage==1 & obj.Cued==0;
+                case {'Both'}
+                    id = obj.Stage==1;
+            end
+            switch port
+                case {'L'}
+                    id = id & obj.PortCorrect==1;
+                case {'R'}
+                    id = id & obj.PortCorrect==2;
+            end
+
+%             id = obj.Cued==0;
+            num_trials = sum(id);
+
+            WinSize  = floor(num_trials / 5);
+            StepSize = max(1, floor(WinSize / 5));
+
+            CountStart = 1;
+            WinPos     = [];
+
+            CorrectRatio    = [];
+            WrongRatio      = [];
+            PrematureRatio  = [];
+            LateRatio       = [];
+
+            correct = obj.Ind.correct(id);
+            premature = obj.Ind.premature(id);
+            wrong = obj.Ind.wrong(id);
+            late = obj.Ind.late(id);
+            center_pokes = obj.TrialStartTime(id) + cellfun(@(x)x(1), obj.CentPokeInTime(id)); % only count the first one
+
+            while CountStart+WinSize-1 < num_trials
+
+                thisWin = CountStart:(CountStart+WinSize-1);
+
+                CorrectRatio    = [CorrectRatio    ;  100 * sum(correct(thisWin))   / WinSize];
+                WrongRatio      = [WrongRatio      ;  100 * sum(wrong(thisWin))     / WinSize];
+                PrematureRatio  = [PrematureRatio  ;  100 * sum(premature(thisWin)) / WinSize];
+                LateRatio       = [LateRatio       ;  100 * sum(late(thisWin))      / WinSize];
+                WinPos          = [WinPos          ;  center_pokes(thisWin(end))];
+                
+                CountStart = CountStart + StepSize;
+            end
+
+            Subjects = repmat(string(obj.Subject), length(WinPos), 1);
+            Sessions = repmat(string(obj.Session), length(WinPos), 1);
+
+            perf_track = table(Subjects, Sessions, WinPos, CorrectRatio, WrongRatio, PrematureRatio, LateRatio);
+        end
+
 
     end % Methods
 
