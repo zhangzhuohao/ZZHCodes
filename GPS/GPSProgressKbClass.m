@@ -22,6 +22,8 @@ classdef GPSProgressKbClass
         Performance
         PerformanceTrackCue
         PerformanceTrackUncue
+        PerformanceTrackUncueL
+        PerformanceTrackUncueR
 
         STStat
         RTStat
@@ -171,25 +173,41 @@ classdef GPSProgressKbClass
             % Performance tracking
             allPerfTracksCue           = cellfun(@(x) x.PerformanceTrackCue, SessionClassAll, 'UniformOutput', false);
             allPerfTracksUncue         = cellfun(@(x) x.PerformanceTrackUncue, SessionClassAll, 'UniformOutput', false);
+            allPerfTracksUncueL        = cellfun(@(x) x.PerformanceTrackUncueL, SessionClassAll, 'UniformOutput', false);
+            allPerfTracksUncueR        = cellfun(@(x) x.PerformanceTrackUncueR, SessionClassAll, 'UniformOutput', false);
             for i = 1:obj.NumSessions
                 thisPerfTrackCue = allPerfTracksCue{i};
                 thisPerfTrackUncue = allPerfTracksUncue{i};
+                thisPerfTrackUncueL = allPerfTracksUncueL{i};
+                thisPerfTrackUncueR = allPerfTracksUncueR{i};
                 if i == 1
                     WinPosProgressCue           = thisPerfTrackCue.WinPos;
                     WinPosProgressUncue         = thisPerfTrackUncue.WinPos;
-                    thisPerfTrackCue            = addvars(thisPerfTrackCue, WinPosProgressCue, 'After', "WinPos");
-                    thisPerfTrackUncue          = addvars(thisPerfTrackUncue, WinPosProgressUncue, 'After', "WinPos");
+                    WinPosProgressUncueL        = thisPerfTrackUncueL.WinPos;
+                    WinPosProgressUncueR        = thisPerfTrackUncueR.WinPos;
+                    thisPerfTrackCue            = addvars(thisPerfTrackCue, WinPosProgressCue, 'After', "WinPos", 'NewVariableNames', "WinPosProgress");
+                    thisPerfTrackUncue          = addvars(thisPerfTrackUncue, WinPosProgressUncue, 'After', "WinPos", 'NewVariableNames', "WinPosProgress");
+                    thisPerfTrackUncueL         = addvars(thisPerfTrackUncueL, WinPosProgressUncueL, 'After', "WinPos", 'NewVariableNames', "WinPosProgress");
+                    thisPerfTrackUncueR         = addvars(thisPerfTrackUncueR, WinPosProgressUncueR, 'After', "WinPos", 'NewVariableNames', "WinPosProgress");
                     obj.PerformanceTrackCue     = thisPerfTrackCue;
                     obj.PerformanceTrackUncue   = thisPerfTrackUncue;
+                    obj.PerformanceTrackUncueL  = thisPerfTrackUncueL;
+                    obj.PerformanceTrackUncueR  = thisPerfTrackUncueR;
                 else
-                    WinEndCue   = obj.BehavTable.TrialStartTimeProgress(find(obj.BehavTable.SessionDate==obj.Sessions(i-1), 1, 'last'));
-                    WinEndUncue = obj.BehavTable.TrialStartTimeProgress(find(obj.BehavTable.SessionDate==obj.Sessions(i-1), 1, 'last'));
+                    WinEndCue    = obj.BehavTable.TrialStartTimeProgress(find(obj.BehavTable.SessionDate==obj.Sessions(i-1), 1, 'last'));
+                    WinEndUncue  = obj.BehavTable.TrialStartTimeProgress(find(obj.BehavTable.SessionDate==obj.Sessions(i-1), 1, 'last'));
                     WinPosProgressCue           = thisPerfTrackCue.WinPos + max([WinEndCue WinEndUncue]);
                     WinPosProgressUncue         = thisPerfTrackUncue.WinPos + max([WinEndCue WinEndUncue]);
-                    thisPerfTrackCue            = addvars(thisPerfTrackCue, WinPosProgressCue, 'After', "WinPos");
-                    thisPerfTrackUncue          = addvars(thisPerfTrackUncue, WinPosProgressUncue, 'After', "WinPos");
+                    WinPosProgressUncueL        = thisPerfTrackUncueL.WinPos + max([WinEndCue WinEndUncue]);
+                    WinPosProgressUncueR        = thisPerfTrackUncueR.WinPos + max([WinEndCue WinEndUncue]);
+                    thisPerfTrackCue            = addvars(thisPerfTrackCue, WinPosProgressCue, 'After', "WinPos", 'NewVariableNames', "WinPosProgress");
+                    thisPerfTrackUncue          = addvars(thisPerfTrackUncue, WinPosProgressUncue, 'After', "WinPos", 'NewVariableNames', "WinPosProgress");
+                    thisPerfTrackUncueL         = addvars(thisPerfTrackUncueL, WinPosProgressUncueL, 'After', "WinPos", 'NewVariableNames', "WinPosProgress");
+                    thisPerfTrackUncueR         = addvars(thisPerfTrackUncueR, WinPosProgressUncueR, 'After', "WinPos", 'NewVariableNames', "WinPosProgress");
                     obj.PerformanceTrackCue     = [obj.PerformanceTrackCue; thisPerfTrackCue];
                     obj.PerformanceTrackUncue   = [obj.PerformanceTrackUncue; thisPerfTrackUncue];
+                    obj.PerformanceTrackUncueL  = [obj.PerformanceTrackUncueL; thisPerfTrackUncueL];
+                    obj.PerformanceTrackUncueR  = [obj.PerformanceTrackUncueR; thisPerfTrackUncueR];
                 end
             end
 

@@ -758,7 +758,6 @@ classdef GPSSessionKbClass
             %       variable: string (1,1), should be a member in ["RT", "MovementTime", "ChoiceTime", "HoldDuration"]
             %       perf: string (1,1), should be a member in ["correct", "late", "wrong", "premature", "port"]; if "port" is used, all trials will be taken
 
-            med = @(x) median(x, 'omitnan');
             data_origin = obj.(variable);
             data_sorted = obj.sortData(variable, perf);
 
@@ -792,8 +791,6 @@ classdef GPSSessionKbClass
             Median_ci_u = zeros(height_this, 1);
             Q1 = zeros(height_this, 1);
             Q3 = zeros(height_this, 1);
-            IQR_ci_d = zeros(height_this, 1);
-            IQR_ci_u = zeros(height_this, 1);
 
             % Only include correct trials
             % PortL for all FPs
@@ -801,13 +798,8 @@ classdef GPSSessionKbClass
             data_this(isnan(data_this)) = [];
             data_this(data_this>data_2575(2)+interq*c | data_this<data_2575(1)-interq*c) = [];
             stat_this = calDur(data_this*1000, [], "Remove100ms", 0, "RemoveOutliers", 0, 'CalSE', 0);
-            if ~isnan(stat_this.median)
-                med_ci = bootci(1000, {med, data_this}, 'Type', 'cper');
-                iqr_ci = bootci(1000, {@iqr, data_this}, 'Type', 'cper');
-            else
-                med_ci = [nan nan];
-                iqr_ci = [nan nan];
-            end
+            med_ci = bootci(1000, {@median, data_this}, 'Type', 'cper');
+            iqr_ci = bootci(1000, {@iqr, data_this}, 'Type', 'cper');
 
             count = count + 1;
 
@@ -825,21 +817,14 @@ classdef GPSSessionKbClass
             Median_ci_u(count) = med_ci(2);
             Q1(count) = prctile(data_this, 25);
             Q3(count) = prctile(data_this, 75);
-            IQR_ci_d(count) = iqr_ci(1);
-            IQR_ci_u(count) = iqr_ci(2);
 
             % PortR for all FPs
             data_this = data_origin(obj.Stage==1 & obj.Ind.(perf + "R"));
             data_this(isnan(data_this)) = [];
             data_this(data_this>data_2575(2)+interq*c | data_this<data_2575(1)-interq*c) = [];
             stat_this = calDur(data_this*1000, [], "Remove100ms", 0, "RemoveOutliers", 0, 'CalSE', 0);
-            if ~isnan(stat_this.median)
-                med_ci = bootci(1000, {med, data_this}, 'Type', 'cper');
-                iqr_ci = bootci(1000, {@iqr, data_this}, 'Type', 'cper');
-            else
-                med_ci = [nan nan];
-                iqr_ci = [nan nan];
-            end
+            med_ci = bootci(1000, {@median, data_this}, 'Type', 'cper');
+            iqr_ci = bootci(1000, {@iqr, data_this}, 'Type', 'cper');
 
             count = count + 1;
 
@@ -853,12 +838,8 @@ classdef GPSSessionKbClass
 
             Median(count) = stat_this.median * 0.001;
             Median_kde(count) = stat_this.median_ksdensity * 0.001;
-            Median_ci_d(count) = med_ci(1);
-            Median_ci_u(count) = med_ci(2);
             Q1(count) = prctile(data_this, 25);
             Q3(count) = prctile(data_this, 75);
-            IQR_ci_d(count) = iqr_ci(1);
-            IQR_ci_u(count) = iqr_ci(2);
 
             % By (Port, FP)
             for port = 1:length(obj.Ports) % Port
@@ -867,13 +848,6 @@ classdef GPSSessionKbClass
                     data_this(isnan(data_this)) = [];
                     data_this(data_this>data_2575(2)+interq*c | data_this<data_2575(1)-interq*c) = [];
                     stat_this = calDur(data_this*1000, [], "Remove100ms", 0, "RemoveOutliers", 0, 'CalSE', 0);
-                    if ~isnan(stat_this.median)
-                        med_ci = bootci(1000, {med, data_this}, 'Type', 'cper');
-                        iqr_ci = bootci(1000, {@iqr, data_this}, 'Type', 'cper');
-                    else
-                        med_ci = [nan nan];
-                        iqr_ci = [nan nan];
-                    end
 
                     count = count + 1;
 
@@ -887,12 +861,8 @@ classdef GPSSessionKbClass
 
                     Median(count) = stat_this.median * 0.001;
                     Median_kde(count) = stat_this.median_ksdensity * 0.001;
-                    Median_ci_d(count) = med_ci(1);
-                    Median_ci_u(count) = med_ci(2);
                     Q1(count) = prctile(data_this, 25);
                     Q3(count) = prctile(data_this, 75);
-                    IQR_ci_d(count) = iqr_ci(1);
-                    IQR_ci_u(count) = iqr_ci(2);
                 end
             end
 
@@ -901,7 +871,7 @@ classdef GPSSessionKbClass
             Subjects = repmat(string(obj.Subject), height_this, 1);
             Sessions = repmat(string(obj.Session), height_this, 1);
 
-            stats = table(Subjects, Sessions, thisCued, Port, N, Mean, STD, SEM, Median, Median_ci_d, Median_ci_u, Median_kde, IQR, IQR_ci_d, IQR_ci_u, Q1, Q3);
+            stats = table(Subjects, Sessions, thisCued, Port, N, Mean, STD, SEM, Median, Median_kde, IQR, Q1, Q3);
         end % getStat
 
         function perf_track = getPerformanceTrack(obj, cueuncue, port)

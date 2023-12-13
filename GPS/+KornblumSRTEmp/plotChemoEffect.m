@@ -11,12 +11,12 @@ opts.session_date = opts.session_date(:, 5:8);
 
 opts.plotsize = [8    4;
                  6.5  3.5;
-                 8    2;
-                 8.5  5;
+                 9    2;
+                 9  5;
                  5    5;
                  4    4];
 
-opts.sep_col = 1.2;
+opts.sep_col = 1.5;
 opts.sep_row = 1.5;
 
 %%
@@ -65,95 +65,122 @@ end
 
 %%
 fig = figure(24); clf(24);
-set(gcf, 'unit', 'centimeters', 'position', [2 1 28.5 18.4], 'paperpositionmode', 'auto', 'color', 'w');
+set(gcf, 'unit', 'centimeters', 'position', [2 1 33 18.5], 'paperpositionmode', 'auto', 'color', 'w');
 
 uicontrol('Style', 'text', 'parent', 24, 'units', 'normalized', 'position', [0.2 0.95 0.6 0.04],...
     'string', obj.Subject+" / "+obj.Task+" / "+obj.Sessions(1)+"_"+obj.Sessions(end)+" / ChemoEffect", 'fontsize', 11, 'fontweight', 'bold', 'backgroundcolor', 'w');
 
 %% Set axes and plot
-%% Maze diagram
-ha_diagram = axes;
-set(ha_diagram, 'units', 'centimeters', 'position', [1.2+2*(opts.sep_row+opts.plotsize(1, 1)) 2+2*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(1, :) ], 'nextplot', 'add', 'fontsize', 8);
-plot_diagram(ha_diagram, opts);
+% %% Maze diagram
+% ha_diagram = axes;
+% set(ha_diagram, 'units', 'centimeters', 'position', [1.2+2*(opts.sep_row+opts.plotsize(1, 1)) 2+2*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(1, :) ], 'nextplot', 'add', 'fontsize', 8);
+% plot_diagram(ha_diagram, opts);
 
 %% Performance
 % Hold duration scatter
 % Control
 ha_hd_scatter_control = axes;
-set(ha_hd_scatter_control, 'units', 'centimeters', 'position', [1.5+0*(opts.sep_row+opts.plotsize(1, 1)) 2+2*(opts.sep_col+opts.plotsize(1, 2))+2.7, opts.plotsize(3, :) ], 'nextplot', 'add', 'fontsize', 8);
+set(ha_hd_scatter_control, 'units', 'centimeters', 'position', [1.5 15, opts.plotsize(3, :) ], 'nextplot', 'add', 'fontsize', 8);
 plot_hold_duration_scatter(ha_hd_scatter_control, obj, cp, "Control", opts);
 set(ha_hd_scatter_control, 'xtick', [], 'xlabel', []);
 
 % Chemo
 ha_hd_scatter_chemo = axes;
-set(ha_hd_scatter_chemo, 'units', 'centimeters', 'position', [1.5+0*(opts.sep_row+opts.plotsize(1, 1)) 2+2*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(3, :) ], 'nextplot', 'add', 'fontsize', 8);
+set(ha_hd_scatter_chemo, 'units', 'centimeters', 'position', [1.5 12.3, opts.plotsize(3, :) ], 'nextplot', 'add', 'fontsize', 8);
 plot_hold_duration_scatter(ha_hd_scatter_chemo, obj, cp, "Chemo", opts);
 
 % Performance track
-ha_perf_track = axes;
-set(ha_perf_track, 'units', 'centimeters', 'position', [1.5+1*(opts.sep_row+opts.plotsize(1, 1)) 2+2*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(4, :) ], 'nextplot', 'add', 'fontsize', 8);
-plot_performance_track(ha_perf_track, obj, cp, opts);
+% Left
+x_now = ha_hd_scatter_chemo.Position(1) + ha_hd_scatter_chemo.Position(3) + opts.sep_row;
+y_now = ha_hd_scatter_chemo.Position(2);
+ha_perf_track_l = axes;
+set(ha_perf_track_l, 'units', 'centimeters', 'position', [x_now y_now, opts.plotsize(4, :) ], 'nextplot', 'add', 'fontsize', 8);
+plot_performance_track(ha_perf_track_l, obj, "L", cp, opts);
+
+% Right
+x_now = x_now + ha_perf_track_l.Position(3) + opts.sep_row;
+ha_perf_track_r = axes;
+set(ha_perf_track_r, 'units', 'centimeters', 'position', [x_now y_now, opts.plotsize(4, :) ], 'nextplot', 'add', 'fontsize', 8);
+plot_performance_track(ha_perf_track_r, obj, "R", cp, opts);
 
 %% Hold duration
 % Hold duration violin plot
+x_now = ha_hd_scatter_chemo.Position(1);
+y_now = y_now - opts.sep_col - opts.plotsize(6, 2);
 ha_hd_violin = axes;
-set(ha_hd_violin, 'units', 'centimeters', 'position', [1.5+0*(opts.sep_row+opts.plotsize(1, 1)) 1.5+1*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(6, :) ], 'nextplot', 'add', 'fontsize', 8);
+set(ha_hd_violin, 'units', 'centimeters', 'position', [x_now y_now, opts.plotsize(6, :) ], 'nextplot', 'add', 'fontsize', 8);
 plot_hold_duration_violin(ha_hd_violin, obj, opts);
 
 % Hold duration statistic
 % Median
+x_now = x_now + ha_hd_violin.Position(3) + opts.sep_row;
 ha_hd_median = axes;
-set(ha_hd_median, 'units', 'centimeters', 'position', [1.5+1*(opts.sep_row+opts.plotsize(6, 1)) 1.5+1*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(6, :) ], 'nextplot', 'add', 'fontsize', 8);
+set(ha_hd_median, 'units', 'centimeters', 'position', [x_now y_now, opts.plotsize(6, :) ], 'nextplot', 'add', 'fontsize', 8);
 plot_hold_duration_median_compare(ha_hd_median, obj, opts);
 
 % IQR
+x_now = x_now + ha_hd_median.Position(3) + opts.sep_row;
 ha_hd_iqr = axes;
-set(ha_hd_iqr, 'units', 'centimeters', 'position', [1.8+1*(opts.sep_row+opts.plotsize(6, 1))+4.5 1.5+1*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(6, :) ], 'nextplot', 'add', 'fontsize', 8);
+set(ha_hd_iqr, 'units', 'centimeters', 'position', [x_now y_now, opts.plotsize(6, :) ], 'nextplot', 'add', 'fontsize', 8);
 plot_hold_duration_iqr_compare(ha_hd_iqr, obj, opts);
-set(ha_hd_iqr, 'ylabel', []);
-
-% Hold duration PDF
-% Left
-ha_hd_pdf_l = axes;
-set(ha_hd_pdf_l, 'units', 'centimeters', 'position', [1.5+0*(opts.sep_row+opts.plotsize(2, 1)) 1.5+0*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(2, :) ], 'nextplot', 'add', 'fontsize', 8);
-plot_hold_duration_pdf(ha_hd_pdf_l, obj, "L", opts);
-
-% Right
-ha_hd_pdf_r = axes;
-set(ha_hd_pdf_r, 'units', 'centimeters', 'position', [1+1*(opts.sep_row+opts.plotsize(2, 1)) 1.5+0*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(2, :) ], 'nextplot', 'add', 'fontsize', 8);
-plot_hold_duration_pdf(ha_hd_pdf_r, obj, "R", opts);
-set(ha_hd_pdf_r, 'ylabel', [], 'yticklabel', []);
-
-ha_hd_pdf_l.YLim(2) = max([ha_hd_pdf_l.YLim(2) ha_hd_pdf_r.YLim(2)]);
-ha_hd_pdf_r.YLim(2) = ha_hd_pdf_l.YLim(2);
-
-% % Hold duration median
-% % Left
-% ha_hd_med_l = axes;
-% set(ha_hd_med_l, 'units', 'centimeters', 'position', [ha_hd_pdf_l.Position(1) ha_hd_pdf_l.Position(2)+ha_hd_pdf_l.Position(4), ha_hd_pdf_l.Position(3) .5], 'nextplot', 'add', 'fontsize', 8, 'XColor', 'none', 'YColor', 'none');
-% plot_hold_duration_median(ha_hd_med_l, obj, "L", opts);
-% 
-% % Right
-% ha_hd_med_r = axes;
-% set(ha_hd_med_r, 'units', 'centimeters', 'position', [ha_hd_pdf_r.Position(1) ha_hd_pdf_r.Position(2)+ha_hd_pdf_r.Position(4), ha_hd_pdf_r.Position(3) .5], 'nextplot', 'add', 'fontsize', 8, 'XColor', 'none', 'YColor', 'none');
-% plot_hold_duration_median(ha_hd_med_r, obj, "R", opts);
 
 %% Movement time
 % movement time violin
+x_now = ha_hd_violin.Position(1);
+y_now = y_now - opts.sep_col - opts.plotsize(6, 2);
 ha_mt_violin = axes;
-set(ha_mt_violin, 'units', 'centimeters', 'position', [1.5+3*(opts.sep_row+opts.plotsize(6, 1)) 1.5+1*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(6, :) ], 'nextplot', 'add', 'fontsize', 8);
+set(ha_mt_violin, 'units', 'centimeters', 'position', [x_now y_now, opts.plotsize(6, :) ], 'nextplot', 'add', 'fontsize', 8);
 plot_movement_time_violin(ha_mt_violin, obj, opts);
 
 % movement time median
+x_now = x_now + ha_mt_violin.Position(3) + opts.sep_row;
 ha_mt_median = axes;
-set(ha_mt_median, 'units', 'centimeters', 'position', [1.5+4*(opts.sep_row+opts.plotsize(6, 1)) 1.5+1*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(6, :) ], 'nextplot', 'add', 'fontsize', 8);
+set(ha_mt_median, 'units', 'centimeters', 'position', [x_now y_now, opts.plotsize(6, :) ], 'nextplot', 'add', 'fontsize', 8);
 plot_movement_time_median_compare(ha_mt_median, obj, opts);
 
 %% Shuttle time
 % log shuttle time violin
+x_now = x_now + ha_mt_median.Position(3) + opts.sep_row;
 ha_st_violin = axes;
-set(ha_st_violin, 'units', 'centimeters', 'position', [1.5+3*(opts.sep_row+opts.plotsize(6, 1)) 1.5+0*(opts.sep_col+opts.plotsize(1, 2)), opts.plotsize(6, :) ], 'nextplot', 'add', 'fontsize', 8);
+set(ha_st_violin, 'units', 'centimeters', 'position', [x_now y_now, opts.plotsize(6, :) ], 'nextplot', 'add', 'fontsize', 8);
 plot_shuttle_time_violin(ha_st_violin, obj, cp, opts);
+
+%% Hold duration
+% Hold duration PDF
+% Left
+x_now = ha_hd_iqr.Position(1) + ha_hd_iqr.Position(3) + opts.sep_row + .5;
+y_now = ha_hd_iqr.Position(2);
+ha_hd_pdf_l = axes;
+set(ha_hd_pdf_l, 'units', 'centimeters', 'position', [x_now y_now, opts.plotsize(2, :) ], 'nextplot', 'add', 'fontsize', 8);
+plot_hold_duration_pdf(ha_hd_pdf_l, obj, "L", opts);
+set(ha_hd_pdf_l, 'xlabel', [], 'xticklabel', []);
+
+% Right
+x_now = x_now + ha_hd_pdf_l.Position(3) + opts.sep_row/2;
+ha_hd_pdf_r = axes;
+set(ha_hd_pdf_r, 'units', 'centimeters', 'position', [x_now y_now, opts.plotsize(2, :) ], 'nextplot', 'add', 'fontsize', 8);
+plot_hold_duration_pdf(ha_hd_pdf_r, obj, "R", opts);
+set(ha_hd_pdf_r, 'ylabel', [], 'yticklabel', []);
+set(ha_hd_pdf_r, 'xlabel', [], 'xticklabel', []);
+
+ha_hd_pdf_l.YLim(2) = max([ha_hd_pdf_l.YLim(2) ha_hd_pdf_r.YLim(2)]);
+ha_hd_pdf_r.YLim(2) = ha_hd_pdf_l.YLim(2);
+
+% Hold duration CDF
+% Left
+x_now = ha_hd_pdf_l.Position(1);
+y_now = ha_hd_pdf_l.Position(2) - opts.sep_col - opts.plotsize(2, 2) + 0.5;
+ha_hd_cdf_l = axes;
+set(ha_hd_cdf_l, 'units', 'centimeters', 'position', [x_now y_now, opts.plotsize(2, :) ], 'nextplot', 'add', 'fontsize', 8);
+plot_hold_duration_cdf(ha_hd_cdf_l, obj, "L", opts);
+
+% Right
+x_now = x_now + ha_hd_cdf_l.Position(3) + opts.sep_row/2;
+ha_hd_cdf_r = axes;
+set(ha_hd_cdf_r, 'units', 'centimeters', 'position', [x_now y_now, opts.plotsize(2, :) ], 'nextplot', 'add', 'fontsize', 8);
+plot_hold_duration_cdf(ha_hd_cdf_r, obj, "R", opts);
+set(ha_hd_cdf_r, 'ylabel', [], 'yticklabel', []);
+
 
 %% ha1. Make a diagram of the setup
     function plot_diagram(ax, opts)
@@ -259,8 +286,9 @@ plot_shuttle_time_violin(ha_st_violin, obj, cp, opts);
     end
 
 %% ha3. Plot performance track of each session
-    function plot_performance_track(ax, obj, cp, opts)
+    function plot_performance_track(ax, obj, port, cp, opts)
 
+        perf_track = obj.("PerformanceTrackUncue" + upper(port));
         if ~isempty(cp.session_sep)
             xline(ax, cp.session_sep, 'Color', [.7 .7 .7], 'LineWidth', 1, 'LineStyle', '-');
         end
@@ -268,29 +296,37 @@ plot_shuttle_time_violin(ha_st_violin, obj, cp, opts);
         s_sep = [0 cp.session_sep];
 
         for s_this = 1:cp.num_session_pairs
-            ind_control = find(obj.PerformanceTrackUncue.Sessions==cp.session_control(s_this));
-            plot(ax,  obj.PerformanceTrackUncue.WinPos(ind_control)+s_sep(s_this),  obj.PerformanceTrackUncue.CorrectRatio(ind_control),   'linestyle', '-', 'color', opts.color.Correct, ...
+            ind_control = find(perf_track.Sessions==cp.session_control(s_this));
+            plot(ax,  perf_track.WinPos(ind_control)+s_sep(s_this),  perf_track.CorrectRatio(ind_control),   'linestyle', '-', 'color', opts.color.Correct, ...
                 'markersize', 5, 'linewidth', 1, 'markerfacecolor', opts.color.Correct,   'markeredgecolor', 'w');
-            plot(ax,  obj.PerformanceTrackUncue.WinPos(ind_control)+s_sep(s_this),  obj.PerformanceTrackUncue.WrongRatio(ind_control),     'linestyle', '-', 'color', opts.color.Wrong, ...
+            plot(ax,  perf_track.WinPos(ind_control)+s_sep(s_this),  perf_track.WrongRatio(ind_control),     'linestyle', '-', 'color', opts.color.Wrong, ...
                 'markersize', 5, 'linewidth', 1, 'markerfacecolor', opts.color.Wrong,     'markeredgecolor', 'w');
-            plot(ax,  obj.PerformanceTrackUncue.WinPos(ind_control)+s_sep(s_this),  obj.PerformanceTrackUncue.PrematureRatio(ind_control), 'linestyle', '-', 'color', opts.color.Premature, ...
+            plot(ax,  perf_track.WinPos(ind_control)+s_sep(s_this),  perf_track.PrematureRatio(ind_control), 'linestyle', '-', 'color', opts.color.Premature, ...
                 'markersize', 5, 'linewidth', 1, 'markerfacecolor', opts.color.Premature, 'markeredgecolor', 'w');
-            plot(ax,  obj.PerformanceTrackUncue.WinPos(ind_control)+s_sep(s_this),  obj.PerformanceTrackUncue.LateRatio(ind_control),      'linestyle', '-', 'color', opts.color.Late, ...
+            plot(ax,  perf_track.WinPos(ind_control)+s_sep(s_this),  perf_track.LateRatio(ind_control),      'linestyle', '-', 'color', opts.color.Late, ...
                 'markersize', 5, 'linewidth', 1, 'markerfacecolor', opts.color.Late,      'markeredgecolor', 'w');
 
-            ind_chemo = find(obj.PerformanceTrackUncue.Sessions==cp.session_chemo(s_this));
-            plot(ax,  obj.PerformanceTrackUncue.WinPos(ind_chemo)+s_sep(s_this),  obj.PerformanceTrackUncue.CorrectRatio(ind_chemo),   'linestyle', ':', 'color', .8*opts.color.Correct, ...
+            ind_chemo = find(perf_track.Sessions==cp.session_chemo(s_this));
+            plot(ax,  perf_track.WinPos(ind_chemo)+s_sep(s_this),  perf_track.CorrectRatio(ind_chemo),   'linestyle', ':', 'color', .8*opts.color.Correct, ...
                 'markersize', 5, 'linewidth', 1.5, 'markerfacecolor', .8*opts.color.Correct,   'markeredgecolor', 'w');
-            plot(ax,  obj.PerformanceTrackUncue.WinPos(ind_chemo)+s_sep(s_this),  obj.PerformanceTrackUncue.WrongRatio(ind_chemo),     'linestyle', ':', 'color', .8*opts.color.Wrong, ...
+            plot(ax,  perf_track.WinPos(ind_chemo)+s_sep(s_this),  perf_track.WrongRatio(ind_chemo),     'linestyle', ':', 'color', .8*opts.color.Wrong, ...
                 'markersize', 5, 'linewidth', 1.5, 'markerfacecolor', .8*opts.color.Wrong,     'markeredgecolor', 'w');
-            plot(ax,  obj.PerformanceTrackUncue.WinPos(ind_chemo)+s_sep(s_this),  obj.PerformanceTrackUncue.PrematureRatio(ind_chemo), 'linestyle', ':', 'color', .8*opts.color.Premature, ...
+            plot(ax,  perf_track.WinPos(ind_chemo)+s_sep(s_this),  perf_track.PrematureRatio(ind_chemo), 'linestyle', ':', 'color', .8*opts.color.Premature, ...
                 'markersize', 5, 'linewidth', 1.5, 'markerfacecolor', .8*opts.color.Premature, 'markeredgecolor', 'w');
-            plot(ax,  obj.PerformanceTrackUncue.WinPos(ind_chemo)+s_sep(s_this),  obj.PerformanceTrackUncue.LateRatio(ind_chemo),      'linestyle', ':', 'color', .8*opts.color.Late, ...
+            plot(ax,  perf_track.WinPos(ind_chemo)+s_sep(s_this),  perf_track.LateRatio(ind_chemo),      'linestyle', ':', 'color', .8*opts.color.Late, ...
                 'markersize', 5, 'linewidth', 1.5, 'markerfacecolor', .8*opts.color.Late,      'markeredgecolor', 'w');
         end
 
+        switch upper(port)
+            case {'L'}
+                ax.YLabel.String = 'Performance (%) - Left';
+                ax.YLabel.Color = opts.color.PortL;
+            case {'R'}
+                ax.YLabel.String = 'Performance (%) - Right';
+                ax.YLabel.Color = opts.color.PortR;
+        end
         ax.XLabel.String = 'Time in training (s)';
-        ax.YLabel.String = 'Performance (%)';
+        
         ax.XLabel.FontWeight = "Bold";
         ax.YLabel.FontWeight = "Bold";
         set(ax, 'XLim', [0 max([cp.trial_control(end) cp.trial_chemo(end)])+5], 'YLim', [0 100]);
@@ -337,18 +373,51 @@ plot_shuttle_time_violin(ha_st_violin, obj, cp, opts);
 % median
     function plot_hold_duration_median_compare(ax, obj, opts)
        
-        ind_l = find(obj.HDStatControl.thisCued==0 & obj.HDStatControl.Port=="L");
-        ind_r = find(obj.HDStatControl.thisCued==0 & obj.HDStatControl.Port=="R");
+        n_boot = 1000;
+        alpha_ci = .05;
 
-        scatter(ax, obj.HDStatControl.Median(ind_l), obj.HDStatChemo.Median(ind_l), ...
-            36, 'Marker', 'o', 'MarkerFaceColor', opts.color.PortL, 'MarkerEdgeColor', opts.color.PortL, ...
-            'MarkerFaceAlpha', 0.6, 'MarkerEdgeAlpha', 1, ...
-            'LineWidth', 1.5);
-        scatter(ax, obj.HDStatControl.Median(ind_r), obj.HDStatChemo.Median(ind_r), ...
-            36, 'Marker', 'o', 'MarkerFaceColor', opts.color.PortR, 'MarkerEdgeColor', opts.color.PortR, ...
-            'MarkerFaceAlpha', 0.6, 'MarkerEdgeAlpha', 1, ...
-            'LineWidth', 1.5);
+%         ind_l = find(obj.HDStatControl.thisCued==0 & obj.HDStatControl.Port=="L");
+%         ind_r = find(obj.HDStatControl.thisCued==0 & obj.HDStatControl.Port=="R");
 
+        cued_this = find(obj.CueUncue==0);
+
+        p_this = obj.Ports=="L";
+        hd_control_l = obj.HDSortedControl{cued_this, p_this};
+        hd_chemo_l   = obj.HDSortedChemo{cued_this, p_this};
+
+        p_this = obj.Ports=="R";
+        hd_control_r = obj.HDSortedControl{cued_this, p_this};
+        hd_chemo_r   = obj.HDSortedChemo{cued_this, p_this};
+
+        med = @(x) median(x, 'omitnan');
+        hd_med_control_l = med(hd_control_l);
+        hd_med_chemo_l = med(hd_chemo_l);
+        hd_med_control_r = med(hd_control_r);
+        hd_med_chemo_r = med(hd_chemo_r);
+
+        hd_med_ci_control_l = bootci(n_boot, {med, hd_control_l}, 'Type', 'cper', 'Alpha', alpha_ci);
+        hd_med_ci_chemo_l = bootci(n_boot, {med, hd_chemo_l}, 'Type', 'cper', 'Alpha', alpha_ci);
+        hd_med_ci_control_r = bootci(n_boot, {med, hd_control_r}, 'Type', 'cper', 'Alpha', alpha_ci);
+        hd_med_ci_chemo_r = bootci(n_boot, {med, hd_chemo_r}, 'Type', 'cper', 'Alpha', alpha_ci);
+
+        scatter(ax, hd_med_control_l, hd_med_chemo_l, ...
+            24, 'Marker', 'o', 'MarkerFaceColor', opts.color.PortL, 'MarkerEdgeColor', opts.color.PortL, ...
+            'MarkerFaceAlpha', 0.4, 'MarkerEdgeAlpha', .6, ...
+            'LineWidth', 1.5);
+        plot(ax, hd_med_ci_control_l, [hd_med_chemo_l hd_med_chemo_l], ...
+            'Color', opts.color.PortL, 'LineWidth', 1.2);
+        plot(ax, [hd_med_control_l hd_med_control_l], hd_med_ci_chemo_l, ...
+            'Color', opts.color.PortL, 'LineWidth', 1.2);
+
+        scatter(ax, hd_med_control_r, hd_med_chemo_r, ...
+            24, 'Marker', 'o', 'MarkerFaceColor', opts.color.PortR, 'MarkerEdgeColor', opts.color.PortR, ...
+            'MarkerFaceAlpha', 0.4, 'MarkerEdgeAlpha', .6, ...
+            'LineWidth', 1.5);
+        plot(ax, hd_med_ci_control_r, [hd_med_chemo_r hd_med_chemo_r], ...
+            'Color', opts.color.PortR, 'LineWidth', 1.2);
+        plot(ax, [hd_med_control_r hd_med_control_r], hd_med_ci_chemo_r, ...
+            'Color', opts.color.PortR, 'LineWidth', 1.2);
+        
         ax.YLabel.String     = "Chemo";
         ax.YLabel.Color      = opts.color.Treat;
         ax.YLabel.FontWeight = "Bold";
@@ -359,9 +428,10 @@ plot_shuttle_time_violin(ha_st_violin, obj, cp, opts);
 
         set(ax, 'xlimmode', 'auto', 'ylimmode', 'auto');
 %         ax.XLim = [min([ax.XLim(1) ax.YLim(1)]) max([ax.XLim(2) ax.YLim(2)])] .* [.95 1.05];
-        ax.XLim = [0 2];
+        ax.XLim = [-.2 .2] + obj.MixedFP;
         ax.YLim = ax.XLim;
-        ax.XTick = ax.YTick;
+        ax.XTick = [-.2 0 .2] + obj.MixedFP;
+        ax.YTick = ax.XTick;
 
         text(ax, mean(ax.XLim), ax.YLim(2), "HD median (s)", 'FontSize', 9, 'FontWeight', 'bold', 'HorizontalAlignment', 'center');
 
@@ -374,9 +444,51 @@ plot_shuttle_time_violin(ha_st_violin, obj, cp, opts);
 % IQR
     function plot_hold_duration_iqr_compare(ax, obj, opts)
 
-        ind_l = find(obj.HDStatControl.thisCued==0 & obj.HDStatControl.Port=="L");
-        ind_r = find(obj.HDStatControl.thisCued==0 & obj.HDStatControl.Port=="R");
+        n_boot = 1000;
+        alpha_ci = .05;
 
+%         ind_l = find(obj.HDStatControl.thisCued==0 & obj.HDStatControl.Port=="L");
+%         ind_r = find(obj.HDStatControl.thisCued==0 & obj.HDStatControl.Port=="R");
+
+        cued_this = find(obj.CueUncue==0);
+
+        p_this = obj.Ports=="L";
+        hd_control_l = obj.HDSortedControl{cued_this, p_this};
+        hd_chemo_l   = obj.HDSortedChemo{cued_this, p_this};
+
+        p_this = obj.Ports=="R";
+        hd_control_r = obj.HDSortedControl{cued_this, p_this};
+        hd_chemo_r   = obj.HDSortedChemo{cued_this, p_this};
+
+        iqr_f = @(x) iqr(x);
+        hd_iqr_control_l = iqr_f(hd_control_l);
+        hd_iqr_chemo_l = iqr_f(hd_chemo_l);
+        hd_iqr_control_r = iqr_f(hd_control_r);
+        hd_iqr_chemo_r = iqr_f(hd_chemo_r);
+
+        hd_iqr_ci_control_l = bootci(n_boot, {iqr_f, hd_control_l}, 'Type', 'cper', 'Alpha', alpha_ci);
+        hd_iqr_ci_chemo_l = bootci(n_boot, {iqr_f, hd_chemo_l}, 'Type', 'cper', 'Alpha', alpha_ci);
+        hd_iqr_ci_control_r = bootci(n_boot, {iqr_f, hd_control_r}, 'Type', 'cper', 'Alpha', alpha_ci);
+        hd_iqr_ci_chemo_r = bootci(n_boot, {iqr_f, hd_chemo_r}, 'Type', 'cper', 'Alpha', alpha_ci);
+
+        scatter(ax, hd_iqr_control_l, hd_iqr_chemo_l, ...
+            24, 'Marker', 'o', 'MarkerFaceColor', opts.color.PortL, 'MarkerEdgeColor', opts.color.PortL, ...
+            'MarkerFaceAlpha', 0.4, 'MarkerEdgeAlpha', .6, ...
+            'LineWidth', 1.5);
+        plot(ax, hd_iqr_ci_control_l, [hd_iqr_chemo_l hd_iqr_chemo_l], ...
+            'Color', opts.color.PortL, 'LineWidth', 1.2);
+        plot(ax, [hd_iqr_control_l hd_iqr_control_l], hd_iqr_ci_chemo_l, ...
+            'Color', opts.color.PortL, 'LineWidth', 1.2);
+
+        scatter(ax, hd_iqr_control_r, hd_iqr_chemo_r, ...
+            24, 'Marker', 'o', 'MarkerFaceColor', opts.color.PortR, 'MarkerEdgeColor', opts.color.PortR, ...
+            'MarkerFaceAlpha', 0.4, 'MarkerEdgeAlpha', .6, ...
+            'LineWidth', 1.5);
+        plot(ax, hd_iqr_ci_control_r, [hd_iqr_chemo_r hd_iqr_chemo_r], ...
+            'Color', opts.color.PortR, 'LineWidth', 1.2);
+        plot(ax, [hd_iqr_control_r hd_iqr_control_r], hd_iqr_ci_chemo_r, ...
+            'Color', opts.color.PortR, 'LineWidth', 1.2);
+        
         ax.YLabel.String     = "Chemo";
         ax.YLabel.Color      = opts.color.Treat;
         ax.YLabel.FontWeight = "Bold";
@@ -384,30 +496,29 @@ plot_shuttle_time_violin(ha_st_violin, obj, cp, opts);
         ax.XLabel.String     = "Control";
         ax.XLabel.Color      = opts.color.Control;
         ax.XLabel.FontWeight = "Bold";
-        
-        scatter(ax, obj.HDStatControl.IQR(ind_l), obj.HDStatChemo.IQR(ind_l), ...
-            36, 'Marker', 'o', 'MarkerFaceColor', opts.color.PortL, 'MarkerEdgeColor', opts.color.PortL, ...
-            'MarkerFaceAlpha', 0.6, 'MarkerEdgeAlpha', 1, ...
-            'LineWidth', 1.5);
-        scatter(ax, obj.HDStatControl.IQR(ind_r), obj.HDStatChemo.IQR(ind_r), ...
-            36, 'Marker', 'o', 'MarkerFaceColor', opts.color.PortR, 'MarkerEdgeColor', opts.color.PortR, ...
-            'MarkerFaceAlpha', 0.6, 'MarkerEdgeAlpha', 1, ...
-            'LineWidth', 1.5);
 
         set(ax, 'xlimmode', 'auto', 'ylimmode', 'auto');
-        %         ax.XLim = [min([ax.XLim(1) ax.YLim(1)]) max([ax.XLim(2) ax.YLim(2)])] .* [.95 1.05];
-        ax.XLim = [0 1];
+        ax.XLim = [0 max([ax.XLim(2) ax.YLim(2)])] .* 1.2;
+%         ax.XLim = [-.2 .2] + obj.MixedFP;
         ax.YLim = ax.XLim;
-        ax.XTick = ax.YTick;
+%         ax.XTick = [-.2 0 .2] + obj.MixedFP;
+        ax.YTick = ax.XTick;
 
         text(ax, mean(ax.XLim), ax.YLim(2), "HD IQR (s)", 'FontSize', 9, 'FontWeight', 'bold', 'HorizontalAlignment', 'center');
 
         line(ax, [0 100], [0 100], 'Color', 'k', 'LineStyle', ':', 'LineWidth', .5);
+%         line(ax, [obj.MixedFP obj.MixedFP], [0 obj.MixedFP], 'Color', 'k', 'LineStyle', ':', 'LineWidth', .5);
+%         line(ax, [0 obj.MixedFP], [obj.MixedFP obj.MixedFP], 'Color', 'k', 'LineStyle', ':', 'LineWidth', .5);
+
     end
 
 %% Hold duration density
 % Prob. density
     function plot_hold_duration_pdf(ax, obj, port, opts)
+
+        n_boot = 1000;
+        alpha_ci = 0.05;
+        band_width = 0.12;
 
         p_this = obj.Ports==upper(string(port));
         cued_this = find(obj.CueUncue==0);
@@ -417,13 +528,13 @@ plot_shuttle_time_violin(ha_st_violin, obj, cp, opts);
         hd_control = obj.HDSortedControl{cued_this, p_this};
         hd_chemo   = obj.HDSortedChemo{cued_this, p_this};
 
-        kde = @(x) ksdensity(x, obj.Bins.HoldDuration, 'Function', 'pdf');
+        kde = @(x) ksdensity(x, obj.Bins.HoldDuration, 'Function', 'pdf', 'Bandwidth', band_width);
 
         hd_control_pdf = kde(hd_control);
         hd_chemo_pdf   = kde(hd_chemo);
 
-        hd_control_pdf_ci = bootci(1000, {kde, hd_control}, 'Type', 'cper', 'Alpha', .01);
-        hd_chemo_pdf_ci = bootci(1000, {kde, hd_chemo}, 'Type', 'cper', 'Alpha', .01);
+        hd_control_pdf_ci = bootci(n_boot, {kde, hd_control}, 'Type', 'cper', 'Alpha', alpha_ci);
+        hd_chemo_pdf_ci = bootci(n_boot, {kde, hd_chemo}, 'Type', 'cper', 'Alpha', alpha_ci);
 
         fill(ax, [obj.Bins.HoldDuration flip(obj.Bins.HoldDuration)], [hd_control_pdf_ci(1,:) flip(hd_control_pdf_ci(2,:))], 'y', ...
             'FaceColor', opts.color.Control, 'FaceAlpha', 0.4, 'EdgeColor', 'none');
@@ -453,6 +564,10 @@ plot_shuttle_time_violin(ha_st_violin, obj, cp, opts);
 % Cum. distribution
     function plot_hold_duration_cdf(ax, obj, port, opts)
 
+        n_boot = 1000;
+        alpha_ci = 0.05;
+        band_width = 0.12;
+
         p_this = obj.Ports==upper(string(port));
         cued_this = find(obj.CueUncue==0);
 
@@ -461,13 +576,13 @@ plot_shuttle_time_violin(ha_st_violin, obj, cp, opts);
         hd_control = obj.HDSortedControl{cued_this, p_this};
         hd_chemo   = obj.HDSortedChemo{cued_this, p_this};
 
-        kde = @(x) ksdensity(x, obj.Bins.HoldDuration, 'Function', 'cdf');
+        kde = @(x) ksdensity(x, obj.Bins.HoldDuration, 'Function', 'cdf', 'Bandwidth', band_width);
 
         hd_control_cdf = kde(hd_control);
         hd_chemo_cdf   = kde(hd_chemo);
 
-        hd_control_cdf_ci = bootci(1000, {kde, hd_control}, 'Type', 'cper', 'Alpha', .01);
-        hd_chemo_cdf_ci = bootci(1000, {kde, hd_chemo}, 'Type', 'cper', 'Alpha', .01);
+        hd_control_cdf_ci = bootci(n_boot, {kde, hd_control}, 'Type', 'cper', 'Alpha', alpha_ci);
+        hd_chemo_cdf_ci = bootci(n_boot, {kde, hd_chemo}, 'Type', 'cper', 'Alpha', alpha_ci);
 
         fill(ax, [obj.Bins.HoldDuration flip(obj.Bins.HoldDuration)], [hd_control_cdf_ci(1,:) flip(hd_control_cdf_ci(2,:))], 'y', ...
             'FaceColor', opts.color.Control, 'FaceAlpha', 0.4, 'EdgeColor', 'none');
@@ -558,25 +673,55 @@ plot_shuttle_time_violin(ha_st_violin, obj, cp, opts);
         ax.XLabel.FontWeight = "Bold";
         ax.YLabel.FontWeight = "Bold";
 
-        set(ax, 'xlim', [.5 2*length(obj.MixedFP)+.5], 'ylim', [0 obj.Bins.MovementTime(end)], 'xtick', 1.5:2:2*length(obj.MixedFP), ...
+        set(ax, 'xlim', [.5 2*length(obj.MixedFP)+.5], 'ylim', [0 1], 'xtick', 1.5:2:2*length(obj.MixedFP), ...
             'xticklabel', obj.MixedFP, 'ticklength', [0.01 0.1], 'box', 'off');
     end
 
 %% Movement time comparation
     function plot_movement_time_median_compare(ax, obj, opts)
        
-        ind_l = find(obj.HDStatControl.thisCued==0 & obj.HDStatControl.Port=="L");
-        ind_r = find(obj.HDStatControl.thisCued==0 & obj.HDStatControl.Port=="R");
+        n_boot = 1000;
+        alpha_ci = .05;
         
-        scatter(ax, obj.MTStatControl.Median(ind_l), obj.MTStatChemo.Median(ind_l), ...
-            36, 'Marker', 'o', 'MarkerFaceColor', opts.color.PortL, 'MarkerEdgeColor', opts.color.PortL, ...
-            'MarkerFaceAlpha', 0.6, 'MarkerEdgeAlpha', 1, ...
-            'LineWidth', 1.5);
-        scatter(ax, obj.MTStatControl.Median(ind_r), obj.MTStatChemo.Median(ind_r), ...
-            36, 'Marker', 'o', 'MarkerFaceColor', opts.color.PortR, 'MarkerEdgeColor', opts.color.PortR, ...
-            'MarkerFaceAlpha', 0.6, 'MarkerEdgeAlpha', 1, ...
-            'LineWidth', 1.5);
+        cued_this = find(obj.CueUncue==0);
 
+        p_this = obj.Ports=="L";
+        mt_control_l = obj.MTSortedControl{cued_this, p_this};
+        mt_chemo_l   = obj.MTSortedChemo{cued_this, p_this};
+
+        p_this = obj.Ports=="R";
+        mt_control_r = obj.MTSortedControl{cued_this, p_this};
+        mt_chemo_r   = obj.MTSortedChemo{cued_this, p_this};
+
+        med = @(x) median(x, 'omitnan');
+        mt_med_control_l = med(mt_control_l);
+        mt_med_chemo_l = med(mt_chemo_l);
+        mt_med_control_r = med(mt_control_r);
+        mt_med_chemo_r = med(mt_chemo_r);
+
+        mt_med_ci_control_l = bootci(n_boot, {med, mt_control_l}, 'Type', 'cper', 'Alpha', alpha_ci);
+        mt_med_ci_chemo_l = bootci(n_boot, {med, mt_chemo_l}, 'Type', 'cper', 'Alpha', alpha_ci);
+        mt_med_ci_control_r = bootci(n_boot, {med, mt_control_r}, 'Type', 'cper', 'Alpha', alpha_ci);
+        mt_med_ci_chemo_r = bootci(n_boot, {med, mt_chemo_r}, 'Type', 'cper', 'Alpha', alpha_ci);
+
+        scatter(ax, mt_med_control_l, mt_med_chemo_l, ...
+            24, 'Marker', 'o', 'MarkerFaceColor', opts.color.PortL, 'MarkerEdgeColor', opts.color.PortL, ...
+            'MarkerFaceAlpha', 0.4, 'MarkerEdgeAlpha', .6, ...
+            'LineWidth', 1.5);
+        plot(ax, mt_med_ci_control_l, [mt_med_chemo_l mt_med_chemo_l], ...
+            'Color', opts.color.PortL, 'LineWidth', 1.2);
+        plot(ax, [mt_med_control_l mt_med_control_l], mt_med_ci_chemo_l, ...
+            'Color', opts.color.PortL, 'LineWidth', 1.2);
+
+        scatter(ax, mt_med_control_r, mt_med_chemo_r, ...
+            24, 'Marker', 'o', 'MarkerFaceColor', opts.color.PortR, 'MarkerEdgeColor', opts.color.PortR, ...
+            'MarkerFaceAlpha', 0.4, 'MarkerEdgeAlpha', .6, ...
+            'LineWidth', 1.5);
+        plot(ax, mt_med_ci_control_r, [mt_med_chemo_r mt_med_chemo_r], ...
+            'Color', opts.color.PortR, 'LineWidth', 1.2);
+        plot(ax, [mt_med_control_r mt_med_control_r], mt_med_ci_chemo_r, ...
+            'Color', opts.color.PortR, 'LineWidth', 1.2);
+        
         ax.YLabel.String     = "Chemo";
         ax.YLabel.Color      = opts.color.Treat;
         ax.YLabel.FontWeight = "Bold";
@@ -587,13 +732,13 @@ plot_shuttle_time_violin(ha_st_violin, obj, cp, opts);
 
         set(ax, 'xlimmode', 'auto', 'ylimmode', 'auto');
 %         ax.XLim = [min([ax.XLim(1) ax.YLim(1)]) max([ax.XLim(2) ax.YLim(2)])] .* [.95 1.05];
-        ax.XLim = [0 2];
+        ax.XLim = [0 1];
         ax.YLim = ax.XLim;
         ax.YTick = ax.XTick;
 
         text(ax, mean(ax.XLim), ax.YLim(2), "MT median (s)", 'FontSize', 9, 'FontWeight', 'bold', 'HorizontalAlignment', 'center');
 
-        line(ax, [0 100], [0 100], 'Color', 'k', 'LineStyle', ':', 'LineWidth', 1);
+        line(ax, [0 100], [0 100], 'Color', 'k', 'LineStyle', ':', 'LineWidth', .5);
     end
 
 %% log Shuttle time violin

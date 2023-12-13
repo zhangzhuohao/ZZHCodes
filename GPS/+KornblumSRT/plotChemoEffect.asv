@@ -123,6 +123,7 @@ x_now = x_now + ha_hd_median.Position(3) + opts.sep_row;
 ha_hd_iqr = axes;
 set(ha_hd_iqr, 'units', 'centimeters', 'position', [x_now y_now, opts.plotsize(6, :) ], 'nextplot', 'add', 'fontsize', 8);
 plot_hold_duration_iqr_compare(ha_hd_iqr, obj, opts);
+set(ha_hd_iqr, 'ylabel', []);
 
 %% Movement time
 % movement time violin
@@ -148,12 +149,11 @@ plot_shuttle_time_violin(ha_st_violin, obj, cp, opts);
 %% Hold duration
 % Hold duration PDF
 % Left
-x_now = ha_hd_iqr.Position(1) + ha_hd_iqr.Position(3) + opts.sep_row + .5;
+x_now = ha_hd_iqr.Position(1) + ha_hd_iqr.Position(3) + opts.sep_row;
 y_now = ha_hd_iqr.Position(2);
 ha_hd_pdf_l = axes;
 set(ha_hd_pdf_l, 'units', 'centimeters', 'position', [x_now y_now, opts.plotsize(2, :) ], 'nextplot', 'add', 'fontsize', 8);
 plot_hold_duration_pdf(ha_hd_pdf_l, obj, "L", opts);
-set(ha_hd_pdf_l, 'xlabel', [], 'xticklabel', []);
 
 % Right
 x_now = x_now + ha_hd_pdf_l.Position(3) + opts.sep_row/2;
@@ -161,7 +161,6 @@ ha_hd_pdf_r = axes;
 set(ha_hd_pdf_r, 'units', 'centimeters', 'position', [x_now y_now, opts.plotsize(2, :) ], 'nextplot', 'add', 'fontsize', 8);
 plot_hold_duration_pdf(ha_hd_pdf_r, obj, "R", opts);
 set(ha_hd_pdf_r, 'ylabel', [], 'yticklabel', []);
-set(ha_hd_pdf_r, 'xlabel', [], 'xticklabel', []);
 
 ha_hd_pdf_l.YLim(2) = max([ha_hd_pdf_l.YLim(2) ha_hd_pdf_r.YLim(2)]);
 ha_hd_pdf_r.YLim(2) = ha_hd_pdf_l.YLim(2);
@@ -169,7 +168,7 @@ ha_hd_pdf_r.YLim(2) = ha_hd_pdf_l.YLim(2);
 % Hold duration CDF
 % Left
 x_now = ha_hd_pdf_l.Position(1);
-y_now = ha_hd_pdf_l.Position(2) - opts.sep_col - opts.plotsize(2, 2) + 0.5;
+y_now = ha_hd_pdf_l.Position(2) - opts.sep_col - opts.plotsize(2, 2);
 ha_hd_cdf_l = axes;
 set(ha_hd_cdf_l, 'units', 'centimeters', 'position', [x_now y_now, opts.plotsize(2, :) ], 'nextplot', 'add', 'fontsize', 8);
 plot_hold_duration_cdf(ha_hd_cdf_l, obj, "L", opts);
@@ -498,7 +497,7 @@ set(ha_hd_cdf_r, 'ylabel', [], 'yticklabel', []);
         ax.XLabel.FontWeight = "Bold";
 
         set(ax, 'xlimmode', 'auto', 'ylimmode', 'auto');
-        ax.XLim = [0 max([ax.XLim(2) ax.YLim(2)])] .* 1.2;
+        ax.XLim = [min([ax.XLim(1) ax.YLim(1)]) max([ax.XLim(2) ax.YLim(2)])] .* [.95 1.05];
 %         ax.XLim = [-.2 .2] + obj.MixedFP;
         ax.YLim = ax.XLim;
 %         ax.XTick = [-.2 0 .2] + obj.MixedFP;
@@ -566,7 +565,6 @@ set(ha_hd_cdf_r, 'ylabel', [], 'yticklabel', []);
 
         n_boot = 1000;
         alpha_ci = 0.05;
-        band_width = 0.12;
 
         p_this = obj.Ports==upper(string(port));
         cued_this = find(obj.CueUncue==0);
@@ -738,7 +736,7 @@ set(ha_hd_cdf_r, 'ylabel', [], 'yticklabel', []);
 
         text(ax, mean(ax.XLim), ax.YLim(2), "MT median (s)", 'FontSize', 9, 'FontWeight', 'bold', 'HorizontalAlignment', 'center');
 
-        line(ax, [0 100], [0 100], 'Color', 'k', 'LineStyle', ':', 'LineWidth', .5);
+        line(ax, [0 100], [0 100], 'Color', 'k', 'LineStyle', ':', 'LineWidth', );
     end
 
 %% log Shuttle time violin
