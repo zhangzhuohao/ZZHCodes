@@ -425,7 +425,7 @@ plot_hold_duration_median(ha_hd_median, obj, opts);
         end
 
         xline(ax, fp_this, 'color', [.7 .7 .7], 'linewidth', 1.5, 'LineStyle', '-');
-%         xline(ax, fp_this+.5, 'Color', [.7 .7 .7], 'LineWidth', 1.5, 'LineStyle', '--');
+        xline(ax, fp_this+.5, 'Color', [.7 .7 .7], 'LineWidth', 1.5, 'LineStyle', '--');
         xline(ax, fp_this+.8, 'Color', [.7 .7 .7], 'LineWidth', 1.5, 'LineStyle', ':');
 
         kde = @(x) ksdensity(x, obj.Bins.HoldDuration, 'Function', 'pdf');

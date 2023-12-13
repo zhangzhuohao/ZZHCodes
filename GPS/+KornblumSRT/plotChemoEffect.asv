@@ -392,10 +392,9 @@ plot_shuttle_time_violin(ha_st_violin, obj, cp, opts);
 
         set(ax, 'xlimmode', 'auto', 'ylimmode', 'auto');
 %         ax.XLim = [min([ax.XLim(1) ax.YLim(1)]) max([ax.XLim(2) ax.YLim(2)])] .* [.95 1.05];
-        ax.XLim = [-.5 .5] + obj.MixedFP;
+        ax.XLim = [-.5 0 .5] + obj.MixedFP;
         ax.YLim = ax.XLim;
-        ax.XTick = [-.5 0 .5] + obj.MixedFP;
-        ax.YTick = ax.XTick;
+        ax.XTick = ax.YTick;
 
         text(ax, mean(ax.XLim), ax.YLim(2), "HD median (s)", 'FontSize', 9, 'FontWeight', 'bold', 'HorizontalAlignment', 'center');
 

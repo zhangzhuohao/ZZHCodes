@@ -5,7 +5,8 @@ Tasks = [
     "Kornblum1000SRT";
     "Kornblum1000SRTSelf";
     "Kornblum1500SRTSelf";
-    "Kornblum2000SRTSelf"
+    "Kornblum2000SRTSelf";
+    "Kornblum2000SRTEmpSelf"
     ];
 
 [TaskInd, tf] = listdlg("ListString", Tasks, "ListSize", [200, 200]);

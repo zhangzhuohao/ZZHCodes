@@ -120,6 +120,8 @@ classdef GPSSessionKbClass
             switch Protocol(1:end-16) % e.g. 'NEW_03_Wait3FPFlash'
                 case {'GPS_08_KornblumHold'}
                     obj.Task = 'KornblumSRT';
+                case {'GPS_09_KornblumHoldEmpty'}
+                    obj.Task = 'KornblumSRTEmp';
             end
 
             % Session meta-information

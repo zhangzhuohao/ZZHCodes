@@ -337,51 +337,18 @@ plot_shuttle_time_violin(ha_st_violin, obj, cp, opts);
 % median
     function plot_hold_duration_median_compare(ax, obj, opts)
        
-        n_boot = 1000;
-        alpha_ci = .05;
-
         ind_l = find(obj.HDStatControl.thisCued==0 & obj.HDStatControl.Port=="L");
         ind_r = find(obj.HDStatControl.thisCued==0 & obj.HDStatControl.Port=="R");
 
-        cued_this = find(obj.CueUncue==0);
-
-        p_this = obj.Ports=="L";
-        hd_control_l = obj.HDSortedControl{cued_this, p_this};
-        hd_chemo_l   = obj.HDSortedChemo{cued_this, p_this};
-
-        p_this = obj.Ports=="R";
-        hd_control_r = obj.HDSortedControl{cued_this, p_this};
-        hd_chemo_r   = obj.HDSortedChemo{cued_this, p_this};
-
-        med = @(x) median(x, 'omitnan');
-        hd_med_control_l = med(hd_control_l);
-        hd_med_chemo_l = med(hd_chemo_l);
-        hd_med_control_r = med(hd_control_r);
-        hd_med_chemo_r = med(hd_chemo_r);
-
-        hd_med_ci_control_l = bootci(n_boot, {med, hd_control_l}, 'Type', 'cper', 'Alpha', alpha_ci);
-        hd_med_ci_chemo_l = bootci(n_boot, {med, hd_chemo_l}, 'Type', 'cper', 'Alpha', alpha_ci);
-        hd_med_ci_control_r = bootci(n_boot, {med, hd_control_r}, 'Type', 'cper', 'Alpha', alpha_ci);
-        hd_med_ci_chemo_r = bootci(n_boot, {med, hd_chemo_r}, 'Type', 'cper', 'Alpha', alpha_ci);
-
-        scatter(ax, hd_med_control_l, hd_med_chemo_l, ...
+        scatter(ax, obj.HDStatControl.Median(ind_l), obj.HDStatChemo.Median(ind_l), ...
             36, 'Marker', 'o', 'MarkerFaceColor', opts.color.PortL, 'MarkerEdgeColor', opts.color.PortL, ...
             'MarkerFaceAlpha', 0.6, 'MarkerEdgeAlpha', 1, ...
             'LineWidth', 1.5);
-        plot(ax, [hd_med_control_l hd_med_control_l], hd_med_ci_control_l, ...
-            'Color', opts.color.PortL, 'LineWidth', 1.5);
-        plot(ax, hd_med_ci_chemo_l, [hd_med_chemo_l hd_med_chemo_l], ...
-            'Color', opts.color.PortL, 'LineWidth', 1.5);
-
-        scatter(ax, hd_med_control_r, hd_med_chemo_r, ...
+        scatter(ax, obj.HDStatControl.Median(ind_r), obj.HDStatChemo.Median(ind_r), ...
             36, 'Marker', 'o', 'MarkerFaceColor', opts.color.PortR, 'MarkerEdgeColor', opts.color.PortR, ...
             'MarkerFaceAlpha', 0.6, 'MarkerEdgeAlpha', 1, ...
             'LineWidth', 1.5);
-        plot(ax, [hd_med_control_r hd_med_control_r], hd_med_ci_control_r, ...
-            'Color', opts.color.PortR, 'LineWidth', 1.5);
-        plot(ax, hd_med_ci_chemo_r, [hd_med_chemo_r hd_med_chemo_r], ...
-            'Color', opts.color.PortR, 'LineWidth', 1.5);
-        
+
         ax.YLabel.String     = "Chemo";
         ax.YLabel.Color      = opts.color.Treat;
         ax.YLabel.FontWeight = "Bold";
@@ -392,10 +359,9 @@ plot_shuttle_time_violin(ha_st_violin, obj, cp, opts);
 
         set(ax, 'xlimmode', 'auto', 'ylimmode', 'auto');
 %         ax.XLim = [min([ax.XLim(1) ax.YLim(1)]) max([ax.XLim(2) ax.YLim(2)])] .* [.95 1.05];
-        ax.XLim = [-.5 .5] + obj.MixedFP;
+        ax.XLim = [0 2];
         ax.YLim = ax.XLim;
-        ax.XTick = [-.5 0 .5] + obj.MixedFP;
-        ax.YTick = ax.XTick;
+        ax.XTick = ax.YTick;
 
         text(ax, mean(ax.XLim), ax.YLim(2), "HD median (s)", 'FontSize', 9, 'FontWeight', 'bold', 'HorizontalAlignment', 'center');
 
@@ -443,9 +409,6 @@ plot_shuttle_time_violin(ha_st_violin, obj, cp, opts);
 % Prob. density
     function plot_hold_duration_pdf(ax, obj, port, opts)
 
-        n_boot = 1000;
-        alpha_ci = 0.05;
-
         p_this = obj.Ports==upper(string(port));
         cued_this = find(obj.CueUncue==0);
 
@@ -459,8 +422,8 @@ plot_shuttle_time_violin(ha_st_violin, obj, cp, opts);
         hd_control_pdf = kde(hd_control);
         hd_chemo_pdf   = kde(hd_chemo);
 
-        hd_control_pdf_ci = bootci(n_boot, {kde, hd_control}, 'Type', 'cper', 'Alpha', alpha_ci);
-        hd_chemo_pdf_ci = bootci(n_boot, {kde, hd_chemo}, 'Type', 'cper', 'Alpha', alpha_ci);
+        hd_control_pdf_ci = bootci(1000, {kde, hd_control}, 'Type', 'cper', 'Alpha', .01);
+        hd_chemo_pdf_ci = bootci(1000, {kde, hd_chemo}, 'Type', 'cper', 'Alpha', .01);
 
         fill(ax, [obj.Bins.HoldDuration flip(obj.Bins.HoldDuration)], [hd_control_pdf_ci(1,:) flip(hd_control_pdf_ci(2,:))], 'y', ...
             'FaceColor', opts.color.Control, 'FaceAlpha', 0.4, 'EdgeColor', 'none');
