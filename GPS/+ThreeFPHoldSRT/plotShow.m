@@ -94,8 +94,8 @@ set(ha31, 'units', 'centimeters', 'position', [21.3 6.5, 8 4], ...
 plot_hold_duration_pdf_early_late(ha31, obj, "r", opts)
 set(ha31, 'xticklabel', [], 'xlabel', []);
 
-ha3.YLim(2) = 20; %max([ha3.YLim(2) ha31.YLim(2)]);
-ha31.YLim(2) = 20; %ha3.YLim(2);
+ha3.YLim(2) = max([ha3.YLim(2) ha31.YLim(2)]);
+ha31.YLim(2) = ha3.YLim(2);
 
 ha32 = axes;
 set(ha32, 'units', 'centimeters', 'position', [27.5 10, 1.5 1.2], ...
@@ -392,6 +392,10 @@ end
 
     function plot_hold_duration_pdf_early_late(ax, obj, port, opts)
 
+        n_boot = 1000;
+        alpha_ci = 0.05;
+        band_width = 0.05;
+
         p_this = obj.Ports==upper(string(port));
 
         if all(all(cellfun(@(x) length(x)>=100, obj.HDSortedNone)))
@@ -414,11 +418,19 @@ end
                 continue;
             end
 
-            hd_early_pdf = ksdensity(hd_this(1:obj.PhaseCount), obj.Bins.HoldDuration, 'Function', 'pdf');
-            hd_late_pdf  = ksdensity(hd_this(end-obj.PhaseCount+1:end), obj.Bins.HoldDuration, 'Function', 'pdf');
+            kde = @(x) ksdensity(x, obj.Bins.HoldDuration, 'Function', 'pdf', 'Bandwidth', band_width);
+            hd_early_pdf = kde(hd_this(1:obj.PhaseCount));
+            hd_late_pdf  = kde(hd_this(end-obj.PhaseCount+1:end));
 
+            hd_early_pdf_ci = bootci(n_boot, {kde, hd_this(1:obj.PhaseCount)}, 'Type', 'cper', 'Alpha', alpha_ci);
+            hd_late_pdf_ci  = bootci(n_boot, {kde, hd_this(end-obj.PhaseCount+1:end)}, 'Type', 'cper', 'Alpha', alpha_ci);
+
+            fill(ax, [obj.Bins.HoldDuration flip(obj.Bins.HoldDuration)], [hd_early_pdf_ci(1,:) flip(hd_early_pdf_ci(2,:))], 'y', ...
+                'FaceColor', opts.color.PhaseEarly, 'FaceAlpha', 0.3, 'EdgeColor', 'none');
             plot(ax, obj.Bins.HoldDuration, hd_early_pdf, ...
                 'color', opts.color.PhaseEarly, 'linewidth', opts.lw(fp_this), 'LineStyle', '-');
+            fill(ax, [obj.Bins.HoldDuration flip(obj.Bins.HoldDuration)], [hd_late_pdf_ci(1,:) flip(hd_late_pdf_ci(2,:))], 'y', ...
+                'FaceColor', opts.color.PhaseLate, 'FaceAlpha', 0.3, 'EdgeColor', 'none');
             plot(ax, obj.Bins.HoldDuration, hd_late_pdf, ...
                 'color', opts.color.PhaseLate, 'linewidth', opts.lw(fp_this), 'LineStyle', '-');
 

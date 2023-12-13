@@ -122,6 +122,7 @@ classdef GPSSessionClass
             % Rat name
             obj.Subject = extractBefore(obj.BpodFileName, '_');
             Protocol = extractAfter(obj.BpodFileName, [obj.Subject '_']);
+            obj.Session = Protocol(end-14:end-7);
             switch Protocol(1:end-16) % e.g. 'NEW_03_Wait3FPFlash'
                 case {'NEW_01_Autoshaping', 'GPS_01_Autoshaping'}
                     obj.Task = 'Autoshaping';
@@ -149,10 +150,9 @@ classdef GPSSessionClass
             obj.ANMInfo = readtable(obj.ANMInfoFile, "Sheet", "ANM", "TextType", "string");
             obj.ANMInfo = obj.ANMInfo(strcmp(obj.ANMInfo.Name, obj.Subject), :);
             obj.SessionInfo = readtable(obj.ANMInfoFile, "Sheet", obj.Subject, "TextType", "string");
-            obj.SessionInfo = obj.SessionInfo(strcmp(obj.SessionInfo.Session, obj.Session), :);
+            obj.SessionInfo = obj.SessionInfo(strcmp(string(obj.SessionInfo.Session), obj.Session), :);
 
             % Session meta-information
-            obj.Session = Protocol(end-14:end-7);
             obj.SessionStartTime = SessionData.Info.SessionStartTime_UTC;
             obj.NumTrials = SessionData.nTrials;
             if isfield(SessionData.RawEvents.Trial{end}.Events, 'WavePlayer1_2') % Sometime the protocol might shut down
