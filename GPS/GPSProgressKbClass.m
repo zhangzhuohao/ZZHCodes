@@ -17,6 +17,7 @@ classdef GPSProgressKbClass
         MixedFP
         Ports
         Cued
+        Guided
 
         BehavTable
         Performance
@@ -128,6 +129,7 @@ classdef GPSProgressKbClass
             obj.Label               = string(cellfun(@(x) x.Label, SessionClassAll, 'UniformOutput', false));
             
             obj.Cued                = cell2mat(cellfun(@(x) x.Cued, SessionClassAll , 'UniformOutput', false));
+            obj.Guided              = cell2mat(cellfun(@(x) x.Guided, SessionClassAll , 'UniformOutput', false));
 
             MixedFP                 = cell2mat(cellfun(@(x) x.MixedFP, SessionClassAll , 'UniformOutput', false)');
             obj.MixedFP             = unique(MixedFP(:, 1));

@@ -39,6 +39,7 @@ classdef GPSSessionKbClass
         RW
 
         Cued
+        Guided = [];
     end
 
     properties (Constant)
@@ -52,6 +53,7 @@ classdef GPSSessionKbClass
             };
         Ports = ["L", "R"];
         CueUncue = [1 0];
+        FillEmpty = [1 0];
     end
 
     properties (Dependent)
@@ -60,6 +62,7 @@ classdef GPSSessionKbClass
         Experimenter % Name (initials) of the Experimenter, set manually
         Treatment % Set manually
         Dose % Set manually
+        Dilution
         Label
         RTSortedLabels
 
@@ -124,6 +127,8 @@ classdef GPSSessionKbClass
                     obj.Task = 'KornblumSRT';
                 case {'GPS_09_KornblumHoldEmpty'}
                     obj.Task = 'KornblumSRTEmp';
+                case {'GPS_10_KornblumHoldMix'}
+                    obj.Task = 'KornblumSRTMix';
             end
 
             % Session meta-information
@@ -160,6 +165,15 @@ classdef GPSSessionKbClass
             % Manually set the dose of injection
             if isnumeric(dose)
                 obj.Dose = dose;
+            else
+                error('"dose" must be a scalar')
+            end
+        end
+
+        function obj = set.Dilution(obj,dilution)
+            % Manually set the dose of injection
+            if isnumeric(dilution)
+                obj.Dilution = dilution;
             else
                 error('"dose" must be a scalar')
             end
@@ -243,13 +257,8 @@ classdef GPSSessionKbClass
             value = experimenter;
         end
 
-        function value = get.RTSortedLabels(obj)
-            switch obj.Task
-                case {'KornblumSRT'}
-                    value = 'Cued x Ports';
-                otherwise
-                    value = 'FPs x Ports';
-            end
+        function value = get.RTSortedLabels(~)
+            value = 'Cued x Ports';
         end
 
         %%
@@ -625,6 +634,9 @@ classdef GPSSessionKbClass
                 'InitInTime', 'InitOutTime', 'CentInTime', 'CentOutTime', 'ChoicePokeTime', 'ChoiceCueTime', 'TriggerCueTime', ...
                 'PortCorrect', 'PortChosen', 'FP', 'RW', 'Outcome', ...
                 'ShuttleTime', 'HoldDuration', 'RT', 'MovementTime', 'ChoiceTime', 'Cued'});
+            if ~isempty(obj.Guided)
+                behav_table = addvars(behav_table, obj.Guided, 'After', 'Cued', 'NewVariableNames', {'Guided'});
+            end
 
             value = behav_table;
         end
