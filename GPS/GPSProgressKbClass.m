@@ -1248,6 +1248,7 @@ classdef GPSProgressKbClass
                 print(hf, '-dpdf', savename, '-bestfit')
                 print(hf, '-dpng', savename)
                 saveas(hf, savename, 'fig')
+                exportgraphics(hf, strcat(savename, ".jpg"), 'Resolution', 600);
             end
         end
 
