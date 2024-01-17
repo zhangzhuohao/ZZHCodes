@@ -23,6 +23,10 @@ classdef GPSColor
         PhaseLate   = [250  75   40 ] / 255;
         % Cue
         Cue         = [240  160  40 ] / 255;
+        % Filled vs. Empty
+        Filled      = [.2 .2 .2];
+        Empty       = [.6 .6 .6];
+
     end
 
     methods

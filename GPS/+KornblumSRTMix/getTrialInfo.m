@@ -30,8 +30,12 @@ switch SessionData.Custom.Version
             end
         end
 end
+
 obj.Cued = SessionData.Custom.Cued';
 obj.Guided = SessionData.Custom.Guided';
+if isfield(SessionData.Custom, 'Filled')
+    obj.Filled = SessionData.Custom.Filled';
+end
 obj.RW = SessionData.Custom.RW';
 
 switch SessionData.Custom.Version
@@ -351,5 +355,8 @@ obj.PortChosen(ind_bug)         = [];
 obj.Outcome(ind_bug)            = [];
 
 obj.Cued(ind_bug)               = [];
-
+obj.Guided(ind_bug)             = [];
+if isfield(SessionData.Custom, 'Filled')
+    obj.Filled(ind_bug)         = [];
+end
 end

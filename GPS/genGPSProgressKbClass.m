@@ -7,6 +7,7 @@ Tasks = [
     "Kornblum1500SRTSelf";
     "Kornblum2000SRTSelf";
     "Kornblum2000SRTEmpSelf";
+    "Kornblum2000SRTUnguideSelf";
     "Kornblum2000SRTMixSelf"
     ];
 

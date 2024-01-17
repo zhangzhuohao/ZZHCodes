@@ -19,6 +19,8 @@ opts.plotsize = [8    4;
 opts.sep_col = 1.2;
 opts.sep_row = 1.5;
 
+opts.bandwidth = 0.05;
+
 %%
 cp.session_control = obj.Sessions(obj.Label=="Control");
 cp.session_chemo   = obj.Sessions(obj.Label=="Chemo");
@@ -575,8 +577,8 @@ plot_shuttle_time_violin(ha13, obj, cp, opts);
             hd_control = obj.HDSortedControl{fp_this, p_this};
             hd_chemo   = obj.HDSortedChemo{fp_this, p_this};
 
-            hd_control_pdf = ksdensity(hd_control, obj.Bins.HoldDuration, 'Function', 'pdf');
-            hd_chemo_pdf   = ksdensity(hd_chemo,   obj.Bins.HoldDuration, 'Function', 'pdf');
+            hd_control_pdf = ksdensity(hd_control, obj.Bins.HoldDuration, 'Function', 'pdf', 'Bandwidth', opts.bandwidth);
+            hd_chemo_pdf   = ksdensity(hd_chemo,   obj.Bins.HoldDuration, 'Function', 'pdf', 'Bandwidth', opts.bandwidth);
 
             plot(ax, obj.Bins.HoldDuration, hd_control_pdf, ...
                 'color', opts.color.Control, 'linewidth', opts.lw(fp_this), 'LineStyle', '-');
@@ -611,8 +613,8 @@ plot_shuttle_time_violin(ha13, obj, cp, opts);
             hd_control = obj.HDSortedControl{fp_this, p_this};
             hd_chemo   = obj.HDSortedChemo{fp_this, p_this};
 
-            hd_control_pdf = ksdensity(hd_control, obj.Bins.HoldDuration, 'Function', 'cdf');
-            hd_chemo_pdf   = ksdensity(hd_chemo,   obj.Bins.HoldDuration, 'Function', 'cdf');
+            hd_control_pdf = ksdensity(hd_control, obj.Bins.HoldDuration, 'Function', 'cdf', 'Bandwidth', opts.bandwidth);
+            hd_chemo_pdf   = ksdensity(hd_chemo,   obj.Bins.HoldDuration, 'Function', 'cdf', 'Bandwidth', opts.bandwidth);
 
             plot(ax, obj.Bins.HoldDuration, hd_control_pdf, ...
                 'color', opts.color.Control, 'linewidth', opts.lw(fp_this), 'LineStyle', '-');

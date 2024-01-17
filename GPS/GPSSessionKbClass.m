@@ -40,6 +40,7 @@ classdef GPSSessionKbClass
 
         Cued
         Guided = [];
+        Filled = [];
     end
 
     properties (Constant)
@@ -636,6 +637,9 @@ classdef GPSSessionKbClass
                 'ShuttleTime', 'HoldDuration', 'RT', 'MovementTime', 'ChoiceTime', 'Cued'});
             if ~isempty(obj.Guided)
                 behav_table = addvars(behav_table, obj.Guided, 'After', 'Cued', 'NewVariableNames', {'Guided'});
+            end
+            if ~isempty(obj.Filled)
+                behav_table = addvars(behav_table, obj.Filled, 'After', 'Guided', 'NewVariableNames', {'Filled'});
             end
 
             value = behav_table;
