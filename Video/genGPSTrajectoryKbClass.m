@@ -5,7 +5,7 @@ View = "Top";
 
 AnmInfoFile = 'F:\YuLab\Work\GPS\Data\ANMInfo.xlsx';
 
-ParentDir = uigetdir("F:\YuLab\Work\GPS\Video", "Select parent directory");
+ParentDir = uigetdir("D:\YuLab\Work\GPS\Video", "Select parent directory");
 if ~ParentDir
     return
 end
