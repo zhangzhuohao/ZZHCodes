@@ -1,4 +1,4 @@
-function p_value = Chi2Test(Data)
+function [p_value, chi2] = Chi2Test(Data)
 
 % Jianing Yu 12/15/2023
 % Data: Row represents subgroups, Column represents categories
@@ -11,24 +11,34 @@ function p_value = Chi2Test(Data)
 
 sample_size     = sum(Data(:));
 sample_size_subgroups = sum(Data, 2);
-disp(sample_size_subgroups)
+% disp(sample_size_subgroups)
 % Estimate distribution
+
 p_0             = sum(Data, 1)/sample_size;
-disp(p_0)
+% disp(p_0)
 % Compute expectation
+
 Expectation     = sample_size_subgroups*p_0;
-disp(Data)
-disp(Expectation)
+% disp(Data)
+% disp(Expectation)
+
 Squared_Difference = (Expectation-Data).^2;
-disp(Squared_Difference)
+% disp(Squared_Difference)
 % Normalized by the expected value
+
 Squared_Difference_Norm = Squared_Difference./Expectation;
-disp(Squared_Difference_Norm)
+% disp(Squared_Difference_Norm)
+Squared_Difference_Norm(isnan(Squared_Difference_Norm)) = 0;
+Squared_Difference_Norm(isinf(Squared_Difference_Norm)) = 0;
+
 % Compute test statistic
 T = sum(Squared_Difference_Norm(:));
-disp(T)
+% disp(T)
 dof = (size(Data, 1)-1)*(size(Data, 2)-1);
+
 p_value = 1-chi2cdf(T, dof);
+chi2 = T;
+
 % xx = linspace(0, 20, 1000);
 % yy = chi2pdf(xx, dof);
 % 

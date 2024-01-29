@@ -1186,6 +1186,7 @@ classdef GPSProgressClass
                 print(hf, '-dpdf', savename, '-bestfit')
                 print(hf, '-dpng', savename)
                 saveas(hf, savename, 'fig')
+                exportgraphics(hf, savename+".jpg", 'Resolution', 600);
             end
         end
 

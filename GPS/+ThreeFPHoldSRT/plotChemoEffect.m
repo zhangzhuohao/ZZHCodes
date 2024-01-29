@@ -69,8 +69,7 @@ end
 fig = figure(24); clf(24);
 set(gcf, 'unit', 'centimeters', 'position', [2 1 35.5 23.4], 'paperpositionmode', 'auto', 'color', 'w');
 
-uicontrol('Style', 'text', 'parent', 24, 'units', 'normalized', 'position', [0.3 0.95 0.4 0.04],...
-    'string', obj.Subject+" / "+obj.Task+" / "+obj.Sessions(1)+"_"+obj.Sessions(end)+" / ChemoEffect", 'fontsize', 11, 'fontweight', 'bold', 'backgroundcolor', 'w');
+set_fig_title(fig, obj.Subject+" / "+obj.Task+" / "+obj.Sessions(1)+"\_"+obj.Sessions(end)+" / ChemoEffect");
 
 %% Set axes and plot
 %% Maze diagram
