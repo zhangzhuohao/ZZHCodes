@@ -24,7 +24,14 @@ if any(strcmp(opts.Tasks, "ALL"))
         "ThreeFPHoldCRT";
         "ThreeFPHoldSRT";
         "ThreeFPHoldWM";
-        "KornblumSRT"
+        "KornblumSRT";
+        "Kornblum1000SRT";
+        "Kornblum1000SRTSelf";
+        "Kornblum1500SRTSelf";
+        "Kornblum2000SRTSelf";
+        "Kornblum2000SRTEmpSelf";
+        "Kornblum2000SRTUnguideSelf";
+        "Kornblum2000SRTMixSelf"
         ];
 end
 
