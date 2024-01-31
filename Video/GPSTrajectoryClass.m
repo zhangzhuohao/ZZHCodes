@@ -29,14 +29,15 @@ classdef GPSTrajectoryClass
         ForePeriods = ["Short", "Med", "Long"];
         MixedFPs    = [.5 1 1.5];
         Ports = ["L", "R"];
-        TimePointsIn  = -99:1:2500;
-        TimePointsOut = -1599:1:1000;
+
+        TimeMatIn  = -100:10:2500;
+        TimeMatOut = -1600:10:1000;
     end
 
     properties (Dependent)
-        
         TrialInfo
         NumTrials
+
         Trial
         Stage
         Performance
@@ -50,12 +51,55 @@ classdef GPSTrajectoryClass
         Ind
         TimeFromIn
         TimeFromOut
+        TimeWarped
 
         PortVec
+        PortCent
 
         AngleHead
+        AngSpeedHead
+        AngAccHead
+
+        PosXHead
+        PosYHead
+        SpeedXHead
+        SpeedYHead
+        AccXHead
+        AccYHead
+
+        SpeedHead
+        SpeedDirHead
+        AccHead
+        dPhiHead
+
         AngleHeadMatIn
         AngleHeadMatOut
+        AngSpeedHeadMatIn
+        AngSpeedHeadMatOut
+        AngAccHeadMatIn
+        AngAccHeadMatOut
+
+        PosXHeadMatIn
+        PosXHeadMatOut
+        PosYHeadMatIn
+        PosYHeadMatOut
+        SpeedXHeadMatIn
+        SpeedXHeadMatOut
+        SpeedYHeadMatIn
+        SpeedYHeadMatOut
+        AccXHeadMatIn
+        AccXHeadMatOut
+        AccYHeadMatIn
+        AccYHeadMatOut
+
+        SpeedHeadMatIn
+        SpeedHeadMatOut
+        SpeedDirHeadMatIn
+        SpeedDirHeadMatOut
+        AccHeadMatIn
+        AccHeadMatOut
+        dPhiHeadMatIn
+        dPhiHeadMatOut
     end
 
     methods
@@ -64,10 +108,11 @@ classdef GPSTrajectoryClass
             %   Detailed explanation goes here
             
             obj.DLCTrackingOutFile = DLCTrackingOutFile;
-            obj.ANMInfoFile = AnmInfoFile;
             file_info = split(string(DLCTrackingOutFile), filesep);
             obj.Session = file_info(end-3);
             obj.ANM     = file_info(end-5);
+
+            obj.ANMInfoFile = AnmInfoFile;
 
             ANMInfoTable = readtable(obj.ANMInfoFile, "Sheet", obj.ANM, "TextType", "string");
             SessionInfo  = ANMInfoTable(ANMInfoTable.Session==str2double(obj.Session), :);
@@ -82,10 +127,11 @@ classdef GPSTrajectoryClass
 
             load(DLCTrackingOutFile, "DLCTrackingOut");
             obj.DLCTracking = DLCTrackingOut;
-            obj             = obj.removeOddTrials;
 
-            obj.AngleHeadTraceIn  = obj.getAngleHeadTrace("In");
-            obj.AngleHeadTraceOut = obj.getAngleHeadTrace("Out");
+            obj = obj.removeOddTrials;
+
+%             obj.AngleHeadTraceIn  = obj.getAngleHeadTrace("In");
+%             obj.AngleHeadTraceOut = obj.getAngleHeadTrace("Out");
             
         end
 
@@ -95,6 +141,17 @@ classdef GPSTrajectoryClass
             angle_in = cellfun(@(a, t) a(t==0), obj.AngleHead, obj.TimeFromIn);
             ind_odd  = find(angle_in > mean(angle_in)+5*std(angle_in) | angle_in < mean(angle_in)-5*std(angle_in));
 
+            for i = 1:length(obj.DLCTracking.PoseTracking)
+                obj.DLCTracking.PoseTracking(i).PosData(ind_odd) = [];
+                obj.DLCTracking.PoseTracking(i).BpodEventIndex(:, ind_odd) = [];
+                obj.DLCTracking.PoseTracking(i).Performance(ind_odd) = [];
+            end
+
+            obj.DLCTracking.PortLoc(ind_odd) = [];
+
+            time_error = cellfun(@(t) sum(diff(t)<=0), obj.TimeFromIn);
+            ind_odd = find(time_error>0);
+            
             for i = 1:length(obj.DLCTracking.PoseTracking)
                 obj.DLCTracking.PoseTracking(i).PosData(ind_odd) = [];
                 obj.DLCTracking.PoseTracking(i).BpodEventIndex(:, ind_odd) = [];
@@ -221,7 +278,6 @@ classdef GPSTrajectoryClass
         function value = get.TimeFromIn(obj)
 
             time_from_in = cellfun(@(x) x(:, 4), obj.DLCTracking.PoseTracking(1).PosData, 'UniformOutput', false);
-
             value = time_from_in;
         end
 
@@ -234,20 +290,33 @@ classdef GPSTrajectoryClass
             value = time_from_out;
         end
 
+        function value = get.TimeWarped(obj)
+            
+            in2out = num2cell(1000 * (obj.BehTable.CentOutTime - obj.BehTable.CentInTime));
+            in2out = in2out(obj.DLCTracking.PoseTracking(1).BpodEventIndex(1,:));
+            time_warped = cellfun(@(x, y) x ./ y, obj.TimeFromIn, in2out', 'UniformOutput', false);
+
+            value = time_warped;
+        end
+
         function value = get.PortVec(obj)
             
             port_vec = arrayfun(@(x) x.R - x.L, obj.DLCTracking.PortLoc, 'UniformOutput', false);
-
             value = port_vec;
-
         end
 
-        %%
+        function value = get.PortCent(obj)
+
+            port_cent = arrayfun(@(x) (x.R + x.L) / 2, obj.DLCTracking.PortLoc, 'UniformOutput', false);
+            value = port_cent;
+        end
+
+        %% Angle of head
         function value = get.AngleHead(obj)
 
             indL = find(strcmp("ear_base_left", obj.DLCTracking.BodyParts));
             indR = find(strcmp("ear_base_right", obj.DLCTracking.BodyParts));
-            
+
             posL = obj.DLCTracking.PoseTracking(indL).PosData;
             posR = obj.DLCTracking.PoseTracking(indR).PosData;
 
@@ -256,28 +325,311 @@ classdef GPSTrajectoryClass
 
             angle_sign = cellfun(@(x, y) 2*(x(:, 2)>=y(2))-1, head_vec, obj.PortVec, 'UniformOutput', false);
             head_angle = cellfun(@(x, y) x.*y, head_angle, angle_sign, 'UniformOutput', false);
-
             head_angle = cellfun(@(x) smoothdata(x, "gaussian", 5), head_angle, 'UniformOutput', false);
-    
+
             value = head_angle;
         end
 
         function value = get.AngleHeadMatIn(obj)
-
-            angle_head_mat_in = cellfun(@(a, t) interp1(t, a, obj.TimePointsIn, "linear"), obj.AngleHead, obj.TimeFromIn, 'UniformOutput', false);
-            angle_head_mat_in = angle_head_mat_in';
-            angle_head_mat_in = cell2mat(angle_head_mat_in);
-
-            value = angle_head_mat_in;
+            value = obj.alignMatrix(obj.AngleHead, obj.TimeFromIn, obj.TimeMatIn);
         end
 
         function value = get.AngleHeadMatOut(obj)
+            value = obj.alignMatrix(obj.AngleHead, obj.TimeFromOut, obj.TimeMatOut);
+        end
 
-            angle_head_mat_out = cellfun(@(a, t) interp1(t, a, obj.TimePointsOut, "linear"), obj.AngleHead, obj.TimeFromOut, 'UniformOutput', false);
-            angle_head_mat_out = angle_head_mat_out';
-            angle_head_mat_out = cell2mat(angle_head_mat_out);
+        %% Angle speed of head
+        function value = get.AngSpeedHead(obj)
+            
+            d_a = cellfun(@(a) a([2:end end]) - a([1 1:end-1]), obj.AngleHead, 'UniformOutput', false);
+            d_t = cellfun(@(t) t([2:end end]) - t([1 1:end-1]), obj.TimeFromIn, 'UniformOutput', false);
 
-            value = angle_head_mat_out;
+            ang_speed_head = cellfun(@(da, dt) da ./ dt, d_a, d_t, 'UniformOutput', false);
+            ang_speed_head = cellfun(@(x) smoothdata(x, "gaussian", 5), ang_speed_head, 'UniformOutput', false);
+
+            value = ang_speed_head;
+        end
+
+        function value = get.AngSpeedHeadMatIn(obj)
+            value = obj.alignMatrix(obj.AngSpeedHead, obj.TimeFromIn, obj.TimeMatIn);
+        end
+
+        function value = get.AngSpeedHeadMatOut(obj)
+            value = obj.alignMatrix(obj.AngSpeedHead, obj.TimeFromOut, obj.TimeMatOut);
+        end
+
+        %% Angle acceleration of head
+        function value = get.AngAccHead(obj)
+            
+            d_a = cellfun(@(a) a([2:end end]) - a([1 1:end-1]), obj.AngleHead, 'UniformOutput', false);
+            d_t = cellfun(@(t) t([2:end end]) - t([1 1:end-1]), obj.TimeFromIn, 'UniformOutput', false);
+
+            ang_speed_head = cellfun(@(da, dt) da ./ dt, d_a, d_t, 'UniformOutput', false);
+
+            d_d_v = cellfun(@(v) v([2:end end]) - v([1 1:end-1]), ang_speed_head, 'UniformOutput', false);
+            d_t = cellfun(@(t) t([2:end end]) - t([1 1:end-1]), obj.TimeFromIn, 'UniformOutput', false);
+
+            ang_acc_head = cellfun(@(ddv, dt) ddv ./ dt, d_d_v, d_t, 'UniformOutput', false);
+            ang_acc_head = cellfun(@(x) smoothdata(x, "gaussian", 5), ang_acc_head, 'UniformOutput', false);
+
+            value = ang_acc_head;
+        end
+
+        function value = get.AngAccHeadMatIn(obj)
+            value = obj.alignMatrix(obj.AngAccHead, obj.TimeFromIn, obj.TimeMatIn);
+        end
+
+        function value = get.AngAccHeadMatOut(obj)
+            value = obj.alignMatrix(obj.AngAccHead, obj.TimeFromOut, obj.TimeMatOut);
+        end
+
+        %% Position of head (X)
+        function value = get.PosXHead(obj)
+
+            indL = find(strcmp("ear_base_left", obj.DLCTracking.BodyParts));
+            indR = find(strcmp("ear_base_right", obj.DLCTracking.BodyParts));
+
+            posL = obj.DLCTracking.PoseTracking(indL).PosData;
+            posR = obj.DLCTracking.PoseTracking(indR).PosData;
+
+            head_pos_x = cellfun(@(x, y, z) (y(:, 1) + x(:, 1))/2 - z(1), posL, posR, obj.PortCent, 'UniformOutput', false);
+            head_pos_x = cellfun(@(x) smoothdata(x, "gaussian", 5), head_pos_x, 'UniformOutput', false);
+
+            value = head_pos_x;
+        end
+
+        function value = get.PosXHeadMatIn(obj)
+            value = obj.alignMatrix(obj.PosXHead, obj.TimeFromIn, obj.TimeMatIn);
+        end
+
+        function value = get.PosXHeadMatOut(obj)
+            value = obj.alignMatrix(obj.PosXHead, obj.TimeFromOut, obj.TimeMatOut);
+        end
+
+        %% Position of head (Y)
+        function value = get.PosYHead(obj)
+
+            indL = find(strcmp("ear_base_left", obj.DLCTracking.BodyParts));
+            indR = find(strcmp("ear_base_right", obj.DLCTracking.BodyParts));
+
+            posL = obj.DLCTracking.PoseTracking(indL).PosData;
+            posR = obj.DLCTracking.PoseTracking(indR).PosData;
+
+            head_pos_y = cellfun(@(x, y, z) (y(:, 2) + x(:, 2))/2 - z(2), posL, posR, obj.PortCent, 'UniformOutput', false);
+            head_pos_y = cellfun(@(x) smoothdata(x, "gaussian", 5), head_pos_y, 'UniformOutput', false);
+
+            value = head_pos_y;
+        end
+
+        function value = get.PosYHeadMatIn(obj)
+            value = obj.alignMatrix(obj.PosYHead, obj.TimeFromIn, obj.TimeMatIn);
+        end
+
+        function value = get.PosYHeadMatOut(obj)
+            value = obj.alignMatrix(obj.PosYHead, obj.TimeFromOut, obj.TimeMatOut);
+        end
+
+        %% Speed (X) of head
+        function value = get.SpeedXHead(obj)
+            
+            d_x = cellfun(@(x) x([2:end end]) - x([1 1:end-1]), obj.PosXHead, 'UniformOutput', false);
+            d_t = cellfun(@(t) t([2:end end]) - t([1 1:end-1]), obj.TimeFromIn, 'UniformOutput', false);
+
+            speed_x_head = cellfun(@(dx, dt) dx ./ dt, d_x, d_t, 'UniformOutput', false);
+            speed_x_head = cellfun(@(x) smoothdata(x, "gaussian", 5), speed_x_head, 'UniformOutput', false);
+
+            value = speed_x_head;
+        end
+
+        function value = get.SpeedXHeadMatIn(obj)
+            value = obj.alignMatrix(obj.SpeedXHead, obj.TimeFromIn, obj.TimeMatIn);
+        end
+
+        function value = get.SpeedXHeadMatOut(obj)
+            value = obj.alignMatrix(obj.SpeedXHead, obj.TimeFromOut, obj.TimeMatOut);
+        end
+
+        %% Speed (Y) of head
+        function value = get.SpeedYHead(obj)
+            
+            d_y = cellfun(@(y) y([2:end end]) - y([1 1:end-1]), obj.PosYHead, 'UniformOutput', false);
+            d_t = cellfun(@(t) t([2:end end]) - t([1 1:end-1]), obj.TimeFromIn, 'UniformOutput', false);
+
+            speed_y_head = cellfun(@(dx, dt) dx ./ dt, d_y, d_t, 'UniformOutput', false);
+            speed_y_head = cellfun(@(x) smoothdata(x, "gaussian", 5), speed_y_head, 'UniformOutput', false);
+
+            value = speed_y_head;
+        end
+
+        function value = get.SpeedYHeadMatIn(obj)
+            value = obj.alignMatrix(obj.SpeedYHead, obj.TimeFromIn, obj.TimeMatIn);
+        end
+
+        function value = get.SpeedYHeadMatOut(obj)
+            value = obj.alignMatrix(obj.SpeedYHead, obj.TimeFromOut, obj.TimeMatOut);
+        end
+
+        %% Acceleration (X) of head
+        function value = get.AccXHead(obj)
+            
+            d_x = cellfun(@(x) x([2:end end]) - x([1 1:end-1]), obj.PosXHead, 'UniformOutput', false);
+            dd_x = cellfun(@(dx) dx([2:end end]) - dx([1 1:end-1]), d_x, 'UniformOutput', false);
+            d_t = cellfun(@(t) t([2:end end]) - t([1 1:end-1]), obj.TimeFromIn, 'UniformOutput', false);
+
+            acc_x_head = cellfun(@(ddx, dt) ddx ./ (dt.^2), dd_x, d_t, 'UniformOutput', false);
+            acc_x_head = cellfun(@(x) smoothdata(x, "gaussian", 5), acc_x_head, 'UniformOutput', false);
+
+            value = acc_x_head;
+        end
+
+        function value = get.AccXHeadMatIn(obj)
+            value = obj.alignMatrix(obj.AccXHead, obj.TimeFromIn, obj.TimeMatIn);
+        end
+
+        function value = get.AccXHeadMatOut(obj)
+            value = obj.alignMatrix(obj.AccXHead, obj.TimeFromOut, obj.TimeMatOut);
+        end
+
+        %% Acceleration (Y) of head
+        function value = get.AccYHead(obj)
+            
+            d_y = cellfun(@(y) y([2:end end]) - y([1 1:end-1]), obj.PosYHead, 'UniformOutput', false);
+            dd_y = cellfun(@(dy) dy([2:end end]) - dy([1 1:end-1]), d_y, 'UniformOutput', false);
+            d_t = cellfun(@(t) t([2:end end]) - t([1 1:end-1]), obj.TimeFromIn, 'UniformOutput', false);
+
+            acc_y_head = cellfun(@(ddy, dt) ddy ./ (dt.^2), dd_y, d_t, 'UniformOutput', false);
+            acc_y_head = cellfun(@(x) smoothdata(x, "gaussian", 5), acc_y_head, 'UniformOutput', false);
+
+            value = acc_y_head;
+        end
+
+        function value = get.AccYHeadMatIn(obj)
+            value = obj.alignMatrix(obj.AccYHead, obj.TimeFromIn, obj.TimeMatIn);
+        end
+
+        function value = get.AccYHeadMatOut(obj)
+            value = obj.alignMatrix(obj.AccYHead, obj.TimeFromOut, obj.TimeMatOut);
+        end
+
+        %% Speed of head
+        function value = get.SpeedHead(obj)
+            
+            d_x = cellfun(@(x) x([2:end end]) - x([1 1:end-1]), obj.PosXHead, 'UniformOutput', false);
+            d_y = cellfun(@(y) y([2:end end]) - y([1 1:end-1]), obj.PosYHead, 'UniformOutput', false);
+            d_t = cellfun(@(t) t([2:end end]) - t([1 1:end-1]), obj.TimeFromIn, 'UniformOutput', false);
+
+            speed_head = cellfun(@(dx, dy, dt) vecnorm([dx, dy], 2, 2) ./ dt, d_x, d_y, d_t, 'UniformOutput', false);
+            speed_head = cellfun(@(x) smoothdata(x, "gaussian", 5), speed_head, 'UniformOutput', false);
+
+            value = speed_head;
+        end
+
+        function value = get.SpeedHeadMatIn(obj)
+            value = obj.alignMatrix(obj.SpeedHead, obj.TimeFromIn, obj.TimeMatIn);
+        end
+
+        function value = get.SpeedHeadMatOut(obj)
+            value = obj.alignMatrix(obj.SpeedHead, obj.TimeFromOut, obj.TimeMatOut);
+        end
+
+        %% Speed direction of head
+        function value = get.SpeedDirHead(obj)
+            
+            d_x = cellfun(@(x) x([2:end end]) - x([1 1:end-1]), obj.PosXHead, 'UniformOutput', false);
+            d_y = cellfun(@(y) y([2:end end]) - y([1 1:end-1]), obj.PosYHead, 'UniformOutput', false);
+
+            speed_vec = cellfun(@(dx, dy) [dx, dy], d_x, d_y, 'UniformOutput', false);
+            port_vec_vert = cellfun(@(pv) [1 -1] .* [pv(2) pv(1)], obj.PortVec, 'UniformOutput', false);
+
+            speed_dir_head = cellfun(@(x, y) calAngle(x, y), speed_vec, port_vec_vert, 'UniformOutput', false);
+
+            angle_sign = cellfun(@(x, y) 2*(x(:, 1)>=y(1))-1, speed_vec, port_vec_vert, 'UniformOutput', false);
+            speed_dir_head = cellfun(@(x, y) x.*y, speed_dir_head, angle_sign, 'UniformOutput', false);
+            speed_dir_head = cellfun(@(x) smoothdata(x, "gaussian", 5), speed_dir_head, 'UniformOutput', false);
+
+            value = speed_dir_head;
+        end
+
+        function value = get.SpeedDirHeadMatIn(obj)
+            value = obj.alignMatrix(obj.SpeedDirHead, obj.TimeFromIn, obj.TimeMatIn);
+        end
+
+        function value = get.SpeedDirHeadMatOut(obj)
+            value = obj.alignMatrix(obj.SpeedDirHead, obj.TimeFromOut, obj.TimeMatOut);
+        end
+
+        %% Acceleration of head
+        function value = get.AccHead(obj)
+            
+            d_x = cellfun(@(x) x([2:end end]) - x([1 1:end-1]), obj.PosXHead, 'UniformOutput', false);
+            d_d_x = cellfun(@(dx) dx([2:end end]) - dx([1 1:end-1]), d_x, 'UniformOutput', false);
+            d_y = cellfun(@(y) y([2:end end]) - y([1 1:end-1]), obj.PosYHead, 'UniformOutput', false);
+            d_d_y = cellfun(@(dy) dy([2:end end]) - dy([1 1:end-1]), d_y, 'UniformOutput', false);
+            d_t = cellfun(@(t) t([2:end end]) - t([1 1:end-1]), obj.TimeFromIn, 'UniformOutput', false);
+
+            acc_head = cellfun(@(ddx, ddy, dt) vecnorm([ddx, ddy], 2, 2) ./ (dt.^2), d_d_x, d_d_y, d_t, 'UniformOutput', false);
+            acc_head = cellfun(@(x) smoothdata(x, "gaussian", 5), acc_head, 'UniformOutput', false);
+
+            value = acc_head;
+        end
+
+        function value = get.AccHeadMatIn(obj)
+            value = obj.alignMatrix(obj.AccHead, obj.TimeFromIn, obj.TimeMatIn);
+        end
+
+        function value = get.AccHeadMatOut(obj)
+            value = obj.alignMatrix(obj.AccHead, obj.TimeFromOut, obj.TimeMatOut);
+        end
+
+        %% Change of speed direction (Phi) of head
+        function value = get.dPhiHead(obj)
+            
+            d_x = cellfun(@(x) x([2:end end]) - x([1 1:end-1]), obj.PosXHead, 'UniformOutput', false);
+            d_y = cellfun(@(y) y([2:end end]) - y([1 1:end-1]), obj.PosYHead, 'UniformOutput', false);
+
+            speed_vec = cellfun(@(dx, dy) [dx, dy], d_x, d_y, 'UniformOutput', false);
+            port_vec_vert = cellfun(@(pv) [1 -1] .* [pv(2) pv(1)], obj.PortVec, 'UniformOutput', false);
+
+            speed_dir_head = cellfun(@(x, y) calAngle(x, y), speed_vec, port_vec_vert, 'UniformOutput', false);
+
+            angle_sign = cellfun(@(x, y) 2*(x(:, 1)>=y(1))-1, speed_vec, port_vec_vert, 'UniformOutput', false);
+            speed_dir_head = cellfun(@(x, y) x.*y, speed_dir_head, angle_sign, 'UniformOutput', false);
+            speed_dir_head = cellfun(@(x) unwrap(x, 180), speed_dir_head, 'UniformOutput', false);
+
+            d_dir = cellfun(@(dir) dir([2:end end]) - dir([1 1:end-1]), speed_dir_head, 'UniformOutput', false);
+            d_t = cellfun(@(t) t([2:end end]) - t([1 1:end-1]), obj.TimeFromIn, 'UniformOutput', false);
+            dphi_head = cellfun(@(ddir, dt) ddir ./ (dt.^2), d_dir, d_t, 'UniformOutput', false);
+            dphi_head = cellfun(@(x) smoothdata(x, "gaussian", 5), dphi_head, 'UniformOutput', false);
+
+            value = dphi_head;
+        end
+
+        function value = get.dPhiHeadMatIn(obj)
+            value = obj.alignMatrix(obj.dPhiHead, obj.TimeFromIn, obj.TimeMatIn);
+        end
+
+        function value = get.dPhiHeadMatOut(obj)
+            value = obj.alignMatrix(obj.dPhiHead, obj.TimeFromOut, obj.TimeMatOut);
+        end
+
+        %%
+        function M = alignMatrix(~, trace, time_points, time_matrix)
+            
+            M = cellfun(@(x, t) interp1(t, x, time_matrix, "linear"), trace, time_points, 'UniformOutput', false);
+            M = M';
+            M = cell2mat(M);
+        end
+
+        function trace_normalized = normalizeTrace(~, trace, norm_method)
+            
+            if nargin<3
+                norm_method = 'range';
+            end
+            trace_all = cell2mat(trace');
+            trace_all_normalized = normalize(trace_all, norm_method);
+
+            trace_normalized = mat2cell(trace_all_normalized, cellfun(@(x) length(x), trace));
+            trace_normalized = trace_normalized';
         end
 
         %%
@@ -296,7 +648,7 @@ classdef GPSTrajectoryClass
 
                 switch AlignTo
                     case {'In'}
-                        time_bin_edges  = floor(obj.TimePointsIn(1)):20:1000*fp+300;
+                        time_bin_edges  = floor(obj.TimeMatIn(1)):20:1000*fp+300;
                         time_bin_center = time_bin_edges(1:end-1)+10;
                     case {'Out'}
                         time_bin_edges = -fp*1000-100:20:300;

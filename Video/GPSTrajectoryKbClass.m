@@ -26,8 +26,8 @@ classdef GPSTrajectoryKbClass
         CueUncue = [1 0];
         Ports = ["L", "R"];
 
-        TimeMatIn  = -99:1:3000;
-        TimeMatOut = -1999:1:1000;
+        TimeMatIn  = -100:10:3000;
+        TimeMatOut = -2000:10:1000;
     end
 
     properties (Dependent)
@@ -144,11 +144,10 @@ classdef GPSTrajectoryKbClass
                 obj.DLCTracking.PoseTracking(i).BpodEventIndex(:, ind_odd) = [];
                 obj.DLCTracking.PoseTracking(i).Performance(ind_odd) = [];
             end
-
             obj.DLCTracking.PortLoc(ind_odd) = [];
 
-            zero_point = cellfun(@(t) sum(t==0), obj.TimeFromIn);
-            ind_odd = find(zero_point~=1);
+            time_error = cellfun(@(t) sum(diff(t)<=0), obj.TimeFromIn);
+            ind_odd = find(time_error>0);
             
             for i = 1:length(obj.DLCTracking.PoseTracking)
                 obj.DLCTracking.PoseTracking(i).PosData(ind_odd) = [];

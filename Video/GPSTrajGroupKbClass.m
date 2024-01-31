@@ -67,9 +67,9 @@ classdef GPSTrajGroupKbClass
         CueUncue    = [1 0];
         Ports = ["L", "R"];
 
-        TimeMatIn  = -99:1:3000;
-        TimeMatOut = -2099:1:1000;
-        TimeMatWarp = -0.2+0.002:0.002:1.6;
+        TimeMatIn  = -100:10:3000;
+        TimeMatOut = -2100:10:1000;
+        TimeMatWarp = -0.2:0.01:1.6;
 
 %         ShuffleIters  = 200;
 %         Alpha         = 0.01;
@@ -126,6 +126,7 @@ classdef GPSTrajGroupKbClass
     methods
         function obj = GPSTrajGroupKbClass(TrajClassAll)
             %GPSTrajGroupKbClass Construct an instance of this class
+            
             %% Session information
             obj.ANM             = unique(arrayfun(@(x) x.obj.ANM, TrajClassAll));
             obj.Sessions        = arrayfun(@(x) x.obj.Session, TrajClassAll);
@@ -172,8 +173,6 @@ classdef GPSTrajGroupKbClass
                 obj.PortChosen  = [obj.PortChosen allPortChosens{i}];
             end
             
-            
-
             allFPs              = arrayfun(@(x) x.obj.FP, TrajClassAll, 'UniformOutput', false);
             obj.FP              = cell2mat(allFPs');
 
@@ -540,13 +539,25 @@ classdef GPSTrajGroupKbClass
         end
 
         %% Calculate distance matrix
-        % dynamic time warp (DTW)
-        function dist_mat = calDistDtw(obj, trace, trace_norm_method, dist_norm_method)
+        function dist_mat = calDist(obj, trace, varargin)
 
-            if nargin > 2
-                if ~strcmpi(trace_norm_method, 'none')
+            % parsing input
+            P = inputParser;
+
+            addParameter(P, 'warp_method', 'linear', @(x) (ischar(x) || isstring(x)));
+            addParameter(P, 'trace_norm_method', 'range', @(x) (ischar(x) || isstring(x)));
+            addParameter(P, 'dist_norm_method', 'range', @(x) (ischar(x) || isstring(x)));
+
+            parse(P, varargin{:});
+
+            warp_method = P.Results.warp_method;
+            trace_norm_method = P.Results.trace_norm_method;
+            dist_norm_method = P.Results.dist_norm_method;
+
+            switch trace_norm_method
+                case 'none'
+                otherwise
                     trace = obj.normalizeTrace(trace, trace_norm_method);
-                end
             end
 
             num_trials = length(trace);
@@ -557,7 +568,12 @@ classdef GPSTrajGroupKbClass
 
             for m = 1:num_trials
                 for n = m+1:num_trials
-                    dist_mat(m, n) = dtw(trace{m}', trace{n}');
+                    switch warp_method
+                        case 'dtw'
+                            dist_mat(m, n) = dtw(trace{m}', trace{n}');
+                        case 'linear'
+                            dist_mat(m, n) = sum(sqrt(sum((trace{m}-trace{n}).^2, 2)));
+                    end
                     num_calculated = num_calculated + 1;
 
                     if ~mod(num_calculated, floor(num_to_cal/100))
@@ -567,46 +583,11 @@ classdef GPSTrajGroupKbClass
             end
             dist_mat = dist_mat + dist_mat';
 
-            if nargin > 3
-                if ~strcmpi(dist_norm_method, 'none')
+            switch dist_norm_method
+                case 'none'
+                otherwise
                     dist_mat = normalize(dist_mat(:), dist_norm_method);
                     dist_mat = reshape(dist_mat, num_trials, num_trials);
-                end
-            end
-        end
-
-        % linear warp (LW)
-        function dist_mat = calDistLw(obj, trace, trace_norm_method, dist_norm_method)
-
-            if nargin > 2
-                if ~strcmpi(trace_norm_method, 'none')
-                    trace = obj.normalizeTrace(trace, trace_norm_method);
-                end
-            end
-
-            num_trials = length(trace);
-            dist_mat = zeros(num_trials);
-
-            num_to_cal = .5*num_trials^2 - num_trials;
-            num_calculated = 0;
-
-            for m = 1:num_trials
-                for n = m+1:num_trials
-                    dist_mat(m, n) = sum(sqrt(sum((trace{m}-trace{n}).^2, 2)));
-                    num_calculated = num_calculated + 1;
-
-                    if ~mod(num_calculated, floor(num_to_cal/100))
-                        fprintf('%.0f / %.0f    - %.0f%%\n', num_calculated, num_to_cal, 100*num_calculated/num_to_cal);
-                    end
-                end
-            end
-            dist_mat = dist_mat + dist_mat';
-
-            if nargin > 3
-                if ~strcmpi(dist_norm_method, 'none')
-                    dist_mat = normalize(dist_mat(:), dist_norm_method);
-                    dist_mat = reshape(dist_mat, num_trials, num_trials);
-                end
             end
         end
 

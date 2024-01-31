@@ -3,9 +3,6 @@ classdef GPSTrajGroupClass
     %   Detailed explanation goes here
 
     properties
-
-        ANMInfoFile
-
         Sessions
         NumSessions
         ANM
@@ -17,11 +14,13 @@ classdef GPSTrajGroupClass
 
         TrialInfo
         NumTrials
+
         Trial
         Stage
         Performance
         PortCorrect
         PortChosen
+
         FP
         RT
         HD
@@ -29,40 +28,60 @@ classdef GPSTrajGroupClass
 
         TimeFromIn
         TimeFromOut
+        TimeWarped
 
         PortVec
+        PortCent
+
         AngleHead
+        AngSpeedHead
+        AngAccHead
 
-        AngleHeadMatIn
-        AngleHeadMatOut
+        PosXHead
+        PosYHead
+        SpeedXHead
+        SpeedYHead
+        AccXHead
+        AccYHead
 
-        AngleHeadTraceIn
-        AngleHeadTraceOut
-        AngleHeadTraceInTest
-        AngleHeadTraceOutTest
+        SpeedHead
+        SpeedDirHead
+        AccHead
+        dPhiHead
+
+        DistMatDtw = [];
+        DistMatLw  = [];
+% 
+%         AngleHeadTraceIn
+%         AngleHeadTraceOut
+%         AngleHeadTraceInTest
+%         AngleHeadTraceOutTest
     end
 
     properties (Constant)
         ForePeriods = ["Short", "Med", "Long"];
         MixedFPs    = [.5 1 1.5];
         Ports = ["L", "R"];
-        TimePointsIn  = -99:1:2500;
-        TimePointsOut = -1599:1:1000;
-        ShuffleIters  = 200;
-        Alpha         = 0.01;
+
+        TimeMatIn  = -100:10:2500;
+        TimeMatOut = -1600:10:1000;
+        TimeMatWarp = -0.2:0.001:1.6;
+
+%         ShuffleIters  = 200;
+%         Alpha         = 0.01;
     end
 
     properties (Dependent)
         Ind
+
+        TimeWarpAlign
     end
 
     methods
-        function obj = GPSTrajGroupClass(TrajClassAll, AnmInfoFile)
-            %UNTITLED Construct an instance of this class
-            %   Detailed explanation goes here
-
-            obj.ANMInfoFile = AnmInfoFile;
+        function obj = GPSTrajGroupClass(TrajClassAll)
+            %GPSTrajGroupClass Construct an instance of this class
             
+            %% Session information
             obj.ANM             = unique(arrayfun(@(x) x.obj.ANM, TrajClassAll));
             obj.Sessions        = arrayfun(@(x) x.obj.Session, TrajClassAll);
             obj.Task            = unique(arrayfun(@(x) x.obj.Task, TrajClassAll));
@@ -73,7 +92,8 @@ classdef GPSTrajGroupClass
             obj.Dose            = arrayfun(@(x) x.obj.Dose, TrajClassAll);
             obj.Label           = arrayfun(@(x) x.obj.Label, TrajClassAll);
             obj.NumTrials       = arrayfun(@(x) x.obj.NumTrials, TrajClassAll);
-
+            
+            %% Trial infotmation
             for i = 1:length(TrajClassAll)
                 if i == 1
                     obj.TrialInfo = TrajClassAll(i).obj.TrialInfo;
@@ -118,6 +138,7 @@ classdef GPSTrajGroupClass
             allMTs             = arrayfun(@(x) x.obj.MT, TrajClassAll, 'UniformOutput', false);
             obj.MT             = cell2mat(allMTs');
 
+            %% Time aligned
             allTimeIns         = arrayfun(@(x) x.obj.TimeFromIn, TrajClassAll, 'UniformOutput', false);
             obj.TimeFromIn     = [];
             for i = 1:obj.NumSessions
@@ -130,30 +151,113 @@ classdef GPSTrajGroupClass
                 obj.TimeFromOut = [obj.TimeFromOut allTimeOuts{i}];
             end
 
+            allTimeWarps        = arrayfun(@(x) x.obj.TimeWarped, TrajClassAll, 'UniformOutput', false);
+            obj.TimeWarped      = [];
+            for i = 1:obj.NumSessions
+                obj.TimeWarped  = [obj.TimeWarped allTimeWarps{i}];
+            end
+
+            %% Port locations
             allPortVecs        = arrayfun(@(x) x.obj.PortVec, TrajClassAll, 'UniformOutput', false);
             obj.PortVec        = [];
             for i = 1:obj.NumSessions
                 obj.PortVec = [obj.PortVec allPortVecs{i}];
             end
 
-            allAngleHeads        = arrayfun(@(x) x.obj.AngleHead, TrajClassAll, 'UniformOutput', false);
-            obj.AngleHead        = [];
+            allPortCents        = arrayfun(@(x) x.obj.PortCent, TrajClassAll, 'UniformOutput', false);
+            obj.PortCent        = [];
             for i = 1:obj.NumSessions
-                obj.AngleHead = [obj.AngleHead allAngleHeads{i}];
+                obj.PortCent    = [obj.PortCent allPortCents{i}];
             end
 
-            allAngleHeadMatIns   = arrayfun(@(x) x.obj.AngleHeadMatIn, TrajClassAll, 'UniformOutput', false);
-            obj.AngleHeadMatIn   = cell2mat(allAngleHeadMatIns);
-            
-            allAngleHeadMatOuts  = arrayfun(@(x) x.obj.AngleHeadMatOut, TrajClassAll, 'UniformOutput', false);
-            obj.AngleHeadMatOut  = cell2mat(allAngleHeadMatOuts);
+            %% Body parts
+            % angle of head
+            allAngleHeads       = arrayfun(@(x) x.obj.AngleHead, TrajClassAll, 'UniformOutput', false);
+            obj.AngleHead       = [];
+            for i = 1:obj.NumSessions
+                obj.AngleHead   = [obj.AngleHead allAngleHeads{i}];
+            end
 
-            obj.AngleHeadTraceIn  = obj.getAngleHeadTrace("In");
-            obj.AngleHeadTraceOut = obj.getAngleHeadTrace("Out");
+            allAngSpeedHeads    = arrayfun(@(x) x.obj.AngSpeedHead, TrajClassAll, 'UniformOutput', false);
+            obj.AngSpeedHead    = [];
+            for i = 1:obj.NumSessions
+                obj.AngSpeedHead = [obj.AngSpeedHead allAngSpeedHeads{i}];
+            end
+
+            allAngAccHeads      = arrayfun(@(x) x.obj.AngAccHead, TrajClassAll, 'UniformOutput', false);
+            obj.AngAccHead      = [];
+            for i = 1:obj.NumSessions
+                obj.AngAccHead  = [obj.AngAccHead allAngAccHeads{i}];
+            end
+
+            % position of head (X)
+            allPosXHeads        = arrayfun(@(x) x.obj.PosXHead, TrajClassAll, 'UniformOutput', false);
+            obj.PosXHead        = [];
+            for i = 1:obj.NumSessions
+                obj.PosXHead    = [obj.PosXHead allPosXHeads{i}];
+            end
+
+            allSpeedXHeads      = arrayfun(@(x) x.obj.SpeedXHead, TrajClassAll, 'UniformOutput', false);
+            obj.SpeedXHead      = [];
+            for i = 1:obj.NumSessions
+                obj.SpeedXHead  = [obj.SpeedXHead allSpeedXHeads{i}];
+            end
+
+            allAccXHeads        = arrayfun(@(x) x.obj.AccXHead, TrajClassAll, 'UniformOutput', false);
+            obj.AccXHead        = [];
+            for i = 1:obj.NumSessions
+                obj.AccXHead    = [obj.AccXHead allAccXHeads{i}];
+            end
+
+            % position of head (Y)
+            allPosYHeads        = arrayfun(@(x) x.obj.PosYHead, TrajClassAll, 'UniformOutput', false);
+            obj.PosYHead        = [];
+            for i = 1:obj.NumSessions
+                obj.PosYHead    = [obj.PosYHead allPosYHeads{i}];
+            end
+
+            allSpeedYHeads      = arrayfun(@(x) x.obj.SpeedYHead, TrajClassAll, 'UniformOutput', false);
+            obj.SpeedYHead      = [];
+            for i = 1:obj.NumSessions
+                obj.SpeedYHead  = [obj.SpeedYHead allSpeedYHeads{i}];
+            end
+
+            allAccYHeads        = arrayfun(@(x) x.obj.AccYHead, TrajClassAll, 'UniformOutput', false);
+            obj.AccYHead        = [];
+            for i = 1:obj.NumSessions
+                obj.AccYHead    = [obj.AccYHead allAccYHeads{i}];
+            end
+
+            % speed & acceleration
+            allSpeedHeads        = arrayfun(@(x) x.obj.SpeedHead, TrajClassAll, 'UniformOutput', false);
+            obj.SpeedHead        = [];
+            for i = 1:obj.NumSessions
+                obj.SpeedHead    = [obj.SpeedHead allSpeedHeads{i}];
+            end
+
+            allSpeedDirHeads      = arrayfun(@(x) x.obj.SpeedDirHead, TrajClassAll, 'UniformOutput', false);
+            obj.SpeedDirHead      = [];
+            for i = 1:obj.NumSessions
+                obj.SpeedDirHead  = [obj.SpeedDirHead allSpeedDirHeads{i}];
+            end
+
+            allAccHeads        = arrayfun(@(x) x.obj.AccHead, TrajClassAll, 'UniformOutput', false);
+            obj.AccHead        = [];
+            for i = 1:obj.NumSessions
+                obj.AccHead    = [obj.AccHead allAccHeads{i}];
+            end
+
+            alldPhiHeads        = arrayfun(@(x) x.obj.dPhiHead, TrajClassAll, 'UniformOutput', false);
+            obj.dPhiHead        = [];
+            for i = 1:obj.NumSessions
+                obj.dPhiHead    = [obj.dPhiHead alldPhiHeads{i}];
+            end
+
+%             obj.AngleHeadTraceIn  = obj.getAngleHeadTrace("In");
+%             obj.AngleHeadTraceOut = obj.getAngleHeadTrace("Out");
 
 %             obj.AngleHeadTraceInTest  = obj.testTrace("In", obj.ShuffleIters, obj.Alpha);
 %             obj.AngleHeadTraceOutTest = obj.testTrace("Out", obj.ShuffleIters, obj.Alpha);
-
         end
 
         %%
@@ -179,6 +283,138 @@ classdef GPSTrajGroupClass
             value = ind;
         end
 
+        function value = get.TimeWarpAlign(obj)
+            
+            num_max = max(cellfun(@(x) length(x), obj.TimeWarped));
+            time_warp_align = linspace(0, 1, num_max);
+
+            value = time_warp_align;
+        end
+
+        %% Functions
+        function [M, t_M] = trace2mat(~, trace, time_trace, time_matrix)
+            
+            num_timepoint = length(time_matrix);
+            num_feature = size(trace{1}, 2);
+
+            M = cellfun(@(trace, t) interp1(t, trace, time_matrix, "linear"), trace, time_trace, 'UniformOutput', false);
+            M = M';
+            M = cellfun(@(m) reshape(m, 1, num_timepoint, num_feature), M, 'UniformOutput', false);
+            M = cell2mat(M);
+
+            t_M = time_matrix;
+        end
+
+        function [T, t_T] = mat2trace(~, mat, time_matrix, time_trace)
+
+            num_trace = size(mat, 1);
+            num_timepoint = length(time_matrix);
+            num_feature = size(mat, 3);
+
+            if nargin<4
+                time_trace = repmat(mat2cell(time_matrix', length(time_matrix)), 1, num_trace);
+            end
+
+            mat = mat2cell(mat, ones(num_trace, 1));
+            mat = cellfun(@(m) reshape(m, num_timepoint, num_feature), mat, 'UniformOutput', false);
+
+            T = cellfun(@(m, t) interp1(time_matrix, m, t, "linear"), mat, time_trace', 'UniformOutput', false);
+            T = T';
+
+            t_T = time_trace;
+        end
+
+        function A = trace2array(~, trace)
+
+            A = cell2mat(trace');
+        end
+
+        function T = array2trace(~, array, time_trace)
+
+            T = mat2cell(array, cellfun(@(x) length(x), time_trace));
+            T = T';
+        end
+
+        %%
+        function trace_normalized = normalizeTrace(~, trace, norm_method)
+            
+            if nargin<3
+                norm_method = 'range';
+            end
+            trace_all = cell2mat(trace');
+            trace_all_normalized = normalize(trace_all, 1, norm_method);
+
+            trace_normalized = mat2cell(trace_all_normalized, cellfun(@(x) size(x, 1), trace));
+            trace_normalized = trace_normalized';
+        end
+
+        function trace_gathered = gatherTrace(obj, body_parts)
+
+            body_parts = string(body_parts);
+            trace_gathered = obj.(body_parts(1));
+
+            for i = 2:length(body_parts)
+                trace_gathered = cellfun(@(x, y) [x y], trace_gathered, obj.(body_parts(i)), 'UniformOutput', false);
+            end
+        end
+
+        %% Calculate distance matrix
+        function dist_mat = calDist(obj, trace, varargin)
+
+            % parsing input
+            P = inputParser;
+
+            addParameter(P, 'warp_method', 'linear', @(x) (ischar(x) || isstring(x)));
+            addParameter(P, 'trace_norm_method', 'none', @(x) (ischar(x) || isstring(x)));
+            addParameter(P, 'dist_norm_method', 'none', @(x) (ischar(x) || isstring(x)));
+            addParameter(P, 'disp', 0, @isinteger);
+
+            parse(P, varargin{:});
+
+            warp_method = P.Results.warp_method;
+            trace_norm_method = P.Results.trace_norm_method;
+            dist_norm_method = P.Results.dist_norm_method;
+            disp = P.Results.disp;
+
+            switch trace_norm_method
+                case 'none'
+                otherwise
+                    trace = obj.normalizeTrace(trace, trace_norm_method);
+            end
+
+            num_trials = length(trace);
+            dist_mat = zeros(num_trials);
+
+            num_to_cal = .5*num_trials^2 - num_trials;
+            num_calculated = 0;
+
+            for m = 1:num_trials
+                for n = m+1:num_trials
+                    switch warp_method
+                        case 'dtw'
+                            dist_mat(m, n) = dtw(trace{m}', trace{n}');
+                        case 'linear'
+                            dist_mat(m, n) = sum(sqrt(sum((trace{m}-trace{n}).^2, 2)));
+                    end
+                    num_calculated = num_calculated + 1;
+
+                    if disp
+                        if ~mod(num_calculated, floor(num_to_cal/100))
+                            fprintf('%.0f / %.0f    - %.0f%%\n', num_calculated, num_to_cal, 100*num_calculated/num_to_cal);
+                        end
+                    end
+                end
+            end
+            dist_mat = dist_mat + dist_mat';
+
+            switch dist_norm_method
+                case 'none'
+                otherwise
+                    dist_mat = normalize(dist_mat(:), dist_norm_method);
+                    dist_mat = reshape(dist_mat, num_trials, num_trials);
+            end
+        end
+
         %%
         function AngleHeadTrace = getAngleHeadTrace(obj, AlignTo)
             
@@ -195,7 +431,7 @@ classdef GPSTrajGroupClass
 
                 switch AlignTo
                     case {'In'}
-                        time_bin_edges  = floor(obj.TimePointsIn(1)):20:1000*fp+300;
+                        time_bin_edges  = floor(obj.TimeMatIn(1)):20:1000*fp+300;
                         time_bin_center = time_bin_edges(1:end-1)+10;
                     case {'Out'}
                         time_bin_edges = -fp*1000-100:20:200;
