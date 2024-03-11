@@ -82,13 +82,13 @@ for i = 1:length(tBehEvent) % i is also the trial number
     % re-create the same video
     switch event
         case 'PortSamplePokeTime'
-            ClipName = sprintf('%s_%s_SamplePokeTrial%03d', anm, session, i);
+            ClipName = sprintf('%s_%s_SamplePokeTrial%03d', anm, session, BehTable.Trials(i));
 
         case 'PortCenterPokeTime'
-            ClipName = sprintf('%s_%s_CenterPokeTrial%03d', anm, session, i);
+            ClipName = sprintf('%s_%s_CenterPokeTrial%03d', anm, session, BehTable.Trials(i));
 
         case 'CentInTime'
-            ClipName = sprintf('%s_%s_HoldTrial%03d_%sView', anm, session, i, view);
+            ClipName = sprintf('%s_%s_HoldTrial%03d_%sView', anm, session, BehTable.Trials(i), view);
     end
 
     VidClipFileName = fullfile(thisFolder, [ClipName '.avi']);
@@ -151,7 +151,7 @@ for i = 1:length(tBehEvent) % i is also the trial number
 
     VidMeta.Session     =   session;
     VidMeta.Event       =   event;
-    VidMeta.EventIndex  =   i;
+    VidMeta.EventIndex  =   BehTable.Trials(i);
     VidMeta.EventTime   =   itEvent/1000; % Event time in sec (Bpod)
     VidMeta.FrameTimesB =   tFramesBpod(IndThisClip); % frame time in ms in behavior time
     VidMeta.FrameIndx   =   IndThisClip; % frame index in original video
@@ -208,7 +208,7 @@ for i = 1:length(tBehEvent) % i is also the trial number
 
     text(W-20, 30,  sprintf('%s %s', anm, session), 'color', [255 255 255]/255, 'fontsize',  9, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
     text(W-20, 70,  beh_type, 'color', [255 255 255]/255, 'fontsize',  9, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
-    text(W-20, 110,  sprintf('Trial %03d', i), 'color', [255 255 255]/255, 'fontsize',  9, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
+    text(W-20, 110,  sprintf('Trial %03d', BehTable.Trials(i)), 'color', [255 255 255]/255, 'fontsize',  9, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
     text(W-20, 150,  sprintf('FP: %d ms', BehTable.FP(i)*1000), 'color', [255 255 255]/255, 'fontsize',  9, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
     text(W-20, 190,  sprintf('RT: %d ms', round(1000*BehTable.RT(i))), 'color', [255 255 255]/255, 'fontsize',  9, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
     text(W-20, 230,  thisOutcome, 'color', color.(thisOutcome), 'fontsize',  9, 'fontweight', 'bold', 'HorizontalAlignment', 'right')

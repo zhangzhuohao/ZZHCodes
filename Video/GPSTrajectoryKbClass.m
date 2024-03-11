@@ -374,10 +374,10 @@ classdef GPSTrajectoryKbClass
 
             ang_speed_head = cellfun(@(da, dt) da ./ dt, d_a, d_t, 'UniformOutput', false);
 
-            d_d_v = cellfun(@(v) v([2:end end]) - v([1 1:end-1]), ang_speed_head, 'UniformOutput', false);
+            d_d_a = cellfun(@(v) v([2:end end]) - v([1 1:end-1]), ang_speed_head, 'UniformOutput', false);
             d_t = cellfun(@(t) t([2:end end]) - t([1 1:end-1]), obj.TimeFromIn, 'UniformOutput', false);
 
-            ang_acc_head = cellfun(@(ddv, dt) ddv ./ dt, d_d_v, d_t, 'UniformOutput', false);
+            ang_acc_head = cellfun(@(ddv, dt) ddv ./ dt, d_d_a, d_t, 'UniformOutput', false);
             ang_acc_head = cellfun(@(x) smoothdata(x, "gaussian", 5), ang_acc_head, 'UniformOutput', false);
 
             value = ang_acc_head;

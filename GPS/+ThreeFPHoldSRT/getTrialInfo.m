@@ -157,6 +157,8 @@ for i = 1:obj.NumTrials
         else % sometimes, they poke during the choice light presentation
             obj.PortChosen(i) = nan;
         end
+    else
+        obj.Outcome{i} = 'Bug';
     end
 end
 
