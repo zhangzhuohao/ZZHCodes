@@ -154,15 +154,10 @@ classdef GPSSessionClass
 
             % Session meta-information
             obj.SessionStartTime = SessionData.Info.SessionStartTime_UTC;
-            obj.NumTrials = SessionData.nTrials;
-            if isfield(SessionData.RawEvents.Trial{end}.Events, 'WavePlayer1_2') % Sometime the protocol might shut down
-                obj.NumTrials = obj.NumTrials - 1;
-            end
-            obj.Trials = (1:obj.NumTrials)';
-            obj.TrialStartTime = SessionData.TrialStartTimestamp(obj.Trials)';
 
             % Get paradigm specific trial information
             obj = feval([obj.Task '.getTrialInfo'], obj, SessionData);
+
         end
 
         %% Manually set

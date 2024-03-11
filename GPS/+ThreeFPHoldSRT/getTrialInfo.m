@@ -1,5 +1,9 @@
 function obj = getTrialInfo(obj, SessionData)
 % Get trial information of events' time points
+obj.NumTrials = SessionData.nTrials;
+
+obj.Trials = (1:obj.NumTrials)';
+obj.TrialStartTime = SessionData.TrialStartTimestamp(obj.Trials)';
 
 obj.InitPokeInTime = cell(obj.NumTrials, 1);
 obj.InitPokeOutTime = cell(obj.NumTrials, 1);
@@ -21,7 +25,7 @@ else
     switch SessionData.Custom.Version
         case {'20230312', '20230618'}
             obj.FP = zeros(obj.NumTrials, 1);
-            for i = 1:SessionData.nTrials
+            for i = 1:obj.NumTrials
                 if ~isfield(SessionData.RawEvents.Trial{1, i}.Events, 'BNC1High')
                     obj.Outcome{i} = 'Bug';
                 else

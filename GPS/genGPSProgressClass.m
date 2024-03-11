@@ -58,7 +58,7 @@ for d = 1:length(Folders)
     ProgressClass.save(ProtocolDir);
     
     ProgressClass.print("Progress", ProtocolDir);
-    ProgressClass.print("Show", ProtocolDir);
+%     ProgressClass.print("Show", ProtocolDir);
     
     if all(ismember(["Control", "Chemo"], ProgressClass.Label))
         ProgressClass.print("ChemoEffect", ProtocolDir);
