@@ -707,7 +707,7 @@ classdef GPSSessionClass
                 for i = 1:length(obj.MixedFP)
                     data_this = data_sorted{i, j};
                     if length(data_this) > 5
-                        data_pdf{i, j} = ksdensity(data_this, binEdges, 'Function', 'pdf');
+                        data_pdf{i, j} = ksdensity(data_this, binEdges, 'Function', 'pdf', 'Bandwidth', 0.05);
                     else
                         data_pdf{i, j} = zeros(1, length(binEdges));
                     end
@@ -727,7 +727,7 @@ classdef GPSSessionClass
                 for i = 1:length(obj.MixedFP)
                     data_this = data_sorted{i, j};
                     if length(data_this) > 5
-                        data_cdf{i, j} = ksdensity(data_this, binEdges, 'Function', 'cdf');
+                        data_cdf{i, j} = ksdensity(data_this, binEdges, 'Function', 'cdf', 'Bandwidth', 0.05);
                     else
                         data_cdf{i, j} = zeros(1, length(binEdges));
                     end

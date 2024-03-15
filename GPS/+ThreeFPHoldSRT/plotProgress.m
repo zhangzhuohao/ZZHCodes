@@ -101,12 +101,12 @@ ha_HD_heatmap_L = axes;
 set(ha_HD_heatmap_L, 'units', 'centimeters', 'position', [.5+2*(opts.sep_row+opts.plotsize1(1)) 2+3*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8);
 plot_hold_duration_heatmap(ha_HD_heatmap_L, obj, "L", opts)
 set(ha_HD_heatmap_L, 'xtick', [], 'xlabel', []);
-clim(ha_HD_heatmap_L, [0, 10]);
+clim(ha_HD_heatmap_L, [0, 8]);
 
 colormap(ha_HD_heatmap_L, "Turbo");
 cb10 = colorbar(ha_HD_heatmap_L, 'units', 'centimeters', 'position', [.5+3*(opts.sep_row+opts.plotsize1(1))-opts.sep_row+0.2 2+3*(opts.sep_col+opts.plotsize1(2)), [.3 opts.plotsize1(2)]]);
 % cb10.Limits = [0 cb10.Limits(2)];
-cb10.Limits = [0 10];
+cb10.Limits = [0 8];
 cb10.Label.String = "Prob. density (1/s)";
 cb10.FontSize = 8;
 

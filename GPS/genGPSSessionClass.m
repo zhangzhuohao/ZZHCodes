@@ -85,21 +85,22 @@ for d = 1:length(Folders)
         % Plot Interruption durations
         load(file);
         f = check_interruption(SessionData);
-        file_info(end-3)
         f_savename = sprintf("GPS_Interruptions_%s_%s.jpg", file_info{end-3}, file_date);
         f_savepath = fullfile(file_path, f_savename);
         exportgraphics(f, f_savepath, 'Resolution', 600);
-% 
-%         SessionClass = GPSSessionClass(file, AnmInfoFile);
-%         SessionClass.save();
-%         SessionClass.updateANMInfo();
-%         SessionClass.print(SessionDataFigsFolder);
-% 
-%         BehavCsvName = ['GPSSessionTable_' SessionClass.Task '_' SessionClass.Subject, '.csv'];
-%         writetable(SessionClass.BehavTable, fullfile(file_path, BehavCsvName));
-% 
-%         InterCsvName = ['GPSInterruptTable_' SessionClass.Task '_' SessionClass.Subject, '.csv'];
-%         writetable(SessionClass.Interruption, fullfile(file_path, InterCsvName));
+        f_savepath = fullfile(SessionDataFigsFolder, f_savename);
+        exportgraphics(f, f_savepath, 'Resolution', 600);
+
+        SessionClass = GPSSessionClass(file, AnmInfoFile);
+        SessionClass.save();
+        SessionClass.updateANMInfo();
+        SessionClass.print(SessionDataFigsFolder);
+
+        BehavCsvName = ['GPSSessionTable_' SessionClass.Task '_' SessionClass.Subject, '.csv'];
+        writetable(SessionClass.BehavTable, fullfile(file_path, BehavCsvName));
+
+        InterCsvName = ['GPSInterruptTable_' SessionClass.Task '_' SessionClass.Subject, '.csv'];
+        writetable(SessionClass.Interruption, fullfile(file_path, InterCsvName));
 
     end
 end

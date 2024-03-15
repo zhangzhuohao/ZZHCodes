@@ -80,7 +80,7 @@ set(ha2, 'ylim', [0 length(center_pokes)+5])
 xlabel('Time in session (s)')
 ylabel('Trial (count)')
 
-stairs(center_pokes, 1:length(center_pokes), 'color', Color.Ctrl, 'LineWidth', 1.5);
+stairs(center_pokes, 1:length(center_pokes), 'color', 'k', 'LineWidth', 1.5);
 
 %% Plot performance over time
 ha3 = axes;
@@ -130,7 +130,7 @@ line([center_pokes center_pokes]', [0 0.15], 'color', 'K')
 ST_log = log10(obj.ShuttleTime);
 scatter(center_pokes, ...
     ST_log, ...
-    24, Color.Ctrl, choice_symbols{1}, 'Markerfacealpha', 0.8, 'linewidth', 1.5);
+    24, 'k', choice_symbols{1}, 'Markerfacealpha', 0.8, 'linewidth', 1.5);
 
 %% Plot shuttle time PDF on the right
 ha5 = axes;
@@ -140,7 +140,7 @@ set(ha5, 'units', 'centimeters', 'position', [1.5+2*plotsize1(1)+1.5 16, plotsiz
 xlabel('Prob. density (1/s)')
 binEdges = 0:0.01:3;
 PDF_PortL = ksdensity(ST_log, binEdges);
-plot(ha5, PDF_PortL, binEdges, 'color', Color.Ctrl, 'linewidth', 1.5);
+plot(ha5, PDF_PortL, binEdges, 'color', 'k', 'linewidth', 1.5);
 axis 'auto x'
 
 %% Plot hold duration and FP
@@ -197,7 +197,7 @@ yline(1.5, 'Color', [.7 .7 .7], 'LineWidth', 1.5, 'LineStyle', '--');
 
 if sum(obj.FP==1.5)
     PDF = ksdensity(obj.HoldDuration(obj.FP==1.5), binEdges);
-    plot(ha7, PDF, binEdges, 'color', Color.Ctrl, 'linewidth', 1.5)
+    plot(ha7, PDF, binEdges, 'color', 'k', 'linewidth', 1.5)
 end
 
 axis 'auto x'
