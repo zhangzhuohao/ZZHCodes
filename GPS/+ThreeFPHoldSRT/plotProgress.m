@@ -24,6 +24,8 @@ opts.plotsize4 = [2 3];
 opts.sep_col = 0.5;
 opts.sep_row = 1.5;
 
+opts.bandwidth = 0.05;
+
 %%
 fig = figure(23); clf(23);
 set(gcf, 'unit', 'centimeters', 'position', [2 .7 39.5 25.4], 'paperpositionmode', 'auto', 'color', 'w');
@@ -715,8 +717,8 @@ plot_interruption_early_late(ha19, obj, opts)
                 continue;
             end
 
-            hd_early_pdf = ksdensity(hd_this(1:obj.PhaseCount), obj.Bins.HoldDuration, 'Function', 'pdf');
-            hd_late_pdf  = ksdensity(hd_this(end-obj.PhaseCount+1:end), obj.Bins.HoldDuration, 'Function', 'pdf');
+            hd_early_pdf = ksdensity(hd_this(1:obj.PhaseCount), obj.Bins.HoldDuration, 'Function', 'pdf', 'Bandwidth', opts.bandwidth);
+            hd_late_pdf  = ksdensity(hd_this(end-obj.PhaseCount+1:end), obj.Bins.HoldDuration, 'Function', 'pdf', 'Bandwidth', opts.bandwidth);
 
             plot(ax, obj.Bins.HoldDuration, hd_early_pdf, ...
                 'color', opts.color.PhaseEarly, 'linewidth', opts.lw(fp_this), 'LineStyle', '-');
@@ -760,8 +762,8 @@ plot_interruption_early_late(ha19, obj, opts)
                 continue;
             end
 
-            hd_early_cdf = ksdensity(hd_this(1:obj.PhaseCount), obj.Bins.HoldDuration, 'Function', 'cdf');
-            hd_late_cdf  = ksdensity(hd_this(end-obj.PhaseCount+1:end), obj.Bins.HoldDuration, 'Function', 'cdf');
+            hd_early_cdf = ksdensity(hd_this(1:obj.PhaseCount), obj.Bins.HoldDuration, 'Function', 'cdf', 'Bandwidth', opts.bandwidth);
+            hd_late_cdf  = ksdensity(hd_this(end-obj.PhaseCount+1:end), obj.Bins.HoldDuration, 'Function', 'cdf', 'Bandwidth', opts.bandwidth);
 
             plot(ax, obj.Bins.HoldDuration, hd_early_cdf, ...
                 'color', opts.color.PhaseEarly, 'linewidth', opts.lw(fp_this), 'LineStyle', '-');
