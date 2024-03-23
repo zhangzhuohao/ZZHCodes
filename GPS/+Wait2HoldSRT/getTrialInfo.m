@@ -1,5 +1,9 @@
 function obj = getTrialInfo(obj, SessionData)
 % Get trial information of events' time points
+obj.NumTrials = SessionData.nTrials;
+
+obj.Trials = (1:obj.NumTrials)';
+obj.TrialStartTime = SessionData.TrialStartTimestamp(obj.Trials)';
 
 obj.FP = zeros(obj.NumTrials, 1);
 for i = 1:SessionData.nTrials

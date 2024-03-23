@@ -24,6 +24,8 @@ opts.plotsize4 = [2 3];
 opts.sep_col = 0.5;
 opts.sep_row = 1.5;
 
+opts.bandwidth = 0.05;
+
 %%
 fig = figure(23); clf(23);
 set(gcf, 'unit', 'centimeters', 'position', [2 .7 39.5 25.4], 'paperpositionmode', 'auto', 'color', 'w');
@@ -101,12 +103,12 @@ ha_HD_heatmap_L = axes;
 set(ha_HD_heatmap_L, 'units', 'centimeters', 'position', [.5+2*(opts.sep_row+opts.plotsize1(1)) 2+3*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8);
 plot_hold_duration_heatmap(ha_HD_heatmap_L, obj, "L", opts)
 set(ha_HD_heatmap_L, 'xtick', [], 'xlabel', []);
-clim(ha_HD_heatmap_L, [0, 10]);
+clim(ha_HD_heatmap_L, [0, 8]);
 
 colormap(ha_HD_heatmap_L, "Turbo");
 cb10 = colorbar(ha_HD_heatmap_L, 'units', 'centimeters', 'position', [.5+3*(opts.sep_row+opts.plotsize1(1))-opts.sep_row+0.2 2+3*(opts.sep_col+opts.plotsize1(2)), [.3 opts.plotsize1(2)]]);
 % cb10.Limits = [0 cb10.Limits(2)];
-cb10.Limits = [0 10];
+cb10.Limits = [0 8];
 cb10.Label.String = "Prob. density (1/s)";
 cb10.FontSize = 8;
 
@@ -715,8 +717,8 @@ plot_interruption_early_late(ha19, obj, opts)
                 continue;
             end
 
-            hd_early_pdf = ksdensity(hd_this(1:obj.PhaseCount), obj.Bins.HoldDuration, 'Function', 'pdf');
-            hd_late_pdf  = ksdensity(hd_this(end-obj.PhaseCount+1:end), obj.Bins.HoldDuration, 'Function', 'pdf');
+            hd_early_pdf = ksdensity(hd_this(1:obj.PhaseCount), obj.Bins.HoldDuration, 'Function', 'pdf', 'Bandwidth', opts.bandwidth);
+            hd_late_pdf  = ksdensity(hd_this(end-obj.PhaseCount+1:end), obj.Bins.HoldDuration, 'Function', 'pdf', 'Bandwidth', opts.bandwidth);
 
             plot(ax, obj.Bins.HoldDuration, hd_early_pdf, ...
                 'color', opts.color.PhaseEarly, 'linewidth', opts.lw(fp_this), 'LineStyle', '-');
@@ -760,8 +762,8 @@ plot_interruption_early_late(ha19, obj, opts)
                 continue;
             end
 
-            hd_early_cdf = ksdensity(hd_this(1:obj.PhaseCount), obj.Bins.HoldDuration, 'Function', 'cdf');
-            hd_late_cdf  = ksdensity(hd_this(end-obj.PhaseCount+1:end), obj.Bins.HoldDuration, 'Function', 'cdf');
+            hd_early_cdf = ksdensity(hd_this(1:obj.PhaseCount), obj.Bins.HoldDuration, 'Function', 'cdf', 'Bandwidth', opts.bandwidth);
+            hd_late_cdf  = ksdensity(hd_this(end-obj.PhaseCount+1:end), obj.Bins.HoldDuration, 'Function', 'cdf', 'Bandwidth', opts.bandwidth);
 
             plot(ax, obj.Bins.HoldDuration, hd_early_cdf, ...
                 'color', opts.color.PhaseEarly, 'linewidth', opts.lw(fp_this), 'LineStyle', '-');
