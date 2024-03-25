@@ -3,6 +3,7 @@ function DurOut = calDur(Dur, FP, varargin)
 % RTOut = calRT(reaction_time, [], 'Remove100ms', 1, 'RemoveOutliers', 1, 'ToPlot', 0, 'CalSE', 0)
 % JY 8.19.2022
 % revised by ZZH 4.06.2023, if set CalSE to 1, add two addtional field to the output
+% ZZH 3.25.2024, remove 50ms as very fast response (used to be 100ms)
 
 if isempty(FP)
     RelTime = Dur;
@@ -11,7 +12,7 @@ else
 end
 
 % computing_method = 'cdf'; % could also be mean, ecdf
-remove_100ms = 1; % remove very fast responses, which are deemed anticipatory responses
+remove_50ms = 1; % remove very fast responses, which are deemed anticipatory responses
 remove_outliers = 1;
 toplot = 1;
 calse = 1;
@@ -20,7 +21,7 @@ if nargin>2
     for i=1:2:size(varargin,2)
         switch varargin{i}
             case {'Remove100ms'}
-                remove_100ms = varargin{i+1}; %
+                remove_50ms = varargin{i+1}; %
             case {'RemoveOutliers'}
                 remove_outliers = varargin{i+1}; %
             case {'ToPlot'}
@@ -33,9 +34,9 @@ if nargin>2
     end
 end
 
-switch remove_100ms
+switch remove_50ms
     case 1
-        RelTime = RelTime(RelTime>0.1);
+        RelTime = RelTime(RelTime>=0.05);
     case 0
         RelTime = RelTime(RelTime>0.0);
 end
@@ -55,14 +56,25 @@ if remove_outliers
     end
 end
 
-if isempty(RelTime) || length(RelTime)<5
-    DurOut.median = NaN;
-    DurOut.median_ksdensity = NaN;
+N = sum(~isnan(RelTime));
+if isempty(RelTime) || N<5
+    DurOut.median = nan;
+    DurOut.median_ksdensity = nan;
+    DurOut.q1 = nan;
+    DurOut.q3 = nan;
+    DurOut.mean = nan;
+    DurOut.std = nan;
+    DurOut.sem = nan;
 else
     DurOut.median = median(RelTime, 'omitnan');
     DurOut.median_ksdensity = kscdf_med(RelTime);
+    DurOut.q1 = prctile(RelTime, 25);
+    DurOut.q3 = prctile(RelTime, 75);
+    DurOut.mean = mean(RelTime, 'omitnan');
+    DurOut.std = std(RelTime, 'omitnan');
+    DurOut.sem = DurOut.std / sqrt(N);
     if calse
-        DurOut.median_std = std(bootstrp(1000, @median, RelTime));
+        DurOut.median_std = std(bootstrp(1000, @(x) median(x, 'omitnan'), RelTime));
         DurOut.median_ksdensity_std = std(bootstrp(1000, @kscdf_med, RelTime));
     end
 end

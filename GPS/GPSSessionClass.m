@@ -40,6 +40,14 @@ classdef GPSSessionClass
         FP % foreperiod in each trial, for all paradigms except Autoshaping, [NumTrials x 1]
         RW
 
+        RTPDF = []; % reaction time
+        RTCDF = [];
+        MTPDF = []; % movement time
+        MTCDF = [];
+        HDPDF = []; % hold duration
+        HDCDF = [];
+        CTPDF = []; % choice time
+        CTCDF = [];
     end
 
     properties (Constant)
@@ -52,7 +60,7 @@ classdef GPSSessionClass
             'HoldDuration: Time from port_cent poke out to port_choice poke in (for hold paradigm only)';
             };
         Ports = ["L", "R"];
-        
+        BandWidth = .05;
     end
 
     properties (Dependent)
@@ -62,7 +70,7 @@ classdef GPSSessionClass
         Treatment % Set manually
         Dose % Set manually
         Label
-        RTSortedLabels
+        SortLabels
 
         Stage % warm-up or 3FP
         Engaged
@@ -77,29 +85,21 @@ classdef GPSSessionClass
 
         MovementTime
         MovementTimeSorted
-        MovementTimePDF
-        MovementTimeCDF
         MovementTimeDistribution
         MovementTimeStat
 
         ChoiceTime
         ChoiceTimeSorted
-        ChoiceTimePDF
-        ChoiceTimeCDF
         ChoiceTimeDistribution
         ChoiceTimeStat
 
         RT % check
         RTSorted
-        RTPDF
-        RTCDF
         RTDistribution % check
         RTStat % check
 
         HoldDuration %
         HoldDurationSorted
-        HoldDurationPDF
-        HoldDurationCDF
         HoldDurationDistribution
         HoldDurationStat
 
@@ -113,7 +113,7 @@ classdef GPSSessionClass
 
     methods
         %% Initiate
-        function obj = GPSSessionClass(BpodFile, AnmInfoFile)
+        function obj = GPSSessionClass(BpodFile, AnmInfoFile, CalCI)
             % Process SessionData to get properties
             load(BpodFile, 'SessionData');
             obj.BpodFile = BpodFile;
@@ -158,6 +158,7 @@ classdef GPSSessionClass
             % Get paradigm specific trial information
             obj = feval([obj.Task '.getTrialInfo'], obj, SessionData);
 
+            obj = obj.getAllKDEs(CalCI);
         end
 
         %% Manually set
@@ -251,7 +252,7 @@ classdef GPSSessionClass
             value = experimenter;
         end
 
-        function value = get.RTSortedLabels(obj)
+        function value = get.SortLabels(obj)
             switch obj.Task
                 case {'KornblumSRT'}
                     value = 'Cued x Ports';
@@ -335,27 +336,20 @@ classdef GPSSessionClass
         function value = get.RT(obj)
             % find the last poke out time before center poke
             reaction_time = cellfun(@(x) x(end), obj.CentPokeOutTime) - obj.TriggerCueTime;
+            reaction_time(reaction_time<0.05) = nan;
             value = reaction_time;
         end
 
         function value = get.RTSorted(obj)
-            value = obj.sortData("RT", "correct");
-        end
-
-        function value = get.RTPDF(obj)
-            value = obj.getPDF("RT", "correct");
-        end
-
-        function value = get.RTCDF(obj)
-            value = obj.getCDF("RT", "correct");
+            value = obj.sortData("RT", "port");
         end
 
         function value = get.RTStat(obj)
-            value = obj.getStat("RT", "correct");
+            value = obj.getStat("RT", "port");
         end
 
         function value = get.RTDistribution(obj)
-            value = obj.getDistr("RT", "correct");
+            value = obj.getDistr("RT", "port");
         end
 
         %% Hold duration
@@ -367,14 +361,6 @@ classdef GPSSessionClass
 
         function value = get.HoldDurationSorted(obj)
             value = obj.sortData("HoldDuration", "port");
-        end
-
-        function value = get.HoldDurationPDF(obj)
-            value = obj.getPDF("HoldDuration", "port");
-        end
-
-        function value = get.HoldDurationCDF(obj)
-            value = obj.getCDF("HoldDuration", "port");
         end
 
         function value = get.HoldDurationStat(obj)
@@ -395,14 +381,6 @@ classdef GPSSessionClass
             value = obj.sortData("MovementTime", "correct");
         end
 
-        function value = get.MovementTimePDF(obj)
-            value = obj.getPDF("MovementTime", "correct");
-        end
-
-        function value = get.MovementTimeCDF(obj)
-            value = obj.getCDF("MovementTime", "correct");
-        end
-
         function value = get.MovementTimeStat(obj)
             value = obj.getStat("MovementTime", "correct");
         end
@@ -419,14 +397,6 @@ classdef GPSSessionClass
 
         function value = get.ChoiceTimeSorted(obj)
             value = obj.sortData("ChoiceTime", "correct");
-        end
-
-        function value = get.ChoiceTimePDF(obj)
-            value = obj.getPDF("ChoiceTime", "correct");
-        end
-
-        function value = get.ChoiceTimeCDF(obj)
-            value = obj.getCDF("ChoiceTime", "correct");
         end
 
         function value = get.ChoiceTimeStat(obj)
@@ -695,46 +665,68 @@ classdef GPSSessionClass
             end
         end % sortData
 
-        function data_pdf = getPDF(obj, variable, perf)
-
+        %% get PDFs and CDFs
+        function data_pdf = getPDF(obj, variable, perf, cal_ci)
+            bin_edges = obj.Bins.(variable);
             data_sorted = obj.sortData(variable, perf);
+            data_pdf = cell(length(obj.MixedFP), length(obj.Ports));
 
-            mixedFPs = obj.MixedFP;
-            binEdges = obj.Bins.(variable);
-
-            data_pdf = cell(length(mixedFPs), length(obj.Ports));
+            if cal_ci
+                fprintf("... Calculate 95CI for PDF of %s ... \n", variable);
+            end
             for j = 1:length(obj.Ports)
                 for i = 1:length(obj.MixedFP)
                     data_this = data_sorted{i, j};
-                    if length(data_this) > 5
-                        data_pdf{i, j} = ksdensity(data_this, binEdges, 'Function', 'pdf', 'Bandwidth', 0.05);
-                    else
-                        data_pdf{i, j} = zeros(1, length(binEdges));
-                    end
+                    data_pdf{i, j} = obj.calKDE(data_this, bin_edges, 'pdf', cal_ci);
                 end
             end
         end % getPDF
 
-        function data_cdf = getCDF(obj, variable, perf)
-
+        function data_cdf = getCDF(obj, variable, perf, cal_ci)
+            bin_edges = obj.Bins.(variable);
             data_sorted = obj.sortData(variable, perf);
+            data_cdf = cell(length(obj.MixedFP), length(obj.Ports));
 
-            mixedFPs = obj.MixedFP;
-            binEdges = obj.Bins.(variable);
-
-            data_cdf = cell(length(mixedFPs), length(obj.Ports));
+            if cal_ci
+                fprintf("... Calculate 95CI for CDF of %s ... \n", variable);
+            end
             for j = 1:length(obj.Ports)
                 for i = 1:length(obj.MixedFP)
                     data_this = data_sorted{i, j};
-                    if length(data_this) > 5
-                        data_cdf{i, j} = ksdensity(data_this, binEdges, 'Function', 'cdf', 'Bandwidth', 0.05);
-                    else
-                        data_cdf{i, j} = zeros(1, length(binEdges));
-                    end
+                    data_cdf{i, j} = obj.calKDE(data_this, bin_edges, 'cdf', cal_ci);
                 end
             end
         end % getCDF
 
+        function data_kde = calKDE(obj, data_this, bin_edges, func, cal_ci)
+            kde = @(x) ksdensity(x, bin_edges, 'Function', func, 'Bandwidth', obj.BandWidth);
+
+            data_kde.x = bin_edges;
+            data_kde.ci = [];
+            if length(data_this) > 5
+                data_kde.f = kde(data_this);
+                if cal_ci
+                    data_kde.ci = bootci(1000, {kde, data_this}, 'type', 'cper', 'alpha', .05);
+                end
+            else
+                data_kde.f = zeros(1, length(bin_edges));
+            end
+        end % calKDE
+
+        function obj = getAllKDEs(obj, cal_ci)
+
+            obj.RTPDF = obj.getPDF("RT", "port", cal_ci);
+            obj.RTCDF = obj.getCDF("RT", "port", cal_ci);
+            obj.MTPDF = obj.getPDF("MovementTime", "correct", cal_ci);
+            obj.MTCDF = obj.getCDF("MovementTime", "correct", cal_ci);
+            obj.HDPDF = obj.getPDF("HoldDuration", "port", cal_ci);
+            obj.HDCDF = obj.getCDF("HoldDuration", "port", cal_ci);
+            obj.CTPDF = obj.getPDF("ChoiceTime", "correct", cal_ci);
+            obj.CTCDF = obj.getCDF("ChoiceTime", "correct", cal_ci);
+
+        end % getAllKDEs
+
+        %% Get statistics
         function stats = getStat(obj, variable, perf)
             % Get statistics from input data (RT, MovementTime, ChoiceTime, HoldDuration) by (FP, Port).
             % inputs:
@@ -757,67 +749,35 @@ classdef GPSSessionClass
 
             % Set estimands
             height_this = (length(obj.MixedFP)+1)*length(obj.Ports);
-
+            stats = array2table(zeros(height_this, 13), 'VariableNames', ...
+                {'Subjects', 'Sessions', 'thisFP', 'Port', 'N', ...
+                'Mean', 'STD', 'SEM', ...
+                'Median', 'Median_kde', 'Q1', 'Q3', 'IQR'});
+            stats.Port = strings(height_this, 1);
             count = 0;
-
-            thisFP = zeros(height_this, 1);
-            Port = strings(height_this, 1);
-            N = zeros(height_this, 1);
-
-            Mean = zeros(height_this, 1);
-            STD  = zeros(height_this, 1);
-            SEM  = zeros(height_this, 1);
-
-            Median = zeros(height_this, 1);
-            Median_kde = zeros(height_this, 1);
-            Q1 = zeros(height_this, 1);
-            Q3 = zeros(height_this, 1);
-
-            % Only include correct trials
-            % PortL for all FPs
-            data_this = data_origin(obj.Stage==1 & obj.Ind.(perf + "L"));
-            data_this(isnan(data_this)) = [];
-            data_this(data_this>data_2575(2)+interq*c | data_this<data_2575(1)-interq*c) = [];
-            stat_this = calDur(data_this*1000, [], "Remove100ms", 0, "RemoveOutliers", 0, 'CalSE', 0);
-
-            count = count + 1;
-
-            thisFP(count) = 0;
-            Port(count) = "L";
-            N(count) = length(data_this);
-
-            Mean(count) = mean(data_this, 'omitnan');
-            STD(count)  = std(data_this, 'omitnan');
-            SEM(count)  = STD(count) / sqrt(N(count));
-
-            Median(count) = stat_this.median * 0.001;
-            Median_kde(count) = stat_this.median_ksdensity * 0.001;
-            Q1(count) = prctile(data_this, 25);
-            Q3(count) = prctile(data_this, 75);
-
-            % PortR for all FPs
-            data_this = data_origin(obj.Stage==1 & obj.Ind.(perf + "R"));
-            data_this(isnan(data_this)) = [];
-            data_this(data_this>data_2575(2)+interq*c | data_this<data_2575(1)-interq*c) = [];
-            stat_this = calDur(data_this*1000, [], "Remove100ms", 0, "RemoveOutliers", 0, 'CalSE', 0);
-
-            count = count + 1;
-
-            thisFP(count) = 0;
-            Port(count) = "R";
-            N(count) = length(data_this);
-
-            Mean(count) = mean(data_this, 'omitnan');
-            STD(count)  = std(data_this, 'omitnan');
-            SEM(count)  = STD(count) / sqrt(N(count));
-
-            Median(count) = stat_this.median * 0.001;
-            Median_kde(count) = stat_this.median_ksdensity * 0.001;
-            Q1(count) = prctile(data_this, 25);
-            Q3(count) = prctile(data_this, 75);
 
             % By (Port, FP)
             for port = 1:length(obj.Ports) % Port
+                data_this = data_origin(obj.Stage==1 & obj.Ind.(perf + obj.Ports(port)));
+                data_this(isnan(data_this)) = [];
+                data_this(data_this>data_2575(2)+interq*c | data_this<data_2575(1)-interq*c) = [];
+                stat_this = calDur(data_this*1000, [], "Remove100ms", 0, "RemoveOutliers", 0, 'CalSE', 0);
+
+                count = count + 1;
+
+                stats.thisFP(count) = 0;
+                stats.Port(count) = obj.Ports(port);
+                stats.N(count) = sum(~isnan(data_this));
+
+                stats.Mean(count) = stat_this.mean * .001;
+                stats.STD(count)  = stat_this.std * .001;
+                stats.SEM(count)  = stat_this.sem * .001;
+
+                stats.Median(count) = stat_this.median * .001;
+                stats.Median_kde(count) = stat_this.median_ksdensity * .001;
+                stats.Q1(count) = stat_this.q1 * .001;
+                stats.Q3(count) = stat_this.q3 * .001;
+
                 for fp = 1:length(obj.MixedFP) % FP
                     data_this = data_sorted{fp, port};
                     data_this(isnan(data_this)) = [];
@@ -826,27 +786,26 @@ classdef GPSSessionClass
 
                     count = count + 1;
 
-                    thisFP(count) = obj.MixedFP(fp);
-                    Port(count) = obj.Ports(port);
-                    N(count) = length(data_this);
+                    stats.thisFP(count) = obj.MixedFP(fp);
+                    stats.Port(count) = obj.Ports(port);
+                    stats.N(count) = sum(~isnan(data_this));
 
-                    Mean(count) = mean(data_this, 'omitnan');
-                    STD(count)  = std(data_this, 'omitnan');
-                    SEM(count)  = STD(count) / sqrt(N(count));
+                    stats.Mean(count) = stat_this.mean * .001;
+                    stats.STD(count)  = stat_this.std * .001;
+                    stats.SEM(count)  = stat_this.sem * .001;
 
-                    Median(count) = stat_this.median * 0.001;
-                    Median_kde(count) = stat_this.median_ksdensity * 0.001;
-                    Q1(count) = prctile(data_this, 25);
-                    Q3(count) = prctile(data_this, 75);
+                    stats.Median(count) = stat_this.median * .001;
+                    stats.Median_kde(count) = stat_this.median_ksdensity * .001;
+                    stats.Q1(count) = stat_this.q1 * .001;
+                    stats.Q3(count) = stat_this.q3 * .001;
                 end
             end
 
-            IQR = Q3 - Q1;
+            stats.IQR = stats.Q3 - stats.Q1;
 
-            Subjects = repmat(string(obj.Subject), height_this, 1);
-            Sessions = repmat(string(obj.Session), height_this, 1);
+            stats.Subjects = repmat(string(obj.Subject), height_this, 1);
+            stats.Sessions = repmat(string(obj.Session), height_this, 1);
 
-            stats = table(Subjects, Sessions, thisFP, Port, N, Mean, STD, SEM, Median, Median_kde, IQR, Q1, Q3);
         end % getStat
 
         function data_distr = getDistr(obj, variable, perf)

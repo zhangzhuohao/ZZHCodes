@@ -94,7 +94,7 @@ for d = 1:length(Folders)
         SessionClass = GPSSessionClass(file, AnmInfoFile);
         SessionClass.save();
         SessionClass.updateANMInfo();
-        SessionClass.print(SessionDataFigsFolder);
+%         SessionClass.print(SessionDataFigsFolder);
 
         BehavCsvName = ['GPSSessionTable_' SessionClass.Task '_' SessionClass.Subject, '.csv'];
         writetable(SessionClass.BehavTable, fullfile(file_path, BehavCsvName));
