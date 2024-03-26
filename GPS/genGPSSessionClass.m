@@ -91,10 +91,10 @@ for d = 1:length(Folders)
         f_savepath = fullfile(SessionDataFigsFolder, f_savename);
         exportgraphics(f, f_savepath, 'Resolution', 600);
 
-        SessionClass = GPSSessionClass(file, AnmInfoFile);
+        SessionClass = GPSSessionClass(file, AnmInfoFile, 0);
         SessionClass.save();
         SessionClass.updateANMInfo();
-%         SessionClass.print(SessionDataFigsFolder);
+        SessionClass.print(SessionDataFigsFolder);
 
         BehavCsvName = ['GPSSessionTable_' SessionClass.Task '_' SessionClass.Subject, '.csv'];
         writetable(SessionClass.BehavTable, fullfile(file_path, BehavCsvName));

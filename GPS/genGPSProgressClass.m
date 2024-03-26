@@ -55,7 +55,7 @@ for d = 1:length(Folders)
 
     %
     ProgressClass = GPSProgressClass(SessionClassAll);
-    ProgressClass.getAllKDEs(1);
+    ProgressClass = ProgressClass.getAllKDEs(1);
     ProgressClass.save(ProtocolDir);
     
     ProgressClass.print("Progress", ProtocolDir);

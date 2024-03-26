@@ -186,9 +186,9 @@ plot_reaction_time_collected(ha13, obj, opts);
         
         binEdges = obj.Bins.ShuttleTimeLog;
         ST_log = log10(obj.ShuttleTime);
-        PDF_PortL = ksdensity(ST_log, binEdges);
+        PDF_STLog = ksdensity(ST_log, binEdges, 'function', 'pdf', 'Bandwidth', .05);
 
-        plot(ax, PDF_PortL, binEdges, 'color', 'k', 'linewidth', 1.5);
+        plot(ax, PDF_STLog, binEdges, 'color', 'k', 'linewidth', 1.5);
 
         ax.XLabel.String = 'Prob. density (1/s)';
         set(ax, 'ylim', [0 3], 'xlimmode', 'auto', 'yticklabel', [], 'ticklength', [0.02 0.1], 'ytick', 1:3)
@@ -197,7 +197,7 @@ plot_reaction_time_collected(ha13, obj, opts);
 %% ha6. Plot hold duration and FP
     function plot_hold_duration(ax, obj, opts)
 
-        line(ax, [opts.ticks opts.ticks]', [0 2.5/20], 'color', 'K')
+        line(ax, [opts.ticks opts.ticks]', [0 2/20], 'color', 'K')
 
         % FPs
         scatter(ax, opts.ticks, obj.FP, 'LineWidth', 1, 'Marker', '_', 'MarkerEdgeColor', [.7 .7 .7], 'SizeData', 4);
@@ -234,45 +234,41 @@ plot_reaction_time_collected(ha13, obj, opts);
 
         ax.XLabel.String = 'Time in session (s)';
         ax.YLabel.String = 'Hold duration (s)';
-        set(ax, 'xlim', [0 opts.ticks(end)+5], 'ylim', [0 2.5], 'ticklength', [0.01 0.1]);
+        set(ax, 'xlim', [0 opts.ticks(end)+5], 'ylim', [0 2], 'ticklength', [0.01 0.1]);
     end
 
 %% ha7. plot hold duration pdf
     function plot_hold_duration_pdf(ax, obj, opts)
 
-        binEdges = obj.Bins.HoldDuration;
-
         for fp = 1:length(obj.MixedFP)
-            yline(ax, obj.MixedFP(fp), 'Color', [.7 .7 .7], 'LineWidth', opts.lw(fp), 'LineStyle', '-');
+            yline(ax, obj.MixedFP(fp), 'Color', [.7 .7 .7], 'linewidth', 1.2, 'LineStyle', opts.ls(fp));
         end
 
         for i = 1:length(obj.MixedFP)
             for j = 1:length(obj.Ports)
-                plot(ax, obj.HoldDurationPDF{i, j}, binEdges, 'color', eval("opts.color.Port" + obj.Ports(j)), 'linewidth', opts.lw(i), 'LineStyle', '-');
+                plot(ax, obj.HDPDF{i, j}.f, obj.HDPDF{i, j}.x, 'color', eval("opts.color.Port" + obj.Ports(j)), 'linewidth', 1.2, 'LineStyle', opts.ls(i));
             end
         end
 
         ax.XLabel.String = 'Prob. density (1/s)';
-        set(ax, 'xlimmode', 'auto', 'ylim', [0 2.5], 'yticklabel', [], 'ticklength', [0.02 0.1])
+        set(ax, 'xlimmode', 'auto', 'ylim', [0 2], 'yticklabel', [], 'ticklength', [0.02 0.1])
     end
 
 %% ha7.1. plot hold duration cdf
     function plot_hold_duration_cdf(ax, obj, opts)
         
-        binEdges = obj.Bins.HoldDuration;
-
         for fp = 1:length(obj.MixedFP)
-            yline(ax, obj.MixedFP(fp), 'Color', [.7 .7 .7], 'LineWidth', opts.lw(fp), 'LineStyle', '-');
+            yline(ax, obj.MixedFP(fp), 'Color', [.7 .7 .7], 'linewidth', 1.2, 'LineStyle', opts.ls(fp));
         end
 
         for i = 1:length(obj.MixedFP)
             for j = 1:length(obj.Ports)
-                plot(ax, obj.HoldDurationCDF{i, j}, binEdges, 'color', eval("opts.color.Port" + obj.Ports(j)), 'linewidth', opts.lw(i), 'LineStyle', '-');
+                plot(ax, obj.HDCDF{i, j}.f, obj.HDCDF{i, j}.x, 'color', eval("opts.color.Port" + obj.Ports(j)), 'linewidth', 1.2, 'LineStyle', opts.ls(i));
             end
         end
 
         ax.XLabel.String = 'Cum. distribution';
-        set(ax, 'xlimmode', 'auto', 'ylim', [0 2.5], 'yticklabel', [], 'ticklength', [0.02 0.1]);
+        set(ax, 'xlimmode', 'auto', 'ylim', [0 2], 'yticklabel', [], 'ticklength', [0.02 0.1]);
     end
 
 %% ha8. Plot reaction time
@@ -309,12 +305,10 @@ plot_reaction_time_collected(ha13, obj, opts);
 %% ha9. plot reaction time PDF for PortL
     function plot_reaction_time_pdf_l(ax, obj, opts)
         
-        binEdges = obj.Bins.RT;
-
         yline(ax, .5, 'Color', [.7 .7 .7], 'LineWidth', 1.5, 'LineStyle', '--');
 
         for fp = 1:length(obj.MixedFP)
-            plot(ax, obj.RTPDF{fp, 1}, binEdges, 'color', opts.color.PortL, 'linewidth', opts.lw(fp), 'LineStyle', '-');
+            plot(ax, obj.RTPDF{fp, 1}.f, obj.RTPDF{fp, 1}.x, 'color', opts.color.PortL, 'linewidth', 1.2, 'LineStyle', opts.ls(fp));
         end
 
         ax.XLabel.String = 'Prob. density (1/s)';
@@ -324,12 +318,10 @@ plot_reaction_time_collected(ha13, obj, opts);
 %% ha9.1. plot reaction time PDF for PortR
     function plot_reaction_time_pdf_r(ax, obj, opts)
         
-        binEdges = obj.Bins.RT;
-
         yline(ax, .5, 'Color', [.7 .7 .7], 'LineWidth', 1.5, 'LineStyle', '--');
 
         for fp = 1:length(obj.MixedFP)
-            plot(ax, obj.RTPDF{fp, 2}, binEdges, 'color', opts.color.PortR, 'linewidth', opts.lw(fp), 'LineStyle', '-');
+            plot(ax, obj.RTPDF{fp, 1}.f, obj.RTPDF{fp, 2}.x, 'color', opts.color.PortR, 'linewidth', 1.2, 'LineStyle', opts.ls(fp));
         end
 
         ax.XLabel.String = 'Prob. density (1/s)';
@@ -369,10 +361,8 @@ plot_reaction_time_collected(ha13, obj, opts);
 %% ha11. Plot movement time PDF on the right for PortL
     function plot_movement_time_pdf_l(ax, obj, opts)
 
-        binEdges = obj.Bins.MovementTime;
-
         for fp = 1:length(obj.MixedFP)
-            plot(ax, obj.MovementTimePDF{fp, 1}, binEdges, 'color', opts.color.PortL, 'linewidth', opts.lw(fp), 'LineStyle', '-')
+            plot(ax, obj.MTPDF{fp, 1}.f, obj.MTPDF{fp, 1}.x, 'color', opts.color.PortL, 'linewidth', 1.2, 'LineStyle', opts.ls(fp));
         end
 
         ax.XLabel.String = 'Prob. density (1/s)';
@@ -382,10 +372,8 @@ plot_reaction_time_collected(ha13, obj, opts);
 %% ha11.1. Plot movement time PDF on the right for PortL
     function plot_movement_time_pdf_r(ax, obj, opts)
 
-        binEdges = obj.Bins.MovementTime;
-
         for fp = 1:length(obj.MixedFP)
-            plot(ax, obj.MovementTimePDF{fp, 2}, binEdges, 'color', opts.color.PortR, 'linewidth', opts.lw(fp), 'LineStyle', '-')
+            plot(ax, obj.MTPDF{fp, 1}.f, obj.MTPDF{fp, 2}.x, 'color', opts.color.PortR, 'linewidth', 1.2, 'LineStyle', opts.ls(fp));
         end
 
         ax.XLabel.String = 'Prob. density (1/s)';

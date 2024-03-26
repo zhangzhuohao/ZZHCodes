@@ -653,14 +653,14 @@ classdef GPSSessionClass
             data_origin = obj.(variable);
             data_sorted = cell(length(obj.MixedFP), length(obj.Ports));
 
-            [~, ~, indrmv] = rmoutliers_custome(data_origin);
+%             [~, ~, indrmv] = rmoutliers_custome(data_origin);
 
             for port = 1:length(obj.Ports)
                 for fp = 1:length(obj.MixedFP)
                     ind_this = obj.FP==obj.MixedFP(fp) & obj.Stage==1 & eval("obj.Ind." + perf + obj.Ports(port));
-                    data_this = data_origin(setdiff(find(ind_this), indrmv));
+%                     data_this = data_origin(setdiff(find(ind_this), indrmv));
 
-                    data_sorted{fp, port} = data_this;
+                    data_sorted{fp, port} = data_origin(ind_this);
                 end
             end
         end % sortData

@@ -463,8 +463,8 @@ plot_shuttle_time_violin(ha13, obj, cp, opts);
 
         for fp_this = 1:length(obj.MixedFP)
             for p_this = 1:length(obj.Ports)
-                thisHD(1:length(obj.HDSortedControl{fp_this, p_this}), 4*(fp_this-1)+p_this)   = obj.HDSortedControl{fp_this, p_this};
-                thisHD(1:length(obj.HDSortedChemo{fp_this, p_this})  , 4*(fp_this-1)+p_this+2) = obj.HDSortedChemo{fp_this, p_this};
+                thisHD(1:length(obj.HDSorted.Control{fp_this, p_this}), 4*(fp_this-1)+p_this)   = obj.HDSorted.Control{fp_this, p_this};
+                thisHD(1:length(obj.HDSorted.Chemo{fp_this, p_this})  , 4*(fp_this-1)+p_this+2) = obj.HDSorted.Chemo{fp_this, p_this};
             end
         end
 
@@ -472,7 +472,7 @@ plot_shuttle_time_violin(ha13, obj, cp, opts);
 
         violinplot({thisHD(:, 2:2:end), thisHD(:, 1:2:end)}, obj.Sessions, ...
             'ViolinColor', {repmat(opts.color.PortR, num_violin/2, 1), repmat(opts.color.PortL, num_violin/2, 1)}, ...
-            'ScatterSize', 8, 'ShowMedian', false, 'ShowWhisker', false, 'ShowBox', false, 'Bandwidth', 0.1);
+            'ScatterSize', 8, 'ShowMedian', false, 'ShowWhisker', false, 'ShowBox', false, 'Bandwidth', obj.BandWidth);
 
         scatter(ax, ceil((1:num_violin)/2) + repmat([-.02 .02], 1, num_violin/2), median(thisHD, 'omitnan'), 32, ...
             repmat([opts.color.PortL; opts.color.PortR], num_violin/2, 1), ...
@@ -488,19 +488,19 @@ plot_shuttle_time_violin(ha13, obj, cp, opts);
 % median
     function plot_hold_duration_median_compare(ax, obj, opts)
        
-        ind_l = find(ismember(obj.HDStatControl.thisFP, obj.MixedFP) & obj.HDStatControl.Port=="L");
-        ind_r = find(ismember(obj.HDStatControl.thisFP, obj.MixedFP) & obj.HDStatControl.Port=="R");
+        ind_l = find(ismember(obj.HDStat.Control.thisFP, obj.MixedFP) & obj.HDStat.Control.Port=="L");
+        ind_r = find(ismember(obj.HDStat.Control.thisFP, obj.MixedFP) & obj.HDStat.Control.Port=="R");
 
 %         for i = 1:length(ind_l)
-%             plot(ax, [obj.HDStatControl.Median(ind_l(i)) obj.HDStatChemo.Median(ind_l(i))], [obj.HDStatControl.Median(ind_r(i)) obj.HDStatChemo.Median(ind_r(i))], ...
+%             plot(ax, [obj.HDStat.Control.Median(ind_l(i)) obj.HDStat.Chemo.Median(ind_l(i))], [obj.HDStat.Control.Median(ind_r(i)) obj.HDStat.Chemo.Median(ind_r(i))], ...
 %                 'Color', [0 0 0 0.6], 'LineWidth', 1.5);
 %         end
         
-        scatter(ax, obj.HDStatControl.Median(ind_l), obj.HDStatChemo.Median(ind_l), ...
+        scatter(ax, obj.HDStat.Control.Median(ind_l), obj.HDStat.Chemo.Median(ind_l), ...
             [.5 1 1.5]*24, 'Marker', 'o', 'MarkerFaceColor', opts.color.PortL, 'MarkerEdgeColor', opts.color.PortL, ...
             'MarkerFaceAlpha', 0.6, 'MarkerEdgeAlpha', 1, ...
             'LineWidth', 1.5);
-        scatter(ax, obj.HDStatControl.Median(ind_r), obj.HDStatChemo.Median(ind_r), ...
+        scatter(ax, obj.HDStat.Control.Median(ind_r), obj.HDStat.Chemo.Median(ind_r), ...
             [.5 1 1.5]*24, 'Marker', 'o', 'MarkerFaceColor', opts.color.PortR, 'MarkerEdgeColor', opts.color.PortR, ...
             'MarkerFaceAlpha', 0.6, 'MarkerEdgeAlpha', 1, ...
             'LineWidth', 1.5);
@@ -527,11 +527,11 @@ plot_shuttle_time_violin(ha13, obj, cp, opts);
 % IQR
     function plot_hold_duration_iqr_compare(ax, obj, opts)
 
-        ind_l = find(ismember(obj.HDStatControl.thisFP, obj.MixedFP) & obj.HDStatControl.Port=="L");
-        ind_r = find(ismember(obj.HDStatControl.thisFP, obj.MixedFP) & obj.HDStatControl.Port=="R");
+        ind_l = find(ismember(obj.HDStat.Control.thisFP, obj.MixedFP) & obj.HDStat.Control.Port=="L");
+        ind_r = find(ismember(obj.HDStat.Control.thisFP, obj.MixedFP) & obj.HDStat.Control.Port=="R");
 
 %         for i = 1:length(ind_l)
-%             plot(ax, [obj.HDStatControl.IQR(ind_l(i)) obj.HDStatChemo.IQR(ind_l(i))], [obj.HDStatControl.IQR(ind_r(i)) obj.HDStatChemo.IQR(ind_r(i))], ...
+%             plot(ax, [obj.HDStat.Control.IQR(ind_l(i)) obj.HDStat.Chemo.IQR(ind_l(i))], [obj.HDStat.Control.IQR(ind_r(i)) obj.HDStat.Chemo.IQR(ind_r(i))], ...
 %                 'Color', [0 0 0 0.6], 'LineWidth', 1.5);
 %         end
 
@@ -543,11 +543,11 @@ plot_shuttle_time_violin(ha13, obj, cp, opts);
         ax.XLabel.Color      = opts.color.Control;
         ax.XLabel.FontWeight = "Bold";
         
-        scatter(ax, obj.HDStatControl.IQR(ind_l), obj.HDStatChemo.IQR(ind_l), ...
+        scatter(ax, obj.HDStat.Control.IQR(ind_l), obj.HDStat.Chemo.IQR(ind_l), ...
             [.5 1 1.5]*24, 'Marker', 'o', 'MarkerFaceColor', opts.color.PortL, 'MarkerEdgeColor', opts.color.PortL, ...
             'MarkerFaceAlpha', 0.6, 'MarkerEdgeAlpha', 1, ...
             'LineWidth', 1.5);
-        scatter(ax, obj.HDStatControl.IQR(ind_r), obj.HDStatChemo.IQR(ind_r), ...
+        scatter(ax, obj.HDStat.Control.IQR(ind_r), obj.HDStat.Chemo.IQR(ind_r), ...
             [.5 1 1.5]*24, 'Marker', 'o', 'MarkerFaceColor', opts.color.PortR, 'MarkerEdgeColor', opts.color.PortR, ...
             'MarkerFaceAlpha', 0.6, 'MarkerEdgeAlpha', 1, ...
             'LineWidth', 1.5);
@@ -567,22 +567,23 @@ plot_shuttle_time_violin(ha13, obj, cp, opts);
 % Prob. density
     function plot_hold_duration_pdf(ax, obj, port, opts)
 
-        p_this = obj.Ports==upper(string(port));
+        p = obj.Ports==upper(string(port));
 
-        for fp_this = 1:length(obj.MixedFP)
+        for fp = 1:length(obj.MixedFP)
 
-            xline(ax, obj.MixedFP(fp_this), 'color', [.7 .7 .7], 'linewidth', opts.lw(fp_this), 'LineStyle', '-');
+            xline(ax, obj.MixedFP(fp), 'color', [.7 .7 .7], 'linewidth', 1, 'LineStyle', opts.ls(fp));
 
-            hd_control = obj.HDSortedControl{fp_this, p_this};
-            hd_chemo   = obj.HDSortedChemo{fp_this, p_this};
+            pdf_control = obj.HDPDF.Control{fp, p};
+            pdf_chemo   = obj.HDPDF.Chemo{fp, p};
 
-            hd_control_pdf = ksdensity(hd_control, obj.Bins.HoldDuration, 'Function', 'pdf', 'Bandwidth', opts.bandwidth);
-            hd_chemo_pdf   = ksdensity(hd_chemo,   obj.Bins.HoldDuration, 'Function', 'pdf', 'Bandwidth', opts.bandwidth);
-
-            plot(ax, obj.Bins.HoldDuration, hd_control_pdf, ...
-                'color', opts.color.Control, 'linewidth', opts.lw(fp_this), 'LineStyle', '-');
-            plot(ax, obj.Bins.HoldDuration, hd_chemo_pdf, ...
-                'color', opts.color.Treat  , 'linewidth', opts.lw(fp_this), 'LineStyle', '-');
+            fill(ax, [pdf_control.x flip(pdf_control.x)], [pdf_control.ci(1,:) flip(pdf_control.ci(2,:))], 'r', ...
+                'FaceColor', opts.color.Control, 'FaceAlpha', .2, 'EdgeColor', 'none');
+            plot(ax, pdf_control.x, pdf_control.f, ...
+                'color', opts.color.Control, 'linewidth', 1.2, 'LineStyle', opts.ls(fp));
+            fill(ax, [pdf_chemo.x flip(pdf_chemo.x)], [pdf_chemo.ci(1,:) flip(pdf_chemo.ci(2,:))], 'r', ...
+                'FaceColor', opts.color.Treat, 'FaceAlpha', .2, 'EdgeColor', 'none');
+            plot(ax, pdf_chemo.x, pdf_chemo.f, ...
+                'color', opts.color.Treat  , 'linewidth', 1.2, 'LineStyle', opts.ls(fp));
 
         end
 
@@ -603,22 +604,23 @@ plot_shuttle_time_violin(ha13, obj, cp, opts);
 % Cum. distribution
     function plot_hold_duration_cdf(ax, obj, port, opts)
 
-        p_this = obj.Ports==upper(string(port));
+        p = obj.Ports==upper(string(port));
 
-        for fp_this = 1:length(obj.MixedFP)
+        for fp = 1:length(obj.MixedFP)
 
-            xline(ax, obj.MixedFP(fp_this), 'color', [.7 .7 .7], 'linewidth', opts.lw(fp_this), 'LineStyle', '-');
+            xline(ax, obj.MixedFP(fp), 'color', [.7 .7 .7], 'linewidth', 1, 'LineStyle', opts.ls(fp));
 
-            hd_control = obj.HDSortedControl{fp_this, p_this};
-            hd_chemo   = obj.HDSortedChemo{fp_this, p_this};
+            cdf_control = obj.HDCDF.Control{fp, p};
+            cdf_chemo   = obj.HDCDF.Chemo{fp, p};
 
-            hd_control_pdf = ksdensity(hd_control, obj.Bins.HoldDuration, 'Function', 'cdf', 'Bandwidth', opts.bandwidth);
-            hd_chemo_pdf   = ksdensity(hd_chemo,   obj.Bins.HoldDuration, 'Function', 'cdf', 'Bandwidth', opts.bandwidth);
-
-            plot(ax, obj.Bins.HoldDuration, hd_control_pdf, ...
-                'color', opts.color.Control, 'linewidth', opts.lw(fp_this), 'LineStyle', '-');
-            plot(ax, obj.Bins.HoldDuration, hd_chemo_pdf, ...
-                'color', opts.color.Treat  , 'linewidth', opts.lw(fp_this), 'LineStyle', '-');
+            fill(ax, [cdf_control.x flip(cdf_control.x)], [cdf_control.ci(1,:) flip(cdf_control.ci(2,:))], 'r', ...
+                'FaceColor', opts.color.Control, 'FaceAlpha', .2, 'EdgeColor', 'none');
+            plot(ax, cdf_control.x, cdf_control.f, ...
+                'color', opts.color.Control, 'linewidth', 1.2, 'LineStyle', opts.ls(fp));
+            fill(ax, [cdf_chemo.x cdf_chemo.x(end:-1:1)], [cdf_chemo.ci(1,:) cdf_chemo.ci(2, end:-1:1)], 'r', ...
+                'FaceColor', opts.color.Treat, 'FaceAlpha', .2, 'EdgeColor', 'none');
+            plot(ax, cdf_chemo.x, cdf_chemo.f, ...
+                'color', opts.color.Treat  , 'linewidth', 1.2, 'LineStyle', opts.ls(fp));
 
         end
 
@@ -651,8 +653,8 @@ plot_shuttle_time_violin(ha13, obj, cp, opts);
 
         for fp_this = 1:length(obj.MixedFP)
             for p_this = 1:length(obj.Ports)
-                thisRT(1:length(obj.RTSortedControl{fp_this, p_this}), 4*(fp_this-1)+p_this)   = obj.RTSortedControl{fp_this, p_this};
-                thisRT(1:length(obj.RTSortedChemo{fp_this, p_this})  , 4*(fp_this-1)+p_this+2) = obj.RTSortedChemo{fp_this, p_this};
+                thisRT(1:length(obj.RTSorted.Control{fp_this, p_this}), 4*(fp_this-1)+p_this)   = obj.RTSorted.Control{fp_this, p_this};
+                thisRT(1:length(obj.RTSorted.Chemo{fp_this, p_this})  , 4*(fp_this-1)+p_this+2) = obj.RTSorted.Chemo{fp_this, p_this};
             end
         end
 
@@ -660,7 +662,7 @@ plot_shuttle_time_violin(ha13, obj, cp, opts);
 
         violinplot({thisRT(:, 2:2:end), thisRT(:, 1:2:end)}, obj.Sessions, ...
             'ViolinColor', {repmat(opts.color.PortR, num_violin/2, 1), repmat(opts.color.PortL, num_violin/2, 1)}, ...
-            'ScatterSize', 8, 'ShowMedian', false, 'ShowWhisker', false, 'ShowBox', false, 'Bandwidth', 0.1);
+            'ScatterSize', 8, 'ShowMedian', false, 'ShowWhisker', false, 'ShowBox', false, 'Bandwidth', obj.BandWidth);
 
         scatter(ax, ceil((1:num_violin)/2) + repmat([-.02 .02], 1, num_violin/2), median(thisRT, 'omitnan'), 32, ...
             repmat([opts.color.PortL; opts.color.PortR], num_violin/2, 1), ...
@@ -668,7 +670,7 @@ plot_shuttle_time_violin(ha13, obj, cp, opts);
 
         ax.XLabel.String = 'Foreperiod (s)';
         ax.YLabel.String = 'Reaction time (s)';
-        set(ax, 'xlim', [.5 2*length(obj.MixedFP)+.5], 'ylim', [0 obj.Bins.RT(end)], 'xtick', 1.5:2:2*length(obj.MixedFP), ...
+        set(ax, 'xlim', [.5 2*length(obj.MixedFP)+.5], 'ylim', [0 .6], 'xtick', 1.5:2:2*length(obj.MixedFP), ...
             'xticklabel', obj.MixedFP, 'ticklength', [0.01 0.1], 'box', 'off');
     end
 
@@ -676,19 +678,19 @@ plot_shuttle_time_violin(ha13, obj, cp, opts);
 % median
     function plot_reaction_time_median_compare(ax, obj, opts)
        
-        ind_l = find(ismember(obj.RTStatControl.thisFP, obj.MixedFP) & obj.RTStatControl.Port=="L");
-        ind_r = find(ismember(obj.RTStatControl.thisFP, obj.MixedFP) & obj.RTStatControl.Port=="R");
+        ind_l = find(ismember(obj.RTStat.Control.thisFP, obj.MixedFP) & obj.RTStat.Control.Port=="L");
+        ind_r = find(ismember(obj.RTStat.Control.thisFP, obj.MixedFP) & obj.RTStat.Control.Port=="R");
 
 %         for i = 1:length(ind_l)
-%             plot(ax, [obj.RTStatControl.Median(ind_l(i)) obj.RTStatChemo.Median(ind_l(i))], [obj.RTStatControl.Median(ind_r(i)) obj.RTStatChemo.Median(ind_r(i))], ...
+%             plot(ax, [obj.RTStat.Control.Median(ind_l(i)) obj.RTStat.Chemo.Median(ind_l(i))], [obj.RTStat.Control.Median(ind_r(i)) obj.RTStat.Chemo.Median(ind_r(i))], ...
 %                 'Color', [0 0 0 0.6], 'LineWidth', 1.5);
 %         end
         
-        scatter(ax, obj.RTStatControl.Median(ind_l), obj.RTStatChemo.Median(ind_l), ...
+        scatter(ax, obj.RTStat.Control.Median(ind_l), obj.RTStat.Chemo.Median(ind_l), ...
             [.5 1 1.5]*24, 'Marker', 'o', 'MarkerFaceColor', opts.color.PortL, 'MarkerEdgeColor', opts.color.PortL, ...
             'MarkerFaceAlpha', 0.6, 'MarkerEdgeAlpha', 1, ...
             'LineWidth', 1.5);
-        scatter(ax, obj.RTStatControl.Median(ind_r), obj.RTStatChemo.Median(ind_r), ...
+        scatter(ax, obj.RTStat.Control.Median(ind_r), obj.RTStat.Chemo.Median(ind_r), ...
             [.5 1 1.5]*24, 'Marker', 'o', 'MarkerFaceColor', opts.color.PortR, 'MarkerEdgeColor', opts.color.PortR, ...
             'MarkerFaceAlpha', 0.6, 'MarkerEdgeAlpha', 1, ...
             'LineWidth', 1.5);
@@ -726,8 +728,8 @@ plot_shuttle_time_violin(ha13, obj, cp, opts);
 
         for fp_this = 1:length(obj.MixedFP)
             for p_this = 1:length(obj.Ports)
-                thisMT(1:length(obj.MTSortedControl{fp_this, p_this}), 4*(fp_this-1)+p_this)   = obj.MTSortedControl{fp_this, p_this};
-                thisMT(1:length(obj.MTSortedChemo{fp_this, p_this})  , 4*(fp_this-1)+p_this+2) = obj.MTSortedChemo{fp_this, p_this};
+                thisMT(1:length(obj.MTSorted.Control{fp_this, p_this}), 4*(fp_this-1)+p_this)   = obj.MTSorted.Control{fp_this, p_this};
+                thisMT(1:length(obj.MTSorted.Chemo{fp_this, p_this})  , 4*(fp_this-1)+p_this+2) = obj.MTSorted.Chemo{fp_this, p_this};
             end
         end
 
@@ -735,7 +737,7 @@ plot_shuttle_time_violin(ha13, obj, cp, opts);
 
         violinplot({thisMT(:, 2:2:end), thisMT(:, 1:2:end)}, obj.Sessions, ...
             'ViolinColor', {repmat(opts.color.PortR, num_violin/2, 1), repmat(opts.color.PortL, num_violin/2, 1)}, ...
-            'ScatterSize', 8, 'ShowMedian', false, 'ShowWhisker', false, 'ShowBox', false, 'Bandwidth', 0.1);
+            'ScatterSize', 8, 'ShowMedian', false, 'ShowWhisker', false, 'ShowBox', false, 'Bandwidth', obj.BandWidth);
 
         scatter(ax, ceil((1:num_violin)/2) + repmat([-.02 .02], 1, num_violin/2), median(thisMT, 'omitnan'), 32, ...
             repmat([opts.color.PortL; opts.color.PortR], num_violin/2, 1), ...
@@ -750,19 +752,19 @@ plot_shuttle_time_violin(ha13, obj, cp, opts);
 %% Movement time comparation
     function plot_movement_time_median_compare(ax, obj, opts)
        
-        ind_l = find(ismember(obj.MTStatControl.thisFP, obj.MixedFP) & obj.MTStatControl.Port=="L");
-        ind_r = find(ismember(obj.MTStatControl.thisFP, obj.MixedFP) & obj.MTStatControl.Port=="R");
+        ind_l = find(ismember(obj.MTStat.Control.thisFP, obj.MixedFP) & obj.MTStat.Control.Port=="L");
+        ind_r = find(ismember(obj.MTStat.Control.thisFP, obj.MixedFP) & obj.MTStat.Control.Port=="R");
 
 %         for i = 1:length(ind_l)
-%             plot(ax, [obj.MTStatControl.Median(ind_l(i)) obj.MTStatChemo.Median(ind_l(i))], [obj.MTStatControl.Median(ind_r(i)) obj.MTStatChemo.Median(ind_r(i))], ...
+%             plot(ax, [obj.MTStat.Control.Median(ind_l(i)) obj.MTStat.Chemo.Median(ind_l(i))], [obj.MTStat.Control.Median(ind_r(i)) obj.MTStat.Chemo.Median(ind_r(i))], ...
 %                 'Color', [0 0 0 0.6], 'LineWidth', 1.5);
 %         end
         
-        scatter(ax, obj.MTStatControl.Median(ind_l), obj.MTStatChemo.Median(ind_l), ...
+        scatter(ax, obj.MTStat.Control.Median(ind_l), obj.MTStat.Chemo.Median(ind_l), ...
             [.5 1 1.5]*24, 'Marker', 'o', 'MarkerFaceColor', opts.color.PortL, 'MarkerEdgeColor', opts.color.PortL, ...
             'MarkerFaceAlpha', 0.6, 'MarkerEdgeAlpha', 1, ...
             'LineWidth', 1.5);
-        scatter(ax, obj.MTStatControl.Median(ind_r), obj.MTStatChemo.Median(ind_r), ...
+        scatter(ax, obj.MTStat.Control.Median(ind_r), obj.MTStat.Chemo.Median(ind_r), ...
             [.5 1 1.5]*24, 'Marker', 'o', 'MarkerFaceColor', opts.color.PortR, 'MarkerEdgeColor', opts.color.PortR, ...
             'MarkerFaceAlpha', 0.6, 'MarkerEdgeAlpha', 1, ...
             'LineWidth', 1.5);
@@ -807,7 +809,7 @@ plot_shuttle_time_violin(ha13, obj, cp, opts);
 
         violinplot(thisSTLog, ["Control", "Chemo"], ...
             'ViolinColor', [opts.color.Control; opts.color.Treat], ...
-            'ScatterSize', 2, 'ShowMedian', false, 'ShowWhisker', false, 'ShowBox', false);
+            'ScatterSize', 2, 'ShowMedian', false, 'ShowWhisker', false, 'ShowBox', false, 'BandWidth', obj.BandWidth);
 
         scatter(ax, 1:2, median(thisSTLog, 'omitnan'), 40, ...
             ones(2, 3), ...

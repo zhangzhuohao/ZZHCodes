@@ -33,15 +33,13 @@ set(gcf, 'unit', 'centimeters', 'position', [2 .7 39.5 25.4], 'paperpositionmode
 mycolormap = customcolormap_preset("red-white-blue");
 % mycolormap = "Turbo";
 
-uicontrol('Style', 'text', 'parent', 23, 'units', 'normalized', 'position', [0.25 0.95 0.5 0.04],...
-    'string', obj.Subject+" / "+obj.Task+" / "+obj.Sessions(1)+"_"+obj.Sessions(end), 'fontsize', 11, 'fontweight', 'bold', 'backgroundcolor', 'w');
+set_fig_title(fig, obj.Subject+" / "+obj.Task+" / "+obj.Sessions(1)+"\_"+obj.Sessions(end));
 
 %% Set axes and plot
 % Maze diagram
 ha_diagram = axes;
-set(ha_diagram, 'units', 'centimeters', 'position', [2+3*(opts.sep_row+opts.plotsize1(1))+5.5 1.35+4*(opts.sep_col+opts.plotsize1(2)), [3 6] ], 'nextplot', 'add', 'fontsize', 8);
+set(ha_diagram, 'units', 'centimeters', 'position', [2+3*(opts.sep_row+opts.plotsize1(1)) 1.8+4*(opts.sep_col+opts.plotsize1(2)), [8 4] ], 'nextplot', 'add', 'fontsize', 8);
 plot_diagram(ha_diagram, opts);
-set(ha_diagram, 'xlim', [0 6]);
 
 % Hold duration scatter
 ha_HD_scatter = axes;
@@ -180,31 +178,39 @@ ha18 = axes;
 set(ha18, 'units', 'centimeters', 'position', [.5+1*(opts.sep_row+opts.plotsize1(1)) 2+0*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8);
 plot_shuttle_time_violin(ha18, obj, opts)
 set(ha18, 'yticklabel', [], 'ylabel', [])
-
-ha19 = axes;
-set(ha19, 'units', 'centimeters', 'position', [1.5+3*(opts.sep_row+opts.plotsize1(1)) 2.5+4*(opts.sep_col+opts.plotsize1(2)), opts.plotsize2 .* [3/5 1]], 'nextplot', 'add', 'fontsize', 8);
-plot_interruption_early_late(ha19, obj, opts)
+% 
+% ha19 = axes;
+% set(ha19, 'units', 'centimeters', 'position', [1.5+3*(opts.sep_row+opts.plotsize1(1)) 2.5+4*(opts.sep_col+opts.plotsize1(2)), opts.plotsize2 .* [3/5 1]], 'nextplot', 'add', 'fontsize', 8);
+% plot_interruption_early_late(ha19, obj, opts)
 
 %% ha1. Make a diagram of the setup
     function plot_diagram(ax, opts)
 
-        x = [1 3 5 8 9   11  11  9   8 5 3 1 1];
-        y = [0 0 2 2 1.2 1.2 4.8 4.8 4 4 6 6 0];
+        line(ax, [1 1], [0 6], 'color', 'k', 'linewidth', 2);
+        line(ax, [1 3], [0 0], 'color', 'k', 'linewidth', 2);
+        line(ax, [3 5], [0 2], 'color', 'k', 'linewidth', 2);
+        line(ax, [5 8], [2 2], 'color', 'k', 'linewidth', 2);
+        line(ax, [1 3], [6 6], 'color', 'k', 'linewidth', 2);
+        line(ax, [3 5], [6 4], 'color', 'k', 'linewidth', 2);
+        line(ax, [5 8], [4 4], 'color', 'k', 'linewidth', 2);
 
-        patch(ax, 'XData', y, 'YData', x, 'FaceColor', 'none', 'EdgeColor', 'k', 'linewidth', 2);
+        line(ax, [8 9], [4 4.8], 'color', 'k', 'linewidth', 2);
+        line(ax, [8 9], [2 1.2], 'color', 'k', 'linewidth', 2);
+        line(ax, [9 11], [4.8 4.8], 'color', 'k', 'linewidth', 2);
+        line(ax, [9 11], [1.2 1.2], 'color', 'k', 'linewidth', 2);
+        line(ax, [11 11], [1.2 4.8], 'color', 'k', 'linewidth', 2);
 
-        viscircles(ax, [3, 9.6], 0.3, 'color', 'k', 'LineWidth', 1);
-        text(ax, 3, 8.8, 'Init', 'FontWeight','bold', 'HorizontalAlignment', 'center');
-        viscircles(ax, [3, 3.5], 0.3,  'color', 'k', 'LineWidth', 1);
-        text(ax, 3, 4.5, 'Cent', 'FontWeight', 'bold', 'HorizontalAlignment', 'center');
+        viscircles(ax, [9.6, 3], 0.3, 'color', 'k', 'LineWidth', 1);
+        text(ax, 8.6, 3, 'Init', 'FontWeight','bold', 'HorizontalAlignment', 'center');
+        viscircles(ax, [3.5, 3], 0.3,  'color', 'k', 'LineWidth', 1);
+        text(ax, 3.9, 3, 'Cent', 'FontWeight', 'bold');
 
-        viscircles(ax, [1.5, 3], 0.3, 'color', opts.color.PortR);
-        text(ax, 1.5, 2.2, 'Right', 'FontWeight','bold', 'HorizontalAlignment', 'center', 'Color', opts.color.PortR);
-        viscircles(ax, [4.5, 3], 0.3,  'color', opts.color.PortL);
-        text(ax, 4.5, 2.2, 'Left', 'FontWeight', 'bold', 'HorizontalAlignment', 'center', 'Color', opts.color.PortL);
+        viscircles(ax, [3, 1.5], 0.3, 'color', opts.color.PortL);
+        text(ax, 1.2, 1.5, 'Left', 'FontWeight','bold', 'HorizontalAlignment', 'left', 'Color', opts.color.PortL);
+        viscircles(ax, [3, 4.5], 0.3,  'color', opts.color.PortR);
+        text(ax, 1.2, 4.5, 'Right', 'FontWeight', 'bold', 'HorizontalAlignment', 'left', 'Color', opts.color.PortR);
 
-        set(ax, 'Color', 'none', 'XColor', 'none', 'YColor', 'none', 'ylim', [0 12], 'xlim', [0 6]);
-    end
+        set(ax, 'XColor', 'none', 'YColor', 'none', 'ylim', [0 6], 'xlim', [0 12]);    end
 
 %% ha2. Plot every trial's hold duration during training
     function plot_hold_duration_scatter(ax, obj, opts)
@@ -290,7 +296,7 @@ plot_interruption_early_late(ha19, obj, opts)
 
         ax.XLabel.String = 'Time in training (s)';
         ax.YLabel.String = 'Reaction time (s)';
-        set(ax, 'xlim', [0 opts.trial_ticks(end)+5], 'ylim', [0 obj.Bins.RT(end)], 'ticklength', [0.01 0.1]);
+        set(ax, 'xlim', [0 opts.trial_ticks(end)+5], 'ylim', [0 .6], 'ticklength', [0.01 0.1]);
     end
 
 %% ha3. Plot correct trial's reaction during training
@@ -452,7 +458,7 @@ plot_interruption_early_late(ha19, obj, opts)
 
         violinplot({thisHD(:, 2:2:end), thisHD(:, 1:2:end)}, obj.Sessions, ...
             'ViolinColor', {repmat(opts.color.PortR, obj.NumSessions, 1), repmat(opts.color.PortL, obj.NumSessions, 1)}, ...
-            'ScatterSize', 4, 'ShowMedian', false, 'ShowWhisker', false, 'ShowBox', false, 'Bandwidth', 0.1);
+            'ScatterSize', 4, 'ShowMedian', false, 'ShowWhisker', false, 'ShowBox', false, 'BandWidth', opts.bandwidth);
 
         ax.XLabel.String = 'Sessions';
         ax.YLabel.String = 'Hold duration (s)';
@@ -488,7 +494,7 @@ plot_interruption_early_late(ha19, obj, opts)
         thisRT(1, all(isnan(thisRT))) = 0;
         violinplot({thisRT(:, 2:2:end), thisRT(:, 1:2:end)}, obj.Sessions, ...
             'ViolinColor', {repmat(opts.color.PortR, obj.NumSessions, 1), repmat(opts.color.PortL, obj.NumSessions, 1)}, ...
-            'ScatterSize', 4, 'ShowMedian', false, 'ShowWhisker', false, 'ShowBox', false);
+            'ScatterSize', 4, 'ShowMedian', false, 'ShowWhisker', false, 'ShowBox', false, 'BandWidth', opts.bandwidth);
         
         session_order = [1:obj.NumSessions; 1:obj.NumSessions];
         session_order = session_order(:);
@@ -498,7 +504,7 @@ plot_interruption_early_late(ha19, obj, opts)
 
         ax.XLabel.String = 'Sessions';
         ax.YLabel.String = 'Reaction time (s)';
-        set(ax, 'xlim', [.5 obj.NumSessions+.5], 'ylim', [0 obj.Bins.RT(end)], 'xtick', 1:obj.NumSessions, ...
+        set(ax, 'xlim', [.5 obj.NumSessions+.5], 'ylim', [0 .6], 'xtick', 1:obj.NumSessions, ...
             'xticklabel', opts.session_date, 'ticklength', [0.01 0.1], 'box', 'off');
     end
 
@@ -529,7 +535,7 @@ plot_interruption_early_late(ha19, obj, opts)
         thisMT(1, all(isnan(thisMT))) = 0;
         violinplot({thisMT(:, 2:2:end), thisMT(:, 1:2:end)}, obj.Sessions, ...
             'ViolinColor', {repmat(opts.color.PortR, obj.NumSessions, 1), repmat(opts.color.PortL, obj.NumSessions, 1)}, ...
-            'ScatterSize', 4, 'ShowMedian', false, 'ShowWhisker', false, 'ShowBox', false);
+            'ScatterSize', 4, 'ShowMedian', false, 'ShowWhisker', false, 'ShowBox', false, 'BandWidth', opts.bandwidth);
 
         session_order = [1:obj.NumSessions; 1:obj.NumSessions];
         session_order = session_order(:);
@@ -569,7 +575,7 @@ plot_interruption_early_late(ha19, obj, opts)
         thisSTLog(1, all(isnan(thisSTLog))) = 0;
         violinplot(thisSTLog, obj.Sessions, ...
             'ViolinColor', zeros(obj.NumSessions, 3), ...
-            'ScatterSize', 4, 'ShowMedian', false, 'ShowWhisker', false, 'ShowBox', false);
+            'ScatterSize', 4, 'ShowMedian', false, 'ShowWhisker', false, 'ShowBox', false, 'BandWidth', opts.bandwidth);
 
         scatter(ax, 1:obj.NumSessions, median(thisSTLog, 'omitnan'), 24, ...
             repmat([1 1 1], obj.NumSessions, 1), ...
@@ -592,13 +598,14 @@ plot_interruption_early_late(ha19, obj, opts)
         patch(ax, 'XData', [dcz_ind-.5 dcz_ind-.5 dcz_ind+.5 dcz_ind+.5]', 'YData', repmat([0; 100; 100; 0], 1, num_dcz), ...
             'FaceColor', opts.color.Treat, 'FaceAlpha', 0.2, 'EdgeColor', 'none');
 
+        stat = obj.RTStat.Session;
         for s_this = 1:obj.NumSessions
             for p_this = 1:2
                 plot([s_this-0.3 s_this s_this+0.3], ...
-                    obj.RTStat.Median(obj.RTStat.Port==obj.Ports(p_this) & obj.RTStat.Sessions==obj.Sessions(s_this) & obj.RTStat.thisFP~=0), ...
+                    stat.Median(stat.Port==obj.Ports(p_this) & stat.Sessions==obj.Sessions(s_this) & stat.thisFP~=0), ...
                     'Color', [eval("opts.color.Port"+obj.Ports(p_this)) 0.6], 'LineWidth', 1.5);
                 scatter([s_this-0.3 s_this s_this+0.3], ...
-                    obj.RTStat.Median(obj.RTStat.Port==obj.Ports(p_this) & obj.RTStat.Sessions==obj.Sessions(s_this) & obj.RTStat.thisFP~=0), ...
+                    stat.Median(stat.Port==obj.Ports(p_this) & stat.Sessions==obj.Sessions(s_this) & stat.thisFP~=0), ...
                     6*(obj.MixedFP+0.5), repmat(eval("opts.color.Port"+obj.Ports(p_this)), 3, 1), 'filled', 'Marker', 'o', ...
                    'MarkerEdgeAlpha', 0.8, 'MarkerFaceAlpha', 0.8);
             end
@@ -620,13 +627,14 @@ plot_interruption_early_late(ha19, obj, opts)
         patch(ax, 'XData', [dcz_ind-.5 dcz_ind-.5 dcz_ind+.5 dcz_ind+.5]', 'YData', repmat([0; 100; 100; 0], 1, num_dcz), ...
             'FaceColor', opts.color.Treat, 'FaceAlpha', 0.2, 'EdgeColor', 'none');
 
+        stat = obj.HDStat.Session;
         for s_this = 1:obj.NumSessions
             for p_this = 1:length(obj.Ports)
                 plot([s_this-0.3 s_this s_this+0.3], ...
-                    obj.HDStat.IQR(obj.HDStat.Port==obj.Ports(p_this) & obj.HDStat.Sessions==obj.Sessions(s_this) & obj.HDStat.thisFP~=0), ...
+                    stat.IQR(stat.Port==obj.Ports(p_this) & stat.Sessions==obj.Sessions(s_this) & stat.thisFP~=0), ...
                     'Color', [eval("opts.color.Port"+obj.Ports(p_this)) 0.6], 'LineWidth', 1.5);
                 scatter([s_this-0.3 s_this s_this+0.3], ...
-                    obj.HDStat.IQR(obj.HDStat.Port==obj.Ports(p_this) & obj.HDStat.Sessions==obj.Sessions(s_this) & obj.HDStat.thisFP~=0), ...
+                    stat.IQR(stat.Port==obj.Ports(p_this) & stat.Sessions==obj.Sessions(s_this) & stat.thisFP~=0), ...
                     6*(obj.MixedFP+0.5), repmat(eval("opts.color.Port"+obj.Ports(p_this)), 3, 1), 'filled', 'Marker', 'o', ...
                    'MarkerEdgeAlpha', 0.8, 'MarkerFaceAlpha', 0.8);
             end
@@ -634,7 +642,7 @@ plot_interruption_early_late(ha19, obj, opts)
 
         ax.XLabel.String = 'Sessions';
         ax.YLabel.String = 'Hold duration IQR (s)';
-        set(ax, 'xlim', [.5 obj.NumSessions+.5], 'ylim', [0 max(obj.HDStat.IQR)*1.5], 'xtick', 1:obj.NumSessions, ...
+        set(ax, 'xlim', [.5 obj.NumSessions+.5], 'ylim', [0 max(stat.IQR)*1.5], 'xtick', 1:obj.NumSessions, ...
             'xticklabel', opts.session_date, 'ticklength', [0.01 0.1], 'box', 'off');
     end
 
@@ -646,8 +654,8 @@ plot_interruption_early_late(ha19, obj, opts)
 
         for s_this = 1:obj.NumSessions
             for fp_this = 1:length(obj.MixedFP)
-                hd_l(:, s_this + obj.NumSessions*(fp_this-1)) = obj.HDPDF{s_this}{fp_this, 1};
-                hd_r(:, s_this + obj.NumSessions*(fp_this-1)) = obj.HDPDF{s_this}{fp_this, 2};
+                hd_l(:, s_this + obj.NumSessions*(fp_this-1)) = obj.HDPDF.Session{s_this}{fp_this, 1}.f;
+                hd_r(:, s_this + obj.NumSessions*(fp_this-1)) = obj.HDPDF.Session{s_this}{fp_this, 2}.f;
             end
         end
 
@@ -697,12 +705,7 @@ plot_interruption_early_late(ha19, obj, opts)
 
         p_this = obj.Ports==upper(string(port));
 
-        if all(all(cellfun(@(x) length(x)>=100, obj.HDSortedNone)))
-            HDs = obj.HDSortedNone;
-        else
-            HDs = cellfun(@(x, y) [x; y], obj.HDSortedNone, obj.HDSortedSaline, 'UniformOutput', false);
-        end
-
+        HDs = obj.HDSorted.All;
         if ~any(any(cellfun(@(x) length(x)>=100, HDs)))
             return
         end
@@ -742,12 +745,7 @@ plot_interruption_early_late(ha19, obj, opts)
 
         p_this = obj.Ports==upper(string(port));
 
-        if all(all(cellfun(@(x) length(x)>=100, obj.HDSortedNone)))
-            HDs = obj.HDSortedNone;
-        else
-            HDs = cellfun(@(x, y) [x; y], obj.HDSortedNone, obj.HDSortedSaline, 'UniformOutput', false);
-        end
-
+        HDs = obj.HDSorted.All;
         if ~any(any(cellfun(@(x) length(x)>=100, HDs)))
             return
         end

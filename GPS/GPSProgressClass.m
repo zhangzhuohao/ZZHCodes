@@ -344,7 +344,7 @@ classdef GPSProgressClass
                     ind = i + (j - 1) * (length(obj.MixedFP) + 1);
                     if i <= length(obj.MixedFP)
                         if lb=="All"
-                            ind_this = obj.Performance.TargetPort==obj.Ports(j) & obj.Performance.Foreperiod==obj.MixedFP(i);
+                            ind_this = obj.Performance.TargetPort==obj.Ports(j) & obj.Performance.Foreperiod==obj.MixedFP(i) & ismember(obj.Performance.Sessions, obj.Sessions(obj.Label~="Chemo"));
                         else
                             ind_this = obj.Performance.TargetPort==obj.Ports(j) & obj.Performance.Foreperiod==obj.MixedFP(i) & ismember(obj.Performance.Sessions, obj.Sessions(obj.Label==lb));
                         end
@@ -356,7 +356,7 @@ classdef GPSProgressClass
                         WrongRatio(ind)      = obj.Performance.WrongRatio(ind_this)'     * obj.Performance.NumTrialsSorted(ind_this) / NumTrialsSorted(ind);
                     else
                         if lb=="All"
-                            ind_this = obj.Performance.TargetPort==obj.Ports(j) & obj.Performance.Foreperiod==0;
+                            ind_this = obj.Performance.TargetPort==obj.Ports(j) & obj.Performance.Foreperiod==0 & ismember(obj.Performance.Sessions, obj.Sessions(obj.Label~="Chemo"));
                         else
                             ind_this = obj.Performance.TargetPort==obj.Ports(j) & obj.Performance.Foreperiod==0 & ismember(obj.Performance.Sessions, obj.Sessions(obj.Label==lb));
                         end
@@ -372,7 +372,7 @@ classdef GPSProgressClass
 
             ind = length(Foreperiod);
             if lb=="All"
-                ind_this = obj.Performance.TargetPort=="Both" & obj.Performance.Foreperiod==0;
+                ind_this = obj.Performance.TargetPort=="Both" & obj.Performance.Foreperiod==0 & ismember(obj.Performance.Sessions, obj.Sessions(obj.Label~="Chemo"));
             else
                 ind_this = obj.Performance.TargetPort=="Both" & obj.Performance.Foreperiod==0 & ismember(obj.Performance.Sessions, obj.Sessions(obj.Label==lb));
             end
@@ -399,18 +399,18 @@ classdef GPSProgressClass
             data_origin = beh.(variable);
             data_sorted = cell(length(obj.MixedFP), length(obj.Ports));
 
-            [~, ~, indrmv] = rmoutliers_custome(data_origin);
+%             [~, ~, indrmv] = rmoutliers_custome(data_origin);
 
             for port = 1:length(obj.Ports)
                 for fp = 1:length(obj.MixedFP)
                     if lb=="All"
-                        ind_this = beh.FP==obj.MixedFP(fp) & beh.Stage==1 & eval("obj.Ind." + perf + obj.Ports(port));
+                        ind_this = beh.FP==obj.MixedFP(fp) & beh.Stage==1 & beh.Label~="Chemo" & eval("obj.Ind." + perf + obj.Ports(port));
                     else
                         ind_this = beh.FP==obj.MixedFP(fp) & beh.Stage==1 & beh.Label==lb & eval("obj.Ind." + perf + obj.Ports(port));
                     end
-                    data_this = data_origin(setdiff(find(ind_this), indrmv));
+%                     data_this = data_origin(setdiff(find(ind_this), indrmv));
 
-                    data_sorted{fp, port} = data_this;
+                    data_sorted{fp, port} = data_origin(ind_this);
                 end
             end
         end % sortData
@@ -420,7 +420,7 @@ classdef GPSProgressClass
             Vars = ["RT", "MT", "HD", "CT"];
             VarsB = ["RT", "MovementTime", "HoldDuration", "ChoiceTime"];
             Perfs = ["port", "correct", "port", "correct"];
-            Labels = ["Control", "Chemo"];
+            Labels = ["All", "Control", "Chemo"];
 
             for v = 1:length(Vars)
                 for l = 1:length(Labels)
@@ -443,7 +443,7 @@ classdef GPSProgressClass
 
             for i = 1:num_entry
                 if lb=="All"
-                    ind_this = stat_session.thisFP==thisFP(i) & stat_session.Port==Port(i);
+                    ind_this = stat_session.thisFP==thisFP(i) & stat_session.Port==Port(i) & ismember(stat_session.Sessions, obj.Sessions(obj.Label~="Chemo"));
                 else
                     ind_this = stat_session.thisFP==thisFP(i) & stat_session.Port==Port(i) & ismember(stat_session.Sessions, obj.Sessions(obj.Label==lb));
                 end
@@ -518,7 +518,7 @@ classdef GPSProgressClass
 
         function obj = getAllKDEs(obj, cal_ci)
 
-            Vars = ["RT", "MT", "HD", "CT"];
+            Vars = ["RT", "MT", "HD"];
             VarsB = ["RT", "MovementTime", "HoldDuration", "ChoiceTime"];
             Perfs = ["port", "correct", "port", "correct"];
             Labels = ["Control", "Chemo"];
