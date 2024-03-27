@@ -458,7 +458,7 @@ set(ha18, 'yticklabel', [], 'ylabel', [])
 
         violinplot({thisHD(:, 2:2:end), thisHD(:, 1:2:end)}, obj.Sessions, ...
             'ViolinColor', {repmat(opts.color.PortR, obj.NumSessions, 1), repmat(opts.color.PortL, obj.NumSessions, 1)}, ...
-            'ScatterSize', 4, 'ShowMedian', false, 'ShowWhisker', false, 'ShowBox', false, 'BandWidth', opts.bandwidth);
+            'MarkerSize', 2, 'ShowMedian', false, 'ShowWhisker', false, 'ShowBox', false, 'BandWidth', opts.bandwidth);
 
         ax.XLabel.String = 'Sessions';
         ax.YLabel.String = 'Hold duration (s)';
@@ -494,7 +494,7 @@ set(ha18, 'yticklabel', [], 'ylabel', [])
         thisRT(1, all(isnan(thisRT))) = 0;
         violinplot({thisRT(:, 2:2:end), thisRT(:, 1:2:end)}, obj.Sessions, ...
             'ViolinColor', {repmat(opts.color.PortR, obj.NumSessions, 1), repmat(opts.color.PortL, obj.NumSessions, 1)}, ...
-            'ScatterSize', 4, 'ShowMedian', false, 'ShowWhisker', false, 'ShowBox', false, 'BandWidth', opts.bandwidth);
+            'MarkerSize', 4, 'ShowMedian', false, 'ShowWhisker', false, 'ShowBox', false, 'BandWidth', opts.bandwidth);
         
         session_order = [1:obj.NumSessions; 1:obj.NumSessions];
         session_order = session_order(:);
@@ -535,7 +535,7 @@ set(ha18, 'yticklabel', [], 'ylabel', [])
         thisMT(1, all(isnan(thisMT))) = 0;
         violinplot({thisMT(:, 2:2:end), thisMT(:, 1:2:end)}, obj.Sessions, ...
             'ViolinColor', {repmat(opts.color.PortR, obj.NumSessions, 1), repmat(opts.color.PortL, obj.NumSessions, 1)}, ...
-            'ScatterSize', 4, 'ShowMedian', false, 'ShowWhisker', false, 'ShowBox', false, 'BandWidth', opts.bandwidth);
+            'MarkerSize', 2, 'ShowMedian', false, 'ShowWhisker', false, 'ShowBox', false, 'BandWidth', opts.bandwidth);
 
         session_order = [1:obj.NumSessions; 1:obj.NumSessions];
         session_order = session_order(:);
@@ -575,7 +575,7 @@ set(ha18, 'yticklabel', [], 'ylabel', [])
         thisSTLog(1, all(isnan(thisSTLog))) = 0;
         violinplot(thisSTLog, obj.Sessions, ...
             'ViolinColor', zeros(obj.NumSessions, 3), ...
-            'ScatterSize', 4, 'ShowMedian', false, 'ShowWhisker', false, 'ShowBox', false, 'BandWidth', opts.bandwidth);
+            'MarkerSize', 2, 'ShowMedian', false, 'ShowWhisker', false, 'ShowBox', false, 'BandWidth', opts.bandwidth);
 
         scatter(ax, 1:obj.NumSessions, median(thisSTLog, 'omitnan'), 24, ...
             repmat([1 1 1], obj.NumSessions, 1), ...

@@ -433,8 +433,8 @@ plot_reaction_time_collected(ha13, obj, opts);
         yline(ax, .5, 'Color', [.7 .7 .7], 'LineWidth', 1.5, 'LineStyle', '--');
 
         violinplot({thisRT(:, 4:6), thisRT(:, 1:3)}, {'Short', 'Med', 'Long'}, ...
-            'ViolinColor', {repmat(opts.color.PortR, 3, 1), repmat(opts.color.PortL, 3, 1)}, 'ScatterSize', 6, ...
-            'ShowMedian', false, 'ShowWhisker', false, 'ShowBox', false);
+            'ViolinColor', {repmat(opts.color.PortR, 3, 1), repmat(opts.color.PortL, 3, 1)}, 'MarkerSize', 6, ...
+            'ShowMedian', false, 'ShowWhisker', false, 'ShowBox', false, 'BandWidth', obj.BandWidth);
 
         scatter(ax, [1 2 3 1 2 3], median(thisRT, 'omitnan'), 24, [repmat(opts.color.PortL, 3, 1); repmat(opts.color.PortR, 3, 1)], 'filled', 'LineWidth', 1, 'MarkerEdgeColor', [.3 .3 .3])
 

@@ -39,7 +39,7 @@ disp('Test 3 passed ok');
 disp('Test 4: Test two sided violin plots. Japan is being compared.');
 figure
 C = colororder;
-vs4 = violinplot({thisData,repmat(thisData(:,5),1,7)},catnames_labels,'ViolinColor',{C,C(5,:)},'ViolinAlpha',{0.3 0.3}, 'ScatterSize', 8);
+vs4 = violinplot({thisData,repmat(thisData(:,5),1,7)},catnames_labels,'ViolinColor',{C,C(5,:)},'ViolinAlpha',{0.3 0.3});
 xlim([0.5, 7.5]);
 disp('Test 4 passed ok');
 

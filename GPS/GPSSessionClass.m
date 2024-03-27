@@ -48,6 +48,8 @@ classdef GPSSessionClass
         HDCDF = [];
         CTPDF = []; % choice time
         CTCDF = [];
+        LogSTPDF = []; % Log10 shuttle time
+        LogSTCDF = [];
     end
 
     properties (Constant)
@@ -80,6 +82,7 @@ classdef GPSSessionClass
         Bins
 
         ShuttleTime % check
+        ShuttleTimeSplit
         ShuttleTimeDistribution % check
         ShuttleTimeStat
 
@@ -300,6 +303,10 @@ classdef GPSSessionClass
             % find the last poke out time before center poke
             shuttle_time = cellfun(@(x, y) y(1)-x(end), obj.InitPokeOutTime, obj.CentPokeInTime);
             value = shuttle_time;
+        end
+
+        function value = get.ShuttleTimeSplit(obj)
+            value = obj.splitData("ShuttleTime");
         end
 
         function value = get.ShuttleTimeStat(obj)
@@ -643,7 +650,6 @@ classdef GPSSessionClass
         end
 
         %% Data processing
-
         function data_sorted = sortData(obj, variable, perf)
             % Sort input data (RT, MovementTime, ChoiceTime, HoldDuration) by (FP, Port).
             % inputs:
@@ -653,6 +659,7 @@ classdef GPSSessionClass
             data_origin = obj.(variable);
             data_sorted = cell(length(obj.MixedFP), length(obj.Ports));
 
+            ind_valid = ~isnan(data_origin);
 %             [~, ~, indrmv] = rmoutliers_custome(data_origin);
 
             for port = 1:length(obj.Ports)
@@ -660,39 +667,58 @@ classdef GPSSessionClass
                     ind_this = obj.FP==obj.MixedFP(fp) & obj.Stage==1 & eval("obj.Ind." + perf + obj.Ports(port));
 %                     data_this = data_origin(setdiff(find(ind_this), indrmv));
 
-                    data_sorted{fp, port} = data_origin(ind_this);
+                    data_sorted{fp, port} = data_origin(ind_this & ind_valid);
                 end
             end
         end % sortData
 
+        function data_splited = splitData(obj, variable)
+            % Sort input data (RT, MovementTime, ChoiceTime, HoldDuration) by (FP, Port).
+            % inputs:
+            %       variable: string (1,1), should be a member in ["RT", "MovementTime", "ChoiceTime", "HoldDuration"]
+            %       perf: string (1,1), should be a member in ["correct", "late", "wrong", "premature", "port"]; if "port" is used, all trials will be taken
+
+            data_origin = obj.(variable);
+            data_splited = cell(3, 1);
+
+            data_this = data_origin(obj.Stage==1);
+            num_data = length(data_this);
+            ind = 1:num_data;
+%             [~, ~, indrmv] = rmoutliers_custome(data_origin);
+
+            for i = 1:3
+                ind_range = [i-1 i] * num_data/3;
+                ind_this = ind(ind>ind_range(1) & ind<=ind_range(2));
+                data_splited{i} = data_origin(ind_this);
+            end
+        end % splitData
+
         %% get PDFs and CDFs
-        function data_pdf = getPDF(obj, variable, perf, cal_ci)
-            bin_edges = obj.Bins.(variable);
-            data_sorted = obj.sortData(variable, perf);
-            data_pdf = cell(length(obj.MixedFP), length(obj.Ports));
+        function data_pdf = getPDF(obj, data, bin_edges, var_name, cal_ci)
+            sz = size(data);
+            data_pdf = cell(sz(1), sz(2));
 
             if cal_ci
-                fprintf("... Calculate 95CI for PDF of %s ... \n", variable);
+                fprintf("... Calculate 95CI for PDF of %s ... \n", var_name);
             end
-            for j = 1:length(obj.Ports)
-                for i = 1:length(obj.MixedFP)
-                    data_this = data_sorted{i, j};
+            for i = 1:sz(1)
+                for j = 1:sz(2)
+                    data_this = data{i, j};
                     data_pdf{i, j} = obj.calKDE(data_this, bin_edges, 'pdf', cal_ci);
                 end
             end
         end % getPDF
 
-        function data_cdf = getCDF(obj, variable, perf, cal_ci)
-            bin_edges = obj.Bins.(variable);
-            data_sorted = obj.sortData(variable, perf);
-            data_cdf = cell(length(obj.MixedFP), length(obj.Ports));
+        function data_cdf = getCDF(obj, data, bin_edges, var_name, cal_ci)
+            sz = size(data);
+            data_cdf = cell(sz(1), sz(2));
 
             if cal_ci
-                fprintf("... Calculate 95CI for CDF of %s ... \n", variable);
+                fprintf("... Calculate 95CI for CDF of %s ... \n", var_name);
             end
-            for j = 1:length(obj.Ports)
-                for i = 1:length(obj.MixedFP)
-                    data_this = data_sorted{i, j};
+            for i = 1:sz(1)
+                for j = 1:sz(2)
+                    data_this = data{i, j};
                     data_cdf{i, j} = obj.calKDE(data_this, bin_edges, 'cdf', cal_ci);
                 end
             end
@@ -715,14 +741,17 @@ classdef GPSSessionClass
 
         function obj = getAllKDEs(obj, cal_ci)
 
-            obj.RTPDF = obj.getPDF("RT", "port", cal_ci);
-            obj.RTCDF = obj.getCDF("RT", "port", cal_ci);
-            obj.MTPDF = obj.getPDF("MovementTime", "correct", cal_ci);
-            obj.MTCDF = obj.getCDF("MovementTime", "correct", cal_ci);
-            obj.HDPDF = obj.getPDF("HoldDuration", "port", cal_ci);
-            obj.HDCDF = obj.getCDF("HoldDuration", "port", cal_ci);
-            obj.CTPDF = obj.getPDF("ChoiceTime", "correct", cal_ci);
-            obj.CTCDF = obj.getCDF("ChoiceTime", "correct", cal_ci);
+            obj.RTPDF = obj.getPDF(obj.RTSorted, obj.Bins.RT, "RT", cal_ci);
+            obj.RTCDF = obj.getCDF(obj.RTSorted, obj.Bins.RT, "RT", cal_ci);
+            obj.MTPDF = obj.getPDF(obj.MovementTimeSorted, obj.Bins.MovementTime, "MT", cal_ci);
+            obj.MTCDF = obj.getCDF(obj.MovementTimeSorted, obj.Bins.MovementTime, "MT", cal_ci);
+            obj.HDPDF = obj.getPDF(obj.HoldDurationSorted, obj.Bins.HoldDuration, "HD", cal_ci);
+            obj.HDCDF = obj.getCDF(obj.HoldDurationSorted, obj.Bins.HoldDuration, "HD", cal_ci);
+            obj.CTPDF = obj.getPDF(obj.ChoiceTimeSorted, obj.Bins.ChoiceTime, "CT", cal_ci);
+            obj.CTCDF = obj.getCDF(obj.ChoiceTimeSorted, obj.Bins.ChoiceTime, "CT", cal_ci);
+            logST = cellfun(@log10, obj.ShuttleTimeSplit, 'UniformOutput', false);
+            obj.LogSTPDF = obj.getPDF(logST, obj.Bins.ShuttleTimeLog, "LogST", cal_ci);
+            obj.LogSTCDF = obj.getCDF(logST, obj.Bins.ShuttleTimeLog, "LogST", cal_ci);
 
         end % getAllKDEs
 

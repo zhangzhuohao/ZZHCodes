@@ -31,16 +31,19 @@ classdef GPSProgressClass
         MTSorted
         HDSorted
         CTSorted
+        STSplit
 
         RTPDF
         MTPDF
         HDPDF
         CTPDF
+        LogSTPDF
 
         RTCDF
         MTCDF
         HDCDF
         CTCDF
+        LogSTCDF
 
         Interruption
     end
@@ -63,7 +66,7 @@ classdef GPSProgressClass
     end
 
     methods
-        function obj = GPSProgressClass(SessionClassAll, CalKDE)
+        function obj = GPSProgressClass(SessionClassAll)
             %UNTITLED Construct an instance of this class
             %   Detailed explanation goes here
             obj.Subject             = string(unique(cellfun(@(x) x.Subject, SessionClassAll, 'UniformOutput', false)));
@@ -174,16 +177,22 @@ classdef GPSProgressClass
 
             obj = obj.gatherAllSorted();
 
+            % Splited shuttle time
+            obj.STSplit.Session     = cellfun(@(x) x.ShuttleTimeSplit, SessionClassAll, 'UniformOutput', false);
+            obj = obj.gatherAllSplit();
+
             % KDEs
             obj.RTPDF.Session       = cellfun(@(x) x.RTPDF, SessionClassAll, 'UniformOutput', false);
             obj.HDPDF.Session       = cellfun(@(x) x.HDPDF, SessionClassAll, 'UniformOutput', false);
             obj.MTPDF.Session       = cellfun(@(x) x.MTPDF, SessionClassAll, 'UniformOutput', false);
             obj.CTPDF.Session       = cellfun(@(x) x.CTPDF, SessionClassAll, 'UniformOutput', false);
+            obj.LogSTPDF.Session       = cellfun(@(x) x.LogSTPDF, SessionClassAll, 'UniformOutput', false);
 
             obj.RTCDF.Session       = cellfun(@(x) x.RTCDF, SessionClassAll, 'UniformOutput', false);
             obj.HDCDF.Session       = cellfun(@(x) x.HDCDF, SessionClassAll, 'UniformOutput', false);
             obj.MTCDF.Session       = cellfun(@(x) x.MTCDF, SessionClassAll, 'UniformOutput', false);
             obj.CTCDF.Session       = cellfun(@(x) x.CTCDF, SessionClassAll, 'UniformOutput', false);
+            obj.LogSTPDF.Session       = cellfun(@(x) x.LogSTPDF, SessionClassAll, 'UniformOutput', false);
 
             obj = obj.getAllKDEs(0);
 
@@ -389,45 +398,50 @@ classdef GPSProgressClass
 
     end
         %% Data processing
-        function data_sorted = sortData(obj, variable, perf, lb)
-            % Sort input data (RT, MovementTime, ChoiceTime, HoldDuration) by (FP, Port).
-            % inputs:
-            %       variable: string (1,1), should be a member in ["RT", "MovementTime", "ChoiceTime", "HoldDuration"]
-            %       perf: string (1,1), should be a member in ["correct", "late", "wrong", "premature", "port"]; if "port" is used, all trials will be taken
-
-            beh = obj.BehavTable;
-            data_origin = beh.(variable);
-            data_sorted = cell(length(obj.MixedFP), length(obj.Ports));
-
-%             [~, ~, indrmv] = rmoutliers_custome(data_origin);
-
-            for port = 1:length(obj.Ports)
-                for fp = 1:length(obj.MixedFP)
-                    if lb=="All"
-                        ind_this = beh.FP==obj.MixedFP(fp) & beh.Stage==1 & beh.Label~="Chemo" & eval("obj.Ind." + perf + obj.Ports(port));
-                    else
-                        ind_this = beh.FP==obj.MixedFP(fp) & beh.Stage==1 & beh.Label==lb & eval("obj.Ind." + perf + obj.Ports(port));
-                    end
-%                     data_this = data_origin(setdiff(find(ind_this), indrmv));
-
-                    data_sorted{fp, port} = data_origin(ind_this);
-                end
-            end
-        end % sortData
-
         function obj = gatherAllSorted(obj)
 
             Vars = ["RT", "MT", "HD", "CT"];
-            VarsB = ["RT", "MovementTime", "HoldDuration", "ChoiceTime"];
-            Perfs = ["port", "correct", "port", "correct"];
             Labels = ["All", "Control", "Chemo"];
 
             for v = 1:length(Vars)
                 for l = 1:length(Labels)
-                    obj.(Vars(v)+"Sorted").(Labels(l)) = obj.sortData(VarsB(v), Perfs(v), Labels(l));
+                    if Labels(l)=="All"
+                        session_this = obj.Label~="Chemo";
+                    else
+                        session_this = obj.Label==Labels(l);
+                    end
+                    obj.(Vars(v)+"Sorted").(Labels(l)) = obj.spliceDataCell(obj.(Vars(v)+"Sorted").Session(session_this));
                 end
             end
         end % gatherSorted
+
+        function obj = gatherAllSplit(obj)
+
+            Vars = "ST";
+            Labels = ["All", "Control", "Chemo"];
+
+            for v = 1:length(Vars)
+                for l = 1:length(Labels)
+                    if Labels(l)=="All"
+                        session_this = obj.Label~="Chemo";
+                    else
+                        session_this = obj.Label==Labels(l);
+                    end
+                    obj.(Vars(v)+"Split").(Labels(l)) = obj.spliceDataCell(obj.(Vars(v)+"Split").Session(session_this));
+                end
+            end
+        end
+
+        function data_spliced = spliceDataCell(~, data_cell)
+            sz = size(data_cell{1});
+            data_spliced = cell(sz(1), sz(2));
+            for i = 1:sz(1)
+                for j = 1:sz(2)
+                    data_this = cellfun(@(x) x{i, j}(:), data_cell, 'UniformOutput', false);
+                    data_spliced{i, j} = cell2mat(data_this);
+                end
+            end
+        end
 
         %%
         function stat = gatherStat(obj, var, lb)
@@ -469,33 +483,31 @@ classdef GPSProgressClass
         end
 
         %% get PDFs and CDFs
-        function data_pdf = getPDF(obj, variable, perf, lb, cal_ci)
-            bin_edges = obj.Bins.(variable);
-            data_sorted = obj.sortData(variable, perf, lb);
-            data_pdf = cell(length(obj.MixedFP), length(obj.Ports));
+        function data_pdf = getPDF(obj, data, bin_edges, var_name, lb, cal_ci)
+            sz = size(data);
+            data_pdf = cell(sz(1), sz(2));
 
             if cal_ci
-                fprintf("... Calculate 95CI for PDF of %s at %s condition ... \n", variable, lb);
+                fprintf("... Calculate 95CI for PDF of %s at %s condition ... \n", var_name, lb);
             end
-            for j = 1:length(obj.Ports)
-                for i = 1:length(obj.MixedFP)
-                    data_this = data_sorted{i, j};
+            for i = 1:sz(1)
+                for j = 1:sz(2)
+                    data_this = data{i, j};
                     data_pdf{i, j} = obj.calKDE(data_this, bin_edges, 'pdf', cal_ci);
                 end
             end
         end % getPDF
 
-        function data_cdf = getCDF(obj, variable, perf, lb, cal_ci)
-            bin_edges = obj.Bins.(variable);
-            data_sorted = obj.sortData(variable, perf, lb);
-            data_cdf = cell(length(obj.MixedFP), length(obj.Ports));
+        function data_cdf = getCDF(obj, data, bin_edges, var_name, lb, cal_ci)
+            sz = size(data);
+            data_cdf = cell(sz(1), sz(2));
 
             if cal_ci
-                fprintf("... Calculate 95CI for CDF of %s at %s condition ... \n", variable, lb);
+                fprintf("... Calculate 95CI for CDF of %s at %s condition ... \n", var_name, lb);
             end
-            for j = 1:length(obj.Ports)
-                for i = 1:length(obj.MixedFP)
-                    data_this = data_sorted{i, j};
+            for i = 1:sz(1)
+                for j = 1:sz(2)
+                    data_this = data{i, j};
                     data_cdf{i, j} = obj.calKDE(data_this, bin_edges, 'cdf', cal_ci);
                 end
             end
@@ -519,15 +531,17 @@ classdef GPSProgressClass
         function obj = getAllKDEs(obj, cal_ci)
 
             Vars = ["RT", "MT", "HD"];
-            VarsB = ["RT", "MovementTime", "HoldDuration", "ChoiceTime"];
-            Perfs = ["port", "correct", "port", "correct"];
+            VarsB = ["RT", "MovementTime", "HoldDuration"];
             Labels = ["Control", "Chemo"];
 
-            for v = 1:length(Vars)
-                for l = 1:length(Labels)
-                    obj.(Vars(v)+"PDF").(Labels(l)) = obj.getPDF(VarsB(v), Perfs(v), Labels(l), cal_ci);
-                    obj.(Vars(v)+"CDF").(Labels(l)) = obj.getCDF(VarsB(v), Perfs(v), Labels(l), cal_ci);
+            for l = 1:length(Labels)
+                for v = 1:length(Vars)
+                    obj.(Vars(v)+"PDF").(Labels(l)) = obj.getPDF(obj.(Vars(v)+"Sorted").(Labels(l)), obj.Bins.(VarsB(v)), Vars(v), Labels(l), cal_ci);
+                    obj.(Vars(v)+"CDF").(Labels(l)) = obj.getCDF(obj.(Vars(v)+"Sorted").(Labels(l)), obj.Bins.(VarsB(v)), Vars(v), Labels(l), cal_ci);
                 end
+                logST = cellfun(@log10, obj.STSplit.(Labels(l)), 'UniformOutput', false);
+                obj.LogSTPDF = obj.getPDF(logST, obj.Bins.ShuttleTimeLog, "LogST", Labels(l), cal_ci);
+                obj.LogSTCDF = obj.getCDF(logST, obj.Bins.ShuttleTimeLog, "LogST", Labels(l), cal_ci);
             end
 
         end % getAllKDEs

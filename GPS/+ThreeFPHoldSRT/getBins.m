@@ -5,7 +5,7 @@ function bins = getBins()
 bins.width          = .002;
 bins.RT             = 0:bins.width:2;
 bins.MovementTime   = 0:bins.width:2;
-bins.HoldDuration   = 0:bins.width:2;
+bins.HoldDuration   = 0:bins.width:2.5;
 bins.ShuttleTimeLog = 0:bins.width:3;
 bins.ChoiceTime     = 0:bins.width:2.5;
 
