@@ -12,7 +12,7 @@ fig = figure(22); clf(22);
 set(gcf, 'unit', 'centimeters', 'position', [2 2 24.5 21.2], 'paperpositionmode', 'auto', 'color', 'w');
 
 uicontrol('Style', 'text', 'parent', 22, 'units', 'normalized', 'position', [0.05 0.95 0.9 0.04],...
-    'string', [obj.Subject ' / ' obj.Session ' / ' obj.Task ' / ' char(obj.Treatment)], 'fontsize', 10, 'fontweight', 'bold', 'backgroundcolor', 'w');
+    'string', [obj.Subject ' / ' obj.Session ' / ' obj.Task ' / ' char(obj.Label)], 'fontsize', 10, 'fontweight', 'bold', 'backgroundcolor', 'w');
 
 %% Set the axes and plot
 plot_size1 = [8 4];
@@ -431,12 +431,12 @@ plot_reaction_time_collected(ha13, obj, opts);
         thisRT(1, all(isnan(thisRT))) = 0;
 
         yline(ax, .5, 'Color', [.7 .7 .7], 'LineWidth', 1.5, 'LineStyle', '--');
-
-        violinplot({thisRT(:, 4:6), thisRT(:, 1:3)}, {'Short', 'Med', 'Long'}, ...
-            'ViolinColor', {repmat(opts.color.PortR, 3, 1), repmat(opts.color.PortL, 3, 1)}, 'MarkerSize', 6, ...
-            'ShowMedian', false, 'ShowWhisker', false, 'ShowBox', false, 'BandWidth', obj.BandWidth);
-
-        scatter(ax, [1 2 3 1 2 3], median(thisRT, 'omitnan'), 24, [repmat(opts.color.PortL, 3, 1); repmat(opts.color.PortR, 3, 1)], 'filled', 'LineWidth', 1, 'MarkerEdgeColor', [.3 .3 .3])
+        if all(~isnan(thisRT)>=5)
+            violinplot({thisRT(:, 4:6), thisRT(:, 1:3)}, {'Short', 'Med', 'Long'}, ...
+                'ViolinColor', {repmat(opts.color.PortR, 3, 1), repmat(opts.color.PortL, 3, 1)}, 'MarkerSize', 6, ...
+                'ShowMedian', false, 'ShowWhisker', false, 'ShowBox', false, 'BandWidth', obj.BandWidth);
+            scatter(ax, [1 2 3 1 2 3], median(thisRT, 'omitnan'), 24, [repmat(opts.color.PortL, 3, 1); repmat(opts.color.PortR, 3, 1)], 'filled', 'LineWidth', 1, 'MarkerEdgeColor', [.3 .3 .3]);
+        end
 
         ax.YLabel.String = 'Reaction time (s)';
         set(ax, 'xlim', [0 4], 'ylim', [0 .6], 'xtick', [1 2 3], 'xticklabel', {'Short', 'Med', 'Long'}, 'ticklength', [0.01 0.1], 'box', 'off');

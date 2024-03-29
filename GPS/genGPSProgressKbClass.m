@@ -36,7 +36,7 @@ for d = 1:length(Folders)
         continue
     end
     
-    %%
+    %
     SessionClassAll = cell(length(Files), 1);
     for f = 1:length(Files)
         file = Files{f};
@@ -50,7 +50,7 @@ for d = 1:length(Folders)
     [SessionDate, SortID] = sort(SessionDate);
     SessionClassAll = SessionClassAll(SortID);
 
-    %%
+    %
     ProgressClass = GPSProgressKbClass(SessionClassAll);
     ProgressClass.save(ProtocolDir);
     

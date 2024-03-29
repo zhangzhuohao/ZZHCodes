@@ -283,7 +283,7 @@ plot_hold_duration_median(ha_hd_median, obj, opts);
 
         violinplot({thisHD(:, 2:2:end), thisHD(:, 1:2:end)}, obj.Sessions, ...
             'ViolinColor', {repmat(opts.color.PortR, obj.NumSessions, 1), repmat(opts.color.PortL, obj.NumSessions, 1)}, ...
-            'ScatterSize', 4, 'ShowMedian', false, 'ShowWhisker', false, 'ShowBox', false, 'Bandwidth', 0.1);
+            'MarkerSize', 4, 'ShowMedian', false, 'ShowWhisker', false, 'ShowBox', false, 'Bandwidth', 0.1);
 
         ax.XLabel.String = 'Sessions';
         ax.YLabel.String = 'Hold duration (s)';

@@ -483,12 +483,13 @@ plot_reaction_time_collected(ha13, obj, opts);
 
         yline(ax, .5, 'Color', [.7 .7 .7], 'LineWidth', 1.5, 'LineStyle', '--');
 
-        violinplot({thisRT(:, 3:4), thisRT(:, 1:2)}, {'Cue', 'Uncue'}, ...
-            'ViolinColor', {repmat(opts.color.PortR, 2, 1), repmat(opts.color.PortL, 2, 1)}, 'ScatterSize', 6, ...
-            'ShowMedian', false, 'ShowWhisker', false, 'ShowBox', false);
-
-        scatter(ax, [1 2 1 2], median(thisRT, 'omitnan'), 24, [repmat(opts.color.PortL, 2, 1); repmat(opts.color.PortR, 2, 1)], 'filled', 'LineWidth', 1, 'MarkerEdgeColor', [.3 .3 .3])
-
+        if all(~isnan(thisRT)>=5)
+            violinplot({thisRT(:, 3:4), thisRT(:, 1:2)}, {'Cue', 'Uncue'}, ...
+                'ViolinColor', {repmat(opts.color.PortR, 2, 1), repmat(opts.color.PortL, 2, 1)}, 'MarkerSize', 6, ...
+                'ShowMedian', false, 'ShowWhisker', false, 'ShowBox', false);
+            scatter(ax, [1 2 1 2], median(thisRT, 'omitnan'), 24, [repmat(opts.color.PortL, 2, 1); repmat(opts.color.PortR, 2, 1)], 'filled', 'LineWidth', 1, 'MarkerEdgeColor', [.3 .3 .3])
+        end
+        
         ax.YLabel.String = 'Reaction time (s)';
         set(ax, 'xlim', [0 4], 'ylim', [0 .8], 'xtick', [1 2], 'xticklabel', {'Cue', 'Uncue'}, 'ticklength', [0.01 0.1], 'box', 'off');
     end

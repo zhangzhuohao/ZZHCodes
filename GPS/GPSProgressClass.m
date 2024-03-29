@@ -186,13 +186,13 @@ classdef GPSProgressClass
             obj.HDPDF.Session       = cellfun(@(x) x.HDPDF, SessionClassAll, 'UniformOutput', false);
             obj.MTPDF.Session       = cellfun(@(x) x.MTPDF, SessionClassAll, 'UniformOutput', false);
             obj.CTPDF.Session       = cellfun(@(x) x.CTPDF, SessionClassAll, 'UniformOutput', false);
-            obj.LogSTPDF.Session       = cellfun(@(x) x.LogSTPDF, SessionClassAll, 'UniformOutput', false);
+            obj.LogSTPDF.Session    = cellfun(@(x) x.LogSTPDF, SessionClassAll, 'UniformOutput', false);
 
             obj.RTCDF.Session       = cellfun(@(x) x.RTCDF, SessionClassAll, 'UniformOutput', false);
             obj.HDCDF.Session       = cellfun(@(x) x.HDCDF, SessionClassAll, 'UniformOutput', false);
             obj.MTCDF.Session       = cellfun(@(x) x.MTCDF, SessionClassAll, 'UniformOutput', false);
             obj.CTCDF.Session       = cellfun(@(x) x.CTCDF, SessionClassAll, 'UniformOutput', false);
-            obj.LogSTPDF.Session       = cellfun(@(x) x.LogSTPDF, SessionClassAll, 'UniformOutput', false);
+            obj.LogSTPDF.Session    = cellfun(@(x) x.LogSTPDF, SessionClassAll, 'UniformOutput', false);
 
             obj = obj.getAllKDEs(0);
 
@@ -410,7 +410,9 @@ classdef GPSProgressClass
                     else
                         session_this = obj.Label==Labels(l);
                     end
-                    obj.(Vars(v)+"Sorted").(Labels(l)) = obj.spliceDataCell(obj.(Vars(v)+"Sorted").Session(session_this));
+                    if any(session_this)
+                        obj.(Vars(v)+"Sorted").(Labels(l)) = obj.spliceDataCell(obj.(Vars(v)+"Sorted").Session(session_this));
+                    end
                 end
             end
         end % gatherSorted
@@ -427,7 +429,9 @@ classdef GPSProgressClass
                     else
                         session_this = obj.Label==Labels(l);
                     end
-                    obj.(Vars(v)+"Split").(Labels(l)) = obj.spliceDataCell(obj.(Vars(v)+"Split").Session(session_this));
+                    if any(session_this)
+                        obj.(Vars(v)+"Split").(Labels(l)) = obj.spliceDataCell(obj.(Vars(v)+"Split").Session(session_this));
+                    end
                 end
             end
         end
@@ -535,13 +539,16 @@ classdef GPSProgressClass
             Labels = ["Control", "Chemo"];
 
             for l = 1:length(Labels)
+                if ~contains(Labels(l), obj.Label)
+                    continue;
+                end
                 for v = 1:length(Vars)
                     obj.(Vars(v)+"PDF").(Labels(l)) = obj.getPDF(obj.(Vars(v)+"Sorted").(Labels(l)), obj.Bins.(VarsB(v)), Vars(v), Labels(l), cal_ci);
                     obj.(Vars(v)+"CDF").(Labels(l)) = obj.getCDF(obj.(Vars(v)+"Sorted").(Labels(l)), obj.Bins.(VarsB(v)), Vars(v), Labels(l), cal_ci);
                 end
                 logST = cellfun(@log10, obj.STSplit.(Labels(l)), 'UniformOutput', false);
-                obj.LogSTPDF = obj.getPDF(logST, obj.Bins.ShuttleTimeLog, "LogST", Labels(l), cal_ci);
-                obj.LogSTCDF = obj.getCDF(logST, obj.Bins.ShuttleTimeLog, "LogST", Labels(l), cal_ci);
+                obj.LogSTPDF.(Labels(l)) = obj.getPDF(logST, obj.Bins.ShuttleTimeLog, "LogST", Labels(l), cal_ci);
+                obj.LogSTCDF.(Labels(l)) = obj.getCDF(logST, obj.Bins.ShuttleTimeLog, "LogST", Labels(l), cal_ci);
             end
 
         end % getAllKDEs
