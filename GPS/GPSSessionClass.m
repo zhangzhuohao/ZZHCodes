@@ -180,7 +180,7 @@ classdef GPSSessionClass
             end
         end
 
-        function obj = set.Dose(obj,dose)
+        function obj = set.Dose(obj, dose)
             % Manually set the dose of injection
             if isnumeric(dose)
                 obj.Dose = dose;
@@ -189,12 +189,12 @@ classdef GPSSessionClass
             end
         end
 
-        function obj = set.Label(obj,label)
+        function obj = set.Label(obj, label)
             % Manually set the treatment of this session, NaN/Saline/DCZ
-            if ismember(label, {'None', 'Control', 'Chemo'})
+            if ismember(label, {'None', 'Control', 'Chemo', 'Lesion'})
                 obj.Treatment = string(label);
             else
-                error('Treatment can only be: None, Control, Chemo')
+                error('Label can only be: None, Control, Chemo, Lesion')
             end
         end
 

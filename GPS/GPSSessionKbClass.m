@@ -11,6 +11,8 @@ classdef GPSSessionKbClass
         Subject % Name of the animal, extrated from data file name
 
         ANMInfoFile
+        ANMInfo
+        SessionInfo
         
         Task % Name of task, extrated from data file name and set as {'Autoshaping', 'Wait1Hold', 'Wait1HoldCRT', 'Wait2HoldCRT', 'ThreeFPHoldCRT', 'ThreeFPHoldSRT', 'Kornblum'}
         Session % Date of this session, extrated from data file name
@@ -41,6 +43,17 @@ classdef GPSSessionKbClass
         Cued
         Guided = [];
         Filled = [];
+
+        RTPDF = []; % reaction time
+        RTCDF = [];
+        MTPDF = []; % movement time
+        MTCDF = [];
+        HDPDF = []; % hold duration
+        HDCDF = [];
+        CTPDF = []; % choice time
+        CTCDF = [];
+        LogSTPDF = []; % Log10 shuttle time
+        LogSTCDF = [];
     end
 
     properties (Constant)
@@ -63,40 +76,35 @@ classdef GPSSessionKbClass
         Experimenter % Name (initials) of the Experimenter, set manually
         Treatment % Set manually
         Dose % Set manually
-        Dilution
         Label
-        RTSortedLabels
+        SortLabels
 
         Stage % warm-up or 3FP
         Ind
         Bins
 
         ShuttleTime % check
+        ShuttleTimeSplit
         ShuttleTimeDistribution % check
         ShuttleTimeStat
 
         MovementTime
         MovementTimeSorted
-        MovementTimePDF
-        MovementTimeCDF
+        MovementTimeDistribution
         MovementTimeStat
 
         ChoiceTime
         ChoiceTimeSorted
-        ChoiceTimePDF
-        ChoiceTimeCDF
+        ChoiceTimeDistribution
         ChoiceTimeStat
 
         RT % check
         RTSorted
-        RTPDF
-        RTCDF
         RTStat % check
 
         HoldDuration %
         HoldDurationSorted
-        HoldDurationPDF
-        HoldDurationCDF
+        HoldDurationDistribution
         HoldDurationStat
 
         Interruption
@@ -123,6 +131,7 @@ classdef GPSSessionKbClass
             % Rat name
             obj.Subject = extractBefore(obj.BpodFileName, '_');
             Protocol = extractAfter(obj.BpodFileName, [obj.Subject '_']);
+            obj.Session = Protocol(end-14:end-7);
             switch Protocol(1:end-16) % e.g. 'NEW_03_Wait3FPFlash'
                 case {'GPS_08_KornblumHold'}
                     obj.Task = 'KornblumSRT';
@@ -132,18 +141,18 @@ classdef GPSSessionKbClass
                     obj.Task = 'KornblumSRTMix';
             end
 
+            obj.ANMInfoFile = AnmInfoFile;
+            obj.ANMInfo = readtable(obj.ANMInfoFile, "Sheet", "ANM", "TextType", "string");
+            obj.ANMInfo = obj.ANMInfo(strcmp(obj.ANMInfo.Name, obj.Subject), :);
+            obj.SessionInfo = readtable(obj.ANMInfoFile, "Sheet", obj.Subject, "TextType", "string");
+            obj.SessionInfo = obj.SessionInfo(strcmp(string(obj.SessionInfo.Session), obj.Session), :);
+
             % Session meta-information
-            obj.Session = Protocol(end-14:end-7);
             obj.SessionStartTime = SessionData.Info.SessionStartTime_UTC;
-            obj.NumTrials = SessionData.nTrials;
-            if isfield(SessionData.RawEvents.Trial{end}.Events, 'WavePlayer1_2') % Sometime the protocol might shut down
-                obj.NumTrials = obj.NumTrials - 1;
-            end
-            obj.Trials = (1:obj.NumTrials)';
-            obj.TrialStartTime = SessionData.TrialStartTimestamp(obj.Trials)';
 
             % Get paradigm specific trial information
             obj = feval([obj.Task '.getTrialInfo'], obj, SessionData);
+
         end
 
         %% Manually set
@@ -171,16 +180,7 @@ classdef GPSSessionKbClass
             end
         end
 
-        function obj = set.Dilution(obj,dilution)
-            % Manually set the dose of injection
-            if isnumeric(dilution)
-                obj.Dilution = dilution;
-            else
-                error('"dose" must be a scalar')
-            end
-        end
-
-        function obj = set.Label(obj,label)
+        function obj = set.Label(obj, label)
             % Manually set the treatment of this session, NaN/Saline/DCZ
             if ismember(label, {'None', 'Control', 'Chemo'})
                 obj.Treatment = string(label);
@@ -189,7 +189,7 @@ classdef GPSSessionKbClass
             end
         end
 
-        function obj = set.MixedFP(obj,  mFP)
+        function obj = set.MixedFP(obj, mFP)
             if isnumeric(mFP)
                 if mean(mFP)>100
                     error('Please use seconds')
@@ -199,7 +199,7 @@ classdef GPSSessionKbClass
             end
         end
 
-        function obj = set.Strain(obj,strain)
+        function obj = set.Strain(obj, strain)
             if ismember(strain, {'BN', 'Wistar', 'LE', 'SD', 'Hybrid'})
                 obj.Strain = string(strain);
             else
@@ -207,9 +207,9 @@ classdef GPSSessionKbClass
             end
         end
 
-        function obj = set.Gender(obj,strain)
-            if ismember(strain, {'F', 'M'})
-                obj.Strain = string(strain);
+        function obj = set.Gender(obj, gender)
+            if ismember(gender, {'F', 'M'})
+                obj.Strain = string(gender);
             else
                 error("Strain can only be: 'F', 'M'")
             end
@@ -258,7 +258,7 @@ classdef GPSSessionKbClass
             value = experimenter;
         end
 
-        function value = get.RTSortedLabels(~)
+        function value = get.SortLabels(~)
             value = 'Cued x Ports';
         end
 
@@ -328,14 +328,6 @@ classdef GPSSessionKbClass
             value = obj.sortData("RT", "correct");
         end
 
-        function value = get.RTPDF(obj)
-            value = obj.getPDF("RT", "correct");
-        end
-
-        function value = get.RTCDF(obj)
-            value = obj.getCDF("RT", "correct");
-        end
-
         function value = get.RTStat(obj)
             value = obj.getStat("RT", "correct");
         end
@@ -349,14 +341,6 @@ classdef GPSSessionKbClass
 
         function value = get.HoldDurationSorted(obj)
             value = obj.sortData("HoldDuration", "port");
-        end
-
-        function value = get.HoldDurationPDF(obj)
-            value = obj.getPDF("HoldDuration", "port");
-        end
-
-        function value = get.HoldDurationCDF(obj)
-            value = obj.getCDF("HoldDuration", "port");
         end
 
         function value = get.HoldDurationStat(obj)
@@ -373,14 +357,6 @@ classdef GPSSessionKbClass
             value = obj.sortData("MovementTime", "correct");
         end
 
-        function value = get.MovementTimePDF(obj)
-            value = obj.getPDF("MovementTime", "correct");
-        end
-
-        function value = get.MovementTimeCDF(obj)
-            value = obj.getCDF("MovementTime", "correct");
-        end
-
         function value = get.MovementTimeStat(obj)
             value = obj.getStat("MovementTime", "correct");
         end
@@ -393,14 +369,6 @@ classdef GPSSessionKbClass
 
         function value = get.ChoiceTimeSorted(obj)
             value = obj.sortData("ChoiceTime", "correct");
-        end
-
-        function value = get.ChoiceTimePDF(obj)
-            value = obj.getPDF("ChoiceTime", "correct");
-        end
-
-        function value = get.ChoiceTimeCDF(obj)
-            value = obj.getCDF("ChoiceTime", "correct");
         end
 
         function value = get.ChoiceTimeStat(obj)
