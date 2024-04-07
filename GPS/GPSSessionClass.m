@@ -725,7 +725,7 @@ classdef GPSSessionClass
         end % getCDF
 
         function data_kde = calKDE(obj, data_this, bin_edges, func, cal_ci)
-            kde = @(x) ksdensity(x, bin_edges, 'Function', func, 'Bandwidth', obj.BandWidth);
+            kde = @(x) ksdensity(x, bin_edges, 'Function', func, 'BandWidth', obj.BandWidth);
 
             data_kde.x = bin_edges;
             data_kde.ci = [];

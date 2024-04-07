@@ -79,15 +79,15 @@ for d = 1:length(Folders)
             mkdir(SessionDataFigsFolder);
         end
 
-        SessionClass = GPSSessionKbClass(file, AnmInfoFile);
+        SessionClass = GPSSessionKbClass(file, AnmInfoFile, 0);
         SessionClass.save();
         SessionClass.updateANMInfo();
         SessionClass.print(SessionDataFigsFolder);
 
-        BehavCsvName = ['GPSSessionTable_' SessionClass.Task '_' SessionClass.Subject, '.csv'];
+        BehavCsvName = ['GPSSessionTable_' SessionClass.TaskName '_' SessionClass.Subject, '.csv'];
         writetable(SessionClass.BehavTable, fullfile(file_path, BehavCsvName));
 
-        InterCsvName = ['GPSInterruptTable_' SessionClass.Task '_' SessionClass.Subject, '.csv'];
+        InterCsvName = ['GPSInterruptTable_' SessionClass.TaskName '_' SessionClass.Subject, '.csv'];
         writetable(SessionClass.Interruption, fullfile(file_path, InterCsvName));
 
     end

@@ -206,8 +206,8 @@ plot_reaction_time_collected(ha13, obj, opts);
 %% ha6. Plot hold duration and FP
     function plot_hold_duration(ax, obj, opts)
 
-        yline(ax, obj.MixedFP+0.5, 'Color', [.7 .7 .7], 'LineWidth', 1.5, 'LineStyle', '--');
-        yline(ax, obj.MixedFP+0.8, 'Color', [.7 .7 .7], 'LineWidth', 1.5, 'LineStyle', ':');
+        yline(ax, obj.TargetFP+0.5, 'Color', [.7 .7 .7], 'LineWidth', 1.5, 'LineStyle', '--');
+        yline(ax, obj.TargetFP+0.8, 'Color', [.7 .7 .7], 'LineWidth', 1.5, 'LineStyle', ':');
         line(ax, [opts.ticks opts.ticks]', [0 2.5/20], 'color', 'K')
 
         % FPs
@@ -261,18 +261,16 @@ plot_reaction_time_collected(ha13, obj, opts);
 %% ha7. plot hold duration pdf
     function plot_hold_duration_pdf_l(ax, obj, opts)
 
-        yline(ax, obj.MixedFP+0.5, 'Color', [.7 .7 .7], 'LineWidth', 1.5, 'LineStyle', '--');
-        yline(ax, obj.MixedFP+0.8, 'Color', [.7 .7 .7], 'LineWidth', 1.5, 'LineStyle', ':');
+        yline(ax, obj.TargetFP+0.5, 'Color', [.7 .7 .7], 'LineWidth', 1.5, 'LineStyle', '--');
+        yline(ax, obj.TargetFP+0.8, 'Color', [.7 .7 .7], 'LineWidth', 1.5, 'LineStyle', ':');
 
-        binEdges = obj.Bins.HoldDuration;
-
-        for fp = 1:length(obj.MixedFP)
-            yline(ax, obj.MixedFP(fp), 'Color', [.7 .7 .7], 'LineWidth', opts.lw(fp), 'LineStyle', '-');
+        for fp = 1:length(obj.TargetFP)
+            yline(ax, obj.TargetFP(fp), 'Color', [.7 .7 .7], 'LineWidth', opts.lw(fp), 'LineStyle', '-');
         end
 
         for i = 1:length(obj.CueUncue)
             for j = 1
-                plot(ax, obj.HoldDurationPDF{i, j}, binEdges, 'color', eval("opts.color.Port" + obj.Ports(j)), 'linewidth', 1.5, 'LineStyle', opts.ls(i));
+                plot(ax, obj.HDPDF{i, j}.f, obj.HDPDF{i, j}.x, 'color', eval("opts.color.Port" + obj.Ports(j)), 'linewidth', 1.5, 'LineStyle', opts.ls(i));
             end
         end
 
@@ -283,18 +281,16 @@ plot_reaction_time_collected(ha13, obj, opts);
 %% ha7.1. plot hold duration cdf
     function plot_hold_duration_pdf_r(ax, obj, opts)
 
-        yline(ax, obj.MixedFP+0.5, 'Color', [.7 .7 .7], 'LineWidth', 1.5, 'LineStyle', '--');
-        yline(ax, obj.MixedFP+0.8, 'Color', [.7 .7 .7], 'LineWidth', 1.5, 'LineStyle', ':');
+        yline(ax, obj.TargetFP+0.5, 'Color', [.7 .7 .7], 'LineWidth', 1.5, 'LineStyle', '--');
+        yline(ax, obj.TargetFP+0.8, 'Color', [.7 .7 .7], 'LineWidth', 1.5, 'LineStyle', ':');
 
-        binEdges = obj.Bins.HoldDuration;
-
-        for fp = 1:length(obj.MixedFP)
-            yline(ax, obj.MixedFP(fp), 'Color', [.7 .7 .7], 'LineWidth', opts.lw(fp), 'LineStyle', '-');
+        for fp = 1:length(obj.TargetFP)
+            yline(ax, obj.TargetFP(fp), 'Color', [.7 .7 .7], 'LineWidth', opts.lw(fp), 'LineStyle', '-');
         end
 
         for i = 1:length(obj.CueUncue)
             for j = 2
-                plot(ax, obj.HoldDurationPDF{i, j}, binEdges, 'color', eval("opts.color.Port" + obj.Ports(j)), 'linewidth', 1.5, 'LineStyle', opts.ls(i));
+                plot(ax, obj.HDPDF{i, j}.f, obj.HDPDF{i, j}.x, 'color', eval("opts.color.Port" + obj.Ports(j)), 'linewidth', 1.5, 'LineStyle', opts.ls(i));
             end
         end
 
@@ -347,13 +343,11 @@ plot_reaction_time_collected(ha13, obj, opts);
 %% ha9. plot reaction time PDF for PortL
     function plot_reaction_time_pdf_l(ax, obj, opts)
         
-        binEdges = obj.Bins.RT;
-
         yline(ax, .5, 'Color', [.7 .7 .7], 'LineWidth', 1.5, 'LineStyle', '--');
         yline(ax, .8, 'Color', [.7 .7 .7], 'LineWidth', 1.5, 'LineStyle', ':');
 
         for c = 1:length(obj.CueUncue)
-            plot(ax, obj.RTPDF{c, 1}, binEdges, 'color', opts.color.PortL, 'linewidth', 1.5, 'LineStyle', opts.ls(c));
+            plot(ax, obj.RTPDF{c, 1}.f, obj.RTPDF{c, 1}.x, 'color', opts.color.PortL, 'linewidth', 1.5, 'LineStyle', opts.ls(c));
         end
 
         ax.XLabel.String = 'Prob. density (1/s)';
@@ -363,12 +357,10 @@ plot_reaction_time_collected(ha13, obj, opts);
 %% ha9.1. plot reaction time PDF for PortR
     function plot_reaction_time_pdf_r(ax, obj, opts)
         
-        binEdges = obj.Bins.RT;
-
         yline(ax, .5, 'Color', [.7 .7 .7], 'LineWidth', 1.5, 'LineStyle', ':');
         yline(ax, .8, 'Color', [.7 .7 .7], 'LineWidth', 1.5, 'LineStyle', '--');
         for c = 1:length(obj.CueUncue)
-            plot(ax, obj.RTPDF{c, 2}, binEdges, 'color', opts.color.PortR, 'linewidth', 1.5, 'LineStyle', opts.ls(c));
+            plot(ax, obj.RTPDF{c, 1}.f, obj.RTPDF{c, 1}.x, 'color', opts.color.PortR, 'linewidth', 1.5, 'LineStyle', opts.ls(c));
         end
 
         ax.XLabel.String = 'Prob. density (1/s)';
@@ -408,10 +400,8 @@ plot_reaction_time_collected(ha13, obj, opts);
 %% ha11. Plot movement time PDF on the right for PortL
     function plot_movement_time_pdf_l(ax, obj, opts)
 
-        binEdges = obj.Bins.MovementTime;
-
         for c = 1:length(obj.CueUncue)
-            plot(ax, obj.MovementTimePDF{c, 1}, binEdges, 'color', opts.color.PortL, 'linewidth', 1.5, 'LineStyle', opts.ls(c))
+            plot(ax, obj.MTPDF{c, 1}.f, obj.MTPDF{c, 1}.x, 'color', opts.color.PortL, 'linewidth', 1.5, 'LineStyle', opts.ls(c))
         end
 
         ax.XLabel.String = 'Prob. density (1/s)';
@@ -421,10 +411,8 @@ plot_reaction_time_collected(ha13, obj, opts);
 %% ha11.1. Plot movement time PDF on the right for PortL
     function plot_movement_time_pdf_r(ax, obj, opts)
 
-        binEdges = obj.Bins.MovementTime;
-
         for c = 1:length(obj.CueUncue)
-            plot(ax, obj.MovementTimePDF{c, 2}, binEdges, 'color', opts.color.PortR, 'linewidth', 1.5, 'LineStyle', opts.ls(c))
+            plot(ax, obj.MTPDF{c, 1}.f, obj.MTPDF{c, 1}.x, 'color', opts.color.PortR, 'linewidth', 1.5, 'LineStyle', opts.ls(c))
         end
 
         ax.XLabel.String = 'Prob. density (1/s)';
@@ -475,8 +463,8 @@ plot_reaction_time_collected(ha13, obj, opts);
 
         thisRT = nan(sum(obj.Stage==1 & obj.Ind.correct), length(obj.Ports)*length(obj.CueUncue));
         for p = 1:length(obj.Ports)
-            for fp = 1:length(obj.CueUncue)
-                thisRT(1:length(obj.RTSorted{fp, p}), fp+(p-1)*length(obj.CueUncue)) = obj.RTSorted{fp,p};
+            for c = 1:length(obj.CueUncue)
+                thisRT(1:length(obj.RTSorted{c, p}), c+(p-1)*length(obj.CueUncue)) = obj.RTSorted{c,p};
             end
         end
         thisRT(1, all(isnan(thisRT))) = 0;

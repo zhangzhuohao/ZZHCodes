@@ -1,5 +1,9 @@
 function obj = getTrialInfo(obj, SessionData)
 % Get trial information of events' time points
+obj.NumTrials = SessionData.nTrials;
+
+obj.Trials = (1:obj.NumTrials)';
+obj.TrialStartTime = SessionData.TrialStartTimestamp(obj.Trials)';
 
 obj.InitPokeInTime = cell(obj.NumTrials, 1);
 obj.InitPokeOutTime = cell(obj.NumTrials, 1);
@@ -38,6 +42,11 @@ switch SessionData.Custom.Version
     %% Version 20230312, time controlled by Arduino, 3 uncued RWs
     case {'20230312'}
         for i = 1:obj.NumTrials
+
+            if strcmp(obj.Outcome{i}, 'Bug')
+                continue;
+            end
+
             iStates = SessionData.RawEvents.Trial{i}.States;
             iEvents = SessionData.RawEvents.Trial{i}.Events;
 
@@ -182,6 +191,8 @@ switch SessionData.Custom.Version
                 else % sometimes, they poke during the choice light presentation
                     obj.PortChosen(i) = nan;
                 end
+            else
+                obj.Outcome{i} = 'Bug';
             end
         end
 
@@ -311,17 +322,19 @@ switch SessionData.Custom.Version
                 else % sometimes, they poke during the choice light presentation
                     obj.PortChosen(i) = nan;
                 end
+            else
+                obj.Outcome{i} = 'Bug';
             end
         end
 end
 
 obj.FP = roundn(obj.FP, -1);
-obj.MixedFP = unique(obj.FP);
-if length(obj.MixedFP) > 1
+obj.TargetFP = unique(obj.FP);
+if length(obj.TargetFP) > 1
     fprintf("\nMore than 1 foreperiod (FP) have been found: \n");
-    disp(obj.MixedFP);
-    obj.MixedFP = mode(obj.FP);
-    fprintf("Take the mode number: %f\n", obj.MixedFP);
+    disp(obj.TargetFP);
+    obj.TargetFP = mode(obj.FP);
+    fprintf("Take the mode number: %f\n", obj.TargetFP);
 end
 
 %% remove bug trials

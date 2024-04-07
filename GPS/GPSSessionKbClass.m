@@ -15,6 +15,7 @@ classdef GPSSessionKbClass
         SessionInfo
         
         Task % Name of task, extrated from data file name and set as {'Autoshaping', 'Wait1Hold', 'Wait1HoldCRT', 'Wait2HoldCRT', 'ThreeFPHoldCRT', 'ThreeFPHoldSRT', 'Kornblum'}
+        TaskName % add FP for Kornblum tasks
         Session % Date of this session, extrated from data file name
 
         % Session information
@@ -36,7 +37,7 @@ classdef GPSSessionKbClass
         PortChosen % The port chosen by the animal in each trial, [NumTrials x 1]
         Outcome % Outcome of each trial, (1 for correct; 0 for choice-error; -1 for premature; -2 for late), [NumTrials x 1]
 
-        MixedFP % FP configuration, for ThreeFP paradigm only, [NumTrials x N (number of FPs)]
+        TargetFP % FP configuration, for ThreeFP paradigm only, [NumTrials x N (number of FPs)]
         FP % foreperiod in each trial, for all paradigms except Autoshaping, [NumTrials x 1]
         RW
 
@@ -68,6 +69,7 @@ classdef GPSSessionKbClass
         Ports = ["L", "R"];
         CueUncue = [1 0];
         FillEmpty = [1 0];
+        BandWidth = .1;
     end
 
     properties (Dependent)
@@ -120,13 +122,11 @@ classdef GPSSessionKbClass
 
     methods
         %% Initiate
-        function obj = GPSSessionKbClass(BpodFile, AnmInfoFile)
+        function obj = GPSSessionKbClass(BpodFile, AnmInfoFile, CalCI)
             % Process SessionData to get properties
             load(BpodFile, 'SessionData');
             obj.BpodFile = BpodFile;
             [obj.BpodFilePath, obj.BpodFileName] = fileparts(obj.BpodFile);
-
-            obj.ANMInfoFile = AnmInfoFile;
 
             % Rat name
             obj.Subject = extractBefore(obj.BpodFileName, '_');
@@ -153,6 +153,9 @@ classdef GPSSessionKbClass
             % Get paradigm specific trial information
             obj = feval([obj.Task '.getTrialInfo'], obj, SessionData);
 
+            obj.TaskName = insertAfter(obj.Task, 'Kornblum', num2str(1000*obj.TargetFP));
+
+            obj = obj.getAllKDEs(CalCI);
         end
 
         %% Manually set
@@ -189,12 +192,12 @@ classdef GPSSessionKbClass
             end
         end
 
-        function obj = set.MixedFP(obj, mFP)
+        function obj = set.TargetFP(obj, mFP)
             if isnumeric(mFP)
                 if mean(mFP)>100
                     error('Please use seconds')
                 else
-                    obj.MixedFP = mFP;
+                    obj.TargetFP = mFP;
                 end
             end
         end
@@ -217,44 +220,32 @@ classdef GPSSessionKbClass
 
         %% Get animal information
         function value = get.Strain(obj)
-            anm_info = readtable(obj.ANMInfoFile, "Sheet", "ANM", "TextType", "string");
-            strain = anm_info.Strain(strcmp(anm_info.Name, obj.Subject));
-
+            strain = obj.ANMInfo.Strain;
             value = strain;
         end
 
         function value = get.Gender(obj)
-            anm_info = readtable(obj.ANMInfoFile, "Sheet", "ANM", "TextType", "string");
-            gender = anm_info.Gender(strcmp(anm_info.Name, obj.Subject));
-
+            gender = obj.ANMInfo.Gender;
             value = gender;
         end
 
         function value = get.Treatment(obj)
-            anm_info = readtable(obj.ANMInfoFile, "Sheet", obj.Subject, "TextType", "string");
-            treatment = anm_info.Treatment(strcmp(string(anm_info.Session), obj.Session));
-
+            treatment = obj.SessionInfo.Treatment;
             value = treatment;
         end
 
         function value = get.Dose(obj)
-            anm_info = readtable(obj.ANMInfoFile, "Sheet", obj.Subject, "TextType", "string");
-            dose = anm_info.Dose(strcmp(string(anm_info.Session), obj.Session));
-
+            dose = obj.SessionInfo.Dose;
             value = dose;
         end
 
         function value = get.Label(obj)
-            anm_info = readtable(obj.ANMInfoFile, "Sheet", obj.Subject, "TextType", "string");
-            label = anm_info.Label(strcmp(string(anm_info.Session), obj.Session));
-
+            label = obj.SessionInfo.Label;
             value = label;
         end
 
         function value = get.Experimenter(obj)
-            anm_info = readtable(obj.ANMInfoFile, "Sheet", obj.Subject, "TextType", "string");
-            experimenter = anm_info.Experimenter(strcmp(string(anm_info.Session), obj.Session));
-
+            experimenter = obj.SessionInfo.Experimenter;
             value = experimenter;
         end
 
@@ -284,6 +275,10 @@ classdef GPSSessionKbClass
             % find the last poke out time before center poke
             shuttle_time = cellfun(@(x, y) y(1)-x(end), obj.InitPokeOutTime, obj.CentPokeInTime);
             value = shuttle_time;
+        end
+
+        function value = get.ShuttleTimeSplit(obj)
+            value = obj.splitData("ShuttleTime");
         end
 
         % Shuttle time statistics
@@ -325,11 +320,11 @@ classdef GPSSessionKbClass
         end
 
         function value = get.RTSorted(obj)
-            value = obj.sortData("RT", "correct");
+            value = obj.sortData("RT", "port");
         end
 
         function value = get.RTStat(obj)
-            value = obj.getStat("RT", "correct");
+            value = obj.getStat("RT", "port");
         end
 
         %% Hold duration
@@ -618,7 +613,7 @@ classdef GPSSessionKbClass
             if nargin<2
                 savepath = obj.BpodFilePath;
             end
-            save(fullfile(savepath, ['GPSSessionClass_' obj.Task '_' upper(obj.Subject) '_' obj.Session]), 'obj');
+            save(fullfile(savepath, ['GPSSessionClass_' obj.TaskName '_' upper(obj.Subject) '_' obj.Session]), 'obj');
         end
 
         function updateANMInfo(obj, savepath)
@@ -626,16 +621,15 @@ classdef GPSSessionKbClass
 
             session_ind = strcmp(string(anm_info.Session), obj.Session);
 
-            anm_info.Task(session_ind)      = obj.Task;
+            anm_info.Task(session_ind)      = obj.TaskName;
             anm_info.BpodFile(session_ind)  = obj.BpodFile;
             
-
             if nargin<2
                 savepath = obj.BpodFilePath;
             end
             anm_info.SessionFolder(session_ind) = savepath;
             
-            session_file = fullfile(savepath, ['GPSSessionClass_' obj.Task '_' upper(obj.Subject) '_' obj.Session]);
+            session_file = fullfile(savepath, ['GPSSessionClass_' obj.TaskName '_' upper(obj.Subject) '_' obj.Session]);
             anm_info.SessionClassFile(session_ind) = session_file;
 
             anm_info.UpdateTime(session_ind) = string(datetime());
@@ -644,7 +638,7 @@ classdef GPSSessionKbClass
         end
 
         function print(obj, targetDir)
-            savename = fullfile(obj.BpodFilePath, ['GPSSessionClass_' obj.Task '_' upper(obj.Subject) '_' obj.Session]);
+            savename = fullfile(obj.BpodFilePath, ['GPSSessionClass_' obj.TaskName '_' upper(obj.Subject) '_' obj.Session]);
             hf = obj.plot();
             print(hf,'-dpdf', savename, '-bestfit')
             print(hf,'-dpng', savename)
@@ -658,7 +652,7 @@ classdef GPSSessionKbClass
                         mkdir(targetDir)
                     end
                 end
-                savename = fullfile(targetDir, ['GPSSessionClass_' obj.Task '_' upper(obj.Subject) '_' obj.Session]);
+                savename = fullfile(targetDir, ['GPSSessionClass_' obj.TaskName '_' upper(obj.Subject) '_' obj.Session]);
                 print(hf,'-dpdf', savename, '-bestfit')
                 print(hf,'-dpng', savename)
                 saveas(hf, savename, 'fig')
@@ -676,7 +670,6 @@ classdef GPSSessionKbClass
         end
 
         %% Data processing
-
         function data_sorted = sortData(obj, variable, perf)
             % Sort input data (RT, MovementTime, ChoiceTime, HoldDuration) by (CueUncue, Port).
             % inputs:
@@ -686,56 +679,103 @@ classdef GPSSessionKbClass
             data_origin = obj.(variable);
             data_sorted = cell(length(obj.CueUncue), length(obj.Ports));
 
-            [~, ~, indrmv] = rmoutliers_custome(data_origin);
+            ind_valid = ~isnan(data_origin);
+%             [~, ~, indrmv] = rmoutliers_custome(data_origin);
 
             for port = 1:length(obj.Ports)
                 for cued = 1:length(obj.CueUncue)
                     ind_this = obj.Cued==obj.CueUncue(cued) & obj.Stage==1 & eval("obj.Ind." + perf + obj.Ports(port));
-                    data_this = data_origin(setdiff(find(ind_this), indrmv));
+%                     data_this = data_origin(setdiff(find(ind_this), indrmv));
 
-                    data_sorted{cued, port} = data_this;
+                    data_sorted{cued, port} = data_origin(ind_this & ind_valid);
                 end
             end
         end % sortData
 
-        function data_pdf = getPDF(obj, variable, perf)
+        function data_splited = splitData(obj, variable)
+            % Sort input data (RT, MovementTime, ChoiceTime, HoldDuration) by (FP, Port).
+            % inputs:
+            %       variable: string (1,1), should be a member in ["RT", "MovementTime", "ChoiceTime", "HoldDuration"]
+            %       perf: string (1,1), should be a member in ["correct", "late", "wrong", "premature", "port"]; if "port" is used, all trials will be taken
 
-            data_sorted = obj.sortData(variable, perf);
+            data_origin = obj.(variable);
+            data_splited = cell(3, 1);
 
-            binEdges = obj.Bins.(variable);
+            data_this = data_origin(obj.Stage==1);
+            num_data = length(data_this);
+            ind = 1:num_data;
+%             [~, ~, indrmv] = rmoutliers_custome(data_origin);
 
-            data_pdf = cell(length(obj.CueUncue), length(obj.Ports));
-            for j = 1:length(obj.Ports)
-                for i = 1:length(obj.CueUncue)
-                    data_this = data_sorted{i, j};
-                    if length(data_this) > 5
-                        data_pdf{i, j} = ksdensity(data_this, binEdges, 'Function', 'pdf');
-                    else
-                        data_pdf{i, j} = zeros(1, length(binEdges));
-                    end
+            for i = 1:3
+                ind_range = [i-1 i] * num_data/3;
+                ind_this = ind(ind>ind_range(1) & ind<=ind_range(2));
+                data_splited{i} = data_origin(ind_this);
+            end
+        end % splitData
+
+        %% get PDFs and CDFs
+        function data_pdf = getPDF(obj, data, bin_edges, var_name, cal_ci)
+            sz = size(data);
+            data_pdf = cell(sz(1), sz(2));
+
+            if cal_ci
+                fprintf("... Calculate 95CI for PDF of %s ... \n", var_name);
+            end
+            for i = 1:sz(1)
+                for j = 1:sz(2)
+                    data_this = data{i, j};
+                    data_pdf{i, j} = obj.calKDE(data_this, bin_edges, 'pdf', cal_ci);
                 end
             end
         end % getPDF
 
-        function data_cdf = getCDF(obj, variable, perf)
+        function data_cdf = getCDF(obj, data, bin_edges, var_name, cal_ci)
+            sz = size(data);
+            data_cdf = cell(sz(1), sz(2));
 
-            data_sorted = obj.sortData(variable, perf);
-
-            binEdges = obj.Bins.(variable);
-
-            data_cdf = cell(length(obj.CueUncue), length(obj.Ports));
-            for j = 1:length(obj.Ports)
-                for i = 1:length(obj.CueUncue)
-                    data_this = data_sorted{i, j};
-                    if length(data_this) > 5
-                        data_cdf{i, j} = ksdensity(data_this, binEdges, 'Function', 'cdf');
-                    else
-                        data_cdf{i, j} = zeros(1, length(binEdges));
-                    end
+            if cal_ci
+                fprintf("... Calculate 95CI for CDF of %s ... \n", var_name);
+            end
+            for i = 1:sz(1)
+                for j = 1:sz(2)
+                    data_this = data{i, j};
+                    data_cdf{i, j} = obj.calKDE(data_this, bin_edges, 'cdf', cal_ci);
                 end
             end
         end % getCDF
 
+        function data_kde = calKDE(obj, data_this, bin_edges, func, cal_ci)
+            kde = @(x) ksdensity(x, bin_edges, 'Function', func, 'BandWidth', obj.BandWidth);
+
+            data_kde.x = bin_edges;
+            data_kde.ci = [];
+            if length(data_this) > 5
+                data_kde.f = kde(data_this);
+                if cal_ci
+                    data_kde.ci = bootci(1000, {kde, data_this}, 'type', 'cper', 'alpha', .05);
+                end
+            else
+                data_kde.f = zeros(1, length(bin_edges));
+            end
+        end % calKDE
+
+        function obj = getAllKDEs(obj, cal_ci)
+
+            obj.RTPDF = obj.getPDF(obj.RTSorted, obj.Bins.RT, "RT", cal_ci);
+            obj.RTCDF = obj.getCDF(obj.RTSorted, obj.Bins.RT, "RT", cal_ci);
+            obj.MTPDF = obj.getPDF(obj.MovementTimeSorted, obj.Bins.MovementTime, "MT", cal_ci);
+            obj.MTCDF = obj.getCDF(obj.MovementTimeSorted, obj.Bins.MovementTime, "MT", cal_ci);
+            obj.HDPDF = obj.getPDF(obj.HoldDurationSorted, obj.Bins.HoldDuration, "HD", cal_ci);
+            obj.HDCDF = obj.getCDF(obj.HoldDurationSorted, obj.Bins.HoldDuration, "HD", cal_ci);
+            obj.CTPDF = obj.getPDF(obj.ChoiceTimeSorted, obj.Bins.ChoiceTime, "CT", cal_ci);
+            obj.CTCDF = obj.getCDF(obj.ChoiceTimeSorted, obj.Bins.ChoiceTime, "CT", cal_ci);
+            logST = cellfun(@log10, obj.ShuttleTimeSplit, 'UniformOutput', false);
+            obj.LogSTPDF = obj.getPDF(logST, obj.Bins.ShuttleTimeLog, "LogST", cal_ci);
+            obj.LogSTCDF = obj.getCDF(logST, obj.Bins.ShuttleTimeLog, "LogST", cal_ci);
+
+        end % getAllKDEs
+
+        %% Get statistics
         function stats = getStat(obj, variable, perf)
             % Get statistics from input data (RT, MovementTime, ChoiceTime, HoldDuration) by (FP, Port).
             % inputs:

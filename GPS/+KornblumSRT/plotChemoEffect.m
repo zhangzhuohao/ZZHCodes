@@ -66,9 +66,7 @@ end
 %%
 fig = figure(24); clf(24);
 set(gcf, 'unit', 'centimeters', 'position', [2 1 33 18.5], 'paperpositionmode', 'auto', 'color', 'w');
-
-uicontrol('Style', 'text', 'parent', 24, 'units', 'normalized', 'position', [0.2 0.95 0.6 0.04],...
-    'string', obj.Subject+" / "+obj.Task+" / "+obj.Sessions(1)+"_"+obj.Sessions(end)+" / ChemoEffect", 'fontsize', 11, 'fontweight', 'bold', 'backgroundcolor', 'w');
+set_fig_title(fig, obj.Subject+" / "+obj.TaskName+" / "+obj.Sessions(1)+"\_"+obj.Sessions(end)+" / ChemoEffect");
 
 %% Set axes and plot
 % %% Maze diagram
@@ -206,9 +204,7 @@ set(ha_hd_cdf_r, 'ylabel', [], 'yticklabel', []);
 %% ha2. Plot every trial's hold duration during training
     function plot_hold_duration_scatter(ax, obj, cp, lb, opts)
 
-        for fp_this = 1:length(obj.MixedFP)
-            yline(ax, obj.MixedFP(fp_this), 'Color', [.8 .8 .8], 'LineWidth', opts.lw(fp_this), 'LineStyle', ':', 'Alpha', 0.4);
-        end
+        yline(ax, obj.TargetFP, 'Color', [.8 .8 .8], 'LineWidth', 1, 'LineStyle', ':', 'Alpha', 0.7);
         if ~isempty(cp.session_sep)
             xline(ax, cp.session_sep, 'Color', [.7 .7 .7], 'LineWidth', 1, 'LineStyle', '-');
         end
@@ -335,27 +331,27 @@ set(ha_hd_cdf_r, 'ylabel', [], 'yticklabel', []);
 %% Hold duration violin
     function plot_hold_duration_violin(ax, obj, opts)
 
-        dcz_ind = 2 * (1:length(obj.MixedFP))';
-        num_dcz = length(obj.MixedFP);
+        dcz_ind = 2 * (1:length(obj.TargetFP))';
+        num_dcz = length(obj.TargetFP);
         patch(ax, 'XData', [dcz_ind-.5 dcz_ind-.5 dcz_ind+.5 dcz_ind+.5]', 'YData', repmat([0; 100; 100; 0], 1, num_dcz), ...
             'FaceColor', opts.color.Treat, 'FaceAlpha', 0.2, 'EdgeColor', 'none');
 
-        line(ax, [0.6 2.4], [obj.MixedFP obj.MixedFP], 'Color', 'k', 'LineWidth', .5, 'LineStyle', '-');
+        line(ax, [0.6 2.4], [obj.TargetFP obj.TargetFP], 'Color', 'k', 'LineWidth', .5, 'LineStyle', '-');
 
-        num_violin = length(obj.Ports)*2*length(obj.MixedFP);
+        num_violin = length(obj.Ports)*2*length(obj.TargetFP);
         thisHD = nan(height(obj.BehavTable), num_violin);
         
         cued_this = find(obj.CueUncue==0);
         for p_this = 1:length(obj.Ports)
-            thisHD(1:length(obj.HDSortedControl{cued_this, p_this}), p_this)   = obj.HDSortedControl{cued_this, p_this};
-            thisHD(1:length(obj.HDSortedChemo{cued_this, p_this})  , p_this+2) = obj.HDSortedChemo{cued_this, p_this};
+            thisHD(1:length(obj.HDSorted.Control{cued_this, p_this}), p_this)   = obj.HDSorted.Control{cued_this, p_this};
+            thisHD(1:length(obj.HDSorted.Chemo{cued_this, p_this})  , p_this+2) = obj.HDSorted.Chemo{cued_this, p_this};
         end
 
         thisHD(all(isnan(thisHD), 2), :) = [];
 
         violinplot({thisHD(:, 2:2:end), thisHD(:, 1:2:end)}, obj.Sessions, ...
             'ViolinColor', {repmat(opts.color.PortR, num_violin/2, 1), repmat(opts.color.PortL, num_violin/2, 1)}, ...
-            'ScatterSize', 8, 'ShowMedian', false, 'ShowWhisker', false, 'ShowBox', false, 'Bandwidth', 0.1);
+            'MarkerSize', 8, 'ShowMedian', false, 'ShowWhisker', false, 'ShowBox', false, 'Bandwidth', 0.1);
 
         scatter(ax, ceil((1:num_violin)/2) + repmat([-.02 .02], 1, num_violin/2), median(thisHD, 'omitnan'), 32, ...
             repmat([opts.color.PortL; opts.color.PortR], num_violin/2, 1), ...
@@ -365,8 +361,8 @@ set(ha_hd_cdf_r, 'ylabel', [], 'yticklabel', []);
         ax.YLabel.String = 'Hold duration (s)';
         ax.XLabel.FontWeight = "Bold";
         ax.YLabel.FontWeight = "Bold";
-        set(ax, 'xlim', [.5 2*length(obj.MixedFP)+.5], 'ylim', [0 obj.Bins.HoldDuration(end)], 'xtick', 1.5:2:2*length(obj.MixedFP), ...
-            'xticklabel', obj.MixedFP, 'ticklength', [0.01 0.1], 'box', 'off');
+        set(ax, 'xlim', [.5 2*length(obj.TargetFP)+.5], 'ylim', [0 obj.Bins.HoldDuration(end)], 'xtick', 1.5:2:2*length(obj.TargetFP), ...
+            'xticklabel', obj.TargetFP, 'ticklength', [0.01 0.1], 'box', 'off');
     end
 
 %% Hold duration comparation
@@ -382,12 +378,12 @@ set(ha_hd_cdf_r, 'ylabel', [], 'yticklabel', []);
         cued_this = find(obj.CueUncue==0);
 
         p_this = obj.Ports=="L";
-        hd_control_l = obj.HDSortedControl{cued_this, p_this};
-        hd_chemo_l   = obj.HDSortedChemo{cued_this, p_this};
+        hd_control_l = obj.HDSorted.Control{cued_this, p_this};
+        hd_chemo_l   = obj.HDSorted.Chemo{cued_this, p_this};
 
         p_this = obj.Ports=="R";
-        hd_control_r = obj.HDSortedControl{cued_this, p_this};
-        hd_chemo_r   = obj.HDSortedChemo{cued_this, p_this};
+        hd_control_r = obj.HDSorted.Control{cued_this, p_this};
+        hd_chemo_r   = obj.HDSorted.Chemo{cued_this, p_this};
 
         med = @(x) median(x, 'omitnan');
         hd_med_control_l = med(hd_control_l);
@@ -428,16 +424,16 @@ set(ha_hd_cdf_r, 'ylabel', [], 'yticklabel', []);
 
         set(ax, 'xlimmode', 'auto', 'ylimmode', 'auto');
 %         ax.XLim = [min([ax.XLim(1) ax.YLim(1)]) max([ax.XLim(2) ax.YLim(2)])] .* [.95 1.05];
-        ax.XLim = [-.2 .2] + obj.MixedFP;
+        ax.XLim = [-.2 .2] + obj.TargetFP;
         ax.YLim = ax.XLim;
-        ax.XTick = [-.2 0 .2] + obj.MixedFP;
+        ax.XTick = [-.2 0 .2] + obj.TargetFP;
         ax.YTick = ax.XTick;
 
         text(ax, mean(ax.XLim), ax.YLim(2), "HD median (s)", 'FontSize', 9, 'FontWeight', 'bold', 'HorizontalAlignment', 'center');
 
         line(ax, [0 100], [0 100], 'Color', 'k', 'LineStyle', ':', 'LineWidth', .5);
-        line(ax, [obj.MixedFP obj.MixedFP], [0 obj.MixedFP], 'Color', 'k', 'LineStyle', ':', 'LineWidth', .5);
-        line(ax, [0 obj.MixedFP], [obj.MixedFP obj.MixedFP], 'Color', 'k', 'LineStyle', ':', 'LineWidth', .5);
+        line(ax, [obj.TargetFP obj.TargetFP], [0 obj.TargetFP], 'Color', 'k', 'LineStyle', ':', 'LineWidth', .5);
+        line(ax, [0 obj.TargetFP], [obj.TargetFP obj.TargetFP], 'Color', 'k', 'LineStyle', ':', 'LineWidth', .5);
 
     end
 
@@ -453,12 +449,12 @@ set(ha_hd_cdf_r, 'ylabel', [], 'yticklabel', []);
         cued_this = find(obj.CueUncue==0);
 
         p_this = obj.Ports=="L";
-        hd_control_l = obj.HDSortedControl{cued_this, p_this};
-        hd_chemo_l   = obj.HDSortedChemo{cued_this, p_this};
+        hd_control_l = obj.HDSorted.Control{cued_this, p_this};
+        hd_chemo_l   = obj.HDSorted.Chemo{cued_this, p_this};
 
         p_this = obj.Ports=="R";
-        hd_control_r = obj.HDSortedControl{cued_this, p_this};
-        hd_chemo_r   = obj.HDSortedChemo{cued_this, p_this};
+        hd_control_r = obj.HDSorted.Control{cued_this, p_this};
+        hd_chemo_r   = obj.HDSorted.Chemo{cued_this, p_this};
 
         iqr_f = @(x) iqr(x);
         hd_iqr_control_l = iqr_f(hd_control_l);
@@ -499,16 +495,16 @@ set(ha_hd_cdf_r, 'ylabel', [], 'yticklabel', []);
 
         set(ax, 'xlimmode', 'auto', 'ylimmode', 'auto');
         ax.XLim = [0 max([ax.XLim(2) ax.YLim(2)])] .* 1.2;
-%         ax.XLim = [-.2 .2] + obj.MixedFP;
+%         ax.XLim = [-.2 .2] + obj.TargetFP;
         ax.YLim = ax.XLim;
-%         ax.XTick = [-.2 0 .2] + obj.MixedFP;
+%         ax.XTick = [-.2 0 .2] + obj.TargetFP;
         ax.YTick = ax.XTick;
 
         text(ax, mean(ax.XLim), ax.YLim(2), "HD IQR (s)", 'FontSize', 9, 'FontWeight', 'bold', 'HorizontalAlignment', 'center');
 
         line(ax, [0 100], [0 100], 'Color', 'k', 'LineStyle', ':', 'LineWidth', .5);
-%         line(ax, [obj.MixedFP obj.MixedFP], [0 obj.MixedFP], 'Color', 'k', 'LineStyle', ':', 'LineWidth', .5);
-%         line(ax, [0 obj.MixedFP], [obj.MixedFP obj.MixedFP], 'Color', 'k', 'LineStyle', ':', 'LineWidth', .5);
+%         line(ax, [obj.TargetFP obj.TargetFP], [0 obj.TargetFP], 'Color', 'k', 'LineStyle', ':', 'LineWidth', .5);
+%         line(ax, [0 obj.TargetFP], [obj.TargetFP obj.TargetFP], 'Color', 'k', 'LineStyle', ':', 'LineWidth', .5);
 
     end
 
@@ -516,33 +512,22 @@ set(ha_hd_cdf_r, 'ylabel', [], 'yticklabel', []);
 % Prob. density
     function plot_hold_duration_pdf(ax, obj, port, opts)
 
-        n_boot = 1000;
-        alpha_ci = 0.05;
-        band_width = 0.12;
-
         p_this = obj.Ports==upper(string(port));
         cued_this = find(obj.CueUncue==0);
 
-        xline(ax, obj.MixedFP, 'color', [.7 .7 .7], 'linewidth', 1, 'LineStyle', '-');
+        xline(ax, obj.TargetFP, 'color', [.7 .7 .7], 'linewidth', 1, 'LineStyle', '-');
 
-        hd_control = obj.HDSortedControl{cued_this, p_this};
-        hd_chemo   = obj.HDSortedChemo{cued_this, p_this};
+        hd_control_pdf = obj.HDPDF.Control{cued_this, p_this};
+        hd_chemo_pdf   = obj.HDPDF.Chemo{cued_this, p_this};
 
-        kde = @(x) ksdensity(x, obj.Bins.HoldDuration, 'Function', 'pdf', 'Bandwidth', band_width);
-
-        hd_control_pdf = kde(hd_control);
-        hd_chemo_pdf   = kde(hd_chemo);
-
-        hd_control_pdf_ci = bootci(n_boot, {kde, hd_control}, 'Type', 'cper', 'Alpha', alpha_ci);
-        hd_chemo_pdf_ci = bootci(n_boot, {kde, hd_chemo}, 'Type', 'cper', 'Alpha', alpha_ci);
-
-        fill(ax, [obj.Bins.HoldDuration flip(obj.Bins.HoldDuration)], [hd_control_pdf_ci(1,:) flip(hd_control_pdf_ci(2,:))], 'y', ...
+        fill(ax, [hd_control_pdf.x flip(hd_control_pdf.x)], [hd_control_pdf.ci(1,:) flip(hd_control_pdf.ci(2,:))], 'y', ...
             'FaceColor', opts.color.Control, 'FaceAlpha', 0.4, 'EdgeColor', 'none');
-        plot(ax, obj.Bins.HoldDuration, hd_control_pdf, ...
+        plot(ax, hd_control_pdf.x, hd_control_pdf.f, ...
             'color', opts.color.Control, 'linewidth', 1.5, 'LineStyle', '-');
-        fill(ax, [obj.Bins.HoldDuration flip(obj.Bins.HoldDuration)], [hd_chemo_pdf_ci(1,:) flip(hd_chemo_pdf_ci(2,:))], 'y', ...
+
+        fill(ax, [hd_chemo_pdf.x flip(hd_chemo_pdf.x)], [hd_chemo_pdf.ci(1,:) flip(hd_chemo_pdf.ci(2,:))], 'y', ...
             'FaceColor', opts.color.Treat, 'FaceAlpha', 0.4, 'EdgeColor', 'none');
-        plot(ax, obj.Bins.HoldDuration, hd_chemo_pdf, ...
+        plot(ax, hd_chemo_pdf.x, hd_chemo_pdf.f, ...
             'color', opts.color.Treat  , 'linewidth', 1.5, 'LineStyle', '-');
 
         switch upper(string(port))
@@ -564,34 +549,22 @@ set(ha_hd_cdf_r, 'ylabel', [], 'yticklabel', []);
 % Cum. distribution
     function plot_hold_duration_cdf(ax, obj, port, opts)
 
-        n_boot = 1000;
-        alpha_ci = 0.05;
-        band_width = 0.12;
-
         p_this = obj.Ports==upper(string(port));
         cued_this = find(obj.CueUncue==0);
 
-        xline(ax, obj.MixedFP, 'color', [.7 .7 .7], 'linewidth', 1, 'LineStyle', '-');
+        xline(ax, obj.TargetFP, 'color', [.7 .7 .7], 'linewidth', 1, 'LineStyle', '-');
 
-        hd_control = obj.HDSortedControl{cued_this, p_this};
-        hd_chemo   = obj.HDSortedChemo{cued_this, p_this};
+        hd_control_cdf = obj.HDCDF.Control{cued_this, p_this};
+        hd_chemo_cdf   = obj.HDCDF.Chemo{cued_this, p_this};
 
-        kde = @(x) ksdensity(x, obj.Bins.HoldDuration, 'Function', 'cdf', 'Bandwidth', band_width);
-
-        hd_control_cdf = kde(hd_control);
-        hd_chemo_cdf   = kde(hd_chemo);
-
-        hd_control_cdf_ci = bootci(n_boot, {kde, hd_control}, 'Type', 'cper', 'Alpha', alpha_ci);
-        hd_chemo_cdf_ci = bootci(n_boot, {kde, hd_chemo}, 'Type', 'cper', 'Alpha', alpha_ci);
-
-        fill(ax, [obj.Bins.HoldDuration flip(obj.Bins.HoldDuration)], [hd_control_cdf_ci(1,:) flip(hd_control_cdf_ci(2,:))], 'y', ...
+        fill(ax, [hd_control_cdf.x flip(hd_control_cdf.x)], [hd_control_cdf.ci(1,:) flip(hd_control_cdf.ci(2,:))], 'y', ...
             'FaceColor', opts.color.Control, 'FaceAlpha', 0.4, 'EdgeColor', 'none');
-        plot(ax, obj.Bins.HoldDuration, hd_control_cdf, ...
+        plot(ax, hd_control_cdf.x, hd_control_cdf.f, ...
             'color', opts.color.Control, 'linewidth', 1.5, 'LineStyle', '-');
 
-        fill(ax, [obj.Bins.HoldDuration flip(obj.Bins.HoldDuration)], [hd_chemo_cdf_ci(1,:) flip(hd_chemo_cdf_ci(2,:))], 'y', ...
+        fill(ax, [hd_chemo_cdf.x flip(hd_chemo_cdf.x)], [hd_chemo_cdf.ci(1,:) flip(hd_chemo_cdf.ci(2,:))], 'y', ...
             'FaceColor', opts.color.Treat, 'FaceAlpha', 0.4, 'EdgeColor', 'none');
-        plot(ax, obj.Bins.HoldDuration, hd_chemo_cdf, ...
+        plot(ax, hd_chemo_cdf.x, hd_chemo_cdf.f, ...
             'color', opts.color.Treat  , 'linewidth', 1.5, 'LineStyle', '-');
 
         switch upper(string(port))
@@ -643,18 +616,18 @@ set(ha_hd_cdf_r, 'ylabel', [], 'yticklabel', []);
 %% Movement time violin
     function plot_movement_time_violin(ax, obj, opts)
 
-        dcz_ind = 2 * (1:length(obj.MixedFP))';
-        num_dcz = length(obj.MixedFP);
+        dcz_ind = 2 * (1:length(obj.TargetFP))';
+        num_dcz = length(obj.TargetFP);
         patch(ax, 'XData', [dcz_ind-.5 dcz_ind-.5 dcz_ind+.5 dcz_ind+.5]', 'YData', repmat([0; 100; 100; 0], 1, num_dcz), ...
             'FaceColor', opts.color.Treat, 'FaceAlpha', 0.2, 'EdgeColor', 'none');
 
-        num_violin = length(obj.Ports)*2*length(obj.MixedFP);
+        num_violin = length(obj.Ports)*2*length(obj.TargetFP);
         thisMT = nan(height(obj.BehavTable), num_violin);
 
         cued_this = find(obj.CueUncue==0);
         for p_this = 1:length(obj.Ports)
-            thisMT(1:length(obj.MTSortedControl{cued_this, p_this}), p_this)   = obj.MTSortedControl{cued_this, p_this};
-            thisMT(1:length(obj.MTSortedChemo{cued_this, p_this})  , p_this+2) = obj.MTSortedChemo{cued_this, p_this};
+            thisMT(1:length(obj.MTSorted.Control{cued_this, p_this}), p_this)   = obj.MTSorted.Control{cued_this, p_this};
+            thisMT(1:length(obj.MTSorted.Chemo{cued_this, p_this})  , p_this+2) = obj.MTSorted.Chemo{cued_this, p_this};
         end
 
         thisMT(all(isnan(thisMT), 2), :) = [];
@@ -662,7 +635,7 @@ set(ha_hd_cdf_r, 'ylabel', [], 'yticklabel', []);
 
         violinplot({thisMT(:, 2:2:end), thisMT(:, 1:2:end)}, obj.Sessions, ...
             'ViolinColor', {repmat(opts.color.PortR, num_violin/2, 1), repmat(opts.color.PortL, num_violin/2, 1)}, ...
-            'ScatterSize', 8, 'ShowMedian', false, 'ShowWhisker', false, 'ShowBox', false, 'Bandwidth', 0.1);
+            'MarkerSize', 8, 'ShowMedian', false, 'ShowWhisker', false, 'ShowBox', false, 'Bandwidth', 0.1);
 
         scatter(ax, ceil((1:num_violin)/2) + repmat([-.02 .02], 1, num_violin/2), median(thisMT, 'omitnan'), 32, ...
             repmat([opts.color.PortL; opts.color.PortR], num_violin/2, 1), ...
@@ -673,8 +646,8 @@ set(ha_hd_cdf_r, 'ylabel', [], 'yticklabel', []);
         ax.XLabel.FontWeight = "Bold";
         ax.YLabel.FontWeight = "Bold";
 
-        set(ax, 'xlim', [.5 2*length(obj.MixedFP)+.5], 'ylim', [0 1], 'xtick', 1.5:2:2*length(obj.MixedFP), ...
-            'xticklabel', obj.MixedFP, 'ticklength', [0.01 0.1], 'box', 'off');
+        set(ax, 'xlim', [.5 2*length(obj.TargetFP)+.5], 'ylim', [0 1], 'xtick', 1.5:2:2*length(obj.TargetFP), ...
+            'xticklabel', obj.TargetFP, 'ticklength', [0.01 0.1], 'box', 'off');
     end
 
 %% Movement time comparation
@@ -686,12 +659,12 @@ set(ha_hd_cdf_r, 'ylabel', [], 'yticklabel', []);
         cued_this = find(obj.CueUncue==0);
 
         p_this = obj.Ports=="L";
-        mt_control_l = obj.MTSortedControl{cued_this, p_this};
-        mt_chemo_l   = obj.MTSortedChemo{cued_this, p_this};
+        mt_control_l = obj.MTSorted.Control{cued_this, p_this};
+        mt_chemo_l   = obj.MTSorted.Chemo{cued_this, p_this};
 
         p_this = obj.Ports=="R";
-        mt_control_r = obj.MTSortedControl{cued_this, p_this};
-        mt_chemo_r   = obj.MTSortedChemo{cued_this, p_this};
+        mt_control_r = obj.MTSorted.Control{cued_this, p_this};
+        mt_chemo_r   = obj.MTSorted.Chemo{cued_this, p_this};
 
         med = @(x) median(x, 'omitnan');
         mt_med_control_l = med(mt_control_l);
@@ -762,7 +735,7 @@ set(ha_hd_cdf_r, 'ylabel', [], 'yticklabel', []);
 
         violinplot(thisSTLog, ["Control", "Chemo"], ...
             'ViolinColor', [opts.color.Control; opts.color.Treat], ...
-            'ScatterSize', 2, 'ShowMedian', false, 'ShowWhisker', false, 'ShowBox', false);
+            'MarkerSize', 2, 'ShowMedian', false, 'ShowWhisker', false, 'ShowBox', false);
 
         scatter(ax, 1:2, median(thisSTLog, 'omitnan'), 40, ...
             ones(2, 3), ...

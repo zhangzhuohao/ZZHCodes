@@ -52,14 +52,16 @@ for d = 1:length(Folders)
 
     %
     ProgressClass = GPSProgressKbClass(SessionClassAll);
+    ProgressClass = ProgressClass.getAllKDEs(1);
     ProgressClass.save(ProtocolDir);
     
     ProgressClass.print("Progress", ProtocolDir);
 %     ProgressClass.print("Show", ProtocolDir);
 
-    BehavCsvName = fullfile(ProtocolDir, "GPSProgressClass_" + ProgressClass.Task + "_" + upper(ProgressClass.Subject) + ".csv");
+    BehavCsvName = fullfile(ProtocolDir, "GPSProgressClass_" + ProgressClass.TaskName + "_" + upper(ProgressClass.Subject) + ".csv");
     writetable(ProgressClass.BehavTable, BehavCsvName);
 
+    %
     if all(ismember(["Control", "Chemo"], ProgressClass.Label))
         ProgressClass.print("ChemoEffect", ProtocolDir);
     end

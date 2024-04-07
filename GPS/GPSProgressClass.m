@@ -216,13 +216,11 @@ classdef GPSProgressClass
 
         %%
         function value = get.Ind(obj)
-
             ind = feval(obj.Task + ".getProgressInd", obj);
             value = ind;
         end
 
         function value = get.Bins(obj)
-
             bins = feval(obj.Task + ".getBins");
             value = bins;
         end
@@ -395,14 +393,14 @@ classdef GPSProgressClass
             Subjects = repmat(string(obj.Subject), length(Foreperiod), 1);
 
             perf_table = table(Subjects, Foreperiod, TargetPort, NumTrialsSorted, CorrectRatio, PrematureRatio, LateRatio, WrongRatio);
+        end
 
-    end
         %% Data processing
         function obj = gatherAllSorted(obj)
 
             Vars = ["RT", "MT", "HD", "CT"];
-            Labels = ["All", "Control", "Chemo"];
 
+            Labels = ["All", "Control", "Chemo"];
             for v = 1:length(Vars)
                 for l = 1:length(Labels)
                     if Labels(l)=="All"
@@ -415,13 +413,34 @@ classdef GPSProgressClass
                     end
                 end
             end
+
+            Labels = ["PreLesion", "LesionEarly", "LesionExtensive"];
+            for v = 1:length(Vars)
+                for l = 1:length(Labels)
+                    if Labels(l)=="LesionEarly" || Labels(l)=="LesionExtensive"
+                        session_this = obj.Label=="Lesion";
+                    else
+                        session_this = obj.Label==Labels(l);
+                    end
+                    if any(session_this)
+                        obj.(Vars(v)+"Sorted").(Labels(l)) = obj.spliceDataCell(obj.(Vars(v)+"Sorted").Session(session_this));
+                        switch Labels(l)
+                            case {'PreLesion', 'LesionExtensive'}
+                                obj.(Vars(v)+"Sorted").(Labels(l)) = cellfun(@(x) x(end-min([obj.PhaseCount length(x)])+1:end), obj.(Vars(v)+"Sorted").(Labels(l)), 'UniformOutput', false);
+                            case {'LesionEarly'}
+                                obj.(Vars(v)+"Sorted").(Labels(l)) = cellfun(@(x) x(1:min([obj.PhaseCount length(x)])), obj.(Vars(v)+"Sorted").(Labels(l)), 'UniformOutput', false);
+                        end
+                    end
+                end
+            end
+
         end % gatherSorted
 
         function obj = gatherAllSplit(obj)
 
             Vars = "ST";
-            Labels = ["All", "Control", "Chemo"];
 
+            Labels = ["All", "Control", "Chemo"];
             for v = 1:length(Vars)
                 for l = 1:length(Labels)
                     if Labels(l)=="All"
@@ -434,7 +453,27 @@ classdef GPSProgressClass
                     end
                 end
             end
-        end
+
+            Labels = ["PreLesion", "LesionEarly", "LesionExtensive"];
+            for v = 1:length(Vars)
+                for l = 1:length(Labels)
+                    if Labels(l)=="LesionEarly" || Labels(l)=="LesionExtensive"
+                        session_this = obj.Label=="Lesion";
+                    else
+                        session_this = obj.Label==Labels(l);
+                    end
+                    if any(session_this)
+                        obj.(Vars(v)+"Split").(Labels(l)) = obj.spliceDataCell(obj.(Vars(v)+"Split").Session(session_this));
+                        switch Labels(l)
+                            case {'PreLesion', 'LesionExtensive'}
+                                obj.(Vars(v)+"Split").(Labels(l)) = cellfun(@(x) x(end-2*obj.PhaseCount+1:end), obj.(Vars(v)+"Split").(Labels(l)), 'UniformOutput', false);
+                            case {'LesionEarly'}
+                                obj.(Vars(v)+"Split").(Labels(l)) = cellfun(@(x) x(1:2*obj.PhaseCount), obj.(Vars(v)+"Split").(Labels(l)), 'UniformOutput', false);
+                        end
+                    end
+                end
+            end 
+        end % gatherAllSplit
 
         function data_spliced = spliceDataCell(~, data_cell)
             sz = size(data_cell{1});
@@ -536,7 +575,7 @@ classdef GPSProgressClass
 
             Vars = ["RT", "MT", "HD"];
             VarsB = ["RT", "MovementTime", "HoldDuration"];
-            Labels = ["Control", "Chemo"];
+            Labels = ["Control", "Chemo", "PreLesion", "LesionEarly", "LesionExtensive"];
 
             for l = 1:length(Labels)
                 if ~contains(Labels(l), obj.Label)

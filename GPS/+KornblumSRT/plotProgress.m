@@ -114,7 +114,7 @@ plot_hold_duration_median(ha_hd_median, obj, opts);
 %% ha2. Plot every trial's hold duration during training
     function plot_hold_duration_scatter(ax, obj, opts, cued)
 
-        fp_this = unique(obj.MixedFP);
+        fp_this = unique(obj.TargetFP);
         yline(ax, fp_this, 'Color', [.8 .8 .8], 'LineWidth', 1.2, 'LineStyle', '-', 'Alpha', 0.4);
         xline(ax, opts.session_sep, 'Color', [.7 .7 .7], 'LineWidth', 1, 'LineStyle', '-');
 
@@ -250,7 +250,7 @@ plot_hold_duration_median(ha_hd_median, obj, opts);
 %% ha6. Plot hold duration of each session (violin), each port
     function plot_hold_duration_violin(ax, obj, opts, cued)
 
-        fp_this = unique(obj.MixedFP);
+        fp_this = unique(obj.TargetFP);
         yline(ax, fp_this, 'Color', [.8 .8 .8], 'LineWidth', 1.2, 'LineStyle', '-', 'Alpha', 0.4);
         xline(ax, (1:obj.NumSessions-1)+0.5, 'Color', [.7 .7 .7], 'LineWidth', 1, 'LineStyle', '-');
 
@@ -299,20 +299,22 @@ plot_hold_duration_median(ha_hd_median, obj, opts);
     function plot_hold_duration_median(ax, obj, opts)
 
         xline(ax, (1:obj.NumSessions-1)+0.5, 'Color', [.9 .9 .9], 'LineWidth', 1, 'LineStyle', '-');
-        yline(ax, obj.MixedFP, 'Color', [.7 .7 .7], 'LineWidth', 1, 'LineStyle', '-');
-        yline(ax, obj.MixedFP+0.8, 'Color', [.7 .7 .7], 'LineWidth', 1, 'LineStyle', ':');
+        yline(ax, obj.TargetFP, 'Color', [.7 .7 .7], 'LineWidth', 1, 'LineStyle', '-');
+        yline(ax, obj.TargetFP+0.8, 'Color', [.7 .7 .7], 'LineWidth', 1, 'LineStyle', ':');
 
         dcz_ind = find(obj.Treatment == "DCZ");
         num_dcz = length(dcz_ind);
         patch(ax, 'XData', [dcz_ind-.5 dcz_ind-.5 dcz_ind+.5 dcz_ind+.5]', 'YData', repmat([0; 100; 100; 0], 1, num_dcz), ...
             'FaceColor', opts.color.Treat, 'FaceAlpha', 0.2, 'EdgeColor', 'none');
 
+        stat = obj.HDStat.Session;
+        
         for p_this = 1:length(obj.Ports)
-            ind_this = obj.HDStat.Port==obj.Ports(p_this) & obj.HDStat.thisCued==0;
+            ind_this = stat.Port==obj.Ports(p_this) & stat.thisCued==0;
             errorbar(ax, 1:obj.NumSessions, ...
-                obj.HDStat.Median(ind_this), ...
-                obj.HDStat.Median(ind_this) - obj.HDStat.Median_ci_d(ind_this), ...
-                obj.HDStat.Median_ci_u(ind_this) - obj.HDStat.Median(ind_this), ...
+                stat.Median(ind_this), ...
+                stat.Median(ind_this) - stat.Median_ci_d(ind_this), ...
+                stat.Median_ci_u(ind_this) - stat.Median(ind_this), ...
                 'Color', eval("opts.color.Port"+obj.Ports(p_this)), 'LineWidth', 1.2, 'LineStyle', '-', 'CapSize', 1.2, ...
                 'Marker', 'o', 'MarkerSize', 4, 'MarkerFaceColor', eval("opts.color.Port"+obj.Ports(p_this)), 'MarkerEdgeColor', 'none');
         end
@@ -321,7 +323,7 @@ plot_hold_duration_median(ha_hd_median, obj, opts);
         ax.YLabel.String = 'Hold duration median (s)';
         ax.XLabel.FontWeight = 'Bold';
         ax.YLabel.FontWeight = 'Bold';
-        set(ax, 'xlim', [.5 obj.NumSessions+.5], 'ylim', [obj.MixedFP-.5 obj.MixedFP+.5], 'xtick', 1:obj.NumSessions, 'ytick', [obj.MixedFP-.5 obj.MixedFP obj.MixedFP+.5], ...
+        set(ax, 'xlim', [.5 obj.NumSessions+.5], 'ylim', [obj.TargetFP-.5 obj.TargetFP+.5], 'xtick', 1:obj.NumSessions, 'ytick', [obj.TargetFP-.5 obj.TargetFP obj.TargetFP+.5], ...
             'xticklabel', opts.session_date, 'ticklength', [0.01 0.1], 'box', 'off');
     end
 
@@ -333,12 +335,14 @@ plot_hold_duration_median(ha_hd_median, obj, opts);
         dcz_ind = find(obj.Treatment == "DCZ");
         num_dcz = length(dcz_ind);
 
+        stat = obj.HDStat.Session;
+
         for p_this = 1:length(obj.Ports)
-            ind_this = obj.HDStat.Port==obj.Ports(p_this) & obj.HDStat.thisCued==0;
+            ind_this = stat.Port==obj.Ports(p_this) & stat.thisCued==0;
             errorbar(ax, 1:obj.NumSessions, ...
-                obj.HDStat.IQR(ind_this), ...
-                obj.HDStat.IQR(ind_this) - obj.HDStat.IQR_ci_d(ind_this), ...
-                obj.HDStat.IQR_ci_u(ind_this) - obj.HDStat.IQR(ind_this), ...
+                stat.IQR(ind_this), ...
+                stat.IQR(ind_this) - stat.IQR_ci_d(ind_this), ...
+                stat.IQR_ci_u(ind_this) - stat.IQR(ind_this), ...
                 'Color', eval("opts.color.Port"+obj.Ports(p_this)), 'LineWidth', 1.2, 'LineStyle', '-', 'CapSize', 1.2,...
                 'Marker', 'o', 'MarkerSize', 4, 'MarkerFaceColor', eval("opts.color.Port"+obj.Ports(p_this)), 'MarkerEdgeColor', 'none');
         end
@@ -350,7 +354,7 @@ plot_hold_duration_median(ha_hd_median, obj, opts);
         ax.YLabel.String = 'Hold duration IQR (s)';
         ax.XLabel.FontWeight = 'Bold';
         ax.YLabel.FontWeight = 'Bold';
-        set(ax, 'xlim', [.5 obj.NumSessions+.5], 'ylim', [0 max(obj.HDStat.IQR)*1.2], 'xtick', 1:obj.NumSessions, ...
+        set(ax, 'xlim', [.5 obj.NumSessions+.5], 'ylim', [0 max(stat.IQR)*1.2], 'xtick', 1:obj.NumSessions, ...
             'xticklabel', opts.session_date, 'ticklength', [0.01 0.1], 'box', 'off');
     end
 
@@ -360,18 +364,18 @@ plot_hold_duration_median(ha_hd_median, obj, opts);
         hd_l = zeros(length(obj.Bins.HoldDuration), obj.NumSessions);
         hd_r = zeros(length(obj.Bins.HoldDuration), obj.NumSessions);
 
-        this_fp = unique(obj.MixedFP);
+        this_fp = unique(obj.TargetFP);
 
         for s_this = 1:obj.NumSessions
             switch cued
                 case {'cue'}
-                    hd_l(:, s_this) = obj.HDPDF{s_this}{1, 1};
-                    hd_r(:, s_this) = obj.HDPDF{s_this}{1, 2};
+                    hd_l(:, s_this) = obj.HDPDF.Session{s_this}{1, 1}.f;
+                    hd_r(:, s_this) = obj.HDPDF.Session{s_this}{1, 2}.f;
                     yline(ax, (this_fp+.5)/obj.Bins.width, 'Color', [.7 .7 .7], 'LineWidth', 1.5, 'LineStyle', '--');
                     ax.YLabel.String = 'Hold duration (s) - Cue';
                 case {'uncue'}
-                    hd_l(:, s_this) = obj.HDPDF{s_this}{2, 1};
-                    hd_r(:, s_this) = obj.HDPDF{s_this}{2, 2};
+                    hd_l(:, s_this) = obj.HDPDF.Session{s_this}{2, 1}.f;
+                    hd_r(:, s_this) = obj.HDPDF.Session{s_this}{2, 2}.f;
                     yline(ax, (this_fp+.8)/obj.Bins.width, 'Color', [.7 .7 .7], 'LineWidth', 1.5, 'LineStyle', ':');
                     ax.YLabel.String = 'Hold duration (s) - Uncue';
             end
@@ -423,13 +427,9 @@ plot_hold_duration_median(ha_hd_median, obj, opts);
         band_width = 0.12;
 
         p_this = obj.Ports==upper(string(port));
-        fp_this = unique(obj.MixedFP);
+        fp_this = unique(obj.TargetFP);
 
-        if all(all(cellfun(@(x) length(x)>=100, obj.HDSortedNone)))
-            HDs = obj.HDSortedNone;
-        else
-            HDs = cellfun(@(x, y) [x; y], obj.HDSortedNone, obj.HDSortedSaline, 'UniformOutput', false);
-        end
+        HDs = obj.HDSorted.All;
 
         xline(ax, fp_this, 'color', [.7 .7 .7], 'linewidth', 1.5, 'LineStyle', '-');
 %         xline(ax, fp_this+.5, 'Color', [.7 .7 .7], 'LineWidth', 1.5, 'LineStyle', '--');

@@ -26,7 +26,10 @@ classdef GPSColor
         % Filled vs. Empty
         Filled      = [.2 .2 .2];
         Empty       = [.6 .6 .6];
-
+        % Lesion
+        PreLesion   = [61   59   64 ] / 255;
+        LesionEarly = [255  108  34 ] / 255
+        LesionExtensive = [82 92 235] / 255;
     end
 
     methods
