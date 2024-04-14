@@ -11,6 +11,8 @@ else
     RelTime = Dur-FP;
 end
 
+RelTime = RelTime(~isnan(RelTime));
+
 % computing_method = 'cdf'; % could also be mean, ecdf
 remove_50ms = 1; % remove very fast responses, which are deemed anticipatory responses
 remove_outliers = 1;
@@ -56,8 +58,9 @@ if remove_outliers
     end
 end
 
-N = sum(~isnan(RelTime));
-if isempty(RelTime) || N<5
+
+DurOut.N = sum(RelTime);
+if isempty(RelTime) || DurOut.N<5
     DurOut.median = nan;
     DurOut.median_ksdensity = nan;
     DurOut.q1 = nan;
@@ -72,7 +75,7 @@ else
     DurOut.q3 = prctile(RelTime, 75);
     DurOut.mean = mean(RelTime, 'omitnan');
     DurOut.std = std(RelTime, 'omitnan');
-    DurOut.sem = DurOut.std / sqrt(N);
+    DurOut.sem = DurOut.std / sqrt(DurOut.N);
     if calse
         DurOut.median_std = std(bootstrp(1000, @(x) median(x, 'omitnan'), RelTime));
         DurOut.median_ksdensity_std = std(bootstrp(1000, @kscdf_med, RelTime));

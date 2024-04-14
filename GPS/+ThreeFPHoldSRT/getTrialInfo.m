@@ -34,8 +34,9 @@ else
             end
     end
 end
-obj.MixedFP = [.5, 1, 1.5];
+obj.TargetFP = [.5, 1, 1.5];
 obj.RW = SessionData.Custom.RW';
+obj.Cued = ones(obj.NumTrials, 1);
 
 for i = 1:obj.NumTrials
 
@@ -193,4 +194,5 @@ obj.PortCorrect(ind_bug)        = [];
 obj.PortChosen(ind_bug)         = [];
 obj.Outcome(ind_bug)            = [];
 
+obj.Cued(ind_bug)               = [];
 end

@@ -58,7 +58,7 @@ classdef GPSProgressKbClass
     properties (Constant)
         PhaseCount = 50; % Trial number to determine the early or late training phase
         CueUncue = [1, 0];
-        BandWidth = .1;
+        BandWidth = .05;
     end
 
     properties (Dependent)
