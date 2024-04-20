@@ -2,13 +2,22 @@ clear;
 
 %% Choose the target tasks to generate ProgressClass 
 Tasks = [
-    "Kornblum1000SRT";
-    "Kornblum1000SRTSelf";
-    "Kornblum1500SRTSelf";
-    "Kornblum2000SRTSelf";
-    "Kornblum2000SRTEmpSelf";
-    "Kornblum2000SRTUnguideSelf";
-    "Kornblum2000SRTMixSelf"
+    "Autoshaping";
+    "Wait1Hold";
+    "Wait1HoldSRT";
+    "Wait1HoldCRT";
+    "Wait2HoldSRT";
+    "Wait2HoldCRT";
+    "ThreeFPHoldCRT";
+    "ThreeFPHoldSRT";
+    "ThreeFPHoldWM";
+    "KornblumHold1000SRT";
+    "KornblumHold1000SRTSelf";
+    "KornblumHold1500SRTSelf";
+    "KornblumHold2000SRTSelf";
+    "KornblumHold2000SRTEmpSelf";
+    "KornblumHold2000SRTUnguideSelf";
+    "KornblumHold2000SRTMixSelf"
     ];
 
 [indx, tf] = listdlg("ListString", Tasks, "ListSize", [200, 200]);
@@ -30,7 +39,7 @@ Folders = get_folders(ParentDir, "FolderType", 'Protocol', "Tasks", Tasks(indx))
 for d = 1:length(Folders)
     % Call the recursive function to get a list of all the .mat files in the parent directory and its subdirectories
     ProtocolDir = Folders(d);
-    Files = get_mat_files(ProtocolDir, "FileType", 'SessionClass');
+    Files = get_mat_files(ProtocolDir, "FileType", 'BehSessionClass');
 
     if isempty(Files)
         continue
@@ -51,18 +60,18 @@ for d = 1:length(Folders)
     SessionClassAll = SessionClassAll(SortID);
 
     %
-    ProgressClass = GPSProgressKbClass(SessionClassAll);
-    ProgressClass = ProgressClass.getAllKDEs(1);
+    ProgressClass = GPSBehProgressClass(SessionClassAll);
+    ProgressClass.get_all_kdes(1);
     ProgressClass.save(ProtocolDir);
     
-    ProgressClass.print("Progress", ProtocolDir);
+%     ProgressClass.print("Progress", ProtocolDir);
 %     ProgressClass.print("Show", ProtocolDir);
 
-    BehavCsvName = fullfile(ProtocolDir, "GPSProgressClass_" + ProgressClass.TaskName + "_" + upper(ProgressClass.Subject) + ".csv");
+    BehavCsvName = fullfile(ProtocolDir, "GPSBehProgressClass_" + ProgressClass.Protocol + "_" + upper(ProgressClass.Subject) + ".csv");
     writetable(ProgressClass.BehavTable, BehavCsvName);
-
-    %
-    if all(ismember(["Control", "Chemo"], ProgressClass.Label))
-        ProgressClass.print("ChemoEffect", ProtocolDir);
-    end
+% 
+%     %
+%     if all(ismember(["Control", "Chemo"], ProgressClass.Label))
+%         ProgressClass.print("ChemoEffect", ProtocolDir);
+%     end
 end

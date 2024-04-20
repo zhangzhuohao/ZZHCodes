@@ -1,4 +1,4 @@
-classdef GPSBehSessionClass < GPSBehClass
+classdef GPSBehSessionClass < GPSBehClass & GPSPlot
     %UNTITLED2 Summary of this class goes here
     %   Detailed explanation goes here
     properties
@@ -52,9 +52,7 @@ classdef GPSBehSessionClass < GPSBehClass
         Outcome % Outcome of each trial, (1 for correct; 0 for choice-error; -1 for premature; -2 for late), [NumTrials x 1]
         LateChoice % Choice after late error
 
-        % Behavior tables
         Interruption
-        BehavTable
 
         % Probability density and cumulative distribution
         RTPDF % reaction time
@@ -78,11 +76,16 @@ classdef GPSBehSessionClass < GPSBehClass
         Dose % Set manually
         Label
 
+        %
+        TrialCentInTime
+        TrialSorted
+        TimeSorted
+
         % Behavior information
         Stage % warm-up or 3FP
-        Ind
+        Order
 
-        %
+        % Reference data and codes for data sorting
         SortRefs
         SortCodes
 
@@ -90,6 +93,9 @@ classdef GPSBehSessionClass < GPSBehClass
         ST % check
         STSplit
         STStat
+        LogST
+        LogSTSplit
+        LogSTStat
 
         % Hold duration
         HD
@@ -112,8 +118,12 @@ classdef GPSBehSessionClass < GPSBehClass
         CTStat
 
         % Performance
+        OutcomeSorted
         Performance
         PerformanceTrack
+
+        % Behavior table
+        BehavTable
 
         % Save name for object, figure and csv files
         SaveName
@@ -158,23 +168,23 @@ classdef GPSBehSessionClass < GPSBehClass
             protocol_bpod = bpod_file_info(end-2);
             switch protocol_bpod % e.g. 'Wait3FPFlash'
                 case {'Autoshaping'}
-                    obj.Task = 'Autoshaping';
+                    obj.Task = "Autoshaping";
                     obj.SortLabels = "LeftRight";
                     obj.SortVars   = "PortCorrect";
                 case {'Wait1Hold', 'Wait1HoldSRT', 'Wait1HoldFlash', 'Wait2HoldSRT', 'Wait2HoldFlash'}
-                    obj.Task = 'WaitHold';
+                    obj.Task = "WaitHold";
                     obj.SortLabels = "LeftRight";
                     obj.SortVars   = "PortCorrect";
                 case {'3FPHoldFlash', '3FPHoldSRT', '3FPHoldWM'}
-                    obj.Task = 'ThreeFPHold';
+                    obj.Task = "ThreeFPHold";
                     obj.SortLabels = ["CueUncue", "LeftRight"];
                     obj.SortVars   = ["Cued"    , "PortCorrect"];
                 case {'KornblumHold', 'KornblumHoldEmpty'}
-                    obj.Task = 'KornblumHold';
+                    obj.Task = "KornblumHold";
                     obj.SortLabels = ["CueUncue", "LeftRight"];
                     obj.SortVars   = ["Cued"    , "PortCorrect"];
                 case {'KornblumHoldMix'}
-                    obj.Task = 'KornblumHoldMix';
+                    obj.Task = "KornblumHoldMix";
                     obj.SortLabels = ["CueUncue", "Guidance", "LeftRight"];
                     obj.SortVars   = ["Cued"    , "Guided"  , "PortCorrect"];
             end
@@ -192,17 +202,16 @@ classdef GPSBehSessionClass < GPSBehClass
             % Session information
             obj.SessionInfo = readtable(obj.ANMInfoFile, "Sheet", obj.Subject, "TextType", "string");
             obj.SessionInfo = obj.SessionInfo(strcmp(string(obj.SessionInfo.Session), obj.Session), :);
-            obj.SessionStartTime = SessionData.Info.SessionStartTime_UTC;
+            obj.SessionStartTime = string(SessionData.Info.SessionStartTime_UTC);
 
             % Get paradigm specific trial information
-            feval([obj.Task '.getTrialInfo'], obj, SessionData);
+            feval(obj.Task+".getTrialInfo", obj, SessionData);
 
             % Get PDFs and CDFs
             obj.get_all_kdes(0);
 
             % Get behavior tables
             obj.get_Interruption();
-            obj.get_BehavTable();
 
         end % GPSSessionClass
 
@@ -268,7 +277,7 @@ classdef GPSBehSessionClass < GPSBehClass
 
         %% Get animal information
         function strain = get.Strain(obj)
-            strain = obj.ANMInfo.Strain;
+            strain = string(obj.ANMInfo.Strain);
         end
 
         function gender = get.Gender(obj)
@@ -292,19 +301,42 @@ classdef GPSBehSessionClass < GPSBehClass
         end
 
         function save_name = get.SaveName(obj)
-            save_name = sprintf("GPSSessionClass_%s_%s_%s", obj.Protocol, upper(obj.Subject), obj.Session);
+            save_name = sprintf("GPSBehSessionClass_%s_%s_%s", obj.Protocol, upper(obj.Subject), obj.Session);
+        end
+
+        %%
+        function trial_centin_time = get.TrialCentInTime(obj)
+            trial_centin_time = obj.TrialStartTime + cellfun(@(x) x(1), obj.CentPokeInTime);
+        end
+
+        function trial_sorted = get.TrialSorted(obj)
+            ind = obj.Stage==1;
+            trial_this = obj.Trials(ind);
+            refs_this = cellfun(@(x) x(ind), obj.SortRefs, 'UniformOutput', false);
+            trial_sorted = obj.sort_data(trial_this, refs_this, obj.SortCodes);
+        end
+
+        function time_sorted = get.TimeSorted(obj)
+            ind = obj.Stage==1;
+            time_this = obj.TrialCentInTime(ind);
+            refs_this = cellfun(@(x) x(ind), obj.SortRefs, 'UniformOutput', false);
+            time_sorted = obj.sort_data(time_this, refs_this, obj.SortCodes);
         end
 
         %% Get protocol specific information
         function stage = get.Stage(obj)
-            stage = feval([obj.Task '.getStage'], obj);
+            stage = feval(obj.Task+".getStage", obj);
         end
 
-        function ind = get.Ind(obj)
-            ind = feval([obj.Task '.getInd'], obj);
+        %% Split session to several parts
+        function order = get.Order(obj)
+            order = zeros(obj.NumTrials, 1);
+            ind = obj.Stage==1;
+            [~, order_id] = obj.split_data(obj.Trials(ind), obj.NumOrders);
+            order(ind) = cell2mat(order_id);
         end
 
-        %%
+        %% Sorting References
         function sort_refs = get.SortRefs(obj)
             sort_refs = arrayfun(@(x) obj.(x), obj.SortVars, 'UniformOutput', false);
         end
@@ -320,7 +352,7 @@ classdef GPSBehSessionClass < GPSBehClass
         end
 
         function st_split = get.STSplit(obj)
-            st_split = obj.split_data(obj.ST, 3);
+            st_split = obj.split_data(obj.ST(obj.Stage==1), 3);
         end
 
         function st_stat = get.STStat(obj)
@@ -332,6 +364,28 @@ classdef GPSBehSessionClass < GPSBehClass
 
             ind = obj.Stage==1;
             st_this = obj.ST(ind);
+            st_stat = obj.get_stat(st_this, {order_this}, {unique(order_this)}, "Order", 1);
+            st_stat = obj.add_session_info(st_stat);
+        end
+
+        % Log shuttle time
+        function shuttle_time = get.LogST(obj)
+            shuttle_time = log10(obj.ST);
+        end
+
+        function st_split = get.LogSTSplit(obj)
+            st_split = obj.split_data(obj.LogST(obj.Stage==1), 3);
+        end
+
+        function st_stat = get.LogSTStat(obj)
+            order_cell = cellfun(@(x) ones(length(x), 1), obj.LogSTSplit, 'UniformOutput', false);
+            for i = 1:length(order_cell)
+                order_cell{i} = order_cell{i} * i;
+            end
+            order_this = cell2mat(order_cell(:));
+
+            ind = obj.Stage==1;
+            st_this = obj.LogST(ind);
             st_stat = obj.get_stat(st_this, {order_this}, {unique(order_this)}, "Order", 1);
             st_stat = obj.add_session_info(st_stat);
         end
@@ -418,24 +472,30 @@ classdef GPSBehSessionClass < GPSBehClass
         end
 
         function get_all_kdes(obj, cal_ci)
-            obj.RTPDF = obj.get_kde(obj.RTSorted, obj.Bins.RT, 'pdf', "RT", cal_ci);
-            obj.RTCDF = obj.get_kde(obj.RTSorted, obj.Bins.RT, 'cdf', "RT", cal_ci);
-            obj.MTPDF = obj.get_kde(obj.MTSorted, obj.Bins.MT, 'pdf', "MT", cal_ci);
-            obj.MTCDF = obj.get_kde(obj.MTSorted, obj.Bins.MT, 'cdf', "MT", cal_ci);
-            obj.HDPDF = obj.get_kde(obj.HDSorted, obj.Bins.HD, 'pdf', "HD", cal_ci);
-            obj.HDCDF = obj.get_kde(obj.HDSorted, obj.Bins.HD, 'cdf', "HD", cal_ci);
-            obj.CTPDF = obj.get_kde(obj.CTSorted, obj.Bins.CT, 'pdf', "CT", cal_ci);
-            obj.CTCDF = obj.get_kde(obj.CTSorted, obj.Bins.CT, 'cdf', "CT", cal_ci);
+            Vars = ["HD", "RT", "MT", "CT"];
+            for i = 1:length(Vars)
+                v_this = Vars(i);
+                obj.(v_this+"PDF") = obj.get_kde(obj.(v_this+"Sorted"), obj.Bins.(v_this), 'pdf', v_this, cal_ci);
+                obj.(v_this+"CDF") = obj.get_kde(obj.(v_this+"Sorted"), obj.Bins.(v_this), 'cdf', v_this, cal_ci);
+            end
             logST = cellfun(@log10, obj.STSplit, 'UniformOutput', false);
             obj.LogSTPDF = obj.get_kde(logST, obj.Bins.LogST, 'pdf', "LogST", cal_ci);
             obj.LogSTCDF = obj.get_kde(logST, obj.Bins.LogST, 'cdf', "LogST", cal_ci);
         end
 
         %% Performance
+        function outcome_sorted = get.OutcomeSorted(obj)
+            ind = obj.Stage==1;
+            outcome_this = obj.Outcome(ind);
+            refs_this = cellfun(@(x) x(ind), obj.SortRefs, 'UniformOutput', false);
+            outcome_sorted = obj.sort_data(outcome_this, refs_this, obj.SortCodes);
+        end
+
         function perf_table = get.Performance(obj)
             ind = obj.Stage==1;
             outcome_this = obj.Outcome(ind);
             refs_this = cellfun(@(x) x(ind), obj.SortRefs, 'UniformOutput', false);
+            
             perf_table = obj.get_perfs(outcome_this, refs_this, obj.SortCodes, obj.SortVars);
             perf_table = obj.add_session_info(perf_table);
         end
@@ -443,8 +503,9 @@ classdef GPSBehSessionClass < GPSBehClass
         function perf_track = get.PerformanceTrack(obj)
             ind = obj.Stage==1;
             outcome_this = obj.Outcome(ind);
-            index_this = obj.TrialStartTime(ind) + cellfun(@(x) x(1), obj.CentPokeInTime(ind));
+            index_this = obj.TrialCentInTime(ind);
             refs_this = cellfun(@(x) x(ind), obj.SortRefs, 'UniformOutput', false);
+
             perf_track = obj.get_perf_track(outcome_this, index_this, refs_this, obj.SortCodes);
             perf_track = cellfun(@(x) obj.add_session_info(x), perf_track, 'UniformOutput', false);
         end
@@ -478,7 +539,7 @@ classdef GPSBehSessionClass < GPSBehClass
         end % getInterruption
 
         %% Behavior table
-        function get_BehavTable(obj)
+        function behav_table = get.BehavTable(obj)
             InitInTime  = cellfun(@(x) x(1),   obj.InitPokeInTime);
             InitOutTime = cellfun(@(x) x(end), obj.InitPokeOutTime);
             CentInTime  = cellfun(@(x) x(1),   obj.CentPokeInTime);
@@ -488,40 +549,38 @@ classdef GPSBehSessionClass < GPSBehClass
             if isempty(RWthis)
                 RWthis = nan(obj.NumTrials, 1);
             end
-
-            SessionDate  = repmat(string(obj.Session), obj.NumTrials, 1);
             SessionStart = repmat(string(obj.SessionStartTime), obj.NumTrials, 1);
 
-            Subjects = repmat(string(obj.Subject), obj.NumTrials, 1);
-
             behav_table = table( ...
-                Subjects, SessionDate, SessionStart, obj.Trials, obj.TrialStartTime, obj.Stage, ...
+                SessionStart, obj.Trials, obj.TrialStartTime, obj.TrialCentInTime, obj.Stage, obj.Order, ...
                 InitInTime, InitOutTime, CentInTime, CentOutTime, obj.ChoicePokeTime, obj.ChoiceCueTime, obj.TriggerCueTime, ...
                 obj.PortCorrect, obj.PortChosen, obj.FP, RWthis, obj.Outcome, ...
-                obj.ST, obj.HD, obj.RT, obj.MT, obj.CT, obj.Cued, ...
+                obj.ST, obj.LogST, obj.HD, obj.RT, obj.MT, obj.CT, obj.Cued, ...
                 'VariableNames', ...
-                {'Subject', 'Session', 'SessionStartTime', 'Trials', 'TrialStartTime', 'Stage', ...
+                {'SessionStartTime', 'Trials', 'TrialStartTime', 'TrialCentInTime', 'Stage', 'Order', ...
                 'InitInTime', 'InitOutTime', 'CentInTime', 'CentOutTime', 'ChoicePokeTime', 'ChoiceCueTime', 'TriggerCueTime', ...
                 'PortCorrect', 'PortChosen', 'FP', 'RW', 'Outcome', ...
-                'ST', 'HD', 'RT', 'MT', 'CT', 'Cued'});
+                'ST', 'LogST', 'HD', 'RT', 'MT', 'CT', 'Cued'});
             if ~isempty(obj.Guided)
                 behav_table = addvars(behav_table, obj.Guided, 'After', 'Cued', 'NewVariableNames', {'Guided'});
             end
-
-            obj.BehavTable = behav_table;
-        end % getBehavTable
+            behav_table = obj.add_session_info(behav_table);
+        end % get.BehavTable
 
         % add session information to tables
         function table_new = add_session_info(obj, table_raw)
 
             h_table = height(table_raw);
 
-            info = table('Size', [h_table, 2], ...
-                'VariableTypes', ["string", "string"], ...
-                'VariableNames', ["Subject", "Session"]);
+            info = table('Size', [h_table, 5], ...
+                'VariableTypes', ["string", "string", "string", "double", "string"], ...
+                'VariableNames', ["Subject", "Session", "Treatment", "Dose", "Label"]);
             
-            info.Subject = repmat(string(obj.Subject), h_table, 1);
-            info.Session = repmat(string(obj.Session), h_table, 1);
+            info.Subject    = repmat(string(obj.Subject), h_table, 1);
+            info.Session    = repmat(string(obj.Session), h_table, 1);
+            info.Treatment  = repmat(string(obj.Treatment), h_table, 1);
+            info.Dose       = repmat(obj.Dose, h_table, 1);
+            info.Label      = repmat(string(obj.Label), h_table, 1);
 
             table_new = horzcat(info, table_raw);
         end
@@ -558,10 +617,10 @@ classdef GPSBehSessionClass < GPSBehClass
 
         function print(obj, copy_dir)
             save_path = fullfile(obj.SessionFolder, obj.SaveName);
-            hf = obj.plot();
-            print(hf,'-dpdf', save_path, '-bestfit')
-            print(hf,'-dpng', save_path)
-            saveas(hf, save_path, 'fig')
+            fig = obj.plot();
+            exportgraphics(fig, save_path+".png", 'Resolution', 600);
+            exportgraphics(fig, save_path+".pdf", 'ContentType', 'vector');
+            saveas(fig, save_path, 'fig');
 
             if nargin==2
                 if ~isfolder(copy_dir)
@@ -581,7 +640,7 @@ classdef GPSBehSessionClass < GPSBehClass
                 disp('You do not have "set_matlab_default"' )
             end
 
-            fig = feval([obj.Task '.plotSession'], obj);
+            fig = feval(obj.Task+".plotSession", obj);
         end % plot
     end
 end

@@ -32,6 +32,13 @@ if any(strcmp(opts.Tasks, "ALL"))
         "Kornblum2000SRTEmpSelf";
         "Kornblum2000SRTUnguideSelf";
         "Kornblum2000SRTMixSelf"
+        "KornblumHold1000SRT";
+        "KornblumHold1000SRTSelf";
+        "KornblumHold1500SRTSelf";
+        "KornblumHold2000SRTSelf";
+        "KornblumHold2000SRTEmpSelf";
+        "KornblumHold2000SRTUnguideSelf";
+        "KornblumHold2000SRTMixSelf"
         ];
 end
 

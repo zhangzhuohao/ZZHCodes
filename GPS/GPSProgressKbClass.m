@@ -642,7 +642,6 @@ classdef GPSProgressKbClass
                 stat.Q3(i)         = mean(stat_session.Q3(ind_this), 'omitnan');
                 stat.Median_sem(i) = std(stat_session.Median(ind_this), 'omitnan') / sqrt(sum(~isnan(stat_session.Median)));
             end
-
         end
 
         function obj = gatherAllStats(obj)

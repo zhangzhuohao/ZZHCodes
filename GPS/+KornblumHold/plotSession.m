@@ -1,485 +1,293 @@
-function fig = plotSession(obj)
-
-%% set the options
-opts.color = GPSColor(); % Color class for GPS
-opts.mk = ["o", "x"]; % Scatter marker for correct and others
-opts.ls = ["-", ":"]; % Line style for [Cue, Uncue]
-opts.lw = [0.5, 1, 1.5]; % Line width for [ShortFP, MedFP, LongFP]
-opts.ticks = obj.TrialStartTime + cellfun(@(x)x(1), obj.CentPokeInTime); % Ticks for each trial
-
-%%
-fig = figure(22); clf(22);
-set(gcf, 'unit', 'centimeters', 'position', [2 2 24.5 21.2], 'paperpositionmode', 'auto', 'color', 'w');
-
-uicontrol('Style', 'text', 'parent', 22, 'units', 'normalized', 'position', [0.05 0.95 0.9 0.04],...
-    'string', [obj.Subject ' / ' obj.Session ' / ' obj.Task ' / ' char(obj.Treatment)], 'fontsize', 10, 'fontweight', 'bold', 'backgroundcolor', 'w');
-
-%% Set the axes and plot
-plot_size1 = [8 4];
-plot_size2 = [2 4];
-plot_size3 = [3.5 4];
-
-% Maze diagram
-ha1 = axes;
-set(ha1, 'units', 'centimeters', 'position', [1.2 16, plot_size1], 'nextplot', 'add', 'fontsize', 8);
-plot_diagram(ha1, opts);
-
-% Cumulative plot
-ha2 = axes;
-set(ha2, 'units', 'centimeters', 'position', [1.5 16-plot_size1(2)-1, plot_size1], 'nextplot', 'add', 'fontsize', 8);
-plot_cumulative(ha2, opts);
-
-% Performance track
-ha3 = axes;
-set(ha3, 'units', 'centimeters', 'position', [1.5 16-2*plot_size1(2)-2, plot_size1], 'nextplot', 'add', 'fontsize', 8);
-plot_performance(ha3, obj, opts);
-
-% Shuttle time
-ha4 = axes;
-set(ha4, 'units', 'centimeters', 'position', [1.5+plot_size1(1)+1 16, plot_size1], 'nextplot', 'add', 'fontsize', 8);
-plot_shuttle_time(ha4, obj, opts);
-
-% PDF of shuttle time
-ha5 = axes;
-set(ha5, 'units', 'centimeters', 'position', [1.5+2*plot_size1(1)+1.8 16, plot_size2], 'nextplot', 'add', 'fontsize', 8);
-plot_shuttle_time_pdf(ha5, obj);
-
-% Hold duration
-ha6 = axes;
-set(ha6, 'units', 'centimeters', 'position', [1.5+plot_size1(1)+1 16-plot_size1(2)-1, plot_size1], 'nextplot', 'add', 'fontsize', 8);
-plot_hold_duration(ha6, obj, opts);
-
-% PDF for hold duration
-ha7 = axes;
-set(ha7, 'units', 'centimeters', 'position', [1.5+2*plot_size1(1)+1.8 16-plot_size1(2)-1, plot_size2], 'nextplot', 'add', 'fontsize', 8);
-plot_hold_duration_pdf_l(ha7, obj, opts);
-
-% CDF for hold duration
-ha71 = axes;
-set(ha71, 'units', 'centimeters', 'position', [1.5+2*plot_size1(1)+1.8+plot_size2(1)+0.8 16-plot_size1(2)-1, plot_size2], 'nextplot', 'add', 'fontsize', 8);
-plot_hold_duration_pdf_r(ha71, obj, opts);
-
-% Reaction time
-ha8 = axes;
-set(ha8, 'units', 'centimeters', 'position', [1.5+plot_size1(1)+1 16-2*plot_size1(2)-2, plot_size1], 'nextplot', 'add', 'fontsize', 8);
-plot_reaction_time(ha8, obj, opts);
-
-% PDF for reaction time to PortL
-ha9 = axes;
-set(ha9, 'units', 'centimeters', 'position', [1.5+2*plot_size1(1)+1.8 16-2*plot_size1(2)-2, plot_size2], 'nextplot', 'add', 'fontsize', 8);
-plot_reaction_time_pdf_l(ha9, obj, opts);
-
-% PDF for reaction time to PortR
-ha91 = axes;
-set(ha91, 'units', 'centimeters', 'position', [1.5+2*plot_size1(1)+1.8+plot_size2(1)+0.8 16-2*plot_size1(2)-2, plot_size2], 'nextplot', 'add', 'fontsize', 8);
-plot_reaction_time_pdf_r(ha91, obj, opts);
-
-ha9.XLim(2) = max([ha9.XLim(2) ha91.XLim(2)]);
-ha91.XLim   = ha9.XLim;
-
-% Movement time
-ha10 = axes;
-set(ha10, 'units', 'centimeters', 'position', [1.5+plot_size1(1)+1 16-3*plot_size1(2)-3, plot_size1], 'nextplot', 'add', 'fontsize', 8);
-plot_movement_time(ha10, obj, opts);
-
-% PDF for movement time to PortL
-ha11 = axes;
-set(ha11, 'units', 'centimeters', 'position', [1.5+2*plot_size1(1)+1.8 16-3*plot_size1(2)-3, plot_size2], 'nextplot', 'add', 'fontsize', 8);
-plot_movement_time_pdf_l(ha11, obj, opts);
-
-% PDF for movement time to PortR
-ha111 = axes;
-set(ha111, 'units', 'centimeters', 'position', [1.5+2*plot_size1(1)+1.8+plot_size2(1)+0.8 16-3*plot_size1(2)-3, plot_size2], 'nextplot', 'add', 'fontsize', 8);
-plot_movement_time_pdf_r(ha111, obj, opts);
-
-ha11.XLim(2) = max([ha11.XLim(2) ha111.XLim(2)]);
-ha111.XLim   = ha11.XLim;
-
-% Collected performance
-ha12 = axes;
-set(ha12, 'units', 'centimeters', 'position', [1.5, 16-3*plot_size1(2)-3, plot_size3], 'nextplot', 'add', 'fontsize', 8);
-plot_performance_collected(ha12, obj, opts);
-
-% Legend for collected performance
-ha121 = axes;
-set(ha121, 'units', 'centimeters', 'position', [3.2, 16-3*plot_size1(2)-3+2*plot_size3(2)/3, plot_size3/3], 'nextplot', 'add', 'fontsize', 8);
-legend_performance(ha121, opts);
-
-% Violin plot for collected reaction time
-ha13 = axes;
-set(ha13, 'units', 'centimeters', 'position', [1.5+plot_size3(1)+1, 16-3*plot_size1(2)-3, plot_size3], 'nextplot', 'add', 'fontsize', 8);
-plot_reaction_time_collected(ha13, obj, opts);
-
-%% ha1. Make a diagram of the setup
-    function plot_diagram(ax, opts)
-
-        line(ax, [1 1], [0 6], 'color', 'k', 'linewidth', 2);
-        line(ax, [1 3], [0 0], 'color', 'k', 'linewidth', 2);
-        line(ax, [3 5], [0 2], 'color', 'k', 'linewidth', 2);
-        line(ax, [5 8], [2 2], 'color', 'k', 'linewidth', 2);
-        line(ax, [1 3], [6 6], 'color', 'k', 'linewidth', 2);
-        line(ax, [3 5], [6 4], 'color', 'k', 'linewidth', 2);
-        line(ax, [5 8], [4 4], 'color', 'k', 'linewidth', 2);
-
-        line(ax, [8 9], [4 4.8], 'color', 'k', 'linewidth', 2);
-        line(ax, [8 9], [2 1.2], 'color', 'k', 'linewidth', 2);
-        line(ax, [9 11], [4.8 4.8], 'color', 'k', 'linewidth', 2);
-        line(ax, [9 11], [1.2 1.2], 'color', 'k', 'linewidth', 2);
-        line(ax, [11 11], [1.2 4.8], 'color', 'k', 'linewidth', 2);
-
-        viscircles(ax, [9.6, 3], 0.3, 'color', 'k', 'LineWidth', 1);
-        text(ax, 8.6, 3, 'Init', 'FontWeight','bold', 'HorizontalAlignment', 'center');
-        viscircles(ax, [3.5, 3], 0.3,  'color', 'k', 'LineWidth', 1);
-        text(ax, 3.9, 3, 'Cent', 'FontWeight', 'bold');
-
-        viscircles(ax, [3, 1.5], 0.3, 'color', opts.color.PortL);
-        text(ax, 1.2, 1.5, 'Left', 'FontWeight','bold', 'HorizontalAlignment', 'left', 'Color', opts.color.PortL);
-        viscircles(ax, [3, 4.5], 0.3,  'color', opts.color.PortR);
-        text(ax, 1.2, 4.5, 'Right', 'FontWeight', 'bold', 'HorizontalAlignment', 'left', 'Color', opts.color.PortR);
-
-        set(ax, 'XColor', 'none', 'YColor', 'none', 'ylim', [0 6], 'xlim', [0 12]);
-    end
-
-%% ha2. Cumulative plot
-    function plot_cumulative(ax, opts)
-
-        stairs(opts.ticks, 1:length(opts.ticks), 'color', 'k', 'LineWidth', 1.5);
-
-        ax.XLabel.String = 'Time in session (s)';
-        ax.YLabel.String = 'Trial (count)';
-        set(ax, 'XLim', [0 opts.ticks(end)+5], 'YLim', [0 length(opts.ticks)+5]);
-    end
-
-%% ha3. Plot performance over time
-    function plot_performance(ax, obj, opts)
-
-        plot(ax, obj.PerformanceTrackCue.WinPos, obj.PerformanceTrackCue.CorrectRatio,   'o', 'linestyle', '-', 'color', opts.color.Correct, ...
-            'markersize', 5, 'linewidth', 1.2, 'markerfacecolor', opts.color.Correct,   'markeredgecolor', 'w');
-        plot(ax, obj.PerformanceTrackCue.WinPos, obj.PerformanceTrackCue.WrongRatio,     'o', 'linestyle', '-', 'color', opts.color.Wrong, ...
-            'markersize', 5, 'linewidth', 1.2, 'markerfacecolor', opts.color.Wrong,     'markeredgecolor', 'w');
-        plot(ax, obj.PerformanceTrackCue.WinPos, obj.PerformanceTrackCue.PrematureRatio, 'o', 'linestyle', '-', 'color', opts.color.Premature, ...
-            'markersize', 5, 'linewidth', 1.2, 'markerfacecolor', opts.color.Premature, 'markeredgecolor', 'w');
-        plot(ax, obj.PerformanceTrackCue.WinPos, obj.PerformanceTrackCue.LateRatio,      'o', 'linestyle', '-', 'color', opts.color.Late, ...
-            'markersize', 5, 'linewidth', 1.2, 'markerfacecolor', opts.color.Late,      'markeredgecolor', 'w');
-        
-        plot(ax, obj.PerformanceTrackUncue.WinPos, obj.PerformanceTrackUncue.CorrectRatio,   'o', 'linestyle', ':', 'color', opts.color.Correct, ...
-            'markersize', 4, 'linewidth', 1.2, 'markeredgecolor', opts.color.Correct,   'markerfacecolor', 'w');
-        plot(ax, obj.PerformanceTrackUncue.WinPos, obj.PerformanceTrackUncue.WrongRatio,     'o', 'linestyle', ':', 'color', opts.color.Wrong, ...
-            'markersize', 4, 'linewidth', 1.2, 'markeredgecolor', opts.color.Wrong,     'markerfacecolor', 'w');
-        plot(ax, obj.PerformanceTrackUncue.WinPos, obj.PerformanceTrackUncue.PrematureRatio, 'o', 'linestyle', ':', 'color', opts.color.Premature, ...
-            'markersize', 4, 'linewidth', 1.2, 'markeredgecolor', opts.color.Premature, 'markerfacecolor', 'w');
-        plot(ax, obj.PerformanceTrackUncue.WinPos, obj.PerformanceTrackUncue.LateRatio,      'o', 'linestyle', ':', 'color', opts.color.Late, ...
-            'markersize', 4, 'linewidth', 1.2, 'markeredgecolor', opts.color.Late,      'markerfacecolor', 'w');
-
-        ax.XLabel.String = 'Time in session (s)';
-        ax.YLabel.String = 'Performance (%)';
-        set(ax, 'XLim', [0 opts.ticks(end)+5], 'YLim', [0 100]);
-    end
-
-%% ha4. Plot shuttle time
-    function plot_shuttle_time(ax, obj, opts)
-
-        line(ax, [opts.ticks opts.ticks]', [0 2/20], 'color', 'K')
-
-        ST_log = log10(obj.ShuttleTime);
-        scatter(ax, opts.ticks, ST_log, ...
-            18, 'k', opts.mk(1), 'Markerfacealpha', 0.8, 'linewidth', 1.5);
-
-        ax.XLabel.String = 'Time in session (s)';
-        ax.YLabel.String = 'Shuttle time (s)';
-        set(ax, 'xlim', [0 opts.ticks(end)+5], 'ylim', [0 2], 'ticklength', [0.01 0.1], 'ytick', 1:3, 'yticklabel', {'10^1', '10^2', '10^3'});
-    end
-
-%% ha5. Plot shuttle time PDF on the right
-    function plot_shuttle_time_pdf(ax, obj) 
-        
-        binEdges = obj.Bins.ShuttleTimeLog;
-        ST_log = log10(obj.ShuttleTime);
-        PDF_PortL = ksdensity(ST_log, binEdges);
-
-        plot(ax, PDF_PortL, binEdges, 'color', 'k', 'linewidth', 1.5);
-
-        ax.XLabel.String = 'Prob. density (1/s)';
-        set(ax, 'ylim', [0 3], 'xlimmode', 'auto', 'yticklabel', [], 'ticklength', [0.02 0.1], 'ytick', 1:3)
-    end
-
-%% ha6. Plot hold duration and FP
-    function plot_hold_duration(ax, obj, opts)
-
-        yline(ax, obj.TargetFP+0.5, 'Color', [.7 .7 .7], 'LineWidth', 1.5, 'LineStyle', '--');
-        yline(ax, obj.TargetFP+0.8, 'Color', [.7 .7 .7], 'LineWidth', 1.5, 'LineStyle', ':');
-        line(ax, [opts.ticks opts.ticks]', [0 2.5/20], 'color', 'K')
-
-        % FPs
-        scatter(ax, opts.ticks, obj.FP, 'LineWidth', 1, 'Marker', '_', 'MarkerEdgeColor', [.7 .7 .7], 'SizeData', 4);
-
-        % port 1 correct (defined by their action, which is also the target for correct response)
-        scatter(ax, opts.ticks(obj.Ind.correctL & obj.Ind.cue), ...
-            obj.HoldDuration(obj.Ind.correctL & obj.Ind.cue), ...
-            24, opts.color.PortL, opts.mk(1),'Markerfacealpha', 0.8, 'linewidth', 1.5, 'MarkerFaceColor', opts.color.PortL);
-
-        % port 2 correct
-        scatter(ax, opts.ticks(obj.Ind.correctR & obj.Ind.cue), ...
-            obj.HoldDuration(obj.Ind.correctR & obj.Ind.cue), ...
-            24, opts.color.PortR, opts.mk(1), 'Markerfacealpha', 0.8, 'linewidth', 1.5, 'MarkerFaceColor', opts.color.PortR);
-
-        % port 1 correct (defined by their action, which is also the target for correct response)
-        scatter(ax, opts.ticks(obj.Ind.correctL & obj.Ind.uncue), ...
-            obj.HoldDuration(obj.Ind.correctL & obj.Ind.uncue), ...
-            24, opts.color.PortL, opts.mk(1), 'MarkerFaceAlpha', 0.8, 'linewidth', 1.5);
-
-        % port 2 correct
-        scatter(ax, opts.ticks(obj.Ind.correctR & obj.Ind.uncue), ...
-            obj.HoldDuration(obj.Ind.correctR & obj.Ind.uncue), ...
-            24, opts.color.PortR, opts.mk(1), 'Markerfacealpha', 0.8, 'linewidth', 1.5);
-
-        % port 1 wrong (defined by their action, which is different from target)
-        scatter(ax, opts.ticks(obj.Ind.wrongL), ...
-            obj.HoldDuration(obj.Ind.wrongL), ...
-            32, opts.color.PortL, opts.mk(2),'Markerfacealpha', 0.8, 'linewidth', 1.5);
-
-        % port 2 wrong
-        scatter(ax, opts.ticks(obj.Ind.wrongR), ...
-            obj.HoldDuration(obj.Ind.wrongR), ...
-            32, opts.color.PortR, opts.mk(2), 'Markerfacealpha', 0.8, 'linewidth', 1.5);
-
-        % premature
-        scatter(ax, opts.ticks(obj.Ind.premature), ...
-            obj.HoldDuration(obj.Ind.premature), ...
-            32, opts.color.Premature, opts.mk(2), 'Markerfacealpha', 0.8, 'linewidth', 1.5);
-
-        % late
-        scatter(ax, opts.ticks(obj.Ind.late), ...
-            obj.HoldDuration(obj.Ind.late), ...
-            32, opts.color.Late, opts.mk(2), 'Markerfacealpha', 0.8, 'linewidth', 1.5);
-
-        ax.XLabel.String = 'Time in session (s)';
-        ax.YLabel.String = 'Hold duration (s)';
-        set(ax, 'xlim', [0 opts.ticks(end)+5], 'ylim', [0 2.5], 'ticklength', [0.01 0.1]);
-    end
-
-%% ha7. plot hold duration pdf
-    function plot_hold_duration_pdf_l(ax, obj, opts)
-
-        yline(ax, obj.TargetFP+0.5, 'Color', [.7 .7 .7], 'LineWidth', 1.5, 'LineStyle', '--');
-        yline(ax, obj.TargetFP+0.8, 'Color', [.7 .7 .7], 'LineWidth', 1.5, 'LineStyle', ':');
-
-        for fp = 1:length(obj.TargetFP)
-            yline(ax, obj.TargetFP(fp), 'Color', [.7 .7 .7], 'LineWidth', opts.lw(fp), 'LineStyle', '-');
-        end
-
-        for i = 1:length(obj.CueUncue)
-            for j = 1
-                plot(ax, obj.HDPDF{i, j}.f, obj.HDPDF{i, j}.x, 'color', eval("opts.color.Port" + obj.Ports(j)), 'linewidth', 1.5, 'LineStyle', opts.ls(i));
-            end
-        end
-
-        ax.XLabel.String = 'Prob. density (1/s)';
-        set(ax, 'xlimmode', 'auto', 'ylim', [0 2.5], 'yticklabel', [], 'ticklength', [0.02 0.1])
-    end
-
-%% ha7.1. plot hold duration cdf
-    function plot_hold_duration_pdf_r(ax, obj, opts)
-
-        yline(ax, obj.TargetFP+0.5, 'Color', [.7 .7 .7], 'LineWidth', 1.5, 'LineStyle', '--');
-        yline(ax, obj.TargetFP+0.8, 'Color', [.7 .7 .7], 'LineWidth', 1.5, 'LineStyle', ':');
-
-        for fp = 1:length(obj.TargetFP)
-            yline(ax, obj.TargetFP(fp), 'Color', [.7 .7 .7], 'LineWidth', opts.lw(fp), 'LineStyle', '-');
-        end
-
-        for i = 1:length(obj.CueUncue)
-            for j = 2
-                plot(ax, obj.HDPDF{i, j}.f, obj.HDPDF{i, j}.x, 'color', eval("opts.color.Port" + obj.Ports(j)), 'linewidth', 1.5, 'LineStyle', opts.ls(i));
-            end
-        end
-
-        ax.XLabel.String = 'Prob. density (1/s)';
-        set(ax, 'xlimmode', 'auto', 'ylim', [0 2.5], 'yticklabel', [], 'ticklength', [0.02 0.1])
-    end
-
-%% ha8. Plot reaction time
-    function plot_reaction_time(ax, obj, opts) 
-
-        line(ax, [opts.ticks opts.ticks]', [0 0.6/20], 'color', 'K')
-        yline(ax, .5, 'Color', [.7 .7 .7], 'LineWidth', 1.5, 'LineStyle', '--');
-        yline(ax, .8, 'Color', [.7 .7 .7], 'LineWidth', 1.5, 'LineStyle', ':');
-
-        % port 1 correct (defined by their action, which is also the target for correct response)
-        scatter(ax, opts.ticks(obj.Ind.correctL & obj.Ind.cue), ...
-            obj.RT(obj.Ind.correctL & obj.Ind.cue), ...
-            24, opts.color.PortL, opts.mk(1),'Markerfacealpha', 0.8, 'linewidth', 1.5, 'MarkerFaceColor', opts.color.PortL);
-
-        % port 2 correct
-        scatter(ax, opts.ticks(obj.Ind.correctR & obj.Ind.cue), ...
-            obj.RT(obj.Ind.correctR & obj.Ind.cue), ...
-            24, opts.color.PortR, opts.mk(1), 'Markerfacealpha', 0.8, 'linewidth', 1.5, 'MarkerFaceColor', opts.color.PortR);
-
-        % port 1 correct (defined by their action, which is also the target for correct response)
-        scatter(ax, opts.ticks(obj.Ind.correctL & obj.Ind.uncue), ...
-            obj.RT(obj.Ind.correctL & obj.Ind.uncue), ...
-            24, opts.color.PortL, opts.mk(1),'Markerfacealpha', 0.8, 'linewidth', 1.5);
-
-        % port 2 correct
-        scatter(ax, opts.ticks(obj.Ind.correctR & obj.Ind.uncue), ...
-            obj.RT(obj.Ind.correctR & obj.Ind.uncue), ...
-            24, opts.color.PortR, opts.mk(1), 'Markerfacealpha', 0.8, 'linewidth', 1.5);
-
-        % port 1 wrong (defined by their action, which is different from target)
-        scatter(ax, opts.ticks(obj.Ind.wrongL), ...
-            obj.RT(obj.Ind.wrongL), ...
-            32, opts.color.PortL, opts.mk(2),'Markerfacealpha', 0.8, 'linewidth', 1.5);
-
-        % port 2 wrong
-        scatter(ax, opts.ticks(obj.Ind.wrongR), ...
-            obj.RT(obj.Ind.wrongR), ...
-            32, opts.color.PortR, opts.mk(2), 'Markerfacealpha', 0.8, 'linewidth', 1.5);
-
-        ax.XLabel.String = 'Time in session (s)';
-        ax.YLabel.String = 'Reaction time (s)';
-        set(ax, 'xlim', [0 opts.ticks(end)+5], 'ylim', [0 0.8], 'ticklength', [0.01 0.1]);
-    end
-
-%% ha9. plot reaction time PDF for PortL
-    function plot_reaction_time_pdf_l(ax, obj, opts)
-        
-        yline(ax, .5, 'Color', [.7 .7 .7], 'LineWidth', 1.5, 'LineStyle', '--');
-        yline(ax, .8, 'Color', [.7 .7 .7], 'LineWidth', 1.5, 'LineStyle', ':');
-
-        for c = 1:length(obj.CueUncue)
-            plot(ax, obj.RTPDF{c, 1}.f, obj.RTPDF{c, 1}.x, 'color', opts.color.PortL, 'linewidth', 1.5, 'LineStyle', opts.ls(c));
-        end
-
-        ax.XLabel.String = 'Prob. density (1/s)';
-        set(ax, 'xlimmode', 'auto', 'ylim', [0 .8], 'yticklabel', [], 'ticklength', [0.02 0.1]);
-    end
-
-%% ha9.1. plot reaction time PDF for PortR
-    function plot_reaction_time_pdf_r(ax, obj, opts)
-        
-        yline(ax, .5, 'Color', [.7 .7 .7], 'LineWidth', 1.5, 'LineStyle', ':');
-        yline(ax, .8, 'Color', [.7 .7 .7], 'LineWidth', 1.5, 'LineStyle', '--');
-        for c = 1:length(obj.CueUncue)
-            plot(ax, obj.RTPDF{c, 1}.f, obj.RTPDF{c, 1}.x, 'color', opts.color.PortR, 'linewidth', 1.5, 'LineStyle', opts.ls(c));
-        end
-
-        ax.XLabel.String = 'Prob. density (1/s)';
-        set(ax, 'xlimmode', 'auto', 'ylim', [0 .8], 'yticklabel', [], 'ticklength', [0.02 0.1]);
-    end
-
-%% ha10. plot movement times
-    function plot_movement_time(ax, obj, opts)
-        
-        line([opts.ticks opts.ticks]', [0 0.1], 'color', 'k')
-
-        % port 1 correct (defined by their action, which is also the target for correct response)
-        scatter(ax, opts.ticks(obj.Ind.correctL & obj.Ind.cue), ...
-            obj.MovementTime(obj.Ind.correctL & obj.Ind.cue), ...
-            24, opts.color.PortL, opts.mk(1),'Markerfacealpha', 0.8, 'linewidth', 1.5, 'MarkerFaceColor', opts.color.PortL);
-
-        % port 2 correct
-        scatter(ax, opts.ticks(obj.Ind.correctR & obj.Ind.cue), ...
-            obj.MovementTime(obj.Ind.correctR & obj.Ind.cue), ...
-            24, opts.color.PortR, opts.mk(1), 'Markerfacealpha', 0.8, 'linewidth', 1.5, 'MarkerFaceColor', opts.color.PortR);
-
-        % port 1 correct (defined by their action, which is also the target for correct response)
-        scatter(ax, opts.ticks(obj.Ind.correctL & obj.Ind.uncue), ...
-            obj.MovementTime(obj.Ind.correctL & obj.Ind.uncue), ...
-            24, opts.color.PortL, opts.mk(1),'Markerfacealpha', 0.8, 'linewidth', 1.5);
-
-        % port 2 correct
-        scatter(ax, opts.ticks(obj.Ind.correctR & obj.Ind.uncue), ...
-            obj.MovementTime(obj.Ind.correctR & obj.Ind.uncue), ...
-            24, opts.color.PortR, opts.mk(1), 'Markerfacealpha', 0.8, 'linewidth', 1.5);
-
-        ax.XLabel.String = 'Time in session (s)';
-        ax.YLabel.String = 'Movement time (s)';
-        set(ax, 'xlim', [0 opts.ticks(end)+5], 'ylim', [0 2], 'ticklength', [0.01 0.1]);
-    end
-
-%% ha11. Plot movement time PDF on the right for PortL
-    function plot_movement_time_pdf_l(ax, obj, opts)
-
-        for c = 1:length(obj.CueUncue)
-            plot(ax, obj.MTPDF{c, 1}.f, obj.MTPDF{c, 1}.x, 'color', opts.color.PortL, 'linewidth', 1.5, 'LineStyle', opts.ls(c))
-        end
-
-        ax.XLabel.String = 'Prob. density (1/s)';
-        set(ax, 'xlimmode', 'auto', 'ylim', [0 2], 'yticklabel', [], 'ticklength', [0.02 0.1]);
-    end
-
-%% ha11.1. Plot movement time PDF on the right for PortL
-    function plot_movement_time_pdf_r(ax, obj, opts)
-
-        for c = 1:length(obj.CueUncue)
-            plot(ax, obj.MTPDF{c, 1}.f, obj.MTPDF{c, 1}.x, 'color', opts.color.PortR, 'linewidth', 1.5, 'LineStyle', opts.ls(c))
-        end
-
-        ax.XLabel.String = 'Prob. density (1/s)';
-        set(ax, 'xlimmode', 'auto', 'ylim', [0 2], 'yticklabel', [], 'ticklength', [0.02 0.1]);
-    end
-
-%% ha12. Performance of each port
-    function plot_performance_collected(ax, obj, opts)
-
-        for i = 1:length(obj.CueUncue)
-            
-            indL = obj.Performance.Cued_this==obj.CueUncue(i) & obj.Performance.TargetPort=="L";
-            indR = obj.Performance.Cued_this==obj.CueUncue(i) & obj.Performance.TargetPort=="R";
-
-            line(ax, [1 2.5], [obj.Performance.CorrectRatio(indL) obj.Performance.CorrectRatio(indR)], ...
-                'color', opts.color.Correct, 'linewidth', 1.5, 'LineStyle', opts.ls(i));
-            line(ax, [3.5 5], [obj.Performance.WrongRatio(indL) obj.Performance.WrongRatio(indR)], ...
-                'color', opts.color.Wrong, 'linewidth', 1.5, 'LineStyle', opts.ls(i));
-            line(ax, [6 7.5], [obj.Performance.PrematureRatio(indL) obj.Performance.PrematureRatio(indR)], ...
-                'color', opts.color.Premature, 'linewidth', 1.5, 'LineStyle', opts.ls(i));
-            line(ax, [8.5 10], [obj.Performance.LateRatio(indL) obj.Performance.LateRatio(indR)], ...
-                'color', opts.color.Late, 'linewidth', 1.5, 'LineStyle', opts.ls(i));
-        end
-
-        ax.YLabel.String = 'Performance (%)';
-        set(ax, 'xlim', [0.5 10.5], 'ylim', [0 100], 'ticklength', [0.01 0.1], ...
-            'xtick', [1 2.5 3.5 5 6 7.5 8.5 10], 'xticklabel', {'L', 'R', '', '', '', '', '', ''})
-    end
-
-%  ha12.1. legend
-    function legend_performance(ax, opts)
-        
-        line(ax, [.5 1], [4 4], 'color', opts.color.Correct,    'linewidth', 1.2);
-        line(ax, [.5 1], [3 3], 'color', opts.color.Wrong,      'linewidth', 1.2);
-        line(ax, [.5 1], [2 2], 'color', opts.color.Premature,  'linewidth', 1.2);
-        line(ax, [.5 1], [1 1], 'color', opts.color.Late,       'linewidth', 1.2);
-
-        text(ax, 1.2, 4, 'Correct',   'fontsize', 7);
-        text(ax, 1.2, 3, 'Wrong',     'fontSize', 7);
-        text(ax, 1.2, 2, 'Premature', 'fontsize', 7);
-        text(ax, 1.2, 1, 'Late',      'fontsize', 7);
-
-        set(ax, 'ylim', [0.5 4.5], 'xlim', [.5 2], 'xcolor', 'none', 'ycolor', 'none', 'color', 'none');
-    end
-
-%% ha13. Reaction time to each port
-    function plot_reaction_time_collected(ax, obj, opts) 
-
-        thisRT = nan(sum(obj.Stage==1 & obj.Ind.correct), length(obj.Ports)*length(obj.CueUncue));
-        for p = 1:length(obj.Ports)
-            for c = 1:length(obj.CueUncue)
-                thisRT(1:length(obj.RTSorted{c, p}), c+(p-1)*length(obj.CueUncue)) = obj.RTSorted{c,p};
-            end
-        end
-        thisRT(1, all(isnan(thisRT))) = 0;
-
-        yline(ax, .5, 'Color', [.7 .7 .7], 'LineWidth', 1.5, 'LineStyle', '--');
-
-        if all(~isnan(thisRT)>=5)
-            violinplot({thisRT(:, 3:4), thisRT(:, 1:2)}, {'Cue', 'Uncue'}, ...
-                'ViolinColor', {repmat(opts.color.PortR, 2, 1), repmat(opts.color.PortL, 2, 1)}, 'MarkerSize', 6, ...
-                'ShowMedian', false, 'ShowWhisker', false, 'ShowBox', false);
-            scatter(ax, [1 2 1 2], median(thisRT, 'omitnan'), 24, [repmat(opts.color.PortL, 2, 1); repmat(opts.color.PortR, 2, 1)], 'filled', 'LineWidth', 1, 'MarkerEdgeColor', [.3 .3 .3])
-        end
-        
-        ax.YLabel.String = 'Reaction time (s)';
-        set(ax, 'xlim', [0 4], 'ylim', [0 .8], 'xtick', [1 2], 'xticklabel', {'Cue', 'Uncue'}, 'ticklength', [0.01 0.1], 'box', 'off');
-    end
+function fig_session = plotSession(obj)
+
+ax_sz_1 = [5 2];
+ax_sz_2 = [2.4 2];
+ax_sz_3 = [1.5 2];
+
+if contains(obj.Protocol, "Self")
+    ls = "-";
+    lw = 1;
+    sort_id = 2;
+    rw = .8;
+    ax_sz_s = ax_sz_1;
+    cue_uncue_code = 0;
+    cue_uncue_label = "Uncued";
+else
+    ls = ["-", ":"];
+    lw = [1 1.25];
+    sort_id = [1 2];
+    rw = [.5 .8];
+    ax_sz_s = ax_sz_2;
+    cue_uncue_code = [0 1];
+    cue_uncue_label = ["Uncued" "Cued"];
+end
+
+fig_session = figure(11); clf(fig_session);
+set(fig_session, 'Visible', 'on', 'Units', 'centimeters', 'Position', [5 5 17 10.5], 'Color', 'w', 'toolbar', 'none');
+
+fig_title = sprintf("%s / %s / %s / %s", obj.Subject, obj.Session, obj.Protocol, obj.Label);
+set_fig_title(fig_session, fig_title);
+
+% cumulative plot
+ax_cumulative = axes(fig_session, "Units", "centimeters", "Position", [1.2 7.5 ax_sz_1], 'NextPlot', 'add', 'FontSize', 8, 'TickDir', 'out');
+stairs(ax_cumulative, obj.TrialCentInTime, obj.Trials, 'LineWidth', 1, 'LineStyle', '-', 'Color', [0 0 0]);
+set(ax_cumulative, 'XLim', [0 1.05*max(obj.TrialCentInTime)])
+xlabel(ax_cumulative, 'Time (s)', 'FontWeight', 'bold');
+ylabel(ax_cumulative, 'Trial #', 'FontWeight', 'bold');
+
+% performance track
+draw_perf_track(obj, fig_session, [1.2 4 ax_sz_1], ax_sz_2, obj.PerformanceTrack(sort_id,:), ls, lw);
+
+% performance ratio
+draw_perf_bars(obj, fig_session, [1.2 1 ax_sz_1], ax_sz_2, cue_uncue_code, cue_uncue_label);
+
+% shuttle time
+% scatter plot
+ax_st_s = draw_scatter(obj, fig_session, [7.5 7.5 ax_sz_1], ax_sz_1, ...
+    {log10(obj.ST)}, {obj.TrialCentInTime}, ...
+    {repmat("Correct", obj.NumTrials, 1)}, {[0 0 0]}, [], []);
+for i = 1:length(ax_st_s)
+    set(ax_st_s{i}, 'YLim', [0 1], 'YTick', log10(1:10), 'YTickLabel', ["1", repmat("", 1, 8), "10"]);
+end
+ylabel(ax_st_s{1}, 'ST (s)', 'FontWeight', 'bold');
+
+% prob. density
+c_first = .4 * ones(1, 3);
+c_last  = 0  * ones(1, 3);
+ax_st_d = draw_density(obj, fig_session, [13 7.5 3.5 2], ax_sz_3, ...
+    obj.LogSTPDF([1 end])', [], [], ...
+    {{c_first}, {c_last}}, {'-', '-'}, {1, 1});
+for i = 1:length(ax_st_d)
+    set(ax_st_d{i}, 'YLim', [0 1], 'YTick', log10(1:10), 'YTickLabel', []);
+end
+text(ax_st_d{1}, ax_st_d{1}.XLim(2), .9, 'First 1/3', 'Color', c_first, 'FontSize', 7, 'FontWeight', 'bold', 'HorizontalAlignment', 'right');
+text(ax_st_d{2}, ax_st_d{2}.XLim(2), .9, 'Last 1/3' , 'Color', c_last , 'FontSize', 7, 'FontWeight', 'bold', 'HorizontalAlignment', 'right');
+
+% hold duration
+% scatter plot
+ax_hd_s = draw_scatter(obj, fig_session, [7.5 4 ax_sz_1], ax_sz_s, ...
+    obj.HDSorted(sort_id, :), obj.TimeSorted(sort_id, :), obj.OutcomeSorted(sort_id, :), ...
+    {GPSColor.PortL, GPSColor.PortR}, obj.TargetFP, rw);
+for i = 1:length(ax_hd_s)
+    set(ax_hd_s{i}, 'YLim', [-1 1]+obj.TargetFP);
+    xlabel(ax_hd_s{i}, []);
+end
+ylabel(ax_hd_s{1}, 'HD (s)', 'FontWeight', 'bold');
+
+% prob. density
+ax_hd_d = draw_density(obj, fig_session, [13 4 3.5 2], ax_sz_3, ...
+    obj.HDPDF(sort_id, :), obj.TargetFP, rw, ...
+    {{GPSColor.PortL}, {GPSColor.PortR}}, {ls, ls}, {lw, lw});
+
+for i = 1:length(ax_hd_d)
+    set(ax_hd_d{i}, 'YLim', [-1 1]+obj.TargetFP, 'YTickLabel', []);
+    xlabel(ax_hd_d{i}, []);
+end
+
+% movement time
+ind = obj.Stage==1 & obj.Outcome=="Correct";
+time_this = obj.TrialCentInTime(ind);
+outcome_this = obj.Outcome(ind);
+refs_this = cellfun(@(x) x(ind), obj.SortRefs, 'UniformOutput', false);
+time_sorted = obj.sort_data(time_this, refs_this, obj.SortCodes);
+outcome_sorted = obj.sort_data(outcome_this, refs_this, obj.SortCodes);
+
+% scatter plot
+ax_mt_s = draw_scatter(obj, fig_session, [7.5 1 ax_sz_1], ax_sz_s, ...
+    obj.MTSorted(sort_id,:), time_sorted(sort_id,:), outcome_sorted(sort_id,:), ...
+    {GPSColor.PortL, GPSColor.PortR}, [], []);
+for i = 1:length(ax_mt_s)
+    title(ax_mt_s{i}, []);
+    set(ax_mt_s{i}, 'YLim', [.2 1]);
+end
+ylabel(ax_mt_s{1}, 'MT (s)', 'FontWeight', 'bold');
+
+% prob. density
+ax_mt_d = draw_density(obj, fig_session, [13 1 3.5 2], ax_sz_3, ...
+    obj.MTPDF(sort_id,:), [], [], ...
+    {{GPSColor.PortL}, {GPSColor.PortR}}, {ls, ls}, {lw, lw});
+for i = 1:length(ax_mt_d)
+    set(ax_mt_d{i}, 'YLim', [.2 1], 'YTickLabel', []);
+end
 
 end
+
+%% Functions
+% performance track
+function ax = draw_perf_track(obj, fig, pos, ax_sz, perf_track, ls, lw)
+draw_sz = size(perf_track);
+if draw_sz(2)==1
+    draw_sz = [1 draw_sz(1)];
+    perf_track = reshape(perf_track, draw_sz);
+end
+ax = cell(1, draw_sz(2));
+[dist_w, ~] = obj.get_plot_dist(ax, pos, ax_sz);
+
+x_lim = max(max(cellfun(@(x) max(x.Pos), perf_track)));
+for j = 1:draw_sz(2)
+    x_now = pos(1) + dist_w * (j-1);
+    y_now = pos(2);
+
+    ax{j} = axes(fig, "Units", "centimeters", "Position", [x_now y_now ax_sz], ...
+        'NextPlot', 'add', 'FontSize', 8, 'TickDir', 'out');
+    for i = 1:draw_sz(1)
+        for k = 1:length(obj.PerformanceType)
+            perf_this = obj.PerformanceType(k);
+            plot(ax{j}, perf_track{i,j}.Pos, 100*perf_track{i,j}.(perf_this), ls(i), 'LineWidth', lw(i), 'Color', GPSColor.(perf_this));
+        end
+        set(ax{j}, 'XLim', [0 1.05*x_lim], 'YLim', [0 100], 'YTick', [0 50 100]);
+
+        if j==1 && i==1
+            ylabel(ax{j}, 'Perfomance %', 'FontWeight', 'bold');
+            xlabel(ax{j}, 'Time (s)', 'FontWeight', 'bold');
+        elseif j~=1
+            set(ax{j}, 'YTickLabel', []);
+        end
+        if i==1
+            switch j
+                case 1
+                    title(ax{j}, 'Left', 'FontWeight', 'bold', 'Color', GPSColor.PortL);
+                case 2
+                    title(ax{j}, 'Right', 'FontWeight', 'bold', 'Color', GPSColor.PortR);
+            end
+        end
+    end
+end
+drawnow();
+end % draw_perf_track
+
+function ax = draw_perf_bars(obj, fig, pos, ax_sz, code, lb)
+ax = cell(1, 2);
+[dist_w, ~] = obj.get_plot_dist(ax, pos, ax_sz);
+
+for j = 1:2
+    x_now = pos(1) + dist_w * (j-1);
+    y_now = pos(2);
+
+    ax{j} = axes(fig, "Units", "centimeters", "Position", [x_now y_now ax_sz], ...
+        'NextPlot', 'add', 'FontSize', 8, 'TickDir', 'out');
+    id = zeros(1, length(code));
+    for i = 1:length(code)
+        id(i) = find(obj.Performance.Cued==code(i) & obj.Performance.PortCorrect==j);
+    end
+    b = bar(ax{j}, code, 100*table2array(obj.Performance(id, end-3:end)), 'EdgeColor', 'none');
+    for i = 1:4
+        b(i).FaceColor = GPSColor.(obj.PerformanceType(i));
+    end
+    set(ax{j}, 'XLim', code+[-.5 .5], 'XTick', code, 'XTickLabel', lb, 'XTickLabelRotation', 0, 'YLim', [0 100]);
+    if j==1
+        ylabel(ax{j}, 'Perfomance %', 'FontWeight', 'bold');
+        xlabel(ax{j}, 'Condition', 'FontWeight', 'bold');
+    elseif j~=1
+        set(ax{j}, 'YTickLabel', []);
+    end
+end
+drawnow();
+end % draw_perf_bars
+
+% scatter plot
+function ax = draw_scatter(obj, fig, pos, ax_sz, data_sorted, time_sorted, perf_sorted, color, fp, rw)
+draw_sz = size(data_sorted, 1);
+ax = cell(1, draw_sz);
+dist_w = obj.get_plot_dist(ax, pos, ax_sz);
+
+x_lim = max(obj.TrialCentInTime);
+for i = 1:draw_sz
+    x_now = pos(1) + dist_w * (i-1);
+    y_now = pos(2);
+
+    ax{i} = axes(fig, "Units", "centimeters", "Position", [x_now y_now ax_sz], ...
+        'NextPlot', 'add', 'FontSize', 8, 'TickDir', 'out');
+
+    switch length(data_sorted(1,:))
+        case 1
+            data_this = data_sorted{i,1};
+            time_this = time_sorted{i,1};
+            color_this = repmat(color{1}, length(data_sorted{i,1}), 1);
+            perf_this = perf_sorted{i,1};
+        case 2
+            data_this = [data_sorted{i,1}; data_sorted{i,2}];
+            time_this = [time_sorted{i,1}; time_sorted{i,2}];
+            color_this = [repmat(color{1}, length(data_sorted{i,1}), 1); repmat(color{2}, length(data_sorted{i,2}), 1)];
+            perf_this = [perf_sorted{i,1}; perf_sorted{i,2}];
+    end
+
+    [time_this, id_rank] = sort(time_this);
+    data_this = data_this(id_rank);
+    color_this = color_this(id_rank, :);
+    perf_this = perf_this(id_rank);
+
+    mk_this = repmat("x", length(data_this), 1);
+    mk_this(perf_this=="Correct") = "o";
+
+    for j = 1:length(data_this)
+        scatter(ax{i}, time_this(j), data_this(j), 16, color_this(j,:), 'Marker', mk_this(j), 'LineWidth', 1);
+    end
+    if ~isempty(fp)
+        yline(ax{i}, fp, 'LineWidth', .5, 'LineStyle', '-');
+        if ~isempty(rw)
+            yline(ax{i}, fp+rw(i), 'LineWidth', .5, 'LineStyle', ':');
+        end
+    end
+    set(ax{i}, 'XLim', [0 1.05*x_lim]);
+
+    if i==1
+        xlabel(ax{i}, 'Time (s)', 'FontWeight', 'bold');
+    else
+        set(ax{i}, 'YTickLabel', []);
+    end
+    if draw_sz>1
+        switch i
+            case 1
+                title(ax{i}, 'Cued', 'FontWeight', 'bold');
+            case 2
+                title(ax{i}, 'Uncued', 'FontWeight', 'bold');
+        end
+    end
+    add_time_tick(fig, ax{i}, time_this);
+end
+drawnow();
+end % draw_scatter
+
+% density plot
+function ax = draw_density(obj, fig, pos, ax_sz, data_kde, fp, rw, color, ls, lw)
+draw_sz = size(data_kde, 2);
+ax = cell(1, draw_sz);
+dist_w = obj.get_plot_dist(ax, pos, ax_sz);
+
+x_lim = max(max(cellfun(@(x) max(x.f), data_kde)));
+x_lim = (ceil(x_lim) + round(x_lim)) / 2;
+for i = 1:draw_sz
+    x_now = pos(1) + dist_w * (i-1);
+    y_now = pos(2);
+
+    ax{i} = axes(fig, "Units", "centimeters", "Position", [x_now y_now ax_sz], ...
+        'NextPlot', 'add', 'FontSize', 8, 'TickDir', 'out');
+
+    obj.plot_distr(ax{i}, data_kde(:,i), 'Color', color{:,i}, 'LineStyle', ls{:,i}, 'LineWidth', lw{:,i}, 'Reversed', 1);
+    if ~isempty(fp)
+        yline(ax{i}, fp, 'LineWidth', .5, 'LineStyle', '-');
+        if ~isempty(rw)
+            yline(ax{i}, fp+rw, 'LineWidth', .5, 'LineStyle', ':');
+        end
+    end
+
+    set(ax{i}, 'XLim', [0 x_lim]);
+
+    if i==1
+        xlabel(ax{i}, 'Density (1/s)', 'FontWeight', 'bold');
+    else
+        set(ax{i}, 'YTickLabel', []);
+    end
+end
+drawnow();
+end % draw_density
+
+% time ticks
+function add_time_tick(fig, ax, x_val)
+ax_tick = axes(fig, "Units", ax.Units, "Position", ax.Position, 'NextPlot', 'add', 'FontSize', 8, 'TickDir', 'out', ...
+    'Color', 'none', 'XColor', 'none', 'YColor', 'none', 'XLim', ax.XLim, 'YLim', [0 1]);
+for i = 1:length(x_val)
+    plot(ax_tick, x_val([i i]), [0 .05], 'LineWidth', .5, 'Color', 'k', 'LineStyle', '-');
+end
+end % add_time_tick

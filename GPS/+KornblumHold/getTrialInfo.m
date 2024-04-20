@@ -343,7 +343,7 @@ ind_bug = strcmp(obj.Outcome, 'Bug') | obj.FP <= 0;
 
 obj.NumTrials = obj.NumTrials - sum(ind_bug);
 
-obj.Trials(ind_bug)             = [];
+obj.Trials                      = (1:obj.NumTrials)';
 obj.TrialStartTime(ind_bug)     = [];
 
 obj.FP(ind_bug)                 = [];
@@ -362,6 +362,7 @@ obj.ChoicePokeTime(ind_bug)     = [];
 obj.PortCorrect(ind_bug)        = [];
 obj.PortChosen(ind_bug)         = [];
 obj.Outcome(ind_bug)            = [];
+obj.LateChoice(ind_bug)         = [];
 
 obj.Cued(ind_bug)               = [];
 
