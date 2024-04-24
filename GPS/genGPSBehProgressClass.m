@@ -60,7 +60,7 @@ for d = 1:length(Folders)
     SessionClassAll = SessionClassAll(SortID);
 
     %
-    ProgressClass = GPSBehProgressClass(SessionClassAll);
+    ProgressClass = GPSBehProgressClass(SessionClassAll, ProtocolDir);
     ProgressClass.get_all_kdes(1);
     ProgressClass.save(ProtocolDir);
     

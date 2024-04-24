@@ -57,7 +57,7 @@ classdef GPSPlot < handle
             p = inputParser;
             addRequired(p,'ax', @ishandle);
             addRequired(p,'data', @iscell);
-            addParameter(p,'FP', defaultFP, @(x) (isvector(x) && length(x)==length(data)));
+            addParameter(p,'FP', defaultFP, @isvector);
             addParameter(p,'Color', defaultColor, @iscell);
             addParameter(p,'LineWidth', defaultLw, @isvector);
             addParameter(p,'LineStyle', defaultLs, @isvector);
@@ -73,6 +73,9 @@ classdef GPSPlot < handle
             LineStyle = p.Results.LineStyle;
             Reversed = p.Results.Reversed;
 
+            if length(FP)~=length(data) && length(FP)~=1
+                error("Unmatched length between color and data");
+            end
             if length(Color)==1
                 Color = repmat(Color, 1, length(data));
             elseif length(Color)~=length(data)
@@ -89,8 +92,17 @@ classdef GPSPlot < handle
                 error("Unmatched length between ls and data");
             end
 
-            for i=1:length(data)
-                if FP(i)~=0
+
+            for i = 1:length(data)
+                if length(FP)==1
+                    if i==1
+                        if Reversed
+                            yline(ax, FP, 'LineStyle', "-", 'Color', [.5 .5 .5]);
+                        else
+                            xline(ax, FP, 'LineStyle', "-", 'Color', [.5 .5 .5]);
+                        end
+                    end
+                elseif FP(i)~=0
                     if Reversed
                         yline(ax, FP(i), 'LineStyle', LineStyle(i), 'Color', [.5 .5 .5]);
                     else
@@ -118,7 +130,6 @@ classdef GPSPlot < handle
         function plot_violin_compare(~, ax, datain_1, datain_2, band_width, varargin)
             defaultCate = string(1:length(datain_1));
             defaultColor = repmat({[0 0 0]}, 1, 2);
-            defaultScale = 1;
 
             p = inputParser;
             addRequired(p,'ax', @ishandle);
@@ -127,8 +138,10 @@ classdef GPSPlot < handle
             addRequired(p,'band_width', @isnumeric);
             addParameter(p,'cate_name', defaultCate);
             addParameter(p,'Color', defaultColor);
-            addParameter(p,'Scale', defaultScale);
-            addParameter(p,'TextMedian', false);
+            addParameter(p,'Scale', 1, @isnumeric);
+            addParameter(p,'TextMedian', false, @islogical);
+            addParameter(p,'ShowMedian', true, @islogical);
+            addParameter(p,'MedianSize', 16, @isnumeric);
 
             parse(p, ax, datain_1, datain_2, band_width, varargin{:});
 
@@ -140,6 +153,8 @@ classdef GPSPlot < handle
             Color = p.Results.Color;
             Scale = p.Results.Scale;
             TextMedian = p.Results.TextMedian;
+            ShowMedian = p.Results.ShowMedian;
+            MedianSize = p.Results.MedianSize;
 
             n_data_1 = max(cellfun(@length, datain_1));
             n_data_2 = max(cellfun(@length, datain_2));
@@ -150,7 +165,9 @@ classdef GPSPlot < handle
             else
                 n_cate = length(datain_1);
             end
-
+            if length(Color)==1
+                Color = repmat(Color, 1, 2);
+            end
             %
             data_1 = nan(n_data, n_cate);
             data_2 = nan(n_data, n_cate);
@@ -183,15 +200,16 @@ classdef GPSPlot < handle
                 v(i).ScatterPlot.MarkerFaceAlpha = .2;
                 v(i).ScatterPlot2.MarkerFaceAlpha = .2;
 
-                scatter(ax, i-.05, data_med_1(i), 16, Color{1}, "filled", ...
-                    'LineWidth', 1, 'MarkerEdgeColor', 'flat', ...
-                    'MarkerFaceColor', 'none');
-                scatter(ax, i+.05, data_med_2(i), 16, Color{2}, "filled", ...
-                    'LineWidth', 1, 'MarkerEdgeColor', 'flat', ...
-                    'MarkerFaceColor', 'none');
-                plot(ax, [i-.05 i-.05], data_med_ci_1(:,i), 'Color', Color{1}, 'LineWidth', 1);
-                plot(ax, [i+.05 i+.05], data_med_ci_2(:,i), 'Color', Color{2}, 'LineWidth', 1);
-
+                if ShowMedian
+                    scatter(ax, i-.05, data_med_1(i), MedianSize, Color{1}, "filled", ...
+                        'LineWidth', 1, 'MarkerEdgeColor', 'flat', ...
+                        'MarkerFaceColor', 'none');
+                    scatter(ax, i+.05, data_med_2(i), MedianSize, Color{2}, "filled", ...
+                        'LineWidth', 1, 'MarkerEdgeColor', 'flat', ...
+                        'MarkerFaceColor', 'none');
+                    plot(ax, [i-.05 i-.05], data_med_ci_1(:,i), 'Color', Color{1}, 'LineWidth', 1);
+                    plot(ax, [i+.05 i+.05], data_med_ci_2(:,i), 'Color', Color{2}, 'LineWidth', 1);
+                end
                 if TextMedian
                     switch Scale
                         case 1

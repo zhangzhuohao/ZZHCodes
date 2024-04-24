@@ -4,6 +4,7 @@ classdef GPSBehProgressClass < GPSBehClass & GPSPlot
 
     properties
         % Class object information
+        ProtocolDir
         UpdateTime
 
         % Animal information
@@ -86,9 +87,10 @@ classdef GPSBehProgressClass < GPSBehClass & GPSPlot
 
     methods
         %% Initiation
-        function obj = GPSBehProgressClass(SessionClassAll)
+        function obj = GPSBehProgressClass(SessionClassAll, ProtocolDir)
             %UNTITLED2 Construct an instance of this class
             %   Detailed explanation goes here
+            obj.ProtocolDir = ProtocolDir;
             % Animal information
             obj.Subject = unique(cellfun(@(x) string(x.Subject), SessionClassAll));
             obj.Strain  = unique(cellfun(@(x) string(x.Strain), SessionClassAll));
@@ -177,6 +179,11 @@ classdef GPSBehProgressClass < GPSBehClass & GPSPlot
             obj.get_all_stats(1); % pooled data
 
             % KS density
+            obj.LogSTPDF.Session = cellfun(@(x) x.LogSTPDF, SessionClassAll, 'UniformOutput', false);
+            obj.HDPDF.Session    = cellfun(@(x) x.HDPDF, SessionClassAll, 'UniformOutput', false);
+            obj.RTPDF.Session    = cellfun(@(x) x.RTPDF, SessionClassAll, 'UniformOutput', false);
+            obj.MTPDF.Session    = cellfun(@(x) x.MTPDF, SessionClassAll, 'UniformOutput', false);
+            obj.CTPDF.Session    = cellfun(@(x) x.CTPDF, SessionClassAll, 'UniformOutput', false);
             obj.get_all_kdes(0);
 
             % Performance
@@ -477,11 +484,16 @@ classdef GPSBehProgressClass < GPSBehClass & GPSPlot
         end % split_lesion_trials
 
         %% Save and print
-        function save(obj, save_dir)
+        function save(obj, copy_dir)
             obj.UpdateTime = string(datetime());
 
-            save_path = fullfile(save_dir, obj.SaveName);
+            save_path = fullfile(obj.ProtocolDir, obj.SaveName);
             save(save_path, 'obj');
+
+            if nargin==2
+                copy_path = fullfile(copy_dir, obj.SaveName);
+                copyfile(save_path+".mat", copy_path+".mat");
+            end
         end % save
     end % methods
 
