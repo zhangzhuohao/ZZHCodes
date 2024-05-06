@@ -26,7 +26,16 @@ if ~tf
 end
 
 %% Use the uigetdir function to open a dialog box and allow the user to select the parent directory
-ParentDir = uigetdir("F:\YuLab\Work\GPS\Data", "Select parent directory");
+Drives = char('A':'Z');
+Drives = string(Drives(:));
+for i = 1:length(Drives)
+    if isfolder(Drives(i)+":\OneDrive")
+        DataFolder  = Drives(i) + ":\OneDrive\YuLab\Work\GPS\Data\";
+        break;
+    end
+end
+
+ParentDir = uigetdir(DataFolder, "Select parent directory");
 if ~ParentDir
     return
 end
@@ -62,9 +71,10 @@ for d = 1:length(Folders)
     %
     ProgressClass = GPSBehProgressClass(SessionClassAll, ProtocolDir);
     ProgressClass.get_all_kdes(1);
-    ProgressClass.save(ProtocolDir);
+    ProgressClass.save();
     
-%     ProgressClass.print("Progress", ProtocolDir);
+    fig_progress = ProgressClass.plotProgress();
+    ProgressClass.print(fig_progress);
 %     ProgressClass.print("Show", ProtocolDir);
 
     BehavCsvName = fullfile(ProtocolDir, "GPSBehProgressClass_" + ProgressClass.Protocol + "_" + upper(ProgressClass.Subject) + ".csv");

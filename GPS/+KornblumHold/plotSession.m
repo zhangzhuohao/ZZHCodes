@@ -257,6 +257,9 @@ dist_w = obj.get_plot_dist(ax, pos, ax_sz);
 
 x_lim = max(max(cellfun(@(x) max(x.f), data_kde)));
 x_lim = (ceil(x_lim) + round(x_lim)) / 2;
+if x_lim==0
+    x_lim = 1;
+end
 for i = 1:draw_sz
     x_now = pos(1) + dist_w * (i-1);
     y_now = pos(2);
