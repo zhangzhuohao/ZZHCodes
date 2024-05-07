@@ -1,833 +1,520 @@
-function fig = plotProgress(obj)
-
+function fig_progress = plotProgress(obj)
 %%
-opts.color = GPSColor(); % Color class for GPS
-opts.mk = ["o", "x"]; % Scatter marker for correct and others
-opts.ls = [":", "-", "-"]; % Line style for [ShortFP, MedFP, LongFP]
-opts.lw = [0.5, 1, 1.5]; % Line width for [ShortFP, MedFP, LongFP]
-opts.trial_ticks = obj.BehavTable.TrialStartTimeProgress + obj.BehavTable.CentInTime;
+beh = obj.BehavTable;
 
-opts.session_sep = zeros(1, obj.NumSessions-1);
-for s = 1:obj.NumSessions-1
-    ind = find(obj.BehavTable.SessionDate==obj.Sessions(s), 1, 'last');
-    opts.session_sep(s) = opts.trial_ticks(ind)+5;
+beh_sorted = obj.sort_table(beh(beh.Stage==1, :), obj.SortVars, obj.SortCodes);
+beh_sorted_st = obj.sort_table(beh(beh.Stage==1, :), [], []);
+beh_sorted_mt = obj.sort_table(beh(beh.Stage==1 & beh.Outcome=="Correct", :), obj.SortVars, obj.SortCodes);
+
+perf_sorted = obj.sort_table(obj.Performance.Session, obj.SortVars, obj.SortCodes);
+stat_sorted = obj.sort_table(obj.HDStat.Session, obj.SortVars, obj.SortCodes);
+
+if ~all(isfield(obj.HDPDF, ["Early", "Late"]))
+    id_early = find(beh.Stage==1 & ~ismember(beh.Label, ["Chemo", "Lesion", "LesionEarly", "LesionExtensive"]), obj.PhaseCount, 'first');
+    id_late  = find(beh.Stage==1 & ~ismember(beh.Label, ["Chemo", "Lesion", "LesionEarly", "LesionExtensive"]), obj.PhaseCount, 'last');
+    beh_early = beh(id_early, :);
+    beh_late  = beh(id_late, :);
+
+    obj.HDSorted.Early = obj.sort_data(beh_early.HD, {beh_early.Cued, beh_early.PortCorrect}, obj.SortCodes);
+    obj.HDSorted.Late  = obj.sort_data(beh_late.HD,  {beh_late.Cued,  beh_late.PortCorrect},  obj.SortCodes);
+
+    fprintf("\n******** EarlyTraning ********\n");
+    obj.HDPDF.Early = obj.get_kde(obj.HDSorted.Early, obj.Bins.HD, 'pdf', 'HD', 1);
+    fprintf("\n******** LateTraning ********\n");
+    obj.HDPDF.Late  = obj.get_kde(obj.HDSorted.Late, obj.Bins.HD, 'pdf', 'HD', 1);
+    obj.save();
 end
 
-opts.session_date = char(obj.Sessions);
-opts.session_date = opts.session_date(:, 5:8);
-
-opts.plotsize1 = [8 4];
-opts.plotsize2 = [9 3.5];
-opts.plotsize3 = [3.5 3];
-opts.plotsize4 = [2 3];
-
-opts.sep_col = 0.5;
-opts.sep_row = 1.5;
-
-opts.bandwidth = 0.05;
+C = GPSColor();
 
 %%
-fig = figure(23); clf(23);
-set(gcf, 'unit', 'centimeters', 'position', [2 .7 39.5 25.4], 'paperpositionmode', 'auto', 'color', 'w');
-
-mycolormap = customcolormap_preset("red-white-blue");
-% mycolormap = "Turbo";
-
-set_fig_title(fig, obj.Subject+" / "+obj.Task+" / "+obj.Sessions(1)+"\_"+obj.Sessions(end));
-
-%% Set axes and plot
-% Maze diagram
-ha_diagram = axes;
-set(ha_diagram, 'units', 'centimeters', 'position', [2+3*(opts.sep_row+opts.plotsize1(1)) 1.8+4*(opts.sep_col+opts.plotsize1(2)), [8 4] ], 'nextplot', 'add', 'fontsize', 8);
-plot_diagram(ha_diagram, opts);
-
-% Hold duration scatter
-ha_HD_scatter = axes;
-set(ha_HD_scatter, 'units', 'centimeters', 'position', [1.5+0*(opts.sep_row+opts.plotsize1(1)) 2+3*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8);
-plot_hold_duration_scatter(ha_HD_scatter, obj, opts);
-set(ha_HD_scatter, 'xtick', [], 'xlabel', []);
-
-% Reaction time scatter
-ha_RT_scatter = axes;
-set(ha_RT_scatter, 'units', 'centimeters', 'position', [1.5+0*(opts.sep_row+opts.plotsize1(1)) 2+2*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8);
-plot_reaction_time_scatter(ha_RT_scatter, obj, opts);
-set(ha_RT_scatter, 'xtick', [], 'xlabel', []);
-
-% Performance track
-ha_perf_track = axes;
-set(ha_perf_track, 'units', 'centimeters', 'position', [1.5+0*(opts.sep_row+opts.plotsize1(1)) 2+4*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8);
-plot_performance_track_progress(ha_perf_track, obj, opts);
-set(ha_perf_track, 'xtick', [], 'xlabel', []);
-
-% Performance progress
-ha_perf_progress = axes;
-set(ha_perf_progress, 'units', 'centimeters', 'position', [.5+1*(opts.sep_row+opts.plotsize1(1)) 2+4*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8);
-plot_performance_progress(ha_perf_progress, obj, opts);
-set(ha_perf_progress, 'xtick', [], 'xlabel', [], 'yticklabel', [], 'ylabel', []);
-
-% Reaction time violin plot
-ha_RT_violin = axes;
-set(ha_RT_violin, 'units', 'centimeters', 'position', [.5+1*(opts.sep_row+opts.plotsize1(1)) 2+2*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8);
-plot_reaction_time_violin(ha_RT_violin, obj, opts);
-set(ha_RT_violin, 'xtick', [], 'xlabel', [], 'yticklabel', [], 'ylabel', []);
-
-%
-ha_RT_median = axes;
-set(ha_RT_median, 'units', 'centimeters', 'position', [.5+3*(opts.sep_row+opts.plotsize1(1))+1.5 2+3*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8);
-plot_reaction_time_median(ha_RT_median, obj, opts);
-set(ha_RT_median, 'xtick', [], 'xlabel', []);
-
-%
-ha_HD_IQR = axes;
-set(ha_HD_IQR, 'units', 'centimeters', 'position', [.5+3*(opts.sep_row+opts.plotsize1(1))+1.5 2+2*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8);
-plot_hold_duration_iqr(ha_HD_IQR, obj, opts);
-
-%
-ha_HD_heatmap_R = axes;
-set(ha_HD_heatmap_R, 'units', 'centimeters', 'position', [.5+2*(opts.sep_row+opts.plotsize1(1)) 2+4*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8);
-plot_hold_duration_heatmap(ha_HD_heatmap_R, obj, "R", opts)
-set(ha_HD_heatmap_R, 'xtick', [], 'xlabel', []);
-clim(ha_HD_heatmap_R, [0, 10]);
-
-colormap(ha_HD_heatmap_R, "Turbo");
-cb9 = colorbar(ha_HD_heatmap_R, 'units', 'centimeters', 'position', [.5+3*(opts.sep_row+opts.plotsize1(1))-opts.sep_row+0.2 2+4*(opts.sep_col+opts.plotsize1(2)), [.3 opts.plotsize1(2)]]);
-% cb9.Limits = [0 cb9.Limits(2)];
-cb9.Limits = [0 10];
-cb9.Label.String = "Prob. density (1/s)";
-cb9.FontSize = 8;
-
-%
-ha_HD_heatmap_L = axes;
-set(ha_HD_heatmap_L, 'units', 'centimeters', 'position', [.5+2*(opts.sep_row+opts.plotsize1(1)) 2+3*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8);
-plot_hold_duration_heatmap(ha_HD_heatmap_L, obj, "L", opts)
-set(ha_HD_heatmap_L, 'xtick', [], 'xlabel', []);
-clim(ha_HD_heatmap_L, [0, 8]);
-
-colormap(ha_HD_heatmap_L, "Turbo");
-cb10 = colorbar(ha_HD_heatmap_L, 'units', 'centimeters', 'position', [.5+3*(opts.sep_row+opts.plotsize1(1))-opts.sep_row+0.2 2+3*(opts.sep_col+opts.plotsize1(2)), [.3 opts.plotsize1(2)]]);
-% cb10.Limits = [0 cb10.Limits(2)];
-cb10.Limits = [0 8];
-cb10.Label.String = "Prob. density (1/s)";
-cb10.FontSize = 8;
-
-%
-ha_HD_heatmap_diff = axes;
-set(ha_HD_heatmap_diff, 'units', 'centimeters', 'position', [.5+2*(opts.sep_row+opts.plotsize1(1)) 2+2*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8);
-plot_hold_duration_heatmap(ha_HD_heatmap_diff, obj, "L-R", opts);
-clim(ha_HD_heatmap_diff, [-8 8]);
-
-colormap(ha_HD_heatmap_diff, mycolormap);
-cb11 = colorbar(ha_HD_heatmap_diff, 'units', 'centimeters', 'position', [.5+3*(opts.sep_row+opts.plotsize1(1))-opts.sep_row+0.2 2+2*(opts.sep_col+opts.plotsize1(2)), [.3 4]]);
-cb11.Label.String = "Δ Prob. density (1/s)";
-cb11.FontSize = 8;
-
-%
-ha_HD_heatmap_colorbar = axes;
-set(ha_HD_heatmap_colorbar, 'units', 'centimeters', 'position', [.5+2*(opts.sep_row+opts.plotsize1(1)) 1.5+1*(opts.sep_col+opts.plotsize1(2)), opts.plotsize2], 'nextplot', 'add', 'fontsize', 8);
-plot_hold_duration_pdf_early_late(ha_HD_heatmap_colorbar, obj, "R", opts);
-
-ha122 = axes;
-set(ha122, 'units', 'centimeters', 'position', [.5+2*(opts.sep_row+opts.plotsize1(1)) 1.9+0*(opts.sep_col+opts.plotsize1(2)), opts.plotsize2], 'nextplot', 'add', 'fontsize', 8);
-plot_hold_duration_pdf_early_late(ha122, obj, "L", opts);
-
-density_max = max([ha_HD_heatmap_colorbar.YLim(2) ha122.YLim(2)]);
-set(ha_HD_heatmap_colorbar, 'ylim', [0 density_max], 'xticklabel', [], 'xlabel', []);
-set(ha122, 'ylim', [0 density_max]);
-
-%
-ha_HD_CDF_R = axes;
-set(ha_HD_CDF_R, 'units', 'centimeters', 'position', [1+3*(opts.sep_row+opts.plotsize1(1)) 1.5+1*(opts.sep_col+opts.plotsize1(2)), opts.plotsize2], 'nextplot', 'add', 'fontsize', 8);
-plot_hold_duration_cdf_early_late(ha_HD_CDF_R, obj, "R", opts);
-set(ha_HD_CDF_R, 'xticklabel', [], 'xlabel', []);
-
-ha_HD_CDF_L = axes;
-set(ha_HD_CDF_L, 'units', 'centimeters', 'position', [1+3*(opts.sep_row+opts.plotsize1(1)) 1.9+0*(opts.sep_col+opts.plotsize1(2)), opts.plotsize2], 'nextplot', 'add', 'fontsize', 8);
-plot_hold_duration_cdf_early_late(ha_HD_CDF_L, obj, "L", opts);
-
-ha_HD_legend = axes;
-set(ha_HD_legend, 'units', 'centimeters', 'position', [.5+3*(opts.sep_row+opts.plotsize1(1))+5*opts.plotsize2(1)/6 1.5+0*(opts.sep_col+opts.plotsize1(2))+1*opts.plotsize2(2)/6, opts.plotsize2 ./ [5 3]], ...
-    'nextplot', 'add', 'fontsize', 8, 'color', 'none', 'xcolor', 'none', 'ycolor', 'none', 'xlim', [0 3], 'ylim', [0 3]);
-line(ha_HD_legend, [1 2], [2 2], 'Color', opts.color.PhaseEarly, 'LineWidth', 1, 'LineStyle', '-');
-line(ha_HD_legend, [1 2], [1 1], 'Color', opts.color.PhaseLate, 'LineWidth', 1, 'LineStyle', '-');
-text(ha_HD_legend, 2.2, 2, "Early", 'FontSize', 8);
-text(ha_HD_legend, 2.2, 1, "Late", 'FontSize', 8);
-
-%
-ha14 = axes;
-set(ha14, 'units', 'centimeters', 'position', [1.5+0*(opts.sep_row+opts.plotsize1(1)) 2+1*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8);
-plot_movement_time_scatter(ha14, obj, opts);
-set(ha14, 'xtick', [], 'xlabel', []);
-
-%
-ha15 = axes;
-set(ha15, 'units', 'centimeters', 'position', [1.5+0*(opts.sep_row+opts.plotsize1(1)) 2+0*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8);
-plot_shuttle_time_scatter(ha15, obj, opts);
-
-%
-ha16 = axes;
-set(ha16, 'units', 'centimeters', 'position', [.5+1*(opts.sep_row+opts.plotsize1(1)) 2+3*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8);
-plot_hold_duration_violin(ha16, obj, opts)
-set(ha16, 'xtick', [], 'xlabel', [], 'yticklabel', [], 'ylabel', []);
-
-ha17 = axes;
-set(ha17, 'units', 'centimeters', 'position', [.5+1*(opts.sep_row+opts.plotsize1(1)) 2+1*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8);
-plot_movement_time_violin(ha17, obj, opts)
-set(ha17, 'xtick', [], 'xlabel', [], 'yticklabel', [], 'ylabel', []);
-
-ha18 = axes;
-set(ha18, 'units', 'centimeters', 'position', [.5+1*(opts.sep_row+opts.plotsize1(1)) 2+0*(opts.sep_col+opts.plotsize1(2)), opts.plotsize1], 'nextplot', 'add', 'fontsize', 8);
-plot_shuttle_time_violin(ha18, obj, opts)
-set(ha18, 'yticklabel', [], 'ylabel', [])
-% 
-% ha19 = axes;
-% set(ha19, 'units', 'centimeters', 'position', [1.5+3*(opts.sep_row+opts.plotsize1(1)) 2.5+4*(opts.sep_col+opts.plotsize1(2)), opts.plotsize2 .* [3/5 1]], 'nextplot', 'add', 'fontsize', 8);
-% plot_interruption_early_late(ha19, obj, opts)
-
-%% ha1. Make a diagram of the setup
-    function plot_diagram(ax, opts)
-
-        line(ax, [1 1], [0 6], 'color', 'k', 'linewidth', 2);
-        line(ax, [1 3], [0 0], 'color', 'k', 'linewidth', 2);
-        line(ax, [3 5], [0 2], 'color', 'k', 'linewidth', 2);
-        line(ax, [5 8], [2 2], 'color', 'k', 'linewidth', 2);
-        line(ax, [1 3], [6 6], 'color', 'k', 'linewidth', 2);
-        line(ax, [3 5], [6 4], 'color', 'k', 'linewidth', 2);
-        line(ax, [5 8], [4 4], 'color', 'k', 'linewidth', 2);
-
-        line(ax, [8 9], [4 4.8], 'color', 'k', 'linewidth', 2);
-        line(ax, [8 9], [2 1.2], 'color', 'k', 'linewidth', 2);
-        line(ax, [9 11], [4.8 4.8], 'color', 'k', 'linewidth', 2);
-        line(ax, [9 11], [1.2 1.2], 'color', 'k', 'linewidth', 2);
-        line(ax, [11 11], [1.2 4.8], 'color', 'k', 'linewidth', 2);
-
-        viscircles(ax, [9.6, 3], 0.3, 'color', 'k', 'LineWidth', 1);
-        text(ax, 8.6, 3, 'Init', 'FontWeight','bold', 'HorizontalAlignment', 'center');
-        viscircles(ax, [3.5, 3], 0.3,  'color', 'k', 'LineWidth', 1);
-        text(ax, 3.9, 3, 'Cent', 'FontWeight', 'bold');
-
-        viscircles(ax, [3, 1.5], 0.3, 'color', opts.color.PortL);
-        text(ax, 1.2, 1.5, 'Left', 'FontWeight','bold', 'HorizontalAlignment', 'left', 'Color', opts.color.PortL);
-        viscircles(ax, [3, 4.5], 0.3,  'color', opts.color.PortR);
-        text(ax, 1.2, 4.5, 'Right', 'FontWeight', 'bold', 'HorizontalAlignment', 'left', 'Color', opts.color.PortR);
-
-        set(ax, 'XColor', 'none', 'YColor', 'none', 'ylim', [0 6], 'xlim', [0 12]);    end
-
-%% ha2. Plot every trial's hold duration during training
-    function plot_hold_duration_scatter(ax, obj, opts)
-
-        for fp_this = 1:length(obj.MixedFP)
-            yline(ax, obj.MixedFP(fp_this), 'Color', [.8 .8 .8], 'LineWidth', opts.lw(fp_this), 'LineStyle', '-', 'Alpha', 0.4);
-        end
-        xline(ax, opts.session_sep, 'Color', [.7 .7 .7], 'LineWidth', 1, 'LineStyle', '-');
-
-        s_sep = [0 opts.session_sep opts.trial_ticks(end)];
-        dcz_ind = find(obj.Treatment == "DCZ");
-        num_dcz = length(dcz_ind);
-        patch(ax, 'XData', [s_sep(dcz_ind); s_sep(dcz_ind); s_sep(dcz_ind+1); s_sep(dcz_ind+1)], 'YData', repmat([0; 100; 100; 0], 1, num_dcz), ...
-            'FaceColor', opts.color.Treat, 'FaceAlpha', 0.2, 'EdgeColor', 'none');
-
-        % port 1 wrong (defined by their action, which is different from target)
-        scatter(ax, opts.trial_ticks(obj.Ind.wrongL), ...
-            obj.BehavTable.HoldDuration(obj.Ind.wrongL), ...
-            22*obj.BehavTable.FP(obj.Ind.wrongL), opts.color.PortL, opts.mk(2), 'MarkerEdgeAlpha', 0.6, 'linewidth', 1);
-
-        % port 2 wrong
-        scatter(ax, opts.trial_ticks(obj.Ind.wrongR), ...
-            obj.BehavTable.HoldDuration(obj.Ind.wrongR), ...
-            22*obj.BehavTable.FP(obj.Ind.wrongR), opts.color.PortR, opts.mk(2), 'MarkerEdgeAlpha', 0.6, 'linewidth', 1);
-
-        % premature
-        scatter(ax, opts.trial_ticks(obj.Ind.premature), ...
-            obj.BehavTable.HoldDuration(obj.Ind.premature), ...
-            22*obj.BehavTable.FP(obj.Ind.premature), opts.color.Premature, opts.mk(2), 'MarkerEdgeAlpha', 0.6, 'linewidth', 1);
-
-        % late
-        scatter(ax, opts.trial_ticks(obj.Ind.late), ...
-            obj.BehavTable.HoldDuration(obj.Ind.late), ...
-            22*obj.BehavTable.FP(obj.Ind.late), opts.color.Late, opts.mk(2), 'MarkerEdgeAlpha', 0.6, 'linewidth', 1);
-
-        % port 1 correct (defined by their action, which is also the target for correct response)
-        scatter(ax, opts.trial_ticks(obj.Ind.correctL), ...
-            obj.BehavTable.HoldDuration(obj.Ind.correctL), ...
-            18*obj.BehavTable.FP(obj.Ind.correctL), opts.color.PortL, opts.mk(1), 'MarkerEdgeAlpha', 0.6, 'linewidth', 1);
-
-        % port 2 correct
-        scatter(ax, opts.trial_ticks(obj.Ind.correctR), ...
-            obj.BehavTable.HoldDuration(obj.Ind.correctR), ...
-            18*obj.BehavTable.FP(obj.Ind.correctR), opts.color.PortR, opts.mk(1), 'MarkerEdgeAlpha', 0.6, 'linewidth', 1);
-
-        ax.XLabel.String = 'Time in training (s)';
-        ax.YLabel.String = 'Hold duration (s)';
-        set(ax, 'xlim', [0 opts.trial_ticks(end)+5], 'ylim', [0 2.5], 'ticklength', [0.01 0.1]);
-
-    end
-
-%% ha3. Plot correct trial's reaction during training
-    function plot_reaction_time_scatter(ax, obj, opts)
-
-        xline(ax, opts.session_sep, 'Color', [.7 .7 .7], 'LineWidth', 1, 'LineStyle', '-')
-        yline(ax, .5, 'Color', [.7 .7 .7], 'LineWidth', 1.5, 'LineStyle', '--');
-
-        s_sep = [0 opts.session_sep opts.trial_ticks(end)];
-        dcz_ind = find(obj.Treatment == "DCZ");
-        num_dcz = length(dcz_ind);
-        patch(ax, 'XData', [s_sep(dcz_ind); s_sep(dcz_ind); s_sep(dcz_ind+1); s_sep(dcz_ind+1)], 'YData', repmat([0; 100; 100; 0], 1, num_dcz), ...
-            'FaceColor', opts.color.Treat, 'FaceAlpha', 0.2, 'EdgeColor', 'none');
-
-        % port 1 wrong (defined by their action, which is different from target)
-        scatter(ax, opts.trial_ticks(obj.Ind.wrongL), ...
-            obj.BehavTable.RT(obj.Ind.wrongL), ...
-            22*obj.BehavTable.FP(obj.Ind.wrongL), opts.color.PortL, opts.mk(2), 'MarkerEdgeAlpha', 0.6, 'linewidth', 1);
-
-        % port 2 wrong
-        scatter(ax, opts.trial_ticks(obj.Ind.wrongR), ...
-            obj.BehavTable.RT(obj.Ind.wrongR), ...
-            22*obj.BehavTable.FP(obj.Ind.wrongR), opts.color.PortR, opts.mk(2), 'MarkerEdgeAlpha', 0.6, 'linewidth', 1);
-
-        % port 1 correct (defined by their action, which is also the target for correct response)
-        scatter(ax, opts.trial_ticks(obj.Ind.correctL), ...
-            obj.BehavTable.RT(obj.Ind.correctL), ...
-            18*obj.BehavTable.FP(obj.Ind.correctL), opts.color.PortL, opts.mk(1), 'MarkerEdgeAlpha', 0.6, 'linewidth', 1);
-
-        % port 2 correct
-        scatter(ax, opts.trial_ticks(obj.Ind.correctR), ...
-            obj.BehavTable.RT(obj.Ind.correctR), ...
-            18*obj.BehavTable.FP(obj.Ind.correctR), opts.color.PortR, opts.mk(1), 'MarkerEdgeAlpha', 0.6, 'linewidth', 1);
-
-        ax.XLabel.String = 'Time in training (s)';
-        ax.YLabel.String = 'Reaction time (s)';
-        set(ax, 'xlim', [0 opts.trial_ticks(end)+5], 'ylim', [0 .6], 'ticklength', [0.01 0.1]);
-    end
-
-%% ha3. Plot correct trial's reaction during training
-    function plot_movement_time_scatter(ax, obj, opts)
-
-        xline(ax, opts.session_sep, 'Color', [.7 .7 .7], 'LineWidth', 1, 'LineStyle', '-')
-
-        s_sep = [0 opts.session_sep opts.trial_ticks(end)];
-        dcz_ind = find(obj.Treatment == "DCZ");
-        num_dcz = length(dcz_ind);
-        patch(ax, 'XData', [s_sep(dcz_ind); s_sep(dcz_ind); s_sep(dcz_ind+1); s_sep(dcz_ind+1)], 'YData', repmat([0; 100; 100; 0], 1, num_dcz), ...
-            'FaceColor', opts.color.Treat, 'FaceAlpha', 0.2, 'EdgeColor', 'none');
-
-        % port 1 wrong (defined by their action, which is different from target)
-        scatter(ax, opts.trial_ticks(obj.Ind.wrongL), ...
-            obj.BehavTable.MovementTime(obj.Ind.wrongL), ...
-            22*obj.BehavTable.FP(obj.Ind.wrongL), opts.color.PortL, opts.mk(2), 'MarkerEdgeAlpha', 0.6, 'linewidth', 1);
-
-        % port 2 wrong
-        scatter(ax, opts.trial_ticks(obj.Ind.wrongR), ...
-            obj.BehavTable.MovementTime(obj.Ind.wrongR), ...
-            22*obj.BehavTable.FP(obj.Ind.wrongR), opts.color.PortR, opts.mk(2), 'MarkerEdgeAlpha', 0.6, 'linewidth', 1);
-
-        % port 1 correct (defined by their action, which is also the target for correct response)
-        scatter(ax, opts.trial_ticks(obj.Ind.correctL), ...
-            obj.BehavTable.MovementTime(obj.Ind.correctL), ...
-            18*obj.BehavTable.FP(obj.Ind.correctL), opts.color.PortL, opts.mk(1), 'MarkerEdgeAlpha', 0.6, 'linewidth', 1);
-
-        % port 2 correct
-        scatter(ax, opts.trial_ticks(obj.Ind.correctR), ...
-            obj.BehavTable.MovementTime(obj.Ind.correctR), ...
-            18*obj.BehavTable.FP(obj.Ind.correctR), opts.color.PortR, opts.mk(1), 'MarkerEdgeAlpha', 0.6, 'linewidth', 1);
-
-        ax.XLabel.String = 'Time in training (s)';
-        ax.YLabel.String = 'Movement time (s)';
-        set(ax, 'xlim', [0 opts.trial_ticks(end)+5], 'ylim', [0 obj.Bins.MovementTime(end)], 'ticklength', [0.01 0.1]);
-    end
-
-%% ha3. Plot correct trial's reaction during training
-    function plot_shuttle_time_scatter(ax, obj, opts)
-
-        xline(ax, opts.session_sep, 'Color', [.7 .7 .7], 'LineWidth', 1, 'LineStyle', '-')
-
-        s_sep = [0 opts.session_sep opts.trial_ticks(end)];
-        dcz_ind = find(obj.Treatment == "DCZ");
-        num_dcz = length(dcz_ind);
-        patch(ax, 'XData', [s_sep(dcz_ind); s_sep(dcz_ind); s_sep(dcz_ind+1); s_sep(dcz_ind+1)], 'YData', repmat([0; 100; 100; 0], 1, num_dcz), ...
-            'FaceColor', opts.color.Treat, 'FaceAlpha', 0.2, 'EdgeColor', 'none');
-
-        % port 1 wrong (defined by their action, which is different from target)
-        scatter(ax, opts.trial_ticks, ...
-            log10(obj.BehavTable.ShuttleTime), ...
-            18, [0 0 0], opts.mk(1), 'MarkerEdgeAlpha', 0.4, 'linewidth', 1);
-
-        ax.XLabel.String = 'Time in training (s)';
-        ax.YLabel.String = 'Log Shuttle time (s)';
-        set(ax, 'xlim', [0 opts.trial_ticks(end)+5], 'ylim', [0 obj.Bins.ShuttleTimeLog(end)], 'ticklength', [0.01 0.1]);
-    end
-
-%% ha4. Plot performance track of each session
-    function plot_performance_track_progress(ax, obj, opts)
-
-        xline(ax, opts.session_sep, 'Color', [.7 .7 .7], 'LineWidth', 1, 'LineStyle', '-')
-
-        s_sep = [0 opts.session_sep opts.trial_ticks(end)];
-        dcz_ind = find(obj.Treatment == "DCZ");
-        num_dcz = length(dcz_ind);
-        patch(ax, 'XData', [s_sep(dcz_ind); s_sep(dcz_ind); s_sep(dcz_ind+1); s_sep(dcz_ind+1)], 'YData', repmat([0; 100; 100; 0], 1, num_dcz), ...
-            'FaceColor', opts.color.Treat, 'FaceAlpha', 0.2, 'EdgeColor', 'none');
-
-        for s_this = 1:obj.NumSessions
-            ind_this = find(obj.PerformanceTrack.Sessions==obj.Sessions(s_this));
-            plot(ax, obj.PerformanceTrack.WinPosProgress(ind_this), obj.PerformanceTrack.CorrectRatio(ind_this),  'linestyle', '-', 'color', opts.color.Correct, ...
-                'markersize', 5, 'linewidth', 1, 'markerfacecolor', opts.color.Correct,   'markeredgecolor', 'w');
-            plot(ax, obj.PerformanceTrack.WinPosProgress(ind_this), obj.PerformanceTrack.WrongRatio(ind_this),    'linestyle', '-', 'color', opts.color.Wrong, ...
-                'markersize', 5, 'linewidth', 1, 'markerfacecolor', opts.color.Wrong,     'markeredgecolor', 'w');
-            plot(ax, obj.PerformanceTrack.WinPosProgress(ind_this), obj.PerformanceTrack.PrematureRatio(ind_this), 'linestyle', '-', 'color', opts.color.Premature, ...
-                'markersize', 5, 'linewidth', 1, 'markerfacecolor', opts.color.Premature, 'markeredgecolor', 'w');
-            plot(ax, obj.PerformanceTrack.WinPosProgress(ind_this), obj.PerformanceTrack.LateRatio(ind_this),      'linestyle', '-', 'color', opts.color.Late, ...
-                'markersize', 5, 'linewidth', 1, 'markerfacecolor', opts.color.Late,      'markeredgecolor', 'w');
-        end
-
-        ax.XLabel.String = 'Time in training (s)';
-        ax.YLabel.String = 'Performance (%)';
-        set(ax, 'XLim', [0 opts.trial_ticks(end)+5], 'YLim', [0 100]);
-    end
-
-%% ha5. Plot performance progress
-    function plot_performance_progress(ax, obj, opts)
-
-        session_id = 1:obj.NumSessions;
-        xline(ax, session_id-0.5, 'Color', [.7 .7 .7], 'LineWidth', 1, 'LineStyle', '-');
-        xline(ax, session_id, 'Color', [.8 .8 .8], 'LineWidth', 1, 'LineStyle', ':');
-
-        dcz_ind = find(obj.Treatment == "DCZ");
-        num_dcz = length(dcz_ind);
-        patch(ax, 'XData', [dcz_ind-.5 dcz_ind-.5 dcz_ind+.5 dcz_ind+.5]', 'YData', repmat([0; 100; 100; 0], 1, num_dcz), ...
-            'FaceColor', opts.color.Treat, 'FaceAlpha', 0.2, 'EdgeColor', 'none');
-
-        for fp_this = 1:length(obj.MixedFP)
-            for p_this = 1:length(obj.Ports)
-
-                ind_this = find(obj.Performance.Foreperiod==obj.MixedFP(fp_this) & obj.Performance.TargetPort==obj.Ports(p_this));
-                
-                scatter(ax, session_id+(-1.5+p_this)/3, obj.Performance.PrematureRatio(ind_this), ...
-                    9*fp_this, 'Marker', '^', 'MarkerEdgeColor', 'none', 'MarkerFaceColor', opts.color.Premature, 'MarkerFaceAlpha', .3);
-                scatter(ax, session_id+(-1.5+p_this)/3, obj.Performance.LateRatio(ind_this), ...
-                    9*fp_this, 'Marker', '^', 'MarkerEdgeColor', 'none', 'MarkerFaceColor', opts.color.Late, 'MarkerFaceAlpha', .3);
-                scatter(ax, session_id+(-1.5+p_this)/3, obj.Performance.WrongRatio(ind_this), ...
-                    9*fp_this, 'Marker', '^', 'MarkerEdgeColor', 'none', 'MarkerFaceColor', opts.color.Wrong, 'MarkerFaceAlpha', .3);
-                scatter(ax, session_id+(-1.5+p_this)/3, obj.Performance.CorrectRatio(ind_this), ...
-                    9*fp_this, 'Marker', '^', 'MarkerEdgeColor', 'none', 'MarkerFaceColor', opts.color.Correct, 'MarkerFaceAlpha', .5);
-            end
-        end
-
-        ind_this = find(obj.Performance.Foreperiod==0 & obj.Performance.TargetPort=="Both");
-
-        plot(ax, session_id, obj.Performance.PrematureRatio(ind_this), 'o', 'linestyle', '-', 'color', opts.color.Premature, ...
-            'markersize', 5, 'linewidth', 1, 'markerfacecolor', opts.color.Premature, 'markeredgecolor', 'w');
-        plot(ax, session_id, obj.Performance.LateRatio(ind_this), 'o', 'linestyle', '-', 'color', opts.color.Late, ...
-            'markersize', 5, 'linewidth', 1, 'markerfacecolor', opts.color.Late, 'markeredgecolor', 'w');
-        plot(ax, session_id, obj.Performance.WrongRatio(ind_this), 'o', 'linestyle', '-', 'color', opts.color.Wrong, ...
-            'markersize', 5, 'linewidth', 1, 'markerfacecolor', opts.color.Wrong, 'markeredgecolor', 'w');
-        plot(ax, session_id, obj.Performance.CorrectRatio(ind_this), 'o', 'linestyle', '-', 'color', opts.color.Correct, ...
-            'markersize', 5, 'linewidth', 1, 'markerfacecolor', opts.color.Correct, 'markeredgecolor', 'w');
-
-        ax.XLabel.String = 'Sessions';
-        ax.YLabel.String = 'Performance (%)';
-        set(ax, 'xlim', [0.5 obj.NumSessions+0.5], 'xtick', session_id, 'xticklabel', opts.session_date);
-    end
-
-%% ha6. Plot hold duration of each session (violin), each port
-    function plot_hold_duration_violin(ax, obj, opts)
-
-        for fp_this = 1:length(obj.MixedFP)
-            yline(ax, obj.MixedFP(fp_this), 'Color', [.8 .8 .8], 'LineWidth', opts.lw(fp_this), 'LineStyle', '-', 'Alpha', 0.4);
-        end
-        xline(ax, (1:obj.NumSessions-1)+0.5, 'Color', [.7 .7 .7], 'LineWidth', 1, 'LineStyle', '-');
-
-        dcz_ind = find(obj.Treatment == "DCZ");
-        num_dcz = length(dcz_ind);
-        patch(ax, 'XData', [dcz_ind-.5 dcz_ind-.5 dcz_ind+.5 dcz_ind+.5]', 'YData', repmat([0; 100; 100; 0], 1, num_dcz), ...
-            'FaceColor', opts.color.Treat, 'FaceAlpha', 0.2, 'EdgeColor', 'none');
-
-        thisHD = nan(height(obj.BehavTable), length(obj.Ports)*obj.NumSessions);
-
-        HD = obj.BehavTable.HoldDuration;
-        [~, ~, indrmv] = rmoutliers_custome(HD);
-        HD(indrmv) = nan;
-
-        for s_this = 1:obj.NumSessions
-            session_id = obj.BehavTable.SessionDate==obj.Sessions(s_this);
-            for p_this = 1:length(obj.Ports)
-                ind_this = session_id & obj.BehavTable.Stage==1 & eval("obj.Ind.port"+obj.Ports(p_this));
-                thisHD(ind_this, 2*(s_this-1)+p_this) = HD(ind_this);
-            end
-        end
-        thisHD(1, all(isnan(thisHD))) = 0;
-
-        violinplot({thisHD(:, 2:2:end), thisHD(:, 1:2:end)}, obj.Sessions, ...
-            'ViolinColor', {repmat(opts.color.PortR, obj.NumSessions, 1), repmat(opts.color.PortL, obj.NumSessions, 1)}, ...
-            'MarkerSize', 2, 'ShowMedian', false, 'ShowWhisker', false, 'ShowBox', false, 'BandWidth', opts.bandwidth);
-
-        ax.XLabel.String = 'Sessions';
-        ax.YLabel.String = 'Hold duration (s)';
-        set(ax, 'xlim', [.5 obj.NumSessions+.5], 'ylim', [0 obj.Bins.HoldDuration(end)], 'xtick', 1:obj.NumSessions, ...
-            'xticklabel', opts.session_date, 'ticklength', [0.01 0.1], 'box', 'off');
-    end
-
-%% ha6. Plot reaction time of each session (violin), each port
-    function plot_reaction_time_violin(ax, obj, opts)
-
-        xline(ax, (1:obj.NumSessions-1)+0.5, 'Color', [.7 .7 .7], 'LineWidth', 1, 'LineStyle', '-');
-        yline(ax, .5, 'Color', [.7 .7 .7], 'LineWidth', 1.5, 'LineStyle', '--');
-
-        dcz_ind = find(obj.Treatment == "DCZ");
-        num_dcz = length(dcz_ind);
-        patch(ax, 'XData', [dcz_ind-.5 dcz_ind-.5 dcz_ind+.5 dcz_ind+.5]', 'YData', repmat([0; 100; 100; 0], 1, num_dcz), ...
-            'FaceColor', opts.color.Treat, 'FaceAlpha', 0.2, 'EdgeColor', 'none');
-        
-        thisRT = nan(height(obj.BehavTable), length(obj.Ports)*obj.NumSessions);
-
-        RT = obj.BehavTable.RT;
-        [~, ~, indrmv] = rmoutliers_custome(RT);
-        RT(indrmv) = nan;
-
-        for s_this = 1:obj.NumSessions
-            session_id = obj.BehavTable.SessionDate==obj.Sessions(s_this);
-            for p_this = 1:length(obj.Ports)
-                ind_this = session_id & obj.BehavTable.Stage==1 & eval("obj.Ind.correct"+obj.Ports(p_this));
-                thisRT(ind_this, 2*(s_this-1)+p_this) = RT(ind_this);
-            end
-        end
-
-        thisRT(1, all(isnan(thisRT))) = 0;
-        violinplot({thisRT(:, 2:2:end), thisRT(:, 1:2:end)}, obj.Sessions, ...
-            'ViolinColor', {repmat(opts.color.PortR, obj.NumSessions, 1), repmat(opts.color.PortL, obj.NumSessions, 1)}, ...
-            'MarkerSize', 4, 'ShowMedian', false, 'ShowWhisker', false, 'ShowBox', false, 'BandWidth', opts.bandwidth);
-        
-        session_order = [1:obj.NumSessions; 1:obj.NumSessions];
-        session_order = session_order(:);
-        scatter(ax, session_order, median(thisRT, 'omitnan'), 24, ...
-            repmat([opts.color.PortL; opts.color.PortR], obj.NumSessions, 1), ...
-            'filled', 'LineWidth', 1, 'MarkerEdgeColor', [.3 .3 .3]);
-
-        ax.XLabel.String = 'Sessions';
-        ax.YLabel.String = 'Reaction time (s)';
-        set(ax, 'xlim', [.5 obj.NumSessions+.5], 'ylim', [0 .6], 'xtick', 1:obj.NumSessions, ...
-            'xticklabel', opts.session_date, 'ticklength', [0.01 0.1], 'box', 'off');
-    end
-
-%% ha6. Plot reaction time of each session (violin), each port
-    function plot_movement_time_violin(ax, obj, opts)
-
-        xline(ax, (1:obj.NumSessions-1)+0.5, 'Color', [.7 .7 .7], 'LineWidth', 1, 'LineStyle', '-');
-
-        dcz_ind = find(obj.Treatment == "DCZ");
-        num_dcz = length(dcz_ind);
-        patch(ax, 'XData', [dcz_ind-.5 dcz_ind-.5 dcz_ind+.5 dcz_ind+.5]', 'YData', repmat([0; 100; 100; 0], 1, num_dcz), ...
-            'FaceColor', opts.color.Treat, 'FaceAlpha', 0.2, 'EdgeColor', 'none');
-
-        thisMT = nan(height(obj.BehavTable), length(obj.Ports)*obj.NumSessions);
-
-        MT = obj.BehavTable.MovementTime;
-        [~, ~, indrmv] = rmoutliers_custome(MT);
-        MT(indrmv) = nan;
-
-        for s_this = 1:obj.NumSessions
-            session_id = obj.BehavTable.SessionDate==obj.Sessions(s_this);
-            for p_this = 1:length(obj.Ports)
-                ind_this = session_id & obj.BehavTable.Stage==1 & eval("obj.Ind.correct"+obj.Ports(p_this));
-                thisMT(ind_this, 2*(s_this-1)+p_this) = MT(ind_this);
-            end
-        end
-
-        thisMT(1, all(isnan(thisMT))) = 0;
-        violinplot({thisMT(:, 2:2:end), thisMT(:, 1:2:end)}, obj.Sessions, ...
-            'ViolinColor', {repmat(opts.color.PortR, obj.NumSessions, 1), repmat(opts.color.PortL, obj.NumSessions, 1)}, ...
-            'MarkerSize', 2, 'ShowMedian', false, 'ShowWhisker', false, 'ShowBox', false, 'BandWidth', opts.bandwidth);
-
-        session_order = [1:obj.NumSessions; 1:obj.NumSessions];
-        session_order = session_order(:);
-        scatter(ax, session_order, median(thisMT, 'omitnan'), 24, ...
-            repmat([opts.color.PortL; opts.color.PortR], obj.NumSessions, 1), ...
-            'filled', 'LineWidth', 1, 'MarkerEdgeColor', [.3 .3 .3]);
-
-        ax.XLabel.String = 'Sessions';
-        ax.YLabel.String = 'Movement time (s)';
-        set(ax, 'xlim', [.5 obj.NumSessions+.5], 'ylim', [0 obj.Bins.MovementTime(end)], 'xtick', 1:obj.NumSessions, ...
-            'xticklabel', opts.session_date, 'ticklength', [0.01 0.1], 'box', 'off');
-    end
-
-%% ha6. Plot reaction time of each session (violin), each port
-    function plot_shuttle_time_violin(ax, obj, opts)
-
-        xline(ax, (1:obj.NumSessions-1)+0.5, 'Color', [.7 .7 .7], 'LineWidth', 1, 'LineStyle', '-');
-
-        dcz_ind = find(obj.Treatment == "DCZ");
-        num_dcz = length(dcz_ind);
-        patch(ax, 'XData', [dcz_ind-.5 dcz_ind-.5 dcz_ind+.5 dcz_ind+.5]', 'YData', repmat([0; 100; 100; 0], 1, num_dcz), ...
-            'FaceColor', opts.color.Treat, 'FaceAlpha', 0.2, 'EdgeColor', 'none');
-
-        thisSTLog = nan(height(obj.BehavTable), obj.NumSessions);
-
-        STLog = log(obj.BehavTable.ShuttleTime);
-        [~, ~, indrmv] = rmoutliers_custome(STLog);
-        STLog(indrmv) = nan;
-
-        for s_this = 1:obj.NumSessions
-            session_id = obj.BehavTable.SessionDate==obj.Sessions(s_this);
-
-            ind_this = session_id & obj.BehavTable.Stage==1;
-            thisSTLog(ind_this, s_this) = STLog(ind_this);
-        end
-
-        thisSTLog(1, all(isnan(thisSTLog))) = 0;
-        violinplot(thisSTLog, obj.Sessions, ...
-            'ViolinColor', zeros(obj.NumSessions, 3), ...
-            'MarkerSize', 2, 'ShowMedian', false, 'ShowWhisker', false, 'ShowBox', false, 'BandWidth', opts.bandwidth);
-
-        scatter(ax, 1:obj.NumSessions, median(thisSTLog, 'omitnan'), 24, ...
-            repmat([1 1 1], obj.NumSessions, 1), ...
-            'filled', 'LineWidth', 1, 'MarkerEdgeColor', [.3 .3 .3]);
-
-        ax.XLabel.String = 'Sessions';
-        ax.YLabel.String = 'Log Shuttle time (s)';
-        set(ax, 'xlim', [.5 obj.NumSessions+.5], 'ylim', [0 obj.Bins.ShuttleTimeLog(end)], 'xtick', 1:obj.NumSessions, ...
-            'xticklabel', opts.session_date, 'ticklength', [0.01 0.1], 'box', 'off');
-    end
-
-%%
-    function plot_reaction_time_median(ax, obj, opts)
-
-        xline(ax, (1:obj.NumSessions-1)+0.5, 'Color', [.7 .7 .7], 'LineWidth', 1, 'LineStyle', '-');
-        yline(0.5, 'Color', [.7 .7 .7], 'LineWidth', 1.5, 'LineStyle', '--');
-
-        dcz_ind = find(obj.Treatment == "DCZ");
-        num_dcz = length(dcz_ind);
-        patch(ax, 'XData', [dcz_ind-.5 dcz_ind-.5 dcz_ind+.5 dcz_ind+.5]', 'YData', repmat([0; 100; 100; 0], 1, num_dcz), ...
-            'FaceColor', opts.color.Treat, 'FaceAlpha', 0.2, 'EdgeColor', 'none');
-
-        stat = obj.RTStat.Session;
-        for s_this = 1:obj.NumSessions
-            for p_this = 1:2
-                plot([s_this-0.3 s_this s_this+0.3], ...
-                    stat.Median(stat.Port==obj.Ports(p_this) & stat.Sessions==obj.Sessions(s_this) & stat.thisFP~=0), ...
-                    'Color', [eval("opts.color.Port"+obj.Ports(p_this)) 0.6], 'LineWidth', 1.5);
-                scatter([s_this-0.3 s_this s_this+0.3], ...
-                    stat.Median(stat.Port==obj.Ports(p_this) & stat.Sessions==obj.Sessions(s_this) & stat.thisFP~=0), ...
-                    6*(obj.MixedFP+0.5), repmat(eval("opts.color.Port"+obj.Ports(p_this)), 3, 1), 'filled', 'Marker', 'o', ...
-                   'MarkerEdgeAlpha', 0.8, 'MarkerFaceAlpha', 0.8);
-            end
-        end
-
-        ax.XLabel.String = 'Sessions';
-        ax.YLabel.String = 'Reaction time median (s)';
-        set(ax, 'xlim', [.5 obj.NumSessions+.5], 'ylim', [0 .5], 'xtick', 1:obj.NumSessions, ...
-            'xticklabel', opts.session_date, 'ticklength', [0.01 0.1], 'box', 'off');
-    end
-
-%%
-    function plot_hold_duration_iqr(ax, obj, opts)
-
-        xline(ax, (1:obj.NumSessions-1)+0.5, 'Color', [.7 .7 .7], 'LineWidth', 1, 'LineStyle', '-');
-
-        dcz_ind = find(obj.Treatment == "DCZ");
-        num_dcz = length(dcz_ind);
-        patch(ax, 'XData', [dcz_ind-.5 dcz_ind-.5 dcz_ind+.5 dcz_ind+.5]', 'YData', repmat([0; 100; 100; 0], 1, num_dcz), ...
-            'FaceColor', opts.color.Treat, 'FaceAlpha', 0.2, 'EdgeColor', 'none');
-
-        stat = obj.HDStat.Session;
-        for s_this = 1:obj.NumSessions
-            for p_this = 1:length(obj.Ports)
-                plot([s_this-0.3 s_this s_this+0.3], ...
-                    stat.IQR(stat.Port==obj.Ports(p_this) & stat.Sessions==obj.Sessions(s_this) & stat.thisFP~=0), ...
-                    'Color', [eval("opts.color.Port"+obj.Ports(p_this)) 0.6], 'LineWidth', 1.5);
-                scatter([s_this-0.3 s_this s_this+0.3], ...
-                    stat.IQR(stat.Port==obj.Ports(p_this) & stat.Sessions==obj.Sessions(s_this) & stat.thisFP~=0), ...
-                    6*(obj.MixedFP+0.5), repmat(eval("opts.color.Port"+obj.Ports(p_this)), 3, 1), 'filled', 'Marker', 'o', ...
-                   'MarkerEdgeAlpha', 0.8, 'MarkerFaceAlpha', 0.8);
-            end
-        end
-
-        ax.XLabel.String = 'Sessions';
-        ax.YLabel.String = 'Hold duration IQR (s)';
-        set(ax, 'xlim', [.5 obj.NumSessions+.5], 'ylim', [0 max(stat.IQR)*1.5], 'xtick', 1:obj.NumSessions, ...
-            'xticklabel', opts.session_date, 'ticklength', [0.01 0.1], 'box', 'off');
-    end
-
-%%
-    function plot_hold_duration_heatmap(ax, obj, port, opts)
-
-        hd_l = zeros(length(obj.Bins.HoldDuration), obj.NumSessions*length(obj.MixedFP));
-        hd_r = zeros(length(obj.Bins.HoldDuration), obj.NumSessions*length(obj.MixedFP));
-
-        for s_this = 1:obj.NumSessions
-            for fp_this = 1:length(obj.MixedFP)
-                hd_l(:, s_this + obj.NumSessions*(fp_this-1)) = obj.HDPDF.Session{s_this}{fp_this, 1}.f;
-                hd_r(:, s_this + obj.NumSessions*(fp_this-1)) = obj.HDPDF.Session{s_this}{fp_this, 2}.f;
-            end
-        end
-
-        switch port
-            case {"L", "l"}
-                imagesc(ax, hd_l);
-                ax.YLabel.String = 'Hold duration Left (s)';
-                clim(ax, [-max(max([hd_l; hd_r])) max(max([hd_l; hd_r]))]);
-            case {"R", "r"}
-                imagesc(ax, hd_r);
-                ax.YLabel.String = 'Hold duration Right (s)';
-                clim(ax, [-max(max([hd_l; hd_r])) max(max([hd_l; hd_r]))]);
-            case {"Diff", "diff", "L-R", "l-r"}
-                imagesc(ax, hd_l-hd_r);
-                ax.YLabel.String = 'Hold duration L - R (s)';
-                if abs(min(min(hd_l-hd_r))) < abs(max(max(hd_l-hd_r)))
-                    clim(ax, [-abs(max(max(hd_l-hd_r))) abs(max(max(hd_l-hd_r)))]);
-                else
-                    clim(ax, [-abs(min(min(hd_l-hd_r))) abs(min(min(hd_l-hd_r)))]);
-                end
-        end
-
-        line(ax, [.5 obj.NumSessions+.5], [obj.MixedFP(1) obj.MixedFP(1)]/obj.Bins.width, 'Color', [.5 .5 .5], 'LineWidth', 1, 'LineStyle', ':');
-        line(ax, [obj.NumSessions+.5 2*obj.NumSessions+.5], [obj.MixedFP(2) obj.MixedFP(2)]/obj.Bins.width, 'Color', [.5 .5 .5], 'LineWidth', 1, 'LineStyle', ':');
-        line(ax, [2*obj.NumSessions+.5 3*obj.NumSessions+.5], [obj.MixedFP(3) obj.MixedFP(3)]/obj.Bins.width, 'Color', [.5 .5 .5], 'LineWidth', 1, 'LineStyle', ':');
-
-        xline(ax, (1:2)*obj.NumSessions + .5, 'Color', [.5 .5 .5], 'LineWidth', 1, 'LineStyle', '--');
-
-        for s_this = 1:obj.NumSessions
-            if obj.Label(s_this) == "Chemo"
-                for fp_this = 1:length(obj.MixedFP)
-                    patch(ax, 'XData', s_this + obj.NumSessions*(fp_this-1)+[-0.5 0.5 0.5 -0.5], 'YData', [-.5 -.5 length(obj.Bins.HoldDuration)+.5 length(obj.Bins.HoldDuration)+.5], 'FaceColor', 'none', ...
-                        'EdgeColor', opts.color.Treat, 'LineWidth', 0.5, 'LineStyle', ':', 'EdgeAlpha', 0.8);
-                end
-            end
-        end
-
-        ax.XLabel.String = 'Sessions';
-        set(ax, 'xlim', [.5 3*obj.NumSessions+.5], 'ylim', [-.5 length(obj.Bins.HoldDuration)+.5], ...
-            'xtick', 1:3*obj.NumSessions, 'xticklabel', repmat(opts.session_date, 3, 1), ...
-            'ytick', 0:250:length(obj.Bins.HoldDuration), 'yticklabel', string(0:0.5:obj.Bins.HoldDuration(end)), ...
-            'ticklength', [0.01 0.1], 'box', 'off');
-    end
-
-%%
-    function plot_hold_duration_pdf_early_late(ax, obj, port, opts)
-
-        p_this = obj.Ports==upper(string(port));
-
-        HDs = obj.HDSorted.All;
-        if ~any(any(cellfun(@(x) length(x)>=100, HDs)))
-            return
-        end
-
-        for fp_this = 1:length(obj.MixedFP)
-
-            xline(ax, obj.MixedFP(fp_this), 'color', [.7 .7 .7], 'linewidth', opts.lw(fp_this), 'LineStyle', '-');
-
-            hd_this = HDs{fp_this, p_this};
-
-            if length(hd_this) < 2*obj.PhaseCount
-                continue;
-            end
-
-            hd_early_pdf = ksdensity(hd_this(1:obj.PhaseCount), obj.Bins.HoldDuration, 'Function', 'pdf', 'Bandwidth', opts.bandwidth);
-            hd_late_pdf  = ksdensity(hd_this(end-obj.PhaseCount+1:end), obj.Bins.HoldDuration, 'Function', 'pdf', 'Bandwidth', opts.bandwidth);
-
-            plot(ax, obj.Bins.HoldDuration, hd_early_pdf, ...
-                'color', opts.color.PhaseEarly, 'linewidth', opts.lw(fp_this), 'LineStyle', '-');
-            plot(ax, obj.Bins.HoldDuration, hd_late_pdf, ...
-                'color', opts.color.PhaseLate, 'linewidth', opts.lw(fp_this), 'LineStyle', '-');
-
-        end
-
-        switch upper(string(port))
-            case {"L"}
-                ax.YLabel.String = "Prob. density Left (1/s)";
-            case {"R"}
-                ax.YLabel.String = "Prob. density Right (1/s)";
-        end
-        
-        ax.XLabel.String = "Hold duration (s)";
-        set(ax, 'xlim', [0 obj.Bins.HoldDuration(end)], 'ylimmode', 'auto');
-    end
-
-    function plot_hold_duration_cdf_early_late(ax, obj, port, opts)
-
-        p_this = obj.Ports==upper(string(port));
-
-        HDs = obj.HDSorted.All;
-        if ~any(any(cellfun(@(x) length(x)>=100, HDs)))
-            return
-        end
-
-        for fp_this = 1:length(obj.MixedFP)
-
-            xline(ax, obj.MixedFP(fp_this), 'color', [.7 .7 .7], 'linewidth', opts.lw(fp_this), 'LineStyle', '-');
-
-            hd_this = HDs{fp_this, p_this};
-
-            if length(hd_this) < 2*obj.PhaseCount
-                continue;
-            end
-
-            hd_early_cdf = ksdensity(hd_this(1:obj.PhaseCount), obj.Bins.HoldDuration, 'Function', 'cdf', 'Bandwidth', opts.bandwidth);
-            hd_late_cdf  = ksdensity(hd_this(end-obj.PhaseCount+1:end), obj.Bins.HoldDuration, 'Function', 'cdf', 'Bandwidth', opts.bandwidth);
-
-            plot(ax, obj.Bins.HoldDuration, hd_early_cdf, ...
-                'color', opts.color.PhaseEarly, 'linewidth', opts.lw(fp_this), 'LineStyle', '-');
-            plot(ax, obj.Bins.HoldDuration, hd_late_cdf, ...
-                'color', opts.color.PhaseLate, 'linewidth', opts.lw(fp_this), 'LineStyle', '-');
-        end
-
-        switch upper(string(port))
-            case {"L"}
-                ax.YLabel.String = "Cum. distribution Left";
-            case {"R"}
-                ax.YLabel.String = "Cum. distribution Right";
-        end
-        
-        ax.XLabel.String = "Hold duration (s)";
-        set(ax, 'xlim', [0 obj.Bins.HoldDuration(end)], 'ylim', [0 1]);
-    end
-
-    function plot_interruption_early_late(ax, obj, opts)
-
-        for fp_this = 1:length(obj.MixedFP)
-            xline(ax, obj.MixedFP(fp_this), 'color', [.7 .7 .7], 'linewidth', opts.lw(fp_this), 'LineStyle', '-');
-        end
-
-        trial_ind = ismember(obj.BehavTable.SessionDate, obj.Sessions(obj.Treatment=="None")) & obj.BehavTable.Stage==1;
-
-        if sum(trial_ind) < 6*obj.PhaseCount*2
-            inter = [obj.InterruptionNone; obj.InterruptionSaline];
-            inter = sortrows(inter, "TrialProgress");
-            trial_ind = ismember(obj.BehavTable.SessionDate, obj.Sessions(obj.Treatment=="None" | obj.Treatment=="Saline")) & obj.BehavTable.Stage==1;
-        else
-            inter = obj.InterruptionNone;
-        end
-
-        if sum(trial_ind) < 6*obj.PhaseCount*2
-            return;
-        end
-
-        behav_this = obj.BehavTable(trial_ind, :);
-
-        behav_early = behav_this(1:6*obj.PhaseCount, :);
-        behav_late  = behav_this(end-6*obj.PhaseCount+1:end, :);
-        trial_id_early = behav_early.TrialProgress(end);
-        trial_id_late  = behav_late.TrialProgress(1);
-
-        nums_early = zeros(1, length(obj.Bins.Interruption)-1);
-        nums_late  = zeros(1, length(obj.Bins.Interruption)-1);
-        for i = 1:length(nums_early)
-            nums_early(i) = sum(behav_early.HoldDuration >= obj.Bins.Interruption(i));
-            nums_late(i)  = sum(behav_late.HoldDuration  >= obj.Bins.Interruption(i));
-        end
-
-        h_early = histcounts(inter.On(inter.TrialProgress<=trial_id_early), "BinEdges", obj.Bins.Interruption) ./ nums_early;
-        bar(ax, obj.Bins.Interruption(1:end-1)+.5*obj.Bins.widthInter, h_early, 1, 'FaceColor', opts.color.PhaseEarly , 'FaceAlpha', 0.25, 'EdgeColor', 'k', 'EdgeAlpha', 0.6);
-        h_late  = histcounts(inter.On(inter.TrialProgress>=trial_id_late) , "BinEdges", obj.Bins.Interruption) ./ nums_late;
-        bar(ax, obj.Bins.Interruption(1:end-1)+.5*obj.Bins.widthInter, h_late , 1, 'FaceColor', opts.color.PhaseLate  , 'FaceAlpha', 0.25, 'EdgeColor', 'k', 'EdgeAlpha', 0.6);
-
-        y_control = smoothdata(h_early, 'gaussian', 0.18*(length(h_early)));
-        y_chemo   = smoothdata(h_late , 'gaussian', 0.18*(length(h_late)));
-
-        plot(ax, obj.Bins.Interruption(1:end-1)+.5*obj.Bins.widthInter, y_control, 'Color', opts.color.PhaseEarly, 'LineStyle', '-', 'LineWidth', 1.5);
-        plot(ax, obj.Bins.Interruption(1:end-1)+.5*obj.Bins.widthInter, y_chemo  , 'Color', opts.color.PhaseLate , 'LineStyle', '-', 'LineWidth', 1.5);
-
-        ax.YLabel.String = "Interruptions / trial";
-        ax.XLabel.String = "Hold duration (s)";
-        set(ax, 'xlim', [0 1.5]);
-    end
-
+ax_sz_1 = [6 2];    
+ax_sz_2 = [1.9 2];
+ax_sz_3 = [6 1.4];
+
+[x_grid, y_grid] = meshgrid([1.2 7.7 16 23.2], [10 7 4 1]);
+ax_grid = cat(3, x_grid, y_grid);
+ax_grid = mat2cell(ax_grid, ones(1,4), ones(1,4), 2);
+ax_grid = cellfun(@(x) squeeze(x)', ax_grid, 'UniformOutput', false);
+
+ls = [":", "-.", "-"];
+lw = [1 1.125 1.25];
+rw = .5;
+n_s = 2;
+
+% Figure
+fig_progress = figure(12); clf(fig_progress);
+set(fig_progress, 'Visible', 'on', 'Units', 'centimeters', 'Position', [5 5 30 13.2], 'Color', 'w', 'toolbar', 'none');
+
+fig_title = sprintf("%s / %s / %s - %s", obj.Subject, obj.Protocol, obj.Sessions(1), obj.Sessions(end));
+set_fig_title(fig_progress, fig_title);
+
+% performance track
+ax_perf_track = obj.assign_ax_to_fig(fig_progress, 1, 2, [ax_grid{1,1} 12.5 2], ax_sz_1);
+perf_track = obj.splice_data(obj.PerformanceTrack.Session);
+data_perf_track = obj.assign_data_to_ax(ax_perf_track, perf_track);
+draw_perf_track(obj, ax_perf_track, data_perf_track, repmat({ls}, 1, 2), repmat({lw}, 1, 2));
+title(ax_perf_track{1,1}, 'Left' , 'FontWeight', 'bold', 'Color', C.PortL);
+title(ax_perf_track{1,2}, 'Right', 'FontWeight', 'bold', 'Color', C.PortR);
+
+% performance progress
+ax_perf = obj.assign_ax_to_fig(fig_progress, 1, 2, [ax_grid{2,1} 12.5 2], ax_sz_1);
+data_perf = obj.assign_data_to_ax(ax_perf, perf_sorted);
+draw_perf_progress(obj, ax_perf, data_perf, repmat({ls}, 1, 2), repmat({lw}, 1, 2));
+
+% pdf heatmap of hold duration
+pdf_x = obj.Bins.HD;
+pdf_l = cell(1, n_s);
+pdf_r = cell(1, n_s);
+for i = 1:n_s
+    pdf_l{i} = cellfun(@(x) x{i,1}.f, obj.HDPDF.Session, 'UniformOutput', false);
+    pdf_r{i} = cellfun(@(x) x{i,2}.f, obj.HDPDF.Session, 'UniformOutput', false);
+    pdf_l{i} = cell2mat(pdf_l{i})';
+    pdf_r{i} = cell2mat(pdf_r{i})';
 end
+
+ax_heat_l = obj.assign_ax_to_fig(fig_progress, 1, n_s, [ax_grid{3,1} 6 2], ax_sz_2);
+draw_heatmap(obj, ax_heat_l, pdf_l, pdf_x, obj.TargetFP, rw);
+
+ax_heat_r = obj.assign_ax_to_fig(fig_progress, 1, n_s, [ax_grid{3,2} 6 2], ax_sz_2);
+draw_heatmap(obj, ax_heat_r, pdf_r, pdf_x, obj.TargetFP, rw);
+set(ax_heat_r{1}, 'YTickLabel', "");
+ylabel(ax_heat_r{1}, "");
+xlabel(ax_heat_r{1}, "");
+
+cb = colorbar(ax_heat_r{1}, 'Units', 'centimeters', 'Position', [ax_grid{3,2}+[ax_sz_1(1)+.2 0], .25, ax_sz_1(2)], ...
+    'Ticks', [0 1]);
+cb.Label.String = "Norm. Density";
+cb.Label.FontWeight = "bold";
+
+% pdf hold duration in early and late training phase
+ax_e_l = obj.assign_ax_to_fig(fig_progress, 1, 2, [ax_grid{4,1} 12.5 2], ax_sz_1);
+pdf_e_l = obj.assign_data_to_ax(ax_e_l, [obj.HDPDF.Early; obj.HDPDF.Late]);
+c_e_l = [repmat({C.PhaseEarly}, n_s, 1); repmat({C.PhaseLate}, n_s, 1)];
+ls_e_l = repmat(ls, 1, 2);
+lw_e_l = repmat(lw, 1, 2);
+
+draw_distr(obj, ax_e_l, pdf_e_l, repmat({c_e_l}, 1, 2), repmat({ls_e_l}, 1, 2), repmat({lw_e_l}, 1, 2), obj.TargetFP, rw);
+
+y_lim = cellfun(@(x) x.YLim(2), ax_e_l);
+y_lim = max(max(y_lim));
+y_lim = (ceil(y_lim) + round(y_lim)) / 2;
+for i = 1:2
+    ax_e_l{i}.YLim = [0 y_lim];
+end
+
+% Shuttle time
+% scatter
+ax_st_s = obj.assign_ax_to_fig(fig_progress, 1, 1, [ax_grid{1,3} ax_sz_1], ax_sz_1);
+set(ax_st_s{1}, "YLim", [0 1], 'YTick', log10(1:10), 'YTickLabel', ["1", repmat("", 1, 8), "10"]);
+ylabel(ax_st_s{1}, 'ST (s)', 'FontWeight', 'bold');
+data_st = obj.assign_data_to_ax(ax_st_s, beh_sorted_st);
+c_st  = repmat({[.2 .2 .2]}, 1, 1);
+ms_st = repmat({8}, 1, 1);
+draw_scatter(obj, ax_st_s, data_st, "TrialCentInTimeProgress", "LogST", c_st, "o", ms_st, [], []);
+
+% violin
+ax_st_v = obj.assign_ax_to_fig(fig_progress, 1, 1, [ax_grid{1,4} ax_sz_1], ax_sz_1);
+data_st_v = cell(1,1);
+set(ax_st_v{1}, "YLim", [0 1], 'YTick', log10(1:10), 'YTickLabel', ["1", repmat("", 1, 8), "10"]);
+data_st_v{1} = cellfun(@(x) x([1 end]), obj.LogSTSplit.Session, 'UniformOutput', false);
+draw_violin(obj, ax_st_v, data_st_v, obj.BandWidth, c_st, [], []);
+
+% Movement time
+% scatter
+ax_mt_s = obj.assign_ax_to_fig(fig_progress, 1, n_s, [ax_grid{2,3} ax_sz_1], ax_sz_2);
+for i = 1:n_s
+    set(ax_mt_s{i}, "YLim", [.2 1.2], "YTick", [.2 1.2], "YTickLabel", "");
+    if i==1
+        ylabel(ax_mt_s{i}, 'MT (s)', 'FontWeight', 'bold');
+        set(ax_mt_s{i}, "YTickLabel", ax_mt_s{i}.YLim);
+    end
+end
+data_mt = obj.assign_data_to_ax(ax_mt_s, beh_sorted_mt');
+c_mt  = repmat({[C.PortL; C.PortR]}, 1, n_s);
+ms_mt = repmat({[8; 8]}, 1, n_s);
+draw_scatter(obj, ax_mt_s, data_mt, "TrialCentInTimeProgress", "MT", c_mt, ["o", "x"], ms_mt, [], []);
+
+% violin
+ax_mt_v = obj.assign_ax_to_fig(fig_progress, 1, n_s, [ax_grid{2,4} ax_sz_1], ax_sz_2);
+data_mt_v = cell(1,n_s);
+for i = 1:n_s
+    set(ax_mt_v{i}, "YLim", [.2 1.2], "YTick", [.2 1.2], "YTickLabel", "");
+    data_mt_v{i} = cellfun(@(x) x(i, :), obj.MTSorted.Session, 'UniformOutput', false);
+    if i==1
+        set(ax_mt_v{i}, "YTickLabel", ax_mt_v{i}.YTick);
+    end
+end
+draw_violin(obj, ax_mt_v, data_mt_v, obj.BandWidth, c_mt, [], []);
+
+% Hold duration
+% scatter
+ax_hd_s = obj.assign_ax_to_fig(fig_progress, 1, n_s, [ax_grid{3,3} ax_sz_1], ax_sz_2);
+for i = 1:n_s
+    set(ax_hd_s{i}, "YLim", [-1 1]+obj.TargetFP, "YTick", [-1 0 1]+obj.TargetFP, "YTickLabel", "");
+    if i==1
+        ylabel(ax_hd_s{i}, 'HD (s)', 'FontWeight', 'bold');
+        set(ax_hd_s{i}, "YTickLabel", ax_hd_s{i}.YTick);
+    end
+end
+data_hd = obj.assign_data_to_ax(ax_hd_s, beh_sorted');
+c_hd  = repmat({[C.PortL; C.PortR]}, 1, n_s);
+ms_hd = repmat({[8; 8]}, 1, n_s);
+draw_scatter(obj, ax_hd_s, data_hd, "TrialCentInTimeProgress", "HD", c_hd, ["o", "x"], ms_hd, obj.TargetFP, rw);
+
+% violin
+ax_hd_v = obj.assign_ax_to_fig(fig_progress, 1, n_s, [ax_grid{3,4} ax_sz_1], ax_sz_2);
+data_hd_v = cell(1,n_s);
+for i = 1:n_s
+    set(ax_hd_v{i}, "YLim", [-1 1]+obj.TargetFP, "YTick", [-1 0 1]+obj.TargetFP, "YTickLabel", "");
+    data_hd_v{i} = cellfun(@(x) x(i, :), obj.HDSorted.Session, 'UniformOutput', false);
+    if i==1
+        set(ax_hd_v{i}, "YTickLabel", ax_hd_v{i}.YTick);
+    end
+end
+draw_violin(obj, ax_hd_v, data_hd_v, obj.BandWidth, c_hd, obj.TargetFP, rw);
+
+% Hold duration statistics
+stat = obj.assign_data_to_ax(cell(1,n_s), stat_sorted');
+c_stat = repmat({[C.PortL; C.PortR]}, 1, n_s);
+% median
+ax_median = obj.assign_ax_to_fig(fig_progress, 1, n_s, [ax_grid{4,3} ax_sz_1], ax_sz_2);
+for i = 1:n_s
+    ax_median{i}.YLim = [-1 1] + obj.TargetFP;
+end
+draw_stat(obj, ax_median, stat, "Median", c_stat, ls, lw, obj.TargetFP, rw);
+ylabel(ax_median{1}, "HD (s) median", 'FontWeight', 'bold');
+
+% iqr
+ax_iqr = obj.assign_ax_to_fig(fig_progress, 1, n_s, [ax_grid{4,4} ax_sz_1], ax_sz_2);
+for i = 1:n_s
+    ax_iqr{i}.YLim = [0 .5];
+end
+draw_stat(obj, ax_iqr, stat, "IQR", c_stat, ls, lw, [], []);
+ylabel(ax_iqr{1}, "HD (s) IQR", 'FontWeight', 'bold');
+
+%%
+end
+
+%%
+function ax_cell = draw_perf_track(obj, ax_cell, perf_track_cell, ls, lw)
+session_info  = obj.DurationSession;
+session_sep   = [0; cumsum(session_info)];
+session_chemo = find(obj.Label=="Chemo");
+sep_lesion    = find(obj.Label=="Lesion", 1);
+sz_draw = size(ax_cell);
+for i = 1:sz_draw(1)
+    for j = 1:sz_draw(2)
+        ax = ax_cell{i,j};
+        set(ax, 'XLim', [0 obj.BehavTable.TrialCentInTimeProgress(end)], 'YLim', [0 100]);
+        mark_sessions(ax, session_sep, session_chemo, sep_lesion);
+        for k = 1:length(perf_track_cell{i,j})
+            perf_track = perf_track_cell{i,j}{k};
+            perf_track = obj.add_progress_info(perf_track, "Pos", session_info);
+            plot_perf_track(obj, ax, perf_track, ls{i,j}(k), lw{i,j}(k))
+        end
+
+        if i==sz_draw(1) && j==1
+            xlabel(ax, 'Time (s)', 'FontWeight', 'bold');
+            ylabel(ax, 'Perfomance %', 'FontWeight', 'bold');
+        end
+        if i~=sz_draw(i)
+            set(ax, 'XTickLabel', []);
+        end
+        if j~=1
+            set(ax, 'YTickLabel', []);
+        end
+    end % for j = 1:sz_draw(2)
+end % for i = 1:sz_draw(1)
+drawnow();
+end % draw_perf_track
+
+function ax_cell = draw_perf_progress(obj, ax_cell, perf_progress, ls, lw)
+session_info  = ones(obj.NumSessions, 1);
+session_sep   = .5+[0; cumsum(session_info)];
+session_chemo = find(obj.Label=="Chemo");
+sep_lesion    = find(obj.Label=="Lesion", 1);
+sz_draw = size(ax_cell);
+for i = 1:sz_draw(1)
+    for j = 1:sz_draw(2)
+        ax = ax_cell{i,j};
+        set(ax, 'XLim', .5+[0 obj.NumSessions], 'YLim', [0 100], 'XTick', 0:5:obj.NumSessions);
+        mark_sessions(ax, session_sep, session_chemo, sep_lesion);
+        for k = 1:length(perf_progress{i,j})
+            plot_perf_progress(obj, ax, perf_progress{i,j}{k}, ls{i,j}(k), lw{i,j}(k))
+        end
+
+        if i==sz_draw(1) && j==1
+            xlabel(ax, 'Session', 'FontWeight', 'bold');
+            ylabel(ax, 'Perfomance %', 'FontWeight', 'bold');
+        end
+        if i~=sz_draw(i)
+            set(ax, 'XTickLabel', []);
+        end
+        if j~=1
+            set(ax, 'YTickLabel', []);
+        end
+    end % for j = 1:sz_draw(2)
+end % for i = 1:sz_draw(1)
+drawnow();
+end % draw_perf_progress
+
+function draw_heatmap(obj, ax_cell, pd_f, pd_x, fp, rw)
+session_info  = ones(obj.NumSessions, 1);
+session_chemo = find(obj.Label=="Chemo");
+sep_lesion    = find(obj.Label=="Lesion", 1);
+sz_draw = size(ax_cell);
+for i = 1:sz_draw(1)
+    for j = 1:sz_draw(2)
+        ax = ax_cell{i,j};
+        set(ax, 'YDir', 'normal', ...
+            'XLim', .5+[0 obj.NumSessions], 'YLim', [-1 1]+obj.TargetFP, 'XTick', 0:5:obj.NumSessions);
+        pd_this = normalize(pd_f{i,j}(:), 'range');
+        pd_this = reshape(pd_this, size(pd_f{i,j}));
+        imagesc(ax, 1:obj.NumSessions, pd_x, pd_this);
+        
+        for k = 1:length(session_chemo)
+            fill(ax, [-.5 -.5 .5 .5]+session_chemo(k), [-1 1 1 -1]+obj.TargetFP, 'r', ...
+                'FaceColor', 'none', 'EdgeColor', GPSColor.Treat, 'LineWidth', 1.5, 'LineStyle', ':');
+        end
+        if ~isempty(sep_lesion)
+            xline(ax, sep_lesion, 'LineWidth', 1.5, 'Color', [1 1 1]);
+        end
+        
+        if ~isempty(fp)
+            yline(ax, fp, 'Color', [1 1 1], 'LineWidth', .5, 'LineStyle', '-', 'Alpha', .7);
+            yline(ax, fp+rw(j), 'Color', [1 1 1], 'LineWidth', .5, 'LineStyle', ':', 'Alpha', .7);
+        end
+
+        if i==sz_draw(1) && j==1
+            xlabel(ax, 'Session', 'FontWeight', 'bold');
+            ylabel(ax, 'HD (s)', 'FontWeight', 'bold');
+        end
+        if i~=sz_draw(i)
+            set(ax, 'XTickLabel', []);
+        end
+        if j~=1
+            set(ax, 'YTickLabel', []);
+        end
+    end % for j = 1:sz_draw(2)
+end % for i = 1:sz_draw(1)
+drawnow();
+end % draw_heatmap
+
+function draw_distr(obj, ax_cell, data_cell, c, ls, lw, fp, rw)
+sz_draw = size(ax_cell);
+for i = 1:sz_draw(1)
+    for j = 1:sz_draw(2)
+        ax = ax_cell{i,j};
+        set(ax, 'XLim', [0 3]);
+        
+        obj.plot_distr(ax, data_cell{i,j}, 'Color', c{i,j}, 'LineStyle', ls{i,j}, 'LineWidth', lw{i,j});
+        
+        if ~isempty(fp)
+            xline(ax, fp, 'Color', [.2 .2 .2], 'LineWidth', .5, 'LineStyle', '-', 'Alpha', .7);
+            xline(ax, fp+rw, 'Color', [.2 .2 .2], 'LineWidth', .5, 'LineStyle', ':', 'Alpha', .7);
+        end
+
+        if i==sz_draw(1) && j==1
+            xlabel(ax, 'HD (s)', 'FontWeight', 'bold');
+            ylabel(ax, 'Density (1/s)', 'FontWeight', 'bold');
+        end
+        if i~=sz_draw(i)
+            set(ax, 'XTickLabel', []);
+        end
+        if j~=1
+            set(ax, 'YTickLabel', []);
+        end
+    end % for j = 1:sz_draw(2)
+end % for i = 1:sz_draw(1)
+drawnow();
+end % draw_distr
+
+function draw_scatter(obj, ax_cell, beh_cell, var_x, var_y, c, mk, mk_sz, fp, rw)
+session_info  = obj.DurationSession;
+session_sep   = [0; cumsum(session_info)];
+session_chemo = find(obj.Label=="Chemo");
+sep_lesion    = find(obj.Label=="Lesion", 1);
+sz_draw = size(ax_cell);
+for i = 1:sz_draw(1)
+    for j = 1:sz_draw(2)
+        ax = ax_cell{i,j};
+        mark_sessions(ax, session_sep, session_chemo, sep_lesion);
+        if ~isempty(fp)
+            yline(ax, fp, 'LineWidth', .5, 'LineStyle', '-', 'Alpha', .5);
+            yline(ax, fp+rw(j), 'LineWidth', .5, 'LineStyle', ':', 'Alpha', .5);
+        end
+        plot_scatter(ax, beh_cell{i,j}, var_x, var_y, c{i,j}, mk, mk_sz{i,j});
+        set(ax, 'XLim', [0 obj.BehavTable.TrialCentInTimeProgress(end)]);
+
+        if i==sz_draw(1) && j==1
+            xlabel(ax, 'Time (s)', 'FontWeight', 'bold');
+        end
+        if i~=sz_draw(i)
+            set(ax, 'XTickLabel', []);
+        end
+        if j~=1
+            set(ax, 'YTickLabel', []);
+        end
+    end % for j = 1:sz_draw(2)
+end % for i = 1:sz_draw(1)
+drawnow();
+end % draw_scatter
+
+function draw_violin(obj, ax_cell, data, band_width, c, fp, rw)
+session_info  = ones(obj.NumSessions, 1);
+session_sep   = .5+[0; cumsum(session_info)];
+session_chemo = find(obj.Label=="Chemo");
+sep_lesion    = find(obj.Label=="Lesion", 1);
+sz_draw = size(ax_cell);
+for i = 1:sz_draw(1)
+    for j = 1:sz_draw(2)
+        ax = ax_cell{i,j};
+        mark_sessions(ax, session_sep, session_chemo, sep_lesion);
+        if ~isempty(fp)
+            yline(ax, fp, 'LineWidth', .5, 'LineStyle', '-', 'Alpha', .5);
+            yline(ax, fp+rw(j), 'LineWidth', .5, 'LineStyle', ':', 'Alpha', .5);
+        end
+        data_this = data{i,j};
+        data_1 = cellfun(@(x) x{1}, data_this, 'UniformOutput', false);
+        data_2 = cellfun(@(x) x{2}, data_this, 'UniformOutput', false);
+        c_this = mat2cell(c{i,j}, ones(size(c{i,j}, 1), 1));
+        obj.plot_violin_compare(ax, data_1, data_2, band_width, 'Color', c_this, 'ShowMedian', false)
+        set(ax, 'XLim', .5 + [0 obj.NumSessions], 'XTick', 0:5:obj.NumSessions, 'XTickLabel', 0:5:obj.NumSessions);
+
+        if i==sz_draw(1) && j==1
+            xlabel(ax, 'Session', 'FontWeight', 'bold');
+        end
+        if i~=sz_draw(i)
+            set(ax, 'XTickLabel', []);
+        end
+        if j~=1
+            set(ax, 'YTickLabel', []);
+        end
+    end % for j = 1:sz_draw(2)
+end % for i = 1:sz_draw(1)
+drawnow();
+end % draw_violin
+
+function draw_stat(obj, ax_cell, stat_cell, variable, c, ls, lw, fp, rw)
+session_info  = ones(obj.NumSessions, 1);
+session_sep   = .5+[0; cumsum(session_info)];
+session_chemo = find(obj.Label=="Chemo");
+sep_lesion    = find(obj.Label=="Lesion", 1);
+sz_draw = size(ax_cell);
+
+for i = 1:sz_draw(1)
+    for j = 1:sz_draw(2)
+        ax = ax_cell{i,j};
+        mark_sessions(ax, session_sep, session_chemo, sep_lesion);
+        if ~isempty(fp)
+            yline(ax, fp, 'LineWidth', .5, 'LineStyle', '-', 'Alpha', .5);
+            yline(ax, fp+rw(j), 'LineWidth', .5, 'LineStyle', ':', 'Alpha', .5);
+        end
+            
+        stat_this = stat_cell{i,j};
+        for k = 1:length(stat_this)
+            plot_stat(ax, stat_this{k}, variable, c{i,j}(k,:), ls(i,j), lw(i,j))
+        end
+        
+        set(ax, 'XLim', .5 + [0 obj.NumSessions], 'XTick', 0:5:obj.NumSessions, 'XTickLabel', 0:5:obj.NumSessions);
+
+        if i==sz_draw(1) && j==1
+            xlabel(ax, 'Session', 'FontWeight', 'bold');
+        end
+        if i~=sz_draw(i)
+            set(ax, 'XTickLabel', []);
+        end
+        if j~=1
+            set(ax, 'YTickLabel', []);
+        end
+    end % for j = 1:sz_draw(2)
+end % for i = 1:sz_draw(1)
+drawnow();
+end % draw_stat
+
+%% Plot functions
+function plot_perf_track(obj, ax, perf_track, ls, lw)
+sessions = unique(perf_track.Session, "stable");
+for i = 1:length(sessions)
+    ind_this = perf_track.Session == sessions(i);
+    track_this = perf_track(ind_this, :);
+    for j = 1:length(obj.PerformanceType)
+        perf_this = obj.PerformanceType(j);
+        plot(ax, track_this.PosProgress, 100*track_this.(perf_this), ...
+            'LineStyle', ls, 'LineWidth', lw, 'Color', GPSColor.(perf_this));
+    end
+end
+end % plot_perf_track
+
+function plot_perf_progress(obj, ax, perf, ls, lw)
+for i = 1:length(obj.PerformanceType)
+    perf_this = obj.PerformanceType(i);
+    plot(ax, 1:obj.NumSessions, 100*perf.(perf_this), ...
+        'LineStyle', ls, 'LineWidth', lw, 'Color', GPSColor.(perf_this), ...
+        'Marker', 'o', 'MarkerSize', 4, 'MarkerFaceColor', GPSColor.(perf_this), 'MarkerEdgeColor', 'w');
+end
+end % plot_perf_progress
+
+function plot_scatter(ax, beh, var_x, var_y, c, mk, mk_sz)
+n_beh = cellfun(@height, beh);
+beh_this = vertcat(beh{:});
+
+x_this = beh_this.(var_x);
+y_this = beh_this.(var_y);
+o_this = beh_this.Outcome;
+
+c_this  = zeros(sum(n_beh), 3);
+ms_this = zeros(sum(n_beh), 1);
+count_1 = 1;
+for i = 1:length(n_beh)
+    count_2 = count_1+n_beh(i)-1;
+    c_this(count_1:count_2, :) = repmat(c(i, :), n_beh(i), 1);
+    ms_this(count_1:count_2)   = repmat(mk_sz(i), n_beh(i), 1);
+    count_1 = count_2 + 1;
+end
+[x, id] = sort(x_this);
+y = y_this(id);
+o = o_this(id);
+c = c_this(id,:);
+ms = ms_this(id);
+
+if length(mk)==1
+    scatter(ax, x, y, ms, c, 'filled', 'MarkerFaceAlpha', .6);
+elseif length(mk)==2
+    id_c = o=="Correct";
+    scatter(ax, x(id_c) , y(id_c) , ms(id_c) , c(id_c,:) , mk(1), 'filled', 'MarkerFaceAlpha', .6);
+    scatter(ax, x(~id_c), y(~id_c), ms(~id_c), c(~id_c,:), mk(2), 'MarkerEdgeAlpha', .6);
+end
+end % plot_scatter
+
+function plot_stat(ax, stat, variable, c, ls, lw)
+stat_vars = string(stat.Properties.VariableNames);
+if ismember(variable, stat_vars)
+    var_this = stat.(variable);
+    plot(ax, 1:length(var_this), var_this, 'Color', c, 'LineStyle', ls, 'LineWidth', lw);
+    if ismember([variable+"_ci_u", variable+"_ci_l"], stat_vars)
+        ci_u = stat.(variable+"_ci_u");
+        ci_l = stat.(variable+"_ci_l");
+        for i = 1:length(var_this)
+            plot(ax, [i i], [ci_l(i) ci_u(i)], 'Color', c, 'LineWidth', lw);
+        end
+    end
+end
+end % plot_stat
+
+%% Marking sessions
+function mark_sessions(ax, session_sep, session_chemo, sep_lesion)
+xline(ax, session_sep(2:end-1), 'LineWidth', .5, 'LineStyle', '-', 'Color', [.7 .7 .7], 'Alpha', .7);
+
+if ~isempty(session_chemo)
+    for k = 1:length(session_chemo)
+        s_this = session_sep([0 1] + session_chemo(k));
+        fill(ax, [s_this(1) s_this(2) s_this(2) s_this(1)], [ax.YLim(1) ax.YLim(1) ax.YLim(2) ax.YLim(2)], 'r', ...
+            'FaceColor', GPSColor.Treat, 'FaceAlpha', .2, 'EdgeColor', 'none');
+    end
+end
+if ~isempty(sep_lesion)
+    xline(ax, session_sep(sep_lesion), 'LineWidth', 1.5, 'LineStyle', '-', 'Color', [0 0 0], 'Alpha', .7);
+end
+end % mark_sessions
