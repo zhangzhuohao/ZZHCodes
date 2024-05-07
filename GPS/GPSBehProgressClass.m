@@ -110,7 +110,7 @@ classdef GPSBehProgressClass < GPSBehClass & GPSPlot
             obj.NumSessions         = length(SessionClassAll);
             obj.NumTrialsSession = cellfun(@(x) x.NumTrials, SessionClassAll);
             obj.DurationSession     = cellfun(@(x) x.TrialCentInTime(end), SessionClassAll);
-            obj.TargetFP            = unique(cellfun(@(x) x.TargetFP, SessionClassAll), "rows");
+            obj.TargetFP            = unique(cell2mat(cellfun(@(x) x.TargetFP, SessionClassAll, 'UniformOutput', false)), "rows");
             if size(obj.TargetFP, 1)>1
                 error("More than one set of target fp");
             end
