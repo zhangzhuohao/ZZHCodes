@@ -17,7 +17,10 @@ if ~all(isfield(obj.HDPDF, ["Early", "Late"]))
 
     obj.HDSorted.Early = obj.sort_data(beh_early.HD, {beh_early.Cued, beh_early.PortCorrect}, obj.SortCodes);
     obj.HDSorted.Late  = obj.sort_data(beh_late.HD,  {beh_late.Cued,  beh_late.PortCorrect},  obj.SortCodes);
+
+    fprintf("\n******** EarlyTraning ********\n");
     obj.HDPDF.Early = obj.get_kde(obj.HDSorted.Early, obj.Bins.HD, 'pdf', 'HD', 1);
+    fprintf("\n******** LateTraning ********\n");
     obj.HDPDF.Late  = obj.get_kde(obj.HDSorted.Late, obj.Bins.HD, 'pdf', 'HD', 1);
     obj.save();
 end

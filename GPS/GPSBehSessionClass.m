@@ -177,8 +177,8 @@ classdef GPSBehSessionClass < GPSBehClass & GPSPlot
                     obj.SortVars   = "PortCorrect";
                 case {'3FPHoldFlash', '3FPHoldSRT', '3FPHoldWM'}
                     obj.Task = "ThreeFPHold";
-                    obj.SortLabels = ["CueUncue", "LeftRight"];
-                    obj.SortVars   = ["Cued"    , "PortCorrect"];
+                    obj.SortLabels = ["TargetFP", "LeftRight"];
+                    obj.SortVars   = ["FP"      , "PortCorrect"];
                 case {'KornblumHold', 'KornblumHoldEmpty'}
                     obj.Task = "KornblumHold";
                     obj.SortLabels = ["CueUncue", "LeftRight"];

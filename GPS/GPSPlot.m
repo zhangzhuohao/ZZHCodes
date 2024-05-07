@@ -182,11 +182,22 @@ classdef GPSPlot < handle
             data_1 = data_all(:, 1:n_cate);
             data_2 = data_all(:, n_cate+1:end);
 
-            data_med_ci_1 = bootci(1000, @(x) median(x, 'omitnan'), data_1);
-            data_med_ci_2 = bootci(1000, @(x) median(x, 'omitnan'), data_2);
-
             data_med_1 = median(data_1, 'omitnan');
             data_med_2 = median(data_2, 'omitnan');
+
+            valid_1 = sum(~isnan(data_1))>=5;
+            valid_2 = sum(~isnan(data_2))>=5;
+            data_1(1, ~any(~isnan(data_1))) = 0;
+            data_2(1, ~any(~isnan(data_2))) = 0;
+
+            data_med_ci_1 = nan(2, n_cate);
+            data_med_ci_2 = nan(2, n_cate);
+            if any(valid_1)
+                data_med_ci_1(:, valid_1) = bootci(1000, {@(x) median(x, 'omitnan'), data_1(:, valid_1)}, 'alpha', .05, 'type', 'cper');
+            end
+            if any(valid_2)
+                data_med_ci_2(:, valid_2) = bootci(1000, {@(x) median(x, 'omitnan'), data_2(:, valid_2)}, 'alpha', .05, 'type', 'cper');
+            end
 
             %
             axes(ax);

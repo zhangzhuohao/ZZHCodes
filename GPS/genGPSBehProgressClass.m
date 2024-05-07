@@ -45,7 +45,7 @@ end
 Folders = get_folders(ParentDir, "FolderType", 'Protocol', "Tasks", Tasks(indx));
 
 %%
-for d = 1:length(Folders)
+for d = 4:length(Folders)
     % Call the recursive function to get a list of all the .mat files in the parent directory and its subdirectories
     ProtocolDir = Folders(d);
     Files = get_mat_files(ProtocolDir, "FileType", 'BehSessionClass');
