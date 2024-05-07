@@ -15,8 +15,8 @@ if ~all(isfield(obj.HDPDF, ["Early", "Late"]))
     beh_early = beh(id_early, :);
     beh_late  = beh(id_late, :);
 
-    obj.HDSorted.Early = obj.sort_data(beh_early.HD, {beh_early.Cued, beh_early.PortCorrect}, obj.SortCodes);
-    obj.HDSorted.Late  = obj.sort_data(beh_late.HD,  {beh_late.Cued,  beh_late.PortCorrect},  obj.SortCodes);
+    obj.HDSorted.Early = obj.sort_data(beh_early.HD, {beh_early.FP, beh_early.PortCorrect}, obj.SortCodes);
+    obj.HDSorted.Late  = obj.sort_data(beh_late.HD,  {beh_late.FP,  beh_late.PortCorrect},  obj.SortCodes);
 
     fprintf("\n******** EarlyTraning ********\n");
     obj.HDPDF.Early = obj.get_kde(obj.HDSorted.Early, obj.Bins.HD, 'pdf', 'HD', 1);
@@ -28,39 +28,40 @@ end
 C = GPSColor();
 
 %%
-ax_sz_1 = [6 2];    
-ax_sz_2 = [1.9 2];
-ax_sz_3 = [6 1.4];
+ax_sz_1 = [6 2];
+ax_sz_2 = [6 1.4];
+ax_sz_3 = [12.5 2];
+ax_sz_4 = [4 2];
 
-[x_grid, y_grid] = meshgrid([1.2 7.7 16 23.2], [10 7 4 1]);
+[x_grid, y_grid] = meshgrid([1.2 7.7 16 22.5], [16 13 10 7 4 1]);
 ax_grid = cat(3, x_grid, y_grid);
-ax_grid = mat2cell(ax_grid, ones(1,4), ones(1,4), 2);
+ax_grid = mat2cell(ax_grid, ones(1,size(x_grid, 1)), ones(1,size(x_grid, 2)), 2);
 ax_grid = cellfun(@(x) squeeze(x)', ax_grid, 'UniformOutput', false);
 
 ls = [":", "-.", "-"];
-lw = [1 1.125 1.25];
+lw = [1.25 1.125 1];
 rw = .5;
-n_s = 2;
+n_s = 3;
 
 % Figure
 fig_progress = figure(12); clf(fig_progress);
-set(fig_progress, 'Visible', 'on', 'Units', 'centimeters', 'Position', [5 5 30 13.2], 'Color', 'w', 'toolbar', 'none');
+set(fig_progress, 'Visible', 'on', 'Units', 'centimeters', 'Position', [5 3 30 19.2], 'Color', 'w', 'toolbar', 'none');
 
 fig_title = sprintf("%s / %s / %s - %s", obj.Subject, obj.Protocol, obj.Sessions(1), obj.Sessions(end));
 set_fig_title(fig_progress, fig_title);
 
 % performance track
-ax_perf_track = obj.assign_ax_to_fig(fig_progress, 1, 2, [ax_grid{1,1} 12.5 2], ax_sz_1);
+ax_perf_track = obj.assign_ax_to_fig(fig_progress, 3, 2, [ax_grid{2,1} ax_sz_1.*[2 2]+[.5 1]], ax_sz_2);
 perf_track = obj.splice_data(obj.PerformanceTrack.Session);
 data_perf_track = obj.assign_data_to_ax(ax_perf_track, perf_track);
-draw_perf_track(obj, ax_perf_track, data_perf_track, repmat({ls}, 1, 2), repmat({lw}, 1, 2));
+draw_perf_track(obj, ax_perf_track, data_perf_track, repmat(cellstr(ls'), 1, 2), repmat(mat2cell(lw', [1 1 1]), 1, 2));
 title(ax_perf_track{1,1}, 'Left' , 'FontWeight', 'bold', 'Color', C.PortL);
 title(ax_perf_track{1,2}, 'Right', 'FontWeight', 'bold', 'Color', C.PortR);
 
 % performance progress
-ax_perf = obj.assign_ax_to_fig(fig_progress, 1, 2, [ax_grid{2,1} 12.5 2], ax_sz_1);
+ax_perf = obj.assign_ax_to_fig(fig_progress, 1, 2, [ax_grid{3,1} ax_sz_1.*[2 1]+[.5 0]], ax_sz_1);
 data_perf = obj.assign_data_to_ax(ax_perf, perf_sorted);
-draw_perf_progress(obj, ax_perf, data_perf, repmat({ls}, 1, 2), repmat({lw}, 1, 2));
+draw_perf_progress(obj, ax_perf, data_perf, '-', 1.2);
 
 % pdf heatmap of hold duration
 pdf_x = obj.Bins.HD;
@@ -73,22 +74,22 @@ for i = 1:n_s
     pdf_r{i} = cell2mat(pdf_r{i})';
 end
 
-ax_heat_l = obj.assign_ax_to_fig(fig_progress, 1, n_s, [ax_grid{3,1} 6 2], ax_sz_2);
+ax_heat_l = obj.assign_ax_to_fig(fig_progress, 1, n_s, [ax_grid{5,1} ax_sz_3], ax_sz_4);
 draw_heatmap(obj, ax_heat_l, pdf_l, pdf_x, obj.TargetFP, rw);
 
-ax_heat_r = obj.assign_ax_to_fig(fig_progress, 1, n_s, [ax_grid{3,2} 6 2], ax_sz_2);
+ax_heat_r = obj.assign_ax_to_fig(fig_progress, 1, n_s, [ax_grid{6,1} ax_sz_3], ax_sz_4);
 draw_heatmap(obj, ax_heat_r, pdf_r, pdf_x, obj.TargetFP, rw);
 set(ax_heat_r{1}, 'YTickLabel', "");
 ylabel(ax_heat_r{1}, "");
 xlabel(ax_heat_r{1}, "");
 
-cb = colorbar(ax_heat_r{1}, 'Units', 'centimeters', 'Position', [ax_grid{3,2}+[ax_sz_1(1)+.2 0], .25, ax_sz_1(2)], ...
+cb = colorbar(ax_heat_r{1}, 'Units', 'centimeters', 'Position', [ax_grid{6,1}+[ax_sz_3(1)+.2 0], .25, ax_sz_3(2)], ...
     'Ticks', [0 1]);
 cb.Label.String = "Norm. Density";
 cb.Label.FontWeight = "bold";
 
 % pdf hold duration in early and late training phase
-ax_e_l = obj.assign_ax_to_fig(fig_progress, 1, 2, [ax_grid{4,1} 12.5 2], ax_sz_1);
+ax_e_l = obj.assign_ax_to_fig(fig_progress, 1, 2, [ax_grid{4,1} ax_sz_1.*[2 1]+[.5 0]], ax_sz_1);
 pdf_e_l = obj.assign_data_to_ax(ax_e_l, [obj.HDPDF.Early; obj.HDPDF.Late]);
 c_e_l = [repmat({C.PhaseEarly}, n_s, 1); repmat({C.PhaseLate}, n_s, 1)];
 ls_e_l = repmat(ls, 1, 2);
@@ -101,6 +102,7 @@ y_lim = max(max(y_lim));
 y_lim = (ceil(y_lim) + round(y_lim)) / 2;
 for i = 1:2
     ax_e_l{i}.YLim = [0 y_lim];
+    ax_e_l{i}.XLim = [0 2.5];
 end
 
 % Shuttle time
@@ -122,7 +124,7 @@ draw_violin(obj, ax_st_v, data_st_v, obj.BandWidth, c_st, [], []);
 
 % Movement time
 % scatter
-ax_mt_s = obj.assign_ax_to_fig(fig_progress, 1, n_s, [ax_grid{2,3} ax_sz_1], ax_sz_2);
+ax_mt_s = obj.assign_ax_to_fig(fig_progress, 1, n_s, [ax_grid{5,3} ax_sz_3], ax_sz_4);
 for i = 1:n_s
     set(ax_mt_s{i}, "YLim", [.2 1.2], "YTick", [.2 1.2], "YTickLabel", "");
     if i==1
@@ -136,7 +138,7 @@ ms_mt = repmat({[8; 8]}, 1, n_s);
 draw_scatter(obj, ax_mt_s, data_mt, "TrialCentInTimeProgress", "MT", c_mt, ["o", "x"], ms_mt, [], []);
 
 % violin
-ax_mt_v = obj.assign_ax_to_fig(fig_progress, 1, n_s, [ax_grid{2,4} ax_sz_1], ax_sz_2);
+ax_mt_v = obj.assign_ax_to_fig(fig_progress, 1, n_s, [ax_grid{6,3} ax_sz_3], ax_sz_4);
 data_mt_v = cell(1,n_s);
 for i = 1:n_s
     set(ax_mt_v{i}, "YLim", [.2 1.2], "YTick", [.2 1.2], "YTickLabel", "");
@@ -149,9 +151,9 @@ draw_violin(obj, ax_mt_v, data_mt_v, obj.BandWidth, c_mt, [], []);
 
 % Hold duration
 % scatter
-ax_hd_s = obj.assign_ax_to_fig(fig_progress, 1, n_s, [ax_grid{3,3} ax_sz_1], ax_sz_2);
+ax_hd_s = obj.assign_ax_to_fig(fig_progress, 1, n_s, [ax_grid{2,3} ax_sz_3], ax_sz_4);
 for i = 1:n_s
-    set(ax_hd_s{i}, "YLim", [-1 1]+obj.TargetFP, "YTick", [-1 0 1]+obj.TargetFP, "YTickLabel", "");
+    set(ax_hd_s{i}, "YLim", [0 2.5], "YTick", 0:1:2.5, "YTickLabel", "");
     if i==1
         ylabel(ax_hd_s{i}, 'HD (s)', 'FontWeight', 'bold');
         set(ax_hd_s{i}, "YTickLabel", ax_hd_s{i}.YTick);
@@ -163,10 +165,10 @@ ms_hd = repmat({[8; 8]}, 1, n_s);
 draw_scatter(obj, ax_hd_s, data_hd, "TrialCentInTimeProgress", "HD", c_hd, ["o", "x"], ms_hd, obj.TargetFP, rw);
 
 % violin
-ax_hd_v = obj.assign_ax_to_fig(fig_progress, 1, n_s, [ax_grid{3,4} ax_sz_1], ax_sz_2);
+ax_hd_v = obj.assign_ax_to_fig(fig_progress, 1, n_s, [ax_grid{3,3} ax_sz_3], ax_sz_4);
 data_hd_v = cell(1,n_s);
 for i = 1:n_s
-    set(ax_hd_v{i}, "YLim", [-1 1]+obj.TargetFP, "YTick", [-1 0 1]+obj.TargetFP, "YTickLabel", "");
+    set(ax_hd_v{i}, "YLim", [0 2.5], "YTick", 0:1:2.5, "YTickLabel", "");
     data_hd_v{i} = cellfun(@(x) x(i, :), obj.HDSorted.Session, 'UniformOutput', false);
     if i==1
         set(ax_hd_v{i}, "YTickLabel", ax_hd_v{i}.YTick);
@@ -174,24 +176,37 @@ for i = 1:n_s
 end
 draw_violin(obj, ax_hd_v, data_hd_v, obj.BandWidth, c_hd, obj.TargetFP, rw);
 
-% Hold duration statistics
-stat = obj.assign_data_to_ax(cell(1,n_s), stat_sorted');
-c_stat = repmat({[C.PortL; C.PortR]}, 1, n_s);
-% median
-ax_median = obj.assign_ax_to_fig(fig_progress, 1, n_s, [ax_grid{4,3} ax_sz_1], ax_sz_2);
+% violin
+ax_rt_v = obj.assign_ax_to_fig(fig_progress, 1, n_s, [ax_grid{4,3} ax_sz_3], ax_sz_4);
+data_rt_v = cell(1,n_s);
 for i = 1:n_s
-    ax_median{i}.YLim = [-1 1] + obj.TargetFP;
+    set(ax_rt_v{i}, "YLim", [0 .5], "YTick", [0 .5]);
+    data_rt_v{i} = cellfun(@(x) x(i, :), obj.RTSorted.Session, 'UniformOutput', false);
+    if i==1
+        ylabel(ax_rt_v{i}, 'RT (s)', 'FontWeight', 'bold');
+        set(ax_rt_v{i}, "YTickLabel", ax_rt_v{i}.YTick);
+    end
 end
-draw_stat(obj, ax_median, stat, "Median", c_stat, ls, lw, obj.TargetFP, rw);
-ylabel(ax_median{1}, "HD (s) median", 'FontWeight', 'bold');
+draw_violin(obj, ax_rt_v, data_rt_v, obj.BandWidth, c_hd, [0 0 0], rw);
 
-% iqr
-ax_iqr = obj.assign_ax_to_fig(fig_progress, 1, n_s, [ax_grid{4,4} ax_sz_1], ax_sz_2);
-for i = 1:n_s
-    ax_iqr{i}.YLim = [0 .5];
-end
-draw_stat(obj, ax_iqr, stat, "IQR", c_stat, ls, lw, [], []);
-ylabel(ax_iqr{1}, "HD (s) IQR", 'FontWeight', 'bold');
+% % Hold duration statistics
+% stat = obj.assign_data_to_ax(cell(1,n_s), stat_sorted');
+% c_stat = repmat({[C.PortL; C.PortR]}, 1, n_s);
+% % median
+% ax_median = obj.assign_ax_to_fig(fig_progress, 1, n_s, [ax_grid{1,3} ax_sz_1], ax_sz_3);
+% for i = 1:n_s
+%     ax_median{i}.YLim = [0 2.5];
+% end
+% draw_stat(obj, ax_median, stat, "Median", c_stat, ls, lw, obj.TargetFP, rw);
+% ylabel(ax_median{1}, "HD (s) median", 'FontWeight', 'bold');
+% 
+% % iqr
+% ax_iqr = obj.assign_ax_to_fig(fig_progress, 1, n_s, [ax_grid{4,4} ax_sz_1], ax_sz_3);
+% for i = 1:n_s
+%     ax_iqr{i}.YLim = [0 .5];
+% end
+% draw_stat(obj, ax_iqr, stat, "IQR", c_stat, ls, lw, [], []);
+% ylabel(ax_iqr{1}, "HD (s) IQR", 'FontWeight', 'bold');
 
 %%
 end
@@ -211,14 +226,14 @@ for i = 1:sz_draw(1)
         for k = 1:length(perf_track_cell{i,j})
             perf_track = perf_track_cell{i,j}{k};
             perf_track = obj.add_progress_info(perf_track, "Pos", session_info);
-            plot_perf_track(obj, ax, perf_track, ls{i,j}(k), lw{i,j}(k))
+            plot_perf_track(obj, ax, perf_track, ls{i,j}, lw{i,j})
         end
 
         if i==sz_draw(1) && j==1
             xlabel(ax, 'Time (s)', 'FontWeight', 'bold');
             ylabel(ax, 'Perfomance %', 'FontWeight', 'bold');
         end
-        if i~=sz_draw(i)
+        if i~=sz_draw(1)
             set(ax, 'XTickLabel', []);
         end
         if j~=1
@@ -240,9 +255,7 @@ for i = 1:sz_draw(1)
         ax = ax_cell{i,j};
         set(ax, 'XLim', .5+[0 obj.NumSessions], 'YLim', [0 100], 'XTick', 0:5:obj.NumSessions);
         mark_sessions(ax, session_sep, session_chemo, sep_lesion);
-        for k = 1:length(perf_progress{i,j})
-            plot_perf_progress(obj, ax, perf_progress{i,j}{k}, ls{i,j}(k), lw{i,j}(k))
-        end
+        plot_perf_progress(obj, ax, perf_progress{i,j}{1}, ls, lw)
 
         if i==sz_draw(1) && j==1
             xlabel(ax, 'Session', 'FontWeight', 'bold');
@@ -268,22 +281,22 @@ for i = 1:sz_draw(1)
     for j = 1:sz_draw(2)
         ax = ax_cell{i,j};
         set(ax, 'YDir', 'normal', ...
-            'XLim', .5+[0 obj.NumSessions], 'YLim', [-1 1]+obj.TargetFP, 'XTick', 0:5:obj.NumSessions);
+            'XLim', .5+[0 obj.NumSessions], 'YLim', [0 2.5], 'XTick', 0:5:obj.NumSessions);
         pd_this = normalize(pd_f{i,j}(:), 'range');
         pd_this = reshape(pd_this, size(pd_f{i,j}));
         imagesc(ax, 1:obj.NumSessions, pd_x, pd_this);
         
         for k = 1:length(session_chemo)
-            fill(ax, [-.5 -.5 .5 .5]+session_chemo(k), [-1 1 1 -1]+obj.TargetFP, 'r', ...
-                'FaceColor', 'none', 'EdgeColor', GPSColor.Treat, 'LineWidth', 1.5, 'LineStyle', ':');
+            fill(ax, [-.5 -.5 .5 .5]+session_chemo(k), [0 2.5 2.5 0], 'r', ...
+                'FaceColor', 'none', 'EdgeColor', GPSColor.Treat, 'LineWidth', .8, 'LineStyle', ':');
         end
         if ~isempty(sep_lesion)
             xline(ax, sep_lesion, 'LineWidth', 1.5, 'Color', [1 1 1]);
         end
         
         if ~isempty(fp)
-            yline(ax, fp, 'Color', [1 1 1], 'LineWidth', .5, 'LineStyle', '-', 'Alpha', .7);
-            yline(ax, fp+rw(j), 'Color', [1 1 1], 'LineWidth', .5, 'LineStyle', ':', 'Alpha', .7);
+            yline(ax, fp(j), 'Color', [1 1 1], 'LineWidth', .5, 'LineStyle', '-', 'Alpha', .7);
+            yline(ax, fp(j)+rw, 'Color', [1 1 1], 'LineWidth', .5, 'LineStyle', ':', 'Alpha', .7);
         end
 
         if i==sz_draw(1) && j==1
@@ -341,8 +354,8 @@ for i = 1:sz_draw(1)
         ax = ax_cell{i,j};
         mark_sessions(ax, session_sep, session_chemo, sep_lesion);
         if ~isempty(fp)
-            yline(ax, fp, 'LineWidth', .5, 'LineStyle', '-', 'Alpha', .5);
-            yline(ax, fp+rw(j), 'LineWidth', .5, 'LineStyle', ':', 'Alpha', .5);
+            yline(ax, fp(j), 'LineWidth', .5, 'LineStyle', '-', 'Alpha', .5);
+            yline(ax, fp(j)+rw, 'LineWidth', .5, 'LineStyle', ':', 'Alpha', .5);
         end
         plot_scatter(ax, beh_cell{i,j}, var_x, var_y, c{i,j}, mk, mk_sz{i,j});
         set(ax, 'XLim', [0 obj.BehavTable.TrialCentInTimeProgress(end)]);
@@ -372,8 +385,8 @@ for i = 1:sz_draw(1)
         ax = ax_cell{i,j};
         mark_sessions(ax, session_sep, session_chemo, sep_lesion);
         if ~isempty(fp)
-            yline(ax, fp, 'LineWidth', .5, 'LineStyle', '-', 'Alpha', .5);
-            yline(ax, fp+rw(j), 'LineWidth', .5, 'LineStyle', ':', 'Alpha', .5);
+            yline(ax, fp(j), 'LineWidth', .5, 'LineStyle', '-', 'Alpha', .5);
+            yline(ax, fp(j)+rw, 'LineWidth', .5, 'LineStyle', ':', 'Alpha', .5);
         end
         data_this = data{i,j};
         data_1 = cellfun(@(x) x{1}, data_this, 'UniformOutput', false);
@@ -408,8 +421,8 @@ for i = 1:sz_draw(1)
         ax = ax_cell{i,j};
         mark_sessions(ax, session_sep, session_chemo, sep_lesion);
         if ~isempty(fp)
-            yline(ax, fp, 'LineWidth', .5, 'LineStyle', '-', 'Alpha', .5);
-            yline(ax, fp+rw(j), 'LineWidth', .5, 'LineStyle', ':', 'Alpha', .5);
+            yline(ax, fp(i), 'LineWidth', .5, 'LineStyle', '-', 'Alpha', .5);
+            yline(ax, fp(i)+rw, 'LineWidth', .5, 'LineStyle', ':', 'Alpha', .5);
         end
             
         stat_this = stat_cell{i,j};

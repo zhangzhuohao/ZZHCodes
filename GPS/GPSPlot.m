@@ -310,7 +310,7 @@ classdef GPSPlot < handle
                     end
                 end
                 for i = 1:sz_ax(1)
-                    for j = 1:sz_sz(2)
+                    for j = 1:sz_ax(2)
                         data_assigned{i, j} = data_cell(i, j);
                     end
                 end
