@@ -59,7 +59,7 @@ if remove_outliers
 end
 
 
-DurOut.N = sum(RelTime);
+DurOut.N = length(RelTime);
 if isempty(RelTime) || DurOut.N<5
     DurOut.median = nan;
     DurOut.median_ksdensity = nan;
