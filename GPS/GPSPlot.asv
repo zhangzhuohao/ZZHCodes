@@ -159,9 +159,6 @@ classdef GPSPlot < handle
             n_data_1 = max(cellfun(@length, datain_1));
             n_data_2 = max(cellfun(@length, datain_2));
             n_data = max([n_data_1 n_data_2]);
-            if n_data==0
-                return
-            end
 
             if length(n_data_1)~=length(n_data_2)
                 error("input data dont match");
@@ -176,15 +173,9 @@ classdef GPSPlot < handle
             data_2 = nan(n_data, n_cate);
             for i = 1:n_cate
                 if isempty(datain_1{i})
-                    datain_1{i} = nan;
-                else
-                    data_1(1:length(datain_1{i}), i) = Scale*datain_1{i};
-                end
-                if isempty(datain_2{i})
-                    datain_2{i} = nan;
-                else
-                    data_2(1:length(datain_2{i}), i) = Scale*datain_2{i};
-                end
+
+                data_1(1:length(datain_1{i}), i) = Scale*datain_1{i};
+                data_2(1:length(datain_2{i}), i) = Scale*datain_2{i};
             end
 
             data_all = [data_1 data_2];
@@ -193,21 +184,21 @@ classdef GPSPlot < handle
             data_1 = data_all(:, 1:n_cate);
             data_2 = data_all(:, n_cate+1:end);
 
-            data_med_1 = median(data_1, 1, 'omitnan');
-            data_med_2 = median(data_2, 1, 'omitnan');
+            data_med_1 = median(data_1, 'omitnan');
+            data_med_2 = median(data_2, 'omitnan');
 
             valid_1 = sum(~isnan(data_1))>=5;
             valid_2 = sum(~isnan(data_2))>=5;
-            data_1(1, ~any(~isnan(data_1), 1)) = 0;
-            data_2(1, ~any(~isnan(data_2), 1)) = 0;
+            data_1(1, ~any(~isnan(data_1))) = 0;
+            data_2(1, ~any(~isnan(data_2))) = 0;
 
             data_med_ci_1 = nan(2, n_cate);
             data_med_ci_2 = nan(2, n_cate);
             if any(valid_1)
-                data_med_ci_1(:, valid_1) = bootci(1000, {@(x) median(x, 1, 'omitnan'), data_1(:, valid_1)}, 'alpha', .05, 'type', 'cper');
+                data_med_ci_1(:, valid_1) = bootci(1000, {@(x) median(x, 'omitnan'), data_1(:, valid_1)}, 'alpha', .05, 'type', 'cper');
             end
             if any(valid_2)
-                data_med_ci_2(:, valid_2) = bootci(1000, {@(x) median(x, 1, 'omitnan'), data_2(:, valid_2)}, 'alpha', .05, 'type', 'cper');
+                data_med_ci_2(:, valid_2) = bootci(1000, {@(x) median(x, 'omitnan'), data_2(:, valid_2)}, 'alpha', .05, 'type', 'cper');
             end
 
             %

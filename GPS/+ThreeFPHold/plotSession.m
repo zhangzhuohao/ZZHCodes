@@ -120,6 +120,7 @@ ax = cell(draw_sz);
 [dist_w, dist_h] = obj.get_plot_dist(ax, pos, ax_sz);
 
 x_lim = max(max(cellfun(@(x) max(x.Pos), perf_track)));
+x_lim = max([1 x_lim]);
 for i = 1:draw_sz(1)
     for j = 1:draw_sz(2)
         x_now = pos(1) + dist_w * (j-1);
