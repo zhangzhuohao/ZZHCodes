@@ -17,7 +17,8 @@ obj.ChoicePokeTime = zeros(obj.NumTrials, 1);
 
 obj.PortCorrect = zeros(obj.NumTrials, 1);
 obj.PortChosen = zeros(obj.NumTrials, 1);
-obj.Outcome = cell(obj.NumTrials, 1);
+obj.Outcome = strings(obj.NumTrials, 1);
+obj.LateChoice = strings(obj.NumTrials, 1);
 
 if ~isfield(SessionData.Custom, "Version")
     obj.FP = SessionData.Custom.FP';
@@ -27,7 +28,7 @@ else
             obj.FP = zeros(obj.NumTrials, 1);
             for i = 1:obj.NumTrials
                 if ~isfield(SessionData.RawEvents.Trial{1, i}.Events, 'BNC1High')
-                    obj.Outcome{i} = 'Bug';
+                    obj.Outcome(i) = "Bug";
                 else
                     obj.FP(i) = SessionData.RawEvents.Trial{1, i}.Events.BNC1High(1) - SessionData.RawEvents.Trial{1, i}.States.FP(1);
                 end
@@ -40,7 +41,7 @@ obj.Cued = ones(obj.NumTrials, 1);
 
 for i = 1:obj.NumTrials
 
-    if strcmp(obj.Outcome{i}, 'Bug')
+    if obj.Outcome(i)=="Bug"
         continue;
     end
 
@@ -59,7 +60,7 @@ for i = 1:obj.NumTrials
     obj.PortCorrect(i) = SessionData.Custom.CorPort(i);
 
     if ~isnan(iStates.Premature(1)) % Premature
-        obj.Outcome{i} = 'Premature';
+        obj.Outcome(i) = "Premature";
         obj.CentPokeOutTime{i} = iStates.FP(:, 2);
         obj.ChoiceCueTime(i, :) = [iStates.FP(1) iStates.Premature(1)];
         obj.TriggerCueTime(i) = nan;
@@ -67,9 +68,10 @@ for i = 1:obj.NumTrials
         obj.PortChosen(i) = nan;
 
         if iStates.FP(end, 2) - iStates.FP(1, 1) > obj.FP(i)
-            obj.Outcome{i} = 'Bug';
+            obj.Outcome(i) = "Bug";
         end
     elseif ~isnan(iStates.Late(1)) % Late
+        obj.Outcome(i) = "Late";
         if isfield(iStates, 'Wait4Out')
             obj.CentPokeOutTime{i} = [iStates.FP(1:end-1, 2); iStates.Wait4Out(1:end-1, 2); iStates.Late(:, 2)];
         else
@@ -79,13 +81,12 @@ for i = 1:obj.NumTrials
         obj.TriggerCueTime(i) = iStates.ChoiceCue(1);
 
         if ~any(isfield(iStates, ["LateWrong", "LateCorrect"]))
-            obj.Outcome{i} = 'Late';
             obj.ChoicePokeTime(i) = nan;
             % figure out the port situation: WrongPort(1)
             % should match a port entry time
             obj.PortChosen(i) = nan;
         elseif ~isnan(iStates.LateWrong(1))
-            obj.Outcome{i} = 'LateWrong';
+            obj.LateChoice(i) = "Wrong";
             obj.ChoicePokeTime(i) = iStates.LateWrong(1);
             % figure out the port situation: WrongPort(1)
             % should match a port entry time
@@ -97,7 +98,7 @@ for i = 1:obj.NumTrials
                 obj.PortChosen(i) = nan;
             end
         elseif ~isnan(iStates.LateCorrect(1))
-            obj.Outcome{i} = 'LateCorrect';
+            obj.LateChoice(i) = "Correct";
             obj.ChoicePokeTime(i) = iStates.LateCorrect(1);
             % figure out the port situation: WrongPort(1)
             % should match a port entry time
@@ -109,7 +110,7 @@ for i = 1:obj.NumTrials
                 obj.PortChosen(i) = nan;
             end
         else
-            obj.Outcome{i} = 'LateMiss';
+            obj.LateChoice(i) = "Miss";
             obj.ChoicePokeTime(i) = nan;
             % figure out the port situation: WrongPort(1)
             % should match a port entry time
@@ -117,7 +118,7 @@ for i = 1:obj.NumTrials
         end
 
     elseif ~isnan(iStates.WrongPort(1)) % selected the wrong port
-        obj.Outcome{i} = 'Wrong';
+        obj.Outcome(i) = "Wrong";
         if isfield(iStates, 'Wait4Out')
             if ~isnan(iStates.Wait4Out(2))
                 obj.CentPokeOutTime{i} = [iStates.FP(1:end-1, 2); iStates.Wait4Out(:, 2)];
@@ -141,7 +142,7 @@ for i = 1:obj.NumTrials
         end
         
     elseif ~isnan(iStates.Wait4Reward(1))
-        obj.Outcome{i} = 'Correct';
+        obj.Outcome(i) = "Correct";
         if isfield(iStates, 'Wait4Out')
             if ~isnan(iStates.Wait4Out(2))
                 obj.CentPokeOutTime{i} = [iStates.FP(1:end-1, 2); iStates.Wait4Out(:, 2)];
@@ -163,14 +164,14 @@ for i = 1:obj.NumTrials
             obj.PortChosen(i) = nan;
         end
     else
-        obj.Outcome{i} = 'Bug';
+        obj.Outcome(i) = "Bug";
     end
 end
 
 obj.FP = roundn(obj.FP, -1);
 
 %% remove bug trials
-ind_bug = strcmp(obj.Outcome, 'Bug') | obj.FP <= 0;
+ind_bug = obj.Outcome=="Bug" | obj.FP <= 0;
 
 obj.NumTrials = obj.NumTrials - sum(ind_bug);
 
@@ -193,6 +194,7 @@ obj.ChoicePokeTime(ind_bug)     = [];
 obj.PortCorrect(ind_bug)        = [];
 obj.PortChosen(ind_bug)         = [];
 obj.Outcome(ind_bug)            = [];
+obj.LateChoice(ind_bug)         = [];
 
 obj.Cued(ind_bug)               = [];
 end

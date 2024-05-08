@@ -1,4 +1,11 @@
-DataFolder = "E:\OneDrive\Yulab\Work\GPS\Data\Leo";
+Drives = string(char('A':'Z')');
+for i = 1:26
+    folder_i = Drives(i)+":\OneDrive\YuLab\Work\GPS\Data";
+    if isfolder(folder_i)
+        DataFolder = folder_i;
+    end
+end
+DataFolder = "E:\OneDrive\Yulab\Work\GPS\Data";
 
 %% move bpod file to session folder
 bpod_files = get_mat_files(DataFolder, "FileType", "Bpod");
