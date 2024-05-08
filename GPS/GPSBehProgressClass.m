@@ -213,7 +213,7 @@ classdef GPSBehProgressClass < GPSBehClass & GPSPlot
         function get_data_sorted(obj)
             beh = obj.BehavTable;
             vars = ["HD", "RT", "MT", "CT", "Outcome"];
-            labels = ["All", "Control", "Chemo", "PreControl", "LesionEarly", "LesionLate"];
+            labels = ["All", "Control", "Chemo", "PreControl", "LesionEarly", "LesionExtensive"];
             for v = 1:length(vars)
                 v_this = vars(v);
                 data_v = beh.(v_this);
@@ -247,7 +247,7 @@ classdef GPSBehProgressClass < GPSBehClass & GPSPlot
         function get_data_split(obj)
             beh = obj.BehavTable;
             vars = ["ST", "LogST"];
-            labels = ["All", "Control", "Chemo", "PreControl", "LesionEarly", "LesionLate"];
+            labels = ["All", "Control", "Chemo", "PreControl", "LesionEarly", "LesionExtensive"];
             for v = 1:length(vars)
                 v_this = vars(v);
                 data_v = beh.(v_this);
@@ -287,7 +287,7 @@ classdef GPSBehProgressClass < GPSBehClass & GPSPlot
             end
             beh = obj.BehavTable;
             vars = ["ST", "LogST", "HD", "RT", "MT", "CT"];
-            labels = ["All", "Control", "Chemo", "PreControl", "LesionEarly", "LesionLate"];
+            labels = ["All", "Control", "Chemo", "PreControl", "LesionEarly", "LesionExtensive"];
             for v = 1:length(vars)
                 v_this = vars(v);
                 data_v = beh.(v_this);
@@ -398,7 +398,7 @@ classdef GPSBehProgressClass < GPSBehClass & GPSPlot
         %% KS density
         function get_all_kdes(obj, cal_ci)
             vars = ["HD", "RT", "MT"];
-            labels = ["Control", "Chemo", "PreControl", "LesionEarly", "LesionLate"]; % "All", 
+            labels = ["Control", "Chemo", "PreControl", "LesionEarly", "LesionExtensive"]; % "All", 
             for l = 1:length(labels)
                 lb_this = labels(l);
                 if cal_ci
@@ -481,6 +481,8 @@ classdef GPSBehProgressClass < GPSBehClass & GPSPlot
             beh.Label(lesion_id_pre)   = "PreControl";
             beh.Label(lesion_id_early) = "LesionEarly";
             beh.Label(lesion_id_late)  = "LesionExtensive";
+
+            obj.BehavTable.Label = beh.Label;
         end % split_lesion_trials
 
         %% Save and print
