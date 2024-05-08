@@ -175,7 +175,7 @@ for j = 1:2
         id(i) = find(obj.Performance.FP==obj.TargetFP(i) & obj.Performance.PortCorrect==j);
     end
 
-    b = bar(ax{j},1:3, 100*table2array(obj.Performance(id, end-3:end)), 'EdgeColor', 'none');
+    b = bar(ax{j}, 1:3, 100*table2array(obj.Performance(id, end-3:end)), 'EdgeColor', 'none');
     for k = 1:4
         b(k).FaceColor = GPSColor.(obj.PerformanceType(k));
     end
