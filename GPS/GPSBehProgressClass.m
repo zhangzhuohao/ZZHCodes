@@ -46,6 +46,11 @@ classdef GPSBehProgressClass < GPSBehClass & GPSPlot
         HDPDF
         HDCDF
 
+        HDvSorted
+        HDvStat
+        HDvPDF
+        HDvCDF
+
         % Reaction time
         RTSorted
         RTStat
@@ -142,6 +147,7 @@ classdef GPSBehProgressClass < GPSBehClass & GPSPlot
             % Sorted data
             obj.RTSorted.Session    = cellfun(@(x) x.RTSorted, SessionClassAll, 'UniformOutput', false);
             obj.HDSorted.Session    = cellfun(@(x) x.HDSorted, SessionClassAll, 'UniformOutput', false);
+            obj.HDvSorted.Session   = cellfun(@(x) x.HDvSorted, SessionClassAll, 'UniformOutput', false);
             obj.MTSorted.Session    = cellfun(@(x) x.MTSorted, SessionClassAll, 'UniformOutput', false);
             obj.CTSorted.Session    = cellfun(@(x) x.CTSorted, SessionClassAll, 'UniformOutput', false);
             obj.get_data_sorted();
@@ -155,6 +161,7 @@ classdef GPSBehProgressClass < GPSBehClass & GPSPlot
             allSTStats              = cellfun(@(x) {x.STStat}, SessionClassAll, 'UniformOutput', false);
             allSTStats              = obj.splice_data(allSTStats);
             obj.STStat.Session      = allSTStats{1};
+
             allLogSTStats           = cellfun(@(x) {x.LogSTStat}, SessionClassAll, 'UniformOutput', false);
             allLogSTStats           = obj.splice_data(allLogSTStats);
             obj.LogSTStat.Session   = allLogSTStats{1};
@@ -162,6 +169,10 @@ classdef GPSBehProgressClass < GPSBehClass & GPSPlot
             allHDStats          = cellfun(@(x) {x.HDStat}, SessionClassAll, 'UniformOutput', false);
             allHDStats          = obj.splice_data(allHDStats);
             obj.HDStat.Session  = allHDStats{1};
+
+            allHDvStats         = cellfun(@(x) {x.HDvStat}, SessionClassAll, 'UniformOutput', false);
+            allHDvStats         = obj.splice_data(allHDvStats);
+            obj.HDvStat.Session = allHDvStats{1};
             
             allRTStats          = cellfun(@(x) {x.RTStat}, SessionClassAll, 'UniformOutput', false);
             allRTStats          = obj.splice_data(allRTStats);
@@ -180,10 +191,20 @@ classdef GPSBehProgressClass < GPSBehClass & GPSPlot
 
             % KS density
             obj.LogSTPDF.Session = cellfun(@(x) x.LogSTPDF, SessionClassAll, 'UniformOutput', false);
+            obj.LogSTCDF.Session = cellfun(@(x) x.LogSTCDF, SessionClassAll, 'UniformOutput', false);
+
             obj.HDPDF.Session    = cellfun(@(x) x.HDPDF, SessionClassAll, 'UniformOutput', false);
+            obj.HDCDF.Session    = cellfun(@(x) x.HDCDF, SessionClassAll, 'UniformOutput', false);
+            obj.HDvPDF.Session   = cellfun(@(x) x.HDvPDF, SessionClassAll, 'UniformOutput', false);
+            obj.HDvCDF.Session   = cellfun(@(x) x.HDvCDF, SessionClassAll, 'UniformOutput', false);
+
             obj.RTPDF.Session    = cellfun(@(x) x.RTPDF, SessionClassAll, 'UniformOutput', false);
+            obj.RTCDF.Session    = cellfun(@(x) x.RTCDF, SessionClassAll, 'UniformOutput', false);
             obj.MTPDF.Session    = cellfun(@(x) x.MTPDF, SessionClassAll, 'UniformOutput', false);
+            obj.MTCDF.Session    = cellfun(@(x) x.MTCDF, SessionClassAll, 'UniformOutput', false);
             obj.CTPDF.Session    = cellfun(@(x) x.CTPDF, SessionClassAll, 'UniformOutput', false);
+            obj.CTCDF.Session    = cellfun(@(x) x.CTCDF, SessionClassAll, 'UniformOutput', false);
+
             obj.get_all_kdes(0);
 
             % Performance
@@ -193,7 +214,7 @@ classdef GPSBehProgressClass < GPSBehClass & GPSPlot
 
             obj.PerformanceTrack.Session = cellfun(@(x) x.PerformanceTrack, SessionClassAll, 'UniformOutput', false);
             obj.gather_perf_track();
-        end
+        end % GPSBehProgressClass
 
         %% Save name for object, figure and csv files
         function save_name = get.SaveName(obj)
@@ -212,13 +233,13 @@ classdef GPSBehProgressClass < GPSBehClass & GPSPlot
         %% Sorting function
         function get_data_sorted(obj)
             beh = obj.BehavTable;
-            vars = ["HD", "RT", "MT", "CT", "Outcome"];
+            vars = ["HD", "HDv", "RT", "MT", "CT", "Outcome"];
             labels = ["All", "Control", "Chemo", "PreControl", "LesionEarly", "LesionExtensive"];
             for v = 1:length(vars)
                 v_this = vars(v);
                 data_v = beh.(v_this);
                 switch v_this
-                    case {'ST', 'LogST', 'HD', 'RT', 'Outcome'}
+                    case {'ST', 'LogST', 'HD', 'HDv', 'RT', 'Outcome'}
                         ind_v = beh.Stage==1;
                     case {'MT', 'CT'}
                         ind_v = beh.Stage==1 & beh.Outcome=="Correct";
@@ -241,7 +262,7 @@ classdef GPSBehProgressClass < GPSBehClass & GPSPlot
                     obj.(v_this+"Sorted").(lb_this) = obj.sort_data(data_this, refs_this, obj.SortCodes);
                 end
             end
-        end
+        end % get_data_sorted
 
         %% Get splited data
         function get_data_split(obj)
@@ -252,7 +273,7 @@ classdef GPSBehProgressClass < GPSBehClass & GPSPlot
                 v_this = vars(v);
                 data_v = beh.(v_this);
                 switch v_this
-                    case {'ST', 'LogST', 'HD', 'RT', 'Outcome'}
+                    case {'ST', 'LogST', 'HD', 'HDv', 'RT', 'Outcome'}
                         ind_v = beh.Stage==1;
                     case {'MT', 'CT'}
                         ind_v = beh.Stage==1 & beh.Outcome=="Correct";
@@ -276,7 +297,7 @@ classdef GPSBehProgressClass < GPSBehClass & GPSPlot
                     obj.(v_this+"Split").(lb_this) = obj.sort_data(data_this, refs_this, code_this);
                 end
             end
-        end
+        end % get_data_split
 
         %% Calculate statistics
         function get_all_stats(obj, cal_ci)
@@ -286,13 +307,13 @@ classdef GPSBehProgressClass < GPSBehClass & GPSPlot
                 fprintf("\nCalculate statistics from pooled data\n");
             end
             beh = obj.BehavTable;
-            vars = ["ST", "LogST", "HD", "RT", "MT", "CT"];
+            vars = ["ST", "LogST", "HD", "HDv", "RT", "MT", "CT"];
             labels = ["All", "Control", "Chemo", "PreControl", "LesionEarly", "LesionExtensive"];
             for v = 1:length(vars)
                 v_this = vars(v);
                 data_v = beh.(v_this);
                 switch v_this
-                    case {'ST', 'LogST', 'HD', 'RT'}
+                    case {'ST', 'LogST', 'HD', 'HDv', 'RT'}
                         ind_v = beh.Stage==1;
                     case {'MT', 'CT'}
                         ind_v = beh.Stage==1 & beh.Outcome=="Correct";
@@ -302,7 +323,7 @@ classdef GPSBehProgressClass < GPSBehClass & GPSPlot
                         vars_this = "Order";
                         refs_v = {beh.Order};
                         code_this = {1:obj.NumOrders};
-                    case {'HD', 'RT', 'MT', 'CT'}
+                    case {'HD', 'HDv', 'RT', 'MT', 'CT'}
                         vars_this = obj.SortVars;
                         refs_v = obj.SortRefs;
                         code_this = obj.SortCodes;
@@ -324,12 +345,12 @@ classdef GPSBehProgressClass < GPSBehClass & GPSPlot
                     obj.(v_this+"Stat").(lb_this) = obj.get_stat(data_this, refs_this, code_this, vars_this, cal_ci);
                 end
             end
-        end
+        end % get_all_stats
 
         %% Gather statistics table
         function gather_stat(obj)
             fprintf("\nCalculate statistics using session means\n");
-            vars = ["ST", "LogST", "HD", "RT", "MT", "CT"];
+            vars = ["ST", "LogST", "HD", "HDv", "RT", "MT", "CT"];
             labels = ["All", "Control", "Chemo"];
 
             params = ["N", "Mean", "STD", "SEM", "Median", "Median_kde", "Q1", "Q3", "IQR"];
@@ -337,7 +358,7 @@ classdef GPSBehProgressClass < GPSBehClass & GPSPlot
             for v = 1:length(vars)
                 v_this = vars(v);
                 switch v_this
-                    case {'MT', 'CT', 'HD', 'RT'}
+                    case {'MT', 'CT', 'HD', 'HDv', 'RT'}
                         sort_vars = obj.SortVars;
                     case {'ST', 'LogST'}
                         sort_vars = "Order";
@@ -393,11 +414,11 @@ classdef GPSBehProgressClass < GPSBehClass & GPSPlot
                     obj.(v_this+"Stat").(lb_this) = stat_out;
                 end
             end
-        end
+        end % gather_stat
 
         %% KS density
         function get_all_kdes(obj, cal_ci)
-            vars = ["HD", "RT", "MT"];
+            vars = ["HD", "HDv", "RT", "MT"];
             labels = ["Control", "Chemo", "PreControl", "LesionEarly", "LesionExtensive"]; % "All", 
             for l = 1:length(labels)
                 lb_this = labels(l);

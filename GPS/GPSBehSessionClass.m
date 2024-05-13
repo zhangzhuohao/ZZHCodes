@@ -61,6 +61,8 @@ classdef GPSBehSessionClass < GPSBehClass & GPSPlot
         MTCDF
         HDPDF % hold duration
         HDCDF
+        HDvPDF % hold duration
+        HDvCDF
         CTPDF % choice time
         CTCDF
         LogSTPDF % Log10 shuttle time
@@ -101,6 +103,10 @@ classdef GPSBehSessionClass < GPSBehClass & GPSPlot
         HD
         HDSorted
         HDStat
+
+        HDv
+        HDvSorted
+        HDvStat
 
         % Reaction time
         RT
@@ -410,6 +416,27 @@ classdef GPSBehSessionClass < GPSBehClass & GPSPlot
             hd_stat = obj.add_session_info(hd_stat);
         end
 
+        function hold_duration_v = get.HDv(obj)
+            id_v = obj.HD>0.05;
+            hold_duration_v = obj.HD;
+            hold_duration_v(~id_v) = nan;
+        end
+
+        function hd_sorted = get.HDvSorted(obj)
+            ind = obj.Stage==1;
+            hd_this = obj.HDv(ind);
+            refs_this = cellfun(@(x) x(ind), obj.SortRefs, 'UniformOutput', false);
+            hd_sorted = obj.sort_data(hd_this, refs_this, obj.SortCodes);
+        end
+
+        function hd_stat = get.HDvStat(obj)
+            ind = obj.Stage==1;
+            hd_this = obj.HDv(ind);
+            refs_this = cellfun(@(x) x(ind), obj.SortRefs, 'UniformOutput', false);
+            hd_stat = obj.get_stat(hd_this, refs_this, obj.SortCodes, obj.SortVars, 1);
+            hd_stat = obj.add_session_info(hd_stat);
+        end
+
         % Reaction time
         function reaction_time = get.RT(obj)
             reaction_time = cellfun(@(x) x(end), obj.CentPokeOutTime) - obj.TriggerCueTime;
@@ -472,7 +499,7 @@ classdef GPSBehSessionClass < GPSBehClass & GPSPlot
         end
 
         function get_all_kdes(obj, cal_ci)
-            Vars = ["HD", "RT", "MT", "CT"];
+            Vars = ["HD", "HDv", "RT", "MT", "CT"];
             for i = 1:length(Vars)
                 v_this = Vars(i);
                 obj.(v_this+"PDF") = obj.get_kde(obj.(v_this+"Sorted"), obj.Bins.(v_this), 'pdf', v_this, cal_ci);
@@ -555,12 +582,12 @@ classdef GPSBehSessionClass < GPSBehClass & GPSPlot
                 SessionStart, obj.Trials, obj.TrialStartTime, obj.TrialCentInTime, obj.Stage, obj.Order, ...
                 InitInTime, InitOutTime, CentInTime, CentOutTime, obj.ChoicePokeTime, obj.ChoiceCueTime, obj.TriggerCueTime, ...
                 obj.PortCorrect, obj.PortChosen, obj.FP, RWthis, obj.Outcome, ...
-                obj.ST, obj.LogST, obj.HD, obj.RT, obj.MT, obj.CT, obj.Cued, ...
+                obj.ST, obj.LogST, obj.HD, obj.HDv, obj.RT, obj.MT, obj.CT, obj.Cued, ...
                 'VariableNames', ...
                 {'SessionStartTime', 'Trials', 'TrialStartTime', 'TrialCentInTime', 'Stage', 'Order', ...
                 'InitInTime', 'InitOutTime', 'CentInTime', 'CentOutTime', 'ChoicePokeTime', 'ChoiceCueTime', 'TriggerCueTime', ...
                 'PortCorrect', 'PortChosen', 'FP', 'RW', 'Outcome', ...
-                'ST', 'LogST', 'HD', 'RT', 'MT', 'CT', 'Cued'});
+                'ST', 'LogST', 'HD', 'HDv', 'RT', 'MT', 'CT', 'Cued'});
             if ~isempty(obj.Guided)
                 behav_table = addvars(behav_table, obj.Guided, 'After', 'Cued', 'NewVariableNames', {'Guided'});
             end
