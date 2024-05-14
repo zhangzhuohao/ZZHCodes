@@ -10,7 +10,7 @@ CamFieldID  =   ["G44627565"  , "DA0069619"];
 CamInitID   =   ["00G40298619", "L16636084"];
 
 %%
-VideoFolder = uigetdir("E:\YuLab\Work\GPS\Video\", "Choose target vedio folder");
+VideoFolder = uigetdir("D:\YuLab\Work\GPS\Video\", "Choose target vedio folder");
 if ~VideoFolder
     return;
 end

@@ -126,7 +126,8 @@ else
     disp(SessionInfo(:, 1:6));
 end
 
-SessionFolder = fullfile(DataFolder, Session);
+SessionFolderPart = extractAfter(SessionInfo.SessionFolder, "Data\");
+SessionFolder = fullfile(DataFolder, SessionFolderPart);
 
 %%
 MarkingEvent    =   'CentInTime';       % use this time to align bpod and video ts

@@ -5,7 +5,6 @@ for i = 1:26
         DataFolder = folder_i;
     end
 end
-DataFolder = "E:\OneDrive\Yulab\Work\GPS\Data";
 
 %% move bpod file to session folder
 bpod_files = get_mat_files(DataFolder, "FileType", "Bpod");
