@@ -97,11 +97,19 @@ else
 end
 
 %%
+Drives = string(char('A':'Z')');
+for i = 1:length(Drives)
+    if isfolder(Drives(i)+":\OneDrive")
+        DataFolder  = Drives(i) + ":\OneDrive\YuLab\Work\GPS\Data\";
+        break;
+    end
+end
+
 vidInfo         =   split(VideoFolder, filesep);
 ANM             =   string(vidInfo{end-2});
 Session         =   string(vidInfo{end});
 
-ANMInfoFile     =   "F:\YuLab\Work\GPS\Data\ANMInfo.xlsx";
+ANMInfoFile     =   fullfile(DataFolder, "ANMInfo.xlsx");
 ANMInfo         =   readtable(ANMInfoFile, "Sheet", ANM, "TextType", "string");
 ANMInfo.Session =   string(ANMInfo.Session);
 
@@ -117,6 +125,8 @@ else
     fprintf("\n");
     disp(SessionInfo(:, 1:6));
 end
+
+SessionFolder = fullfile(DataFolder, Session);
 
 %%
 MarkingEvent    =   'CentInTime';       % use this time to align bpod and video ts
@@ -146,20 +156,21 @@ ClipInfoField.VideoFolderField  =   VideoFolderField;
 ClipInfoField.Post              =   0;
 
 %%
-csvFileBehavior     =   dir(SessionInfo.SessionFolder+"\*SessionTable*.csv");
-csvFileInterrupt    =   dir(SessionInfo.SessionFolder+"\*InterruptTable*.csv");
+csvFileBehavior     =   dir(SessionFolder+"\*SessionTable*.csv");
+csvFileInterrupt    =   dir(SessionFolder+"\*InterruptTable*.csv");
 
 if isempty(csvFileBehavior) || isempty(csvFileInterrupt)
-    fprintf("Create the SessionClass and generate Behav and Interrput table in advance.");
-    return
+    error("Create the SessionClass and generate Behav and Interrput table in advance.");
+elseif length(csvFileBehavior)>1 || length(csvFileInterrupt)>1
+    error("More than one set of Behav and Interrput table.");
 end
 
 BehTableName        =   csvFileBehavior(1).name;
-BehTableFile        =   fullfile(SessionInfo.SessionFolder, BehTableName);
+BehTableFile        =   fullfile(SessionFolder, BehTableName);
 BehTable            =   readtable(BehTableFile);
 
 IntTableName        =   csvFileInterrupt(1).name;
-IntTableFile        =   fullfile(SessionInfo.SessionFolder, IntTableName);
+IntTableFile        =   fullfile(SessionFolder, IntTableName);
 IntTable            =   readtable(IntTableFile);
 
 tMarkingEvent       =   BehTable.(MarkingEvent)  + BehTable.TrialStartTime; % in seconds
