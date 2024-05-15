@@ -39,7 +39,7 @@ opts.ExtraColumnsRule = "ignore";
 opts.EmptyLineRule = "read";
 
 %%
-ClipFolder  = uigetdir('D:\YuLab\Work\GPS\Video\Morad\GPS_09_Kornblum2000SRTSelf\');
+ClipFolder  = uigetdir('D:\YuLab\Work\GPS\Video\Naveed\GPS_13_ThreeFPHoldSRT\');
 if ~ClipFolder
     return
 end
@@ -57,14 +57,26 @@ view     = ClipInfo{end-1};
 session  = ClipInfo{end-2};
 anm      = ClipInfo{end-4};
 
-ANMInfoFile = 'F:\YuLab\Work\GPS\Data\ANMInfo.xlsx';
-ANMInfo     = readtable(ANMInfoFile, 'Sheet', anm);
-SessionInfo = ANMInfo(ANMInfo.Session==str2double(session), :);
-SessionInfo.Session = int2str(SessionInfo.Session);
+Drives = string(char('A':'Z')');
+for i = 1:length(Drives)
+    if isfolder(Drives(i)+":\OneDrive")
+        DataFolder  = Drives(i) + ":\OneDrive\YuLab\Work\GPS\Data\";
+        break;
+    end
+end
+
+ANMInfoFile     =   fullfile(DataFolder, "ANMInfo.xlsx");
+ANMInfo         =   readtable(ANMInfoFile, "Sheet", anm, "TextType", "string");
+ANMInfo.Session =   string(ANMInfo.Session);
+
+SessionInfo = ANMInfo(ANMInfo.Session==session, :);
 disp(SessionInfo);
 
-BehTableFile = dir(fullfile(SessionInfo.SessionFolder{1}, '*SessionTable*.csv'));
-BehTable     = readtable(fullfile(SessionInfo.SessionFolder{1}, BehTableFile.name));
+SessionFolderPart = extractAfter(SessionInfo.SessionFolder, "Data\");
+SessionFolder = fullfile(DataFolder, SessionFolderPart);
+
+BehTableFile = dir(fullfile(SessionFolder, '*SessionTable*.csv'));
+BehTable     = readtable(fullfile(SessionFolder, BehTableFile.name));
 
 %%
 OutFile = fullfile(ClipFolder, 'DLCTrackingOutAuto.mat');
