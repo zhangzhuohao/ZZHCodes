@@ -39,17 +39,18 @@ opts.ExtraColumnsRule = "ignore";
 opts.EmptyLineRule = "read";
 
 %%
-ClipFolder  = uigetdir('D:\YuLab\Work\GPS\Video\Naveed\GPS_13_ThreeFPHoldSRT\');
-if ~ClipFolder
-    return
-end
-[ViewFolder, dir_name] = fileparts(ClipFolder);
-[DateFolder, ~] = fileparts(ViewFolder);
-[TaskFolder, ~] = fileparts(DateFolder);
-if ~strcmp(dir_name, 'Clips')
-    fprintf("\nPlease select a 'Clips' folder.\n");
-    return
-end
+% ClipFolder  = uigetdir('D:\YuLab\Work\GPS\Video\Leopold\GPS_12_ThreeFPHoldSRT\');
+% if ~ClipFolder
+%     return
+% end
+% [ViewFolder, dir_name] = fileparts(ClipFolder);
+% [DateFolder, ~] = fileparts(ViewFolder);
+% [TaskFolder, ~] = fileparts(DateFolder);
+% if ~strcmp(dir_name, 'Clips')
+%     fprintf("\nPlease select a 'Clips' folder.\n");
+%     return
+% end
+ClipFolder  = 'D:\YuLab\Work\GPS\Video\Leopold\GPS_12_ThreeFPHoldSRT\20240511\Top\Clips';
 
 %%
 ClipInfo = split(ClipFolder, '\');
