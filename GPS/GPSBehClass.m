@@ -11,7 +11,8 @@ classdef GPSBehClass < handle
             "MovementTime (MT): For hold paradigm, it is the time from port_cent poke-out to port_choice poke-in; for free paradigm, leave it empy; for autoshaping paradigm, it is the time from port_cent poke-in to port_choice poke-in";
             "ChoiceTime   (CT):  Time from tone to port_choice poke in (for hold paradigm only)";
             ];
-        PhaseCount = 300; % Trial number to determine the early or late training phase
+        PhaseCount  = 300; % Trial number to determine the early or late training phase
+        PhaseLesion = 600; % Trial number to determine the pre-lesion, early-lesion and late-lesion phase
         Ports      = ["L", "R"];
         LeftRight  = [ 1 ,  2 ]; % Correct port, 1 for left; 2 for right
         CueUncue   = [ 1 ,  0 ];

@@ -489,10 +489,10 @@ classdef GPSBehProgressClass < GPSBehClass & GPSPlot
             lesion_id = find(beh.Label=="Lesion" & beh.Stage==1);
             num_lesion_trials = length(lesion_id);
 
-            if num_lesion_trials >= 2*obj.PhaseCount
-                c = obj.PhaseCount;
+            if num_lesion_trials >= 2*obj.PhaseLesion
+                c = obj.PhaseLesion;
             else
-                c = florr(num_lesion_trials / 2);
+                c = floor(num_lesion_trials / 2);
             end
 
             lesion_id_pre   = pre_id(end-c+1:end);
