@@ -15,18 +15,14 @@ classdef GPSPlot < handle
             defaultFP = zeros(1, length(data));
 
             p = inputParser;
-            addRequired(p,'ax', @ishandle);
-            addRequired(p,'data', @iscell);
-            addOptional(p,'n_show', defaultNumShow, @isnumeric);
+            addParameter(p,'n_show', defaultNumShow, @isnumeric);
             addParameter(p,'FP', defaultFP, @(x) (isvector(x) && length(x)==length(data)));
             addParameter(p,'FaceColor', defaultColor);
             addParameter(p,'MarkerColor', defaultColor);
             addParameter(p,'MarkerSize', defaultSize);
 
-            parse(p, ax, data, varargin{:});
+            parse(p, varargin{:});
 
-            ax = p.Results.ax;
-            data = p.Results.data;
             n_show = p.Results.n_show;
             FP = p.Results.FP;
             FaceColor = p.Results.FaceColor;

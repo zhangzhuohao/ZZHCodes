@@ -523,17 +523,31 @@ classdef GPSBehProgressClass < GPSBehClass & GPSPlot
             fig = feval(obj.Task+".plotProgress", obj);
         end
 
-        function print(obj, fig, copy_dir)
-            save_path = fullfile(obj.ProtocolDir, obj.SaveName);
+        function print(obj, fig, varargin)
+            % parsing input
+            P = inputParser;
+
+            addParameter(P, 'save_dir', obj.ProtocolDir, @(x) (ischar(x) || isstring(x)));
+            addParameter(P, 'copy_dir', "", @(x) (ischar(x) || isstring(x)));
+            addParameter(P, 'save_name', obj.SaveName, @(x) (ischar(x) || isstring(x)));
+
+            parse(P, varargin{:});
+
+            save_dir = P.Results.save_dir;
+            copy_dir = P.Results.copy_dir;
+            save_name = P.Results.save_name;
+
+            % 
+            save_path = fullfile(save_dir, save_name);
             exportgraphics(fig, save_path+".png", 'Resolution', 600);
             exportgraphics(fig, save_path+".pdf", 'ContentType', 'vector');
             saveas(fig, save_path, 'fig');
 
-            if nargin==3
+            if copy_dir ~= ""
                 if ~isfolder(copy_dir)
                     mkdir(copy_dir);
                 end
-                copy_path = fullfile(copy_dir, obj.SaveName);
+                copy_path = fullfile(copy_dir, save_name);
                 copyfile(save_path+".png", copy_path+".png");
                 copyfile(save_path+".pdf", copy_path+".pdf");
                 copyfile(save_path+".fig", copy_path+".fig");

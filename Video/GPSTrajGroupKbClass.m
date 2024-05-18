@@ -334,8 +334,8 @@ classdef GPSTrajGroupKbClass
 
         function value = get.TimeWarpAlign(obj)
             
-            num_max = max(cellfun(@(x) length(x), obj.TimeWarped));
-            time_warp_align = linspace(0, 1, num_max);
+            num_med = median(cellfun(@(x) length(x), obj.TimeWarped), 'omitnan');
+            time_warp_align = linspace(0, 1, num_med);
 
             value = time_warp_align;
         end
