@@ -50,7 +50,7 @@ opts.EmptyLineRule = "read";
 %     fprintf("\nPlease select a 'Clips' folder.\n");
 %     return
 % end
-ClipFolder  = 'D:\YuLab\Work\GPS\Video\Leopold\GPS_12_ThreeFPHoldSRT\20240511\Top\Clips';
+ClipFolder  = 'D:\YuLab\Work\GPS\Video\Morad\GPS_13_ThreeFPHoldSRT\20240420\Top\Clips';
 
 %%
 ClipInfo = split(ClipFolder, '\');
