@@ -3,7 +3,7 @@ clear;
 View = "Top";
 
 %%
-TaskFolder = uigetdir('Z:\YuLab\Work\GPS\Video\');
+TaskFolder = uigetdir('D:\YuLab\Work\GPS\Video\');
 if ~TaskFolder
     return
 end
@@ -57,23 +57,23 @@ bad_label_frames = dir(GatherFolder+"\*.jpg");
 n_bad_labels = length(bad_label_frames);
 fprintf("\n%d bad label frames have been gathered to %s.\n", n_bad_labels, GatherFolder);
 
-%% Create videos from video
-
-VidClipName = fullfile(GatherFolder, "RefineVideo.avi");
-
-writerObj = VideoWriter(VidClipName);
-writerObj.FrameRate = 25; % this is 2 x slower
-
-% set the seconds per image
-% open the video writer
-
-open(writerObj);
-for ii=1:n_bad_labels
-    currentfilename = fullfile(GatherFolder, bad_label_frames(ii).name);
-    currentimage = imread(currentfilename);
-    writeVideo(writerObj, currentimage);
-end
-close(writerObj);
-
-fprintf("\nRefine video created.\n");
+% %% Create videos from video
+% 
+% VidClipName = fullfile(GatherFolder, "RefineVideo.avi");
+% 
+% writerObj = VideoWriter(VidClipName);
+% writerObj.FrameRate = 25; % this is 2 x slower
+% 
+% % set the seconds per image
+% % open the video writer
+% 
+% open(writerObj);
+% for ii=1:n_bad_labels
+%     currentfilename = fullfile(GatherFolder, bad_label_frames(ii).name);
+%     currentimage = imread(currentfilename);
+%     writeVideo(writerObj, currentimage);
+% end
+% close(writerObj);
+% 
+% fprintf("\nRefine video created.\n");
 

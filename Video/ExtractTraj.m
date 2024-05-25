@@ -50,7 +50,30 @@ opts.EmptyLineRule = "read";
 %     fprintf("\nPlease select a 'Clips' folder.\n");
 %     return
 % end
-ClipFolder  = 'D:\YuLab\Work\GPS\Video\Morad\GPS_13_ThreeFPHoldSRT\20240420\Top\Clips';
+%%
+TaskFolder = uigetdir('D:\YuLab\Work\GPS\Video\');
+if ~TaskFolder
+    return
+end
+
+SessionFolders = get_folders(TaskFolder, "FolderType", 'Session');
+
+[~, SessionsAll] = arrayfun(@(x) fileparts(x), SessionFolders);
+Sessions = unique(SessionsAll);
+
+[SessionInd, tf] = listdlg("ListString", Sessions, "ListSize", [200, 200]);
+if ~tf
+    return
+end
+
+SessionFolders = SessionFolders(ismember(SessionsAll, Sessions(SessionInd)));
+
+for s = 1:length(SessionFolders)
+% ClipFolder  = 'D:\YuLab\Work\GPS\Video\Kennard\GPS_13_ThreeFPHoldSRT\20240313\Top\Clips';
+ClipFolder = fullfile(SessionFolders(s), "Top", "Clips");
+if ~isfolder(ClipFolder)
+    fprintf("no clip folder in %s", fullfile(SessionFolders(s), "Top"));
+end
 
 %%
 ClipInfo = split(ClipFolder, '\');
@@ -136,6 +159,7 @@ for i = 1:NumClips
     port_loc.R = [D.port_right_x D.port_right_y];
 
     if ~any(D.port_left_lh>0.99) || ~any(D.port_right_lh>0.99)
+        fprintf("\nDrop %d for invisible left/right port\n", VidMeta.EventIndex);
         continue
     else
         port_loc.L = mean(port_loc.L(D.port_left_lh>0.99 , :));
@@ -348,4 +372,4 @@ for i = 1:NumClips
 end
 
 close(wait_bar);
-
+end
