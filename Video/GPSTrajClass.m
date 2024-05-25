@@ -19,55 +19,87 @@ classdef GPSTrajClass < handle
         BandWidth  = 0.05;
 
         % Time points for interpolation
-        TimeMatIn  = -100:10:3000;
-        TimeMatOut = -2100:10:1000;
+        TimeMatIn   = -100:10:3000;
+        TimeMatOut  = -2100:10:1000;
         TimeMatWarp = -0.25:0.005:1.25;
+
+        % Movement features extracted
+        Features = [
+            "AngleHead";
+            "AngSpeedHead";
+            "AngAccHead";
+            "PosXHead";
+            "PosYHead";
+            "SpeedXHead";
+            "SpeedYHead";
+            "AccXHead";
+            "AccYHead";
+            "SpeedHead";
+            "SpeedDirHead";
+            "AccHead";
+            "dPhiHead"
+            ];
+
+        % Features for distance calculating
+        FeatureDist = [
+            "AngleHead";
+            "PosXHead";
+            "PosYHead";
+            ];
     end
 
     methods
         function obj = GPSTrajClass(); end
 
         %% Functions
+        %% Calculate diff
+        function d_x = cal_diff(obj, x, n)
+            if nargin==2
+                n = 1;
+            end
+            d_x = x([2:end end]) - x([1 1:end-1]);
+            d_x(2:end-1) = d_x(2:end-1) ./ 2;
+            if n > 1
+                d_x = obj.cal_diff(d_x, n-1);
+            end
+        end
+
         %% Form transformation 
         function [M, t_M] = trace2mat(~, trace, time_trace, time_matrix)
             
             num_timepoint = length(time_matrix);
-            num_feature = size(trace{1}, 2);
 
-            M = cellfun(@(trace, t) interp1(t, trace, time_matrix, "linear"), trace, time_trace, 'UniformOutput', false);
-            M = M';
-            M = cellfun(@(m) reshape(m, 1, num_timepoint, num_feature), M, 'UniformOutput', false);
+            M = cellfun(@(trace, t) interp1(t, trace', time_matrix, "linear"), trace, time_trace, 'UniformOutput', false);
+            M = cellfun(@(m) reshape(m, 1, num_timepoint, []), M, 'UniformOutput', false);
             M = cell2mat(M);
 
             t_M = time_matrix;
         end % trace2mat
 
-        function [T, t_T] = mat2trace(~, mat, time_matrix, time_trace)
+        function [T, t_T] = mat2trace(~, T, time_matrix, time_trace)
 
-            num_trace = size(mat, 1);
-            num_timepoint = length(time_matrix);
-            num_feature = size(mat, 3);
+            [num_trace, num_timepoint, num_feature] = size(T, [1 2 3]);
 
             if nargin<4
-                time_trace = repmat(mat2cell(time_matrix', length(time_matrix)), 1, num_trace);
+                time_trace = repmat(mat2cell(time_matrix, 1, length(time_matrix)), num_trace, 1);
             end
 
-            mat = mat2cell(mat, ones(num_trace, 1));
-            mat = cellfun(@(m) reshape(m, num_timepoint, num_feature), mat, 'UniformOutput', false);
-
-            T = cellfun(@(m, t) interp1(time_matrix, m, t, "linear"), mat, time_trace', 'UniformOutput', false);
-            T = T';
+            T = mat2cell(T, ones(num_trace, 1));
+            T = cellfun(@(m) reshape(m, num_timepoint, num_feature), T, 'UniformOutput', false);
+            T = cellfun(@(m, t) interp1(time_matrix', m, t', "linear"), T, time_trace, 'UniformOutput', false);
+            T = cellfun(@(t) t', T, 'UniformOutput', false);
 
             t_T = time_trace;
         end % mat2trace
 
         function A = trace2array(~, trace)
-            A = cell2mat(trace');
+            A = cellfun(@(x) x', trace, 'UniformOutput', false);
+            A = cell2mat(A);
         end % trace2array
 
         function T = array2trace(~, array, time_trace)
             T = mat2cell(array, cellfun(@(x) length(x), time_trace));
-            T = T';
+            T = cellfun(@(x) x', T, 'UniformOutput', false);
         end % array2trace
 
         %% Trace processiong
@@ -77,11 +109,11 @@ classdef GPSTrajClass < handle
                 norm_method = 'range';
             end
             trace_all = cell2mat(trace');
-            trace_all_normalized = normalize(trace_all, 1, norm_method);
+            trace_all_normalized = normalize(trace_all, 2, norm_method);
 
-            trace_normalized = mat2cell(trace_all_normalized, cellfun(@(x) size(x, 1), trace));
+            trace_normalized = mat2cell(trace_all_normalized, size(trace_all_normalized, 1), cellfun(@(x) size(x, 2), trace));
             trace_normalized = trace_normalized';
-        end % normalizeTrace
+        end % normalize_trace
 
         function trace_gathered = gather_trace(obj, body_parts)
 
@@ -89,9 +121,14 @@ classdef GPSTrajClass < handle
             trace_gathered = obj.(body_parts(1));
 
             for i = 2:length(body_parts)
-                trace_gathered = cellfun(@(x, y) [x y], trace_gathered, obj.(body_parts(i)), 'UniformOutput', false);
+                trace_gathered = cellfun(@(x, y) [x; y], trace_gathered, obj.(body_parts(i)), 'UniformOutput', false);
             end
-        end % gatherTrace
+        end % gather_trace
+
+        function trace_interp = interp_trace(obj, trace, time_trace, time_matrix)
+            mat = obj.trace2mat(trace, time_trace, time_matrix);
+            trace_interp = obj.mat2trace(mat, time_matrix);
+        end % interpolate_trace
 
         %% Calculate distance matrix
         function dist_mat = cal_dist(obj, trace, varargin)
@@ -124,11 +161,12 @@ classdef GPSTrajClass < handle
 
             for m = 1:num_trials
                 for n = m+1:num_trials
+                    num_points = max([length(trace{m}), length(trace{n})]);
                     switch warp_method
                         case 'dtw'
-                            dist_mat(m, n) = dtw(trace{m}', trace{n}');
+                            dist_mat(m, n) = dtw(trace{m}', trace{n}') / num_points;
                         case 'linear'
-                            dist_mat(m, n) = sum(sqrt(sum((trace{m}-trace{n}).^2, 2)));
+                            dist_mat(m, n) = sum(sqrt(sum((trace{m}-trace{n}).^2, 2))) / num_points;
                     end
                     num_calculated = num_calculated + 1;
 
