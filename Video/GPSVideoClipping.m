@@ -175,6 +175,7 @@ IntTableFile        =   fullfile(SessionFolder, IntTableName);
 IntTable            =   readtable(IntTableFile);
 
 tMarkingEvent       =   BehTable.(MarkingEvent)  + BehTable.TrialStartTime; % in seconds
+tMarkingLag         =   BehTable.(MarkingEvent); % in second
 tCheckingEvent      =   BehTable.(CheckingEvent) + BehTable.TrialStartTime; % in seconds
 
 %%  ROI extraction
@@ -391,6 +392,8 @@ SaveNameFrameTable = fullfile(VideoFolder, "FrameInfo.csv");
 writetable(FrameTable, SaveNameFrameTable);
 
 FrameInfo.tFramesInBpod = tFrames2Bpodms;
+
+save(SaveNameFrameInfo, "FrameInfo");
 
 %%
 if view_front

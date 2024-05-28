@@ -21,6 +21,7 @@ classdef GPSTrajClass < handle
         % Time points for interpolation
         TimeMatIn   = -100:10:3000;
         TimeMatOut  = -2100:10:1000;
+        TimeMatCue  = -2000:10:1100;
         TimeMatWarp = -0.25:0.005:1.25;
 
         % Movement features extracted
@@ -125,9 +126,10 @@ classdef GPSTrajClass < handle
             end
         end % gather_trace
 
-        function trace_interp = interp_trace(obj, trace, time_trace, time_matrix)
+        function [trace_interp, t_interp] = interp_trace(obj, trace, time_trace, time_matrix)
             mat = obj.trace2mat(trace, time_trace, time_matrix);
             trace_interp = obj.mat2trace(mat, time_matrix);
+            t_interp = time_matrix;
         end % interpolate_trace
 
         %% Calculate distance matrix
@@ -136,14 +138,24 @@ classdef GPSTrajClass < handle
             P = inputParser;
 
             addParameter(P, 'warp_method', 'linear', @(x) (ischar(x) || isstring(x)));
-            addParameter(P, 'trace_norm_method', 'range', @(x) (ischar(x) || isstring(x)));
+            addParameter(P, 'trace_norm_method', 'zscore', @(x) (ischar(x) || isstring(x)));
             addParameter(P, 'dist_norm_method', 'range', @(x) (ischar(x) || isstring(x)));
+            addParameter(P, 'disp_iter', false, @islogical);
 
             parse(P, varargin{:});
 
             warp_method = P.Results.warp_method;
             trace_norm_method = P.Results.trace_norm_method;
             dist_norm_method = P.Results.dist_norm_method;
+            disp_iter = P.Results.disp_iter;
+
+            % warp trace
+            if strcmp(warp_method, 'linear')
+                t_origin = cellfun(@(x) linspace(0, 1, length(x)), trace, 'UniformOutput', false);
+                trace_len = cellfun(@(x) length(x), trace);
+                t_warped = linspace(0, 1, max(trace_len));
+                trace = obj.interp_trace(trace, t_origin, t_warped);
+            end
 
             % normalize trace
             switch trace_norm_method
@@ -161,17 +173,23 @@ classdef GPSTrajClass < handle
 
             for m = 1:num_trials
                 for n = m+1:num_trials
-                    num_points = max([length(trace{m}), length(trace{n})]);
-                    switch warp_method
-                        case 'dtw'
-                            dist_mat(m, n) = dtw(trace{m}', trace{n}') / num_points;
-                        case 'linear'
-                            dist_mat(m, n) = sum(sqrt(sum((trace{m}-trace{n}).^2, 2))) / num_points;
-                    end
-                    num_calculated = num_calculated + 1;
+                    if any(isnan(trace{m}), "all") || any(isnan(trace{n}), "all")
+                        dist_mat(m, n) = nan;
+                    else
+                        num_points = max([length(trace{m}), length(trace{n})]);
+                        switch warp_method
+                            case 'dtw'
+                                dist_mat(m, n) = dtw(trace{m}, trace{n}) / num_points;
+                            case 'linear'
+                                dist_mat(m, n) = sum(sqrt(sum((trace{m}-trace{n}).^2, 1))) / num_points;
+                        end
+                        num_calculated = num_calculated + 1;
 
-                    if ~mod(num_calculated, floor(num_to_cal/100))
-                        fprintf('%.0f / %.0f    - %.0f%%\n', num_calculated, num_to_cal, 100*num_calculated/num_to_cal);
+                        if disp_iter
+                            if ~mod(num_calculated, floor(num_to_cal/100))
+                                fprintf('%.0f / %.0f    - %.0f%%\n', num_calculated, num_to_cal, 100*num_calculated/num_to_cal);
+                            end
+                        end
                     end
                 end
             end

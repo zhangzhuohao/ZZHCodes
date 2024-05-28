@@ -25,6 +25,7 @@ classdef GPSTrajSessionClass < GPSTrajClass
 
         MatIn
         MatOut
+        MatCue
         MatWarp
 
         DistMatLw
@@ -40,6 +41,7 @@ classdef GPSTrajSessionClass < GPSTrajClass
 
         TimeFromIn
         TimeFromOut
+        TimeFromCue
         TimeWarped
 
         PortVec
@@ -93,6 +95,7 @@ classdef GPSTrajSessionClass < GPSTrajClass
 
             obj.MatIn   = obj.get_matrix(obj.Features, obj.TimeFromIn, obj.TimeMatIn);
             obj.MatOut  = obj.get_matrix(obj.Features, obj.TimeFromOut, obj.TimeMatOut);
+            obj.MatCue  = obj.get_matrix(obj.Features, obj.TimeFromCue, obj.TimeMatCue);
             obj.MatWarp = obj.get_matrix(obj.Features, obj.TimeWarped, obj.TimeMatWarp);
         end
 
@@ -120,7 +123,6 @@ classdef GPSTrajSessionClass < GPSTrajClass
             end
 
             obj.DLCTracking.PortLoc(ind_odd) = [];
-
         end
 
         %% 
@@ -147,14 +149,24 @@ classdef GPSTrajSessionClass < GPSTrajClass
         end
 
         function time_from_out = get.TimeFromOut(obj)
-            in2out = num2cell(1000 * (obj.BehTable.CentOutTime - obj.BehTable.CentInTime));
-            in2out = in2out(obj.DLCTracking.PoseTracking(1).BpodEventIndex(1,:));
+            in2out = num2cell(1000 * (obj.TrialInfo.CentOutTime - obj.TrialInfo.CentInTime));
             time_from_out = cellfun(@(x, y) x - y, obj.TimeFromIn, in2out, 'UniformOutput', false);
         end
 
+        function time_from_cue = get.TimeFromCue(obj)
+            in2cue = zeros(obj.NumTrials, 1);
+
+            ind_non_pre = obj.TrialInfo.Outcome~="Premature";
+            in2cue(ind_non_pre) = 1000 * (obj.TrialInfo.TriggerCueTime(ind_non_pre) - obj.TrialInfo.CentInTime(ind_non_pre));
+            ind_pre = obj.TrialInfo.Outcome=="Premature";
+            in2cue(ind_pre) = 1000 * obj.TrialInfo.FP(ind_pre);
+
+            in2cue = num2cell(in2cue);
+            time_from_cue = cellfun(@(x, y) x - y, obj.TimeFromIn, in2cue, 'UniformOutput', false);
+        end
+
         function time_warped = get.TimeWarped(obj)
-            in2out = num2cell(1000 * (obj.BehTable.CentOutTime - obj.BehTable.CentInTime));
-            in2out = in2out(obj.DLCTracking.PoseTracking(1).BpodEventIndex(1,:));
+            in2out = num2cell(1000 * (obj.TrialInfo.CentOutTime - obj.TrialInfo.CentInTime));
             time_warped = cellfun(@(x, y) x ./ y, obj.TimeFromIn, in2out, 'UniformOutput', false);
         end
 
@@ -347,6 +359,41 @@ classdef GPSTrajSessionClass < GPSTrajClass
                 feature_mat.(features(i)) = obj.trace2mat(obj.(features(i)), time_trace, time_matrix);
             end
         end
+
+        %% Calculate distance matrix
+        function dist_mat_lw = get_dist_lw(obj, features)
+            dist_mat_lw = struct();
+            trace_all = obj.gather_trace(features);
+            periods = ["AP", "FP", "HD", "MT", "CT"];
+            info = obj.TrialInfo;
+
+            for i = 1:length(periods)
+                period_i = periods(i);
+                switch period_i
+                    case "AP"
+                        info_i = info;
+                        trace = cellfun(@(x, t) x(:, t<0), trace_all, obj.TimeFromIn, 'UniformOutput', false);
+                    case "FP"
+                        ind = find(info.Outcome=="Correct");
+                        info_i = info(ind, :);
+                        trace = cellfun(@(x, t, fp) x(:, t>=0 & t<=fp), trace_all(ind), obj.TimeFromIn(ind), num2cell(info.FP(ind)*1000), 'UniformOutput', false);
+                    case "HD"
+                        info_i = info;
+                        trace = cellfun(@(x, t) x(:, t>=0 & t<=1), trace_all, obj.TimeWarped, 'UniformOutput', false);
+                    case "MT"
+                        ind = find(info.Outcome=="Correct");
+                        info_i = info(ind, :);
+                        trace = cellfun(@(x, t, mt) x(:, t>=0 & t<=mt), trace_all(ind), obj.TimeFromOut(ind), num2cell(info.MT(ind)*1000), 'UniformOutput', false);
+                    case "CT"
+                        ind = find(info.Outcome=="Correct");
+                        info_i = info(ind, :);
+                        trace = cellfun(@(x, t, ct) x(:, t>=0 & t<=ct), trace_all(ind), obj.TimeFromCue(ind), num2cell(info.CT(ind)*1000), 'UniformOutput', false);
+                end
+                dist_mat_lw.(period_i) = struct();
+                dist_mat_lw.(period_i).info = info_i;
+                dist_mat_lw.(period_i).dist = obj.cal_dist(trace, 'warp_method', 'linear');
+            end
+        end % get_dist_lw
 
         %% Save
         function save(obj, copy_dir)
