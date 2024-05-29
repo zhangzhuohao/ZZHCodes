@@ -108,6 +108,7 @@ for i = 1:length(tBehEvent) % i is also the trial number
         % same video file
         continue
     end
+    tPre_this = tFramesBpod(IndThisFrame) - tFramesBpod(IndThisClip(1));
 
     % poke events
 %     SamplePokeTime  =   BehTable.PortSamplePokeTime(i)*1000-iFrameTimesBpod(1);
@@ -135,10 +136,10 @@ for i = 1:length(tBehEvent) % i is also the trial number
         case {'Wrong', 'Wro'}
             thisOutcome = "Wrong";
     end
-    
+
     % cue events
-    ChoiceCueTime   =   (BehTable.TrialStartTime(i) + [BehTable.ChoiceCueTime_1(i) BehTable.ChoiceCueTime_2(i)])*1000 - iFrameTimesBpod(1) - tPre;
-    TriggerCueTime  =   [0 250] + (BehTable.TrialStartTime(i) + BehTable.TriggerCueTime(i))*1000 - iFrameTimesBpod(1) - tPre;
+    ChoiceCueTime   =   (BehTable.TrialStartTime(i) + [BehTable.ChoiceCueTime_1(i) BehTable.ChoiceCueTime_2(i)])*1000 - iFrameTimesBpod(1) - tPre_this;
+    TriggerCueTime  =   [0 250] + (BehTable.TrialStartTime(i) + BehTable.TriggerCueTime(i))*1000 - iFrameTimesBpod(1) - tPre_this;
 
     if strcmp(beh_type, "KornblumSRT")
         if BehTable.Cued(i)==0
@@ -203,7 +204,7 @@ for i = 1:length(tBehEvent) % i is also the trial number
     colormap('gray');
 
     % plot some behavior data
-    tthis_frame   = round(iFrameTimesBpod(k) - iFrameTimesBpod(1) - tPre);
+    tthis_frame   = round(iFrameTimesBpod(k) - iFrameTimesBpod(1) - tPre_this);
     time_of_frame = sprintf('%3.0f', tthis_frame);
 
     text(W-20, 30,  sprintf('%s %s', anm, session), 'color', [255 255 255]/255, 'fontsize',  9, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
@@ -247,7 +248,7 @@ for i = 1:length(tBehEvent) % i is also the trial number
     % plot or update data in this plot
     for k = 2:nframe
 
-        tthis_frame = round(iFrameTimesBpod(k) - iFrameTimesBpod(1) - tPre);
+        tthis_frame = round(iFrameTimesBpod(k) - iFrameTimesBpod(1) - tPre_this);
         time_of_frame = sprintf('%3.0f', tthis_frame);
         time_text.String = [time_of_frame ' ms'];
 

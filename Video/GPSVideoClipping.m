@@ -130,8 +130,9 @@ SessionFolderPart = extractAfter(SessionInfo.SessionFolder, "Data\");
 SessionFolder = fullfile(DataFolder, SessionFolderPart);
 
 %%
-MarkingEvent    =   'CentInTime';       % use this time to align bpod and video ts
-CheckingEvent   =   'ChoiceCueTime_1';  % use this time to align bpod and video ts
+MarkingEvent    =   'CentInTime';   % use this time to match led-on time and align bpod and video ts
+LagEvent        =   'InitInTime';   % use this time to align bpod and video ts
+CheckingEvent   =   'CentOutTime';  % use this time to check ts mapping
 Pre             =   1000; % ms pre event time for video clips
 Post            =   3000; % ms post event time for video clips
 switch SessionInfo.Task
@@ -146,6 +147,7 @@ ClipInfo.VideoFolder        =   VideoFolder;
 ClipInfo.VideoFolderTop     =   VideoFolderTop;
 ClipInfo.VideoFolderFront   =   VideoFolderFront;
 ClipInfo.MarkingEvent       =   MarkingEvent;
+ClipInfo.LagEvent           =   LagEvent;
 ClipInfo.CheckingEvent      =   CheckingEvent;
 ClipInfo.VideoEvent         =   VideoEvent;
 ClipInfo.Pre                =   Pre;
@@ -175,7 +177,7 @@ IntTableFile        =   fullfile(SessionFolder, IntTableName);
 IntTable            =   readtable(IntTableFile);
 
 tMarkingEvent       =   BehTable.(MarkingEvent)  + BehTable.TrialStartTime; % in seconds
-tMarkingLag         =   BehTable.(MarkingEvent); % in second
+tMarkingLag         =   BehTable.(MarkingEvent)  - BehTable.(LagEvent); % in second
 tCheckingEvent      =   BehTable.(CheckingEvent) + BehTable.TrialStartTime; % in seconds
 
 %%  ROI extraction

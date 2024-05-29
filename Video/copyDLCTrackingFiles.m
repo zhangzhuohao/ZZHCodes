@@ -9,7 +9,9 @@ end
 
 View = "Top";
 
-VideoFolder = "Z:\YuLab\Work\GPS\Video\Kennard\GPS_08_KornblumHold1500SRTSelf";
+% VideoFolder = uigetdir("Z:\YuLab\Work\GPS\Video\");
+
+VideoFolder = VideoFolderParent;
 
 ProtocolFolder = extractAfter(VideoFolder, 'Video\');
 Anm = extractBefore(ProtocolFolder, "\");
