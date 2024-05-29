@@ -385,7 +385,7 @@ FrameInfo.tLEDonBpod = tMarkingEvent(IndOut); % LED timing in Bpod's world
 
 %% Now, let's redefine the frame time. Each frame time should be re-mapped to the timespace in bpod.
 % all frame times are here: FrameInfo.tframe
-tFrames2Bpodms = MapVidFrameTime2Bpod(tLEDon, tMarkingEvent(IndOut)*1000, tsROI);
+tFrames2Bpodms = MapVidFrameTime2Bpod(tLEDon, tMarkingEvent(IndOut)*1000, tMarkingLag(IndOut)*1000, tsROI);
 FrameTable = table(tsROI, tFrames2Bpodms, SummedROI, AviFileIndx, AviFrameIndx, MyVidFiles);
 
 SaveNameFrameTable = fullfile(VideoFolder, "FrameInfo.csv");
