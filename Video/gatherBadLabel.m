@@ -34,6 +34,7 @@ for s = 1:length(SessionFolders)
     ClipFolder = fullfile(SessionFolders(s), View, "Clips");
     if ~isfolder(ClipFolder)
         fprintf("no clip folder in %s", fullfile(SessionFolders(s), View));
+        continue;
     end
 
 %
