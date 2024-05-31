@@ -238,7 +238,11 @@ switch SessionData.Custom.Version
                     obj.CentPokeOutTime{i} = [iStates.FP(1:end-1, 2); iStates.Late(2)];
                 end
                 obj.ChoiceCueTime(i, :) = [iStates.FP(1) iStates.Late(end, 2)];
-                obj.TriggerCueTime(i) = iStates.FP(end, 2);
+                if ~obj.Cued(i)
+                    obj.TriggerCueTime(i) = nan;
+                else
+                    obj.TriggerCueTime(i) = iStates.FP(end, 2);
+                end
 
                 if ~any(isfield(iStates, ["LateWrong", "LateCorrect"]))
                     obj.ChoicePokeTime(i) = nan;
@@ -290,7 +294,11 @@ switch SessionData.Custom.Version
                 end
 
                 obj.ChoiceCueTime(i, :) = [iStates.FP(1) iStates.Wait4Choice(2)]; % duration that the choice light lit up.
-                obj.TriggerCueTime(i) = iStates.FP(end, 2);
+                if ~obj.Cued(i)
+                    obj.TriggerCueTime(i) = obj.CentPokeOutTime{i}(end);
+                else
+                    obj.TriggerCueTime(i) = iStates.FP(end, 2);
+                end
                 obj.ChoicePokeTime(i) = iStates.Wait4Choice(2);
                 % figure out the port situation: WrongPort(1)
                 % should match a port entry time
@@ -313,7 +321,11 @@ switch SessionData.Custom.Version
                     obj.CentPokeOutTime{i} = [iStates.FP(1:end-1, 2); iStates.Wait4Choice(1)];
                 end
                 obj.ChoiceCueTime(i, :) = [iStates.FP(1) iStates.Wait4Choice(2)]; % duration that the choice light lit up.
-                obj.TriggerCueTime(i) = iStates.FP(end, 2);
+                if ~obj.Cued(i)
+                    obj.TriggerCueTime(i) = obj.CentPokeOutTime{i}(end);
+                else
+                    obj.TriggerCueTime(i) = iStates.FP(end, 2);
+                end
                 obj.ChoicePokeTime(i) = iStates.Wait4Choice(2);
                 % find out the port
                 if isfield(iEvents, 'Port2In') && sum(ismember(iEvents.Port2In, iStates.Wait4Reward(1)))
