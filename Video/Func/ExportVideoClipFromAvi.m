@@ -112,9 +112,9 @@ for i = 1:length(tBehEvent) % i is also the trial number
 
     % poke events
 %     SamplePokeTime  =   BehTable.PortSamplePokeTime(i)*1000-iFrameTimesBpod(1);
-    CentInTime      =   (BehTable.TrialStartTime(i) + BehTable.CentInTime(i))*1000     - iFrameTimesBpod(1) - tPre;
-    CentOutTime     =   (BehTable.TrialStartTime(i) + BehTable.CentOutTime(i))*1000    - iFrameTimesBpod(1) - tPre;
-    ChoicePokeTime  =   (BehTable.TrialStartTime(i) + BehTable.ChoicePokeTime(i))*1000 - iFrameTimesBpod(1) - tPre;
+    CentInTime      =   (BehTable.TrialStartTime(i) + BehTable.CentInTime(i))*1000     - iFrameTimesBpod(1) - tPre_this;
+    CentOutTime     =   (BehTable.TrialStartTime(i) + BehTable.CentOutTime(i))*1000    - iFrameTimesBpod(1) - tPre_this;
+    ChoicePokeTime  =   (BehTable.TrialStartTime(i) + BehTable.ChoicePokeTime(i))*1000 - iFrameTimesBpod(1) - tPre_this;
 
     IntOnTime       =   CentInTime + 1000*IntTable.On(IntTable.Trials==i);
     IntOffTime      =   CentInTime + IntOnTime + 1000*IntTable.Dur(IntTable.Trials==i);
