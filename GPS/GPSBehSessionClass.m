@@ -417,7 +417,7 @@ classdef GPSBehSessionClass < GPSBehClass & GPSPlot
         end
 
         function hold_duration_v = get.HDv(obj)
-            id_v = obj.HD>0.05;
+            id_v = obj.HD>0.5;
             hold_duration_v = obj.HD;
             hold_duration_v(~id_v) = nan;
         end

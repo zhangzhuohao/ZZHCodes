@@ -14,13 +14,13 @@ classdef GPSBehProgressClass < GPSBehClass & GPSPlot
         % Task information
         Task
         Protocol
+        TargetFP
 
         % Session information
         Sessions
         NumSessions
         NumTrialsSession
         DurationSession
-        TargetFP
         
         % Experiment information
         Treatment
@@ -113,7 +113,7 @@ classdef GPSBehProgressClass < GPSBehClass & GPSPlot
             % Session information
             obj.Sessions            = cellfun(@(x) string(x.Session), SessionClassAll);
             obj.NumSessions         = length(SessionClassAll);
-            obj.NumTrialsSession = cellfun(@(x) x.NumTrials, SessionClassAll);
+            obj.NumTrialsSession    = cellfun(@(x) x.NumTrials, SessionClassAll);
             obj.DurationSession     = cellfun(@(x) x.TrialCentInTime(end), SessionClassAll);
             obj.TargetFP            = unique(cell2mat(cellfun(@(x) x.TargetFP, SessionClassAll, 'UniformOutput', false)), "rows");
             if size(obj.TargetFP, 1)>1

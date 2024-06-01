@@ -102,4 +102,6 @@ for i = 1:length(Folders)
     fprintf("\n%s\n", TrajSessionClass.Session);
 
     TrajSessionClass.save();
+
+    TrajSessionClass.print();
 end

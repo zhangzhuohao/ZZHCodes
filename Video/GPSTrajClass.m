@@ -22,7 +22,7 @@ classdef GPSTrajClass < handle
         TimeMatIn   = -100:10:3000;
         TimeMatOut  = -2100:10:1000;
         TimeMatCue  = -2000:10:1100;
-        TimeMatWarp = -0.25:0.005:1.25;
+        TimeMatHD   = -0.25:0.005:1.25;
 
         % Movement features extracted
         Features = [
@@ -52,7 +52,22 @@ classdef GPSTrajClass < handle
     methods
         function obj = GPSTrajClass(); end
 
-        %% Functions
+        %% Date pre-processing
+        function data_sorted = sort_data(~, data_origin, sort_refs, sort_codes)
+            b_class = GPSBehClass();
+            data_sorted = b_class.sort_data(data_origin, sort_refs, sort_codes);
+        end % sort_data
+
+        function table_sorted = sort_table(~, table_raw, sort_vars, sort_codes)
+            b_class = GPSBehClass();
+            table_sorted = b_class.sort_table(table_raw, sort_vars, sort_codes);
+        end % sort_table
+
+        function data_spliced = splice_data(~, data_cell)
+            b_class = GPSBehClass();
+            data_spliced = b_class.splice_data(data_cell);
+        end % sort_table
+
         %% Calculate diff
         function d_x = cal_diff(obj, x, n)
             if nargin==2
@@ -63,7 +78,7 @@ classdef GPSTrajClass < handle
             if n > 1
                 d_x = obj.cal_diff(d_x, n-1);
             end
-        end
+        end % cal_diff
 
         %% Form transformation 
         function [M, t_M] = trace2mat(~, trace, time_trace, time_matrix)
@@ -131,6 +146,127 @@ classdef GPSTrajClass < handle
             trace_interp = obj.mat2trace(mat, time_matrix);
             t_interp = time_matrix;
         end % interpolate_trace
+
+        function [trace_trim, time_trim] = trim_trace(~, trace, time_trace, varargin)
+
+            % input
+            P = inputParser;
+
+            addRequired(P, 'trace', @iscell);
+            addRequired(P, 'time_trace', @(x) iscell(x) && length(x)==length(trace));
+            addOptional(P, 'bound_l', [], @isnumeric);
+            addOptional(P, 'bound_u', [], @isnumeric);
+
+            parse(P, trace, time_trace, varargin{:});
+
+            trace = P.Results.trace;
+            time_trace = P.Results.time_trace;
+            bound_l = P.Results.bound_l;
+            bound_u = P.Results.bound_u;
+
+            %
+            if isempty(bound_l)
+                trace_trim = trace;
+                time_trim  = time_trace;
+            elseif length(bound_l)==1
+                trace_trim = cellfun(@(x, t) x(t>=bound_l), trace, time_trace, 'UniformOutput', false);
+                time_trim  = cellfun(@(t) t(t>=bound_l), time_trace, 'UniformOutput', false);
+            elseif length(bound_l)==length(trace)
+                trace_trim = cellfun(@(x, t, b) x(t>=b), trace, time_trace, num2cell(bound_l), 'UniformOutput', false);
+                time_trim  = cellfun(@(t, b) t(t>=b), time_trace, num2cell(bound_l), 'UniformOutput', false);
+            else
+                error('Length of trace and bound_l should be matched');
+            end
+
+            %
+            if isempty(bound_u)
+
+            elseif length(bound_u)==1
+                trace_trim = cellfun(@(x, t) x(t<=bound_u), trace_trim, time_trim, 'UniformOutput', false);
+                time_trim  = cellfun(@(t) t(t<=bound_u), time_trim, 'UniformOutput', false);
+            elseif length(bound_u)==length(trace)
+                trace_trim = cellfun(@(x, t, b) x(t<=b), trace_trim, time_trim, num2cell(bound_u), 'UniformOutput', false);
+                time_trim  = cellfun(@(t, b) t(t<=b), time_trim, num2cell(bound_u), 'UniformOutput', false);
+            else
+                error('Length of trace and bound_l should be matched');
+            end
+
+        end % trim_trace
+
+        %% Align features to matrix
+        function feature_mat = get_matrix(obj, features, time_trace, time_matrix, ind)
+            if nargin < 5
+                ind = 1:length(time_trace);
+            end
+            
+            feature_mat = struct();
+            for i = 1:length(features)
+                feature_mat.(features(i)) = obj.trace2mat(obj.(features(i))(ind), time_trace(ind), time_matrix);
+            end
+        end % get_matrix
+
+        %% Calculate distance matrix
+        function dist_mat_lw = get_dist_lw(obj, features)
+            dist_mat_lw = struct();
+            trace_all = obj.gather_trace(features);
+            periods = ["AP", "FP", "HD", "MT", "CT"];
+            info = obj.TrialInfo;
+
+            for i = 1:length(periods)
+                period_i = periods(i);
+                switch period_i
+                    case "AP"
+                        info_i = info;
+                        trace = cellfun(@(x, t) x(:, t<0), trace_all, obj.TimeFromIn, 'UniformOutput', false);
+                    case "FP"
+                        ind = find(info.Outcome=="Correct");
+                        info_i = info(ind, :);
+                        trace = cellfun(@(x, t, fp) x(:, t>=0 & t<=fp), trace_all(ind), obj.TimeFromIn(ind), num2cell(info.FP(ind)*1000), 'UniformOutput', false);
+                    case "HD"
+                        info_i = info;
+                        trace = cellfun(@(x, t) x(:, t>=0 & t<=1), trace_all, obj.TimeWarpHD, 'UniformOutput', false);
+                    case "MT"
+                        ind = find(info.Outcome=="Correct");
+                        info_i = info(ind, :);
+                        trace = cellfun(@(x, t, mt) x(:, t>=0 & t<=mt), trace_all(ind), obj.TimeFromOut(ind), num2cell(info.MT(ind)*1000), 'UniformOutput', false);
+                    case "CT"
+                        ind = find(info.Outcome=="Correct");
+                        info_i = info(ind, :);
+                        trace = cellfun(@(x, t, ct) x(:, t>=0 & t<=ct), trace_all(ind), obj.TimeFromCue(ind), num2cell(info.CT(ind)*1000), 'UniformOutput', false);
+                end
+                dist_mat_lw.(period_i) = struct();
+                dist_mat_lw.(period_i).info = info_i;
+                dist_mat_lw.(period_i).dist = obj.cal_dist(trace, 'warp_method', 'linear');
+            end
+        end % get_dist_lw
+
+        %% Calculate trace median with 95% ci
+        function trace_median = cal_trace_median(~, trace_matrix, time_matrix, t_bound, alpha)
+
+            if nargin < 4 || isempty(t_bound)
+                t_bound = [min(time_matrix) max(time_matrix)];
+            end
+            if nargin < 5
+                alpha = 0.05;
+            end
+
+            if length(time_matrix) ~= size(trace_matrix)
+                error('Length of time and trace dont match');
+            end
+
+            ind = time_matrix>=t_bound(1) & time_matrix<=t_bound(2);
+
+            trace_median.time = time_matrix(ind);
+            
+            trace_matrix = trace_matrix(:, ind);
+            trace_median.trace = median(trace_matrix, 1, 'omitnan');
+
+            num_valid = sum(~isnan(trace_matrix), 1);
+            ind_valid = find(num_valid>5);
+            trace_median.ci = nan(2, length(trace_median));
+            trace_median.ci(:, ind_valid) = bootci(1000, {@(x) median(x, 'omitnan'), trace_matrix(:, ind_valid)}, 'type', 'cper', 'alpha', alpha);
+
+        end % cal_trace_median
 
         %% Calculate distance matrix
         function dist_mat = cal_dist(obj, trace, varargin)
@@ -202,7 +338,144 @@ classdef GPSTrajClass < handle
                     dist_mat = normalize(dist_mat(:), dist_norm_method);
                     dist_mat = reshape(dist_mat, num_trials, num_trials);
             end
-        end % calDist
+        end % cal_dist
+
+        %% plot function
+        function [ax, trace_plot] = plot_trace(~, ax, time_trace, trace, varargin)
+            % check aquired input
+            if length(time_trace)~=length(trace)
+                error("Length of time_trace and trace should be the same.");
+            end
+            n_trace = length(trace);
+
+            % parsing input
+            P = inputParser;
+
+            addParameter(P, 'color'  , [.6 .6 .6], @(x) (isnumeric(x) && size(x, 2)==3));
+            addParameter(P, 'lw'     , 1.2       , @isnumeric);
+            addParameter(P, 'ls'     , "-"       , @(x) all(ismember(x, ["-", "--", "-.", ":"])));
+            addParameter(P, 'alpha'  , 0.3       , @isnumeric);
+            addParameter(P, 'shuffle', true      , @islogical);
+
+            parse(P, varargin{:});
+
+            color = P.Results.color;
+            lw = P.Results.lw;
+            ls = P.Results.ls;
+            alpha = P.Results.alpha;
+            shuffle = P.Results.shuffle;
+
+            % check optional input
+            if size(color, 1)==1
+                color = repmat(color, n_trace, 1);
+            elseif length(color)~=n_trace
+                error("Unmatched length between color and trace");
+            end
+            if length(lw)==1
+                lw = repmat(lw, n_trace, 1);
+            elseif length(lw)~=n_trace
+                error("Unmatched length between lw and trace");
+            end
+            if length(ls)==1
+                ls = repmat(ls, n_trace, 1);
+            elseif length(ls)~=n_trace
+                error("Unmatched length between ls and trace");
+            end
+            if length(alpha)==1
+                alpha = repmat(alpha, n_trace, 1);
+            elseif length(alpha)~=n_trace
+                error("Unmatched length between alpha and trace");
+            end
+
+            % plot trace
+            set(ax, 'NextPlot', 'add');
+            trace_plot = [];
+            for i = 1:n_trace
+                trace_plot = [trace_plot; plot(ax, time_trace{i}, trace{i}, 'Color', [color(i, :) alpha(i)], 'LineStyle', ls(i), 'LineWidth', lw(i))];
+            end
+            if shuffle
+                id_shuffle = randperm(n_trace);
+                set(ax, 'Children', trace_plot(id_shuffle));
+            end
+        end % plot_trace
+
+        function ax = plot_trace_multi(obj, ax, time_cell, trace_cell, varargin)
+            % check aquired input
+            size_error = @(x, y) ndims(x)~=ndims(y) || any(size(x)~=size(y));
+            if size_error(time_cell, trace_cell)
+                error("Size of time_cell and trace_cell should be the same.");
+            elseif ~ismatrix(trace_cell)
+                error("Please dont put in more than 2 conditions.")
+            end
+            [n_1, n_2] = size(trace_cell, [1 2]);
+
+            % default param value
+            default_color   = repmat({[.6 .6 .6]}, [n_1, n_2]);
+            default_lw      = repmat({1.2}, [n_1, n_2]);
+            default_ls      = repmat({'-'}, [n_1, n_2]);
+            default_alpha   = repmat({0.3}, [n_1, n_2]);
+
+            % parsing input
+            P = inputParser;
+
+            addParameter(P, 'color'  , default_color);
+            addParameter(P, 'lw'     , default_lw);
+            addParameter(P, 'ls'     , default_ls);
+            addParameter(P, 'alpha'  , default_alpha);
+            addParameter(P, 'shuffle', true, @islogical);
+
+            parse(P, varargin{:});
+
+            color = P.Results.color;
+            lw = P.Results.lw;
+            ls = P.Results.ls;
+            alpha = P.Results.alpha;
+            shuffle = P.Results.shuffle;
+
+            % check optional input
+            if ~iscell(color)
+                color = repmat({color}, [n_1, n_2]);
+            elseif length(color)==1
+                color = repmat(color, [n_1, n_2]);
+            elseif size_error(color, trace_cell)
+                error("Unmatched length between color and trace");
+            end
+            if ~iscell(lw)
+                lw = repmat({lw}, [n_1, n_2]);
+            elseif length(lw)==1
+                lw = repmat(lw, [n_1, n_2]);
+            elseif size_error(lw, trace_cell)
+                error("Unmatched length between lw and trace");
+            end
+            if ~iscell(ls)
+                ls = repmat({ls}, [n_1, n_2]);
+            elseif length(ls)==1
+                ls = repmat(ls, [n_1, n_2]);
+            elseif size_error(ls, trace_cell)
+                error("Unmatched length between ls and trace");
+            end
+            if ~iscell(alpha)
+                alpha = repmat({alpha}, [n_1, n_2]);
+            elseif length(alpha)==1
+                alpha = repmat(alpha, [n_1, n_2]);
+            elseif size_error(alpha, trace_cell)
+                error("Unmatched length between alpha and trace");
+            end
+
+            % plot trace
+            set(ax, 'NextPlot', 'add');
+            trace_plot_multi = [];
+            for i = 1:n_1
+                for j = 1:n_2
+                    [~, trace_plot] = obj.plot_trace(ax, time_cell{i,j}, trace_cell{i,j}, 'color', color{i,j}, 'lw', lw{i,j}, 'ls', ls{i,j}, 'alpha', alpha{i,j}, 'shuffle', false);
+                    trace_plot_multi = [trace_plot_multi; trace_plot];
+                end
+            end
+            if shuffle
+                id_shuffle = randperm(length(trace_plot_multi));
+                set(ax, 'Children', trace_plot_multi(id_shuffle));
+            end
+        end % plot_trace_multi
 
     end
 end

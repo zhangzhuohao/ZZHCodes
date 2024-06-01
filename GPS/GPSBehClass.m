@@ -74,21 +74,23 @@ classdef GPSBehClass < handle
         function data_sorted = sort_data(obj, data_origin, sort_refs, sort_codes)
 
             % Check inputs
-            if isvector(data_origin)
-                data_origin = data_origin(:);
-            else
-                error("data_origin should be a vector");
-            end
-            
             if isempty(sort_refs)
                 data_sorted = {data_origin};
                 return
             end
-
             n_refs = cellfun(@length, sort_refs);
-            n_data = length(data_origin);
+
+            if isvector(data_origin)
+                data_origin = data_origin(:);
+                n_data = length(data_origin);
+            elseif ismatrix(data_origin)
+                n_data = size(data_origin, 1);
+            else
+                error("data_origin should be a vector or a matrix");
+            end
+            
             if ~all(n_refs==n_data)
-                error("Length of reference data should be equal to the data to be sorted");
+                error("Length of reference data should be equal to the number of data to be sorted");
             end
 
             % Get output size
@@ -104,7 +106,7 @@ classdef GPSBehClass < handle
             if length(sort_codes)>1 % recursion, if more than one reference variable remains
                 for i = 1:length(code_this)
                     ind_this = ref_this==code_this(i);
-                    data_now = data_origin(ind_this);
+                    data_now = data_origin(ind_this, :);
                     refs_now = cellfun(@(x) x(ind_this), sort_refs(2:end), 'UniformOutput', false);
 
                     data_sorted_i = obj.sort_data(data_now, refs_now, sort_codes(2:end));
@@ -113,7 +115,7 @@ classdef GPSBehClass < handle
             else
                 for i = 1:length(code_this)
                     ind_this = ref_this==code_this(i);
-                    data_sorted{i} = data_origin(ind_this);
+                    data_sorted{i} = data_origin(ind_this, :);
                 end
             end
         end % sort_data

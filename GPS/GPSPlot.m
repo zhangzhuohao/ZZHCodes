@@ -88,7 +88,6 @@ classdef GPSPlot < handle
                 error("Unmatched length between ls and data");
             end
 
-
             for i = 1:length(data)
                 if length(FP)==1
                     if i==1
@@ -241,6 +240,33 @@ classdef GPSPlot < handle
                 set(ax, 'Box', 'off');
             end
         end % plot_violin_compare
+
+        function ax = add_shade(~, ax, zone, varargin)
+
+            % parsing input
+            P = inputParser;
+
+            addParameter(P, 'color'  , [1 0 1]);
+            addParameter(P, 'alpha'  , .1);
+            addParameter(P, 'reverse', false);
+
+            parse(P, varargin{:});
+
+            color = P.Results.color;
+            alpha = P.Results.alpha;
+            reverse = P.Results.reverse;
+
+            %
+            if ~reverse
+                fill(ax, [zone flip(zone)], [ax.YLim(1) ax.YLim(1) ax.YLim(2) ax.YLim(2)], 'r', 'FaceColor', color, 'FaceAlpha', alpha, 'EdgeColor', 'none');
+            else
+                fill(ax, [ax.XLim(1) ax.XLim(1) ax.XLim(2) ax.XLim(2)], [zone flip(zone)], 'r', 'FaceColor', color, 'FaceAlpha', alpha, 'EdgeColor', 'none');
+            end
+
+            children = ax.Children;
+            set(ax, 'Children', [children(end); children(1:end-1)]);
+
+        end % add_shade
 
         %% For easy plot
         function [ax, pos, ax_sz] = assign_ax_to_fig(obj, fig, n_row, n_col, pos, ax_sz)

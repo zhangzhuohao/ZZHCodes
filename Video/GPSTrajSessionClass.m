@@ -8,8 +8,6 @@ classdef GPSTrajSessionClass < GPSTrajClass
         DLCTrackingOutFile
         BehClassFile
 
-        ANMInfoFile
-
         Session
         Subject
         Task
@@ -23,10 +21,9 @@ classdef GPSTrajSessionClass < GPSTrajClass
         DLCTracking
         BehTable
 
-        MatIn
-        MatOut
-        MatCue
-        MatWarp
+        TraceMatrix
+        TraceInterp
+        TraceMedian
 
         DistMatLw
         DistMatDtw
@@ -42,7 +39,7 @@ classdef GPSTrajSessionClass < GPSTrajClass
         TimeFromIn
         TimeFromOut
         TimeFromCue
-        TimeWarped
+        TimeWarpHD
 
         PortVec
         PortCent
@@ -91,17 +88,18 @@ classdef GPSTrajSessionClass < GPSTrajClass
             load(DLCTrackingOutFile, "DLCTrackingOut");
             obj.DLCTracking = DLCTrackingOut;
 
-            obj = obj.removeOddTrials;
+            obj.removeOddTrials();
 
-            obj.MatIn   = obj.get_matrix(obj.Features, obj.TimeFromIn, obj.TimeMatIn);
-            obj.MatOut  = obj.get_matrix(obj.Features, obj.TimeFromOut, obj.TimeMatOut);
-            obj.MatCue  = obj.get_matrix(obj.Features, obj.TimeFromCue, obj.TimeMatCue);
-            obj.MatWarp = obj.get_matrix(obj.Features, obj.TimeWarped, obj.TimeMatWarp);
+            obj.TraceMatrix.In  = obj.get_matrix(obj.Features, obj.TimeFromIn, obj.TimeMatIn);   % time aligned to cent-poke-in time
+            obj.TraceMatrix.Out = obj.get_matrix(obj.Features, obj.TimeFromOut, obj.TimeMatOut); % time aligned to cent-poke-out time
+            obj.TraceMatrix.Cue = obj.get_matrix(obj.Features, obj.TimeFromCue, obj.TimeMatCue); % time aligned to trigger-cue time
+            obj.TraceMatrix.HD  = obj.get_matrix(obj.Features, obj.TimeWarpHD, obj.TimeMatHD); % time linear warped between cent-poke-in and cent-poke-out
         end
 
         %%
-        function obj = removeOddTrials(obj)
+        function removeOddTrials(obj)
 
+            % check time mapping error
             time_error = cellfun(@(t) sum(diff(t)<=0), obj.TimeFromIn);
             ind_odd = find(time_error>0);
             
@@ -113,6 +111,7 @@ classdef GPSTrajSessionClass < GPSTrajClass
 
             obj.DLCTracking.PortLoc(ind_odd) = [];
             
+            % check odd cent-in pose
             angle_in = cellfun(@(a, t) a(t==0), obj.AngleHead, obj.TimeFromIn);
             ind_odd  = find(angle_in > mean(angle_in)+5*std(angle_in) | angle_in < mean(angle_in)-5*std(angle_in));
 
@@ -123,6 +122,21 @@ classdef GPSTrajSessionClass < GPSTrajClass
             end
 
             obj.DLCTracking.PortLoc(ind_odd) = [];
+
+%             % check odd cent-out location
+%             loc_x = cellfun(@(a, t) mean(a(t>0 & t<1), 'omitnan'), obj.PosXHead, obj.TimeWarpHD);
+%             loc_out = cellfun(@(a, t) a(find(t<0, 1, 'last')), obj.PosXHead, obj.TimeFromOut);
+%             ind_odd = find(loc_out>mean(loc_x)+3*std(loc_x) | loc_out<mean(loc_x)-3*std(loc_x) | isnan(loc_out));
+%             disp(mean(loc_x)+3*std(loc_x));
+%             disp(mean(loc_x)-3*std(loc_x))
+%             disp(length(ind_odd));
+%             for i = 1:length(obj.DLCTracking.PoseTracking)
+%                 obj.DLCTracking.PoseTracking(i).PosData(ind_odd) = [];
+%                 obj.DLCTracking.PoseTracking(i).BpodEventIndex(:, ind_odd) = [];
+%                 obj.DLCTracking.PoseTracking(i).Performance(ind_odd) = [];
+%             end
+% 
+%             obj.DLCTracking.PortLoc(ind_odd) = [];
         end
 
         %% 
@@ -155,17 +169,17 @@ classdef GPSTrajSessionClass < GPSTrajClass
 
         function time_from_cue = get.TimeFromCue(obj)
             in2cue = zeros(obj.NumTrials, 1);
-
+            
             ind_non_pre = obj.TrialInfo.Outcome~="Premature";
             in2cue(ind_non_pre) = 1000 * (obj.TrialInfo.TriggerCueTime(ind_non_pre) - obj.TrialInfo.CentInTime(ind_non_pre));
-            ind_pre = obj.TrialInfo.Outcome=="Premature";
-            in2cue(ind_pre) = 1000 * obj.TrialInfo.FP(ind_pre);
+            ind_no_cue = obj.TrialInfo.Outcome=="Premature" | obj.TrialInfo.Cued==0;
+            in2cue(ind_no_cue) = 1000 * obj.TrialInfo.FP(ind_no_cue);
 
             in2cue = num2cell(in2cue);
             time_from_cue = cellfun(@(x, y) x - y, obj.TimeFromIn, in2cue, 'UniformOutput', false);
         end
 
-        function time_warped = get.TimeWarped(obj)
+        function time_warped = get.TimeWarpHD(obj)
             in2out = num2cell(1000 * (obj.TrialInfo.CentOutTime - obj.TrialInfo.CentInTime));
             time_warped = cellfun(@(x, y) x ./ y, obj.TimeFromIn, in2out, 'UniformOutput', false);
         end
@@ -352,49 +366,6 @@ classdef GPSTrajSessionClass < GPSTrajClass
 
         end
 
-        %% Align features to matrix
-        function feature_mat = get_matrix(obj, features, time_trace, time_matrix)
-            feature_mat = struct();
-            for i = 1:length(features)
-                feature_mat.(features(i)) = obj.trace2mat(obj.(features(i)), time_trace, time_matrix);
-            end
-        end
-
-        %% Calculate distance matrix
-        function dist_mat_lw = get_dist_lw(obj, features)
-            dist_mat_lw = struct();
-            trace_all = obj.gather_trace(features);
-            periods = ["AP", "FP", "HD", "MT", "CT"];
-            info = obj.TrialInfo;
-
-            for i = 1:length(periods)
-                period_i = periods(i);
-                switch period_i
-                    case "AP"
-                        info_i = info;
-                        trace = cellfun(@(x, t) x(:, t<0), trace_all, obj.TimeFromIn, 'UniformOutput', false);
-                    case "FP"
-                        ind = find(info.Outcome=="Correct");
-                        info_i = info(ind, :);
-                        trace = cellfun(@(x, t, fp) x(:, t>=0 & t<=fp), trace_all(ind), obj.TimeFromIn(ind), num2cell(info.FP(ind)*1000), 'UniformOutput', false);
-                    case "HD"
-                        info_i = info;
-                        trace = cellfun(@(x, t) x(:, t>=0 & t<=1), trace_all, obj.TimeWarped, 'UniformOutput', false);
-                    case "MT"
-                        ind = find(info.Outcome=="Correct");
-                        info_i = info(ind, :);
-                        trace = cellfun(@(x, t, mt) x(:, t>=0 & t<=mt), trace_all(ind), obj.TimeFromOut(ind), num2cell(info.MT(ind)*1000), 'UniformOutput', false);
-                    case "CT"
-                        ind = find(info.Outcome=="Correct");
-                        info_i = info(ind, :);
-                        trace = cellfun(@(x, t, ct) x(:, t>=0 & t<=ct), trace_all(ind), obj.TimeFromCue(ind), num2cell(info.CT(ind)*1000), 'UniformOutput', false);
-                end
-                dist_mat_lw.(period_i) = struct();
-                dist_mat_lw.(period_i).info = info_i;
-                dist_mat_lw.(period_i).dist = obj.cal_dist(trace, 'warp_method', 'linear');
-            end
-        end % get_dist_lw
-
         %% Save
         function save(obj, copy_dir)
             save_path = fullfile(obj.SessionFolder, obj.SaveName);
@@ -407,200 +378,33 @@ classdef GPSTrajSessionClass < GPSTrajClass
         end % save
 
         %% Plots
-        function print(obj, Func, targetDir)
-            
-            if nargin==1
-                Func = "HeatMap";
-            end
+        function print(obj, copy_dir)
+            save_path = fullfile(obj.SessionFolder, obj.SaveName);
+            fig = obj.plot();
+            exportgraphics(fig, save_path+".png", 'Resolution', 600);
+            exportgraphics(fig, save_path+".pdf", 'ContentType', 'vector');
+            saveas(fig, save_path, 'fig');
 
-            switch lower(Func)
-                case {'heatmap'}
-                    hf = obj.plotHeatMap();
-                case {'trace'}
-                    hf = obj.plotTrace();
-            end
-
-            [savepath, ~] = fileparts(obj.DLCTrackingOutFile);
-            savename = fullfile(savepath, "GPSTrajectoryClass_" + obj.Task + "_" + string(Func) + "_" + upper(obj.Subject) + "_" + obj.Session);
-            print(hf, '-dpdf', savename, '-bestfit')
-            print(hf, '-dpng', savename)
-            saveas(hf, savename, 'fig')
-
-            if nargin==3
-                % check if targetDir exists
-                if ~contains(targetDir, '/') && ~contains(targetDir, '\')
-                    % so it is a relative path
-                    if ~exist(targetDir, 'dir')
-                        mkdir(targetDir)
-                    end
+            if nargin==2
+                if ~isfolder(copy_dir)
+                    mkdir(copy_dir);
                 end
-                savename = fullfile(targetDir, "GPSTrajectoryClass_" + obj.Task + "_" + string(Func) + "_" + upper(obj.Subject) + "_" + obj.Session);
-                print(hf, '-dpdf', savename, '-bestfit')
-                print(hf, '-dpng', savename)
-                saveas(hf, savename, 'fig')
+                copy_path = fullfile(copy_dir, obj.SaveName);
+                copyfile(save_path+".pdf", copy_path+".pdf");
+                copyfile(save_path+".png", copy_path+".png");
+                copyfile(save_path+".fig", copy_path+".fig");
             end
-            
-        end
+        end % print
 
-        function fig = plotHeatMap(obj)
+        function fig = plot(obj)
+            try
+                set_matlab_default
+            catch
+                disp('You do not have "set_matlab_default"' )
+            end
 
-            mycolormap = customcolormap_preset("red-white-blue");
-
-            fig = figure(33); clf(33);
-            set(fig, 'unit', 'centimeters', 'position', [2 2 19 21.2], 'paperpositionmode', 'auto', 'color', 'w');
-
-            uicontrol('Style', 'text', 'parent', fig, 'units', 'normalized', 'position', [0.05 0.95 0.9 0.04],...
-                'string', obj.Subject+" / "+obj.Session+" / "+obj.Task+" / "+char(obj.Treatment), 'fontsize', 10, 'fontweight', 'bold', 'backgroundcolor', 'w');
-
-            % Chose L
-            h1 = 1.5;
-            ax1 = axes; colormap(mycolormap);
-            set(ax1, 'units', 'centimeters', 'position', [1.5 h1, 7 5], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
-            Plot.heatmapAngleHead(ax1, obj, "PortChosen", "L", "Performance", "Wrong", "AlignTo", "In");
-            ax1.Title.String = [];
-
-            h2 = h1 + ax1.Position(4) + .2;
-            ax2 = axes; colormap(mycolormap);
-            set(ax2, 'units', 'centimeters', 'position', [1.5 h2, 7 5], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
-            Plot.heatmapAngleHead(ax2, obj, "PortChosen", "L", "Performance", "Correct", "AlignTo", "In");
-            set(ax2, 'xcolor', 'none')
-
-            ax11 = axes; colormap(mycolormap);
-            set(ax11, 'units', 'centimeters', 'position', [9.5 h1, 7 5], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
-            Plot.heatmapAngleHead(ax11, obj, "PortChosen", "L", "Performance", "Wrong", "AlignTo", "Out");
-            set(ax11, 'ycolor', 'none');
-            ax11.Position(4) = ax1.Position(4);
-            ax11.Title.String = [];
-
-            ax21 = axes; colormap(mycolormap);
-            set(ax21, 'units', 'centimeters', 'position', [9.5 h2, 7 5], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
-            Plot.heatmapAngleHead(ax21, obj, "PortChosen", "L", "Performance", "Correct", "AlignTo", "Out");
-            set(ax21, 'ycolor', 'none');
-            ax21.Position(4) = ax2.Position(4);
-            set(ax21, 'xcolor', 'none')
-            
-            cb = colorbar(ax2, "Units", "centimeters", "Position", [ax11.Position(1)+ax11.Position(3)+0.5 ax1.Position(2) .3 ax2.Position(4)+ax1.Position(4)+.2]);
-            cb.Label.String = "Head angle (°)";
-            cb.Label.FontSize = 9;
-            cb.Label.FontWeight = "Bold";
-            cb.Ticks = -90:30:90;
-
-            % Chose R
-            h3 = h2 + ax2.Position(4) + .8;
-            ax3 = axes("Parent", fig); colormap(mycolormap);
-            set(ax3, 'units', 'centimeters', 'position', [1.5 h3 7 5], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
-            Plot.heatmapAngleHead(ax3, obj, "PortChosen", "R", "Performance", "Wrong", "AlignTo", "In");
-            set(ax3, "xticklabel", []);
-            ax3.XLabel.String = "";
-            ax3.Title.String = "";
-
-            h4 = h3 + ax3.Position(4) + .2;
-            ax4 = axes("Parent", fig); colormap(mycolormap);
-            set(ax4, 'units', 'centimeters', 'position', [1.5 h4 7 5], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
-            Plot.heatmapAngleHead(ax4, obj, "PortChosen", "R", "Performance", "Correct", "AlignTo", "In");
-            set(ax4, "xcolor", 'none');
-
-            ax31 = axes; colormap(mycolormap);
-            set(ax31, 'units', 'centimeters', 'position', [9.5 h3 7 5], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
-            Plot.heatmapAngleHead(ax31, obj, "PortChosen", "R", "Performance", "Wrong", "AlignTo", "Out");
-            set(ax31, 'ycolor', 'none');
-            set(ax31, "xticklabel", []);
-            ax31.XLabel.String = "";
-            ax31.Title.String = "";
-            ax31.Position(4) = ax3.Position(4);
-
-            ax41 = axes("Parent", fig); colormap(mycolormap);
-            set(ax41, 'units', 'centimeters', 'position', [9.5 h4 7 5], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
-            Plot.heatmapAngleHead(ax41, obj, "PortChosen", "R", "Performance", "Correct", "AlignTo", "Out");
-            set(ax41, "xcolor", 'none', 'ycolor', 'none');
-
-            % Late
-            h5 = h4 + ax4.Position(4) + .8;
-            ax5 = axes; colormap(mycolormap);
-            set(ax5, 'units', 'centimeters', 'position', [1.5 h5 7 5], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
-            Plot.heatmapAngleHead(ax5, obj, "Performance", "Late", "AlignTo", "In");
-            set(ax5, "xticklabel", []); ax5.XLabel.String = "";
-
-            ax51 = axes; colormap(mycolormap);
-            set(ax51, 'units', 'centimeters', 'position', [9.5 h5, 7 5], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
-            Plot.heatmapAngleHead(ax51, obj, "Performance", "Late", "AlignTo", "Out");
-            set(ax51, 'ycolor', 'none');
-            set(ax51, "xticklabel", []); ax51.XLabel.String = ""; 
-            ax51.Position(4) = ax5.Position(4);
-
-            % Premature
-            h6 = h5 + ax5.Position(4) + .8;
-            ax6 = axes; colormap(mycolormap);
-            set(ax6, 'units', 'centimeters', 'position', [1.5 h6, 7 5], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
-            Plot.heatmapAngleHead(ax6, obj, "Performance", "Premature", "AlignTo", "In");
-            set(ax6, "xticklabel", []); ax6.XLabel.String = "";
-
-            ax61 = axes; colormap(mycolormap);
-            set(ax61, 'units', 'centimeters', 'position', [9.5 h6, 7 5], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
-            Plot.heatmapAngleHead(ax61, obj, "Performance", "Premature", "AlignTo", "Out");
-            set(ax61, 'ycolor', 'none');
-            set(ax61, "xticklabel", []); ax61.XLabel.String = ""; 
-            ax61.Position(4) = ax6.Position(4);
-
-            h_fig = h6 + ax6.Position(4) + 1.3;
-
-%             cLimits = max([clim(ax1) clim(ax2) clim(ax3) clim(ax4)]);
-            cLimits = 90;
-            clim(ax1, [-1 1]*cLimits); clim(ax11, [-1 1]*cLimits);
-            clim(ax2, [-1 1]*cLimits); clim(ax21, [-1 1]*cLimits);
-            clim(ax3, [-1 1]*cLimits); clim(ax31, [-1 1]*cLimits);
-            clim(ax4, [-1 1]*cLimits); clim(ax41, [-1 1]*cLimits);
-            clim(ax5, [-1 1]*cLimits); clim(ax51, [-1 1]*cLimits);
-            clim(ax6, [-1 1]*cLimits); clim(ax61, [-1 1]*cLimits);
-            
-            fig.Position(4) = h_fig;
-            
-        end
-        
-        function fig = plotTrace(obj)
-
-            fig = figure(34); clf(34);
-            set(fig, 'unit', 'centimeters', 'position', [2 2 24 16], 'paperpositionmode', 'auto', 'color', 'w');
-
-            uicontrol('Style', 'text', 'parent', fig, 'units', 'normalized', 'position', [0.2 0.95 0.6 0.04],...
-                'string', obj.Subject+" / "+obj.Session+" / "+obj.Task+" / "+char(obj.Treatment), 'fontsize', 10, 'fontweight', 'bold', 'backgroundcolor', 'w');
-
-            h1 = 1.5;
-            ax1 = axes();
-            set(ax1, 'units', 'centimeters', 'position', [1.5 1.5 19/2 4], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
-            Plot.traceAngleHead(ax1, obj, "Long", "In");
-
-            h2 = h1 + ax1.Position(4) + .8;
-            ax2 = axes();
-            set(ax2, 'units', 'centimeters', 'position', [1.5 h2 14/2 4], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
-            Plot.traceAngleHead(ax2, obj, "Med", "In");
-            set(ax2, 'xticklabel', []); ax2.XLabel.String = "";
-
-            h3 = h2 + ax2.Position(4) + .8;
-            ax3 = axes();
-            set(ax3, 'units', 'centimeters', 'position', [1.5 h3 9/2 4], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
-            Plot.traceAngleHead(ax3, obj, "Short", "In");
-            set(ax3, 'xticklabel', []); ax3.XLabel.String = "";
-
-            w1 = 1.5 + ax1.Position(3) + 2;
-            ax4 = axes();
-            set(ax4, 'units', 'centimeters', 'position', [w1 h1 19/2 4], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
-            Plot.traceAngleHead(ax4, obj, "Long", "Out");
-            set(ax4, 'yaxislocation', 'right');
-
-            w2 = w1 + (ax1.Position(3) - ax2.Position(3));
-            ax5 = axes();
-            set(ax5, 'units', 'centimeters', 'position', [w2 h2 14/2 4], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
-            Plot.traceAngleHead(ax5, obj, "Med", "Out");
-            set(ax5, 'yaxislocation', 'right', 'xticklabel', []); ax5.XLabel.String = "";
-
-            w3 = w1 + (ax1.Position(3) - ax3.Position(3));
-            ax6 = axes();
-            set(ax6, 'units', 'centimeters', 'position', [w3 h3 9/2 4], 'nextplot', 'add', 'fontsize', 8, 'tickdir', 'out');
-            Plot.traceAngleHead(ax6, obj, "Short", "Out");
-            set(ax6, 'yaxislocation', 'right', 'xticklabel', []); ax6.XLabel.String = "";
-
-        end
+            fig = feval(obj.Task+".plotTrajSession", obj);
+        end % plot
 
     end
 end
