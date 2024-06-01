@@ -72,7 +72,7 @@ classdef GPSTrajProgressClass < GPSTrajClass
     end
 
     methods
-        function obj = GPSTrajProgressClass(TrajSessionClassAll, ProtocolDir)
+        function obj = GPSTrajProgressClass(TrajSessionClassAll, ProtocolDir, BehavTable)
             %UNTITLED Construct an instance of this class
             %   Detailed explanation goes here
             obj.ProtocolDir = ProtocolDir;
@@ -107,8 +107,15 @@ classdef GPSTrajProgressClass < GPSTrajClass
 
             % Trial behavior information
             allTables = cellfun(@(x) {x.TrialInfo}, TrajSessionClassAll, 'UniformOutput', false);
+            for i = 1:length(allTables)
+                session = unique(allTables{i}{1}.Session);
+                behTable = BehavTable(BehavTable.Session==session, :);
+                ind = ismember(behTable.Trials, allTables{i}{1}.Trials);
+                allTables{i}{1}.Label = behTable.Label(ind);
+            end
             obj.TrialInfo = obj.splice_data(allTables);
             obj.TrialInfo = addvars(obj.TrialInfo{1}, (1:sum(obj.NumTrialsSession))', 'After', 'Trials', 'NewVariableNames', "Index");
+            
 
             % Gather timepoints, trajectories and ports
             obj.gather_all_progress(TrajSessionClassAll);
@@ -160,9 +167,7 @@ classdef GPSTrajProgressClass < GPSTrajClass
 
             for lb = 1:length(Labels)
                 lb_this = Labels(lb);
-                if lb_this=="All"
-                    ind_this = ismember(info.Label, ["None", "Saline", "Control", "PreLesion", "PreControl"]);
-                else
+                if lb_this~="All"
                     ind_this = info.Label==lb_this;
                 end
 
@@ -170,7 +175,11 @@ classdef GPSTrajProgressClass < GPSTrajClass
                     a_this = Aligns(a);
                     t_trace = obj.(TimeTrace(a));
                     t_matrix = obj.(TimeMatrix(a));
-                    obj.TraceMatrix.(lb_this).(a_this) = obj.get_matrix(obj.Features, t_trace, t_matrix, ind_this);
+                    if lb_this=="All"
+                        obj.TraceMatrix.(lb_this).(a_this) = obj.get_matrix(obj.Features, t_trace, t_matrix);
+                    else
+                        obj.TraceMatrix.(lb_this).(a_this) = obj.get_matrix(obj.Features, t_trace, t_matrix, ind_this);
+                    end
                 end
             end
         end
@@ -182,7 +191,7 @@ classdef GPSTrajProgressClass < GPSTrajClass
 
         %% Save
         function save(obj, copy_dir)
-            save_path = fullfile(obj.SessionFolder, obj.SaveName);
+            save_path = fullfile(obj.ProtocolDir, obj.SaveName);
             save(save_path, 'obj');
 
             if nargin==2
@@ -192,20 +201,33 @@ classdef GPSTrajProgressClass < GPSTrajClass
         end % save
 
         %% Plots
-        function print(obj, copy_dir)
-            save_path = fullfile(obj.SessionFolder, obj.SaveName);
-            fig = obj.plot();
+        function print(obj, fig, varargin)
+            % parsing input
+            P = inputParser;
+
+            addParameter(P, 'save_dir', obj.ProtocolDir, @(x) (ischar(x) || isstring(x)));
+            addParameter(P, 'copy_dir', "", @(x) (ischar(x) || isstring(x)));
+            addParameter(P, 'save_name', obj.SaveName, @(x) (ischar(x) || isstring(x)));
+
+            parse(P, varargin{:});
+
+            save_dir = P.Results.save_dir;
+            copy_dir = P.Results.copy_dir;
+            save_name = P.Results.save_name;
+
+            % 
+            save_path = fullfile(save_dir, save_name);
             exportgraphics(fig, save_path+".png", 'Resolution', 600);
             exportgraphics(fig, save_path+".pdf", 'ContentType', 'vector');
             saveas(fig, save_path, 'fig');
 
-            if nargin==2
+            if copy_dir ~= ""
                 if ~isfolder(copy_dir)
                     mkdir(copy_dir);
                 end
-                copy_path = fullfile(copy_dir, obj.SaveName);
-                copyfile(save_path+".pdf", copy_path+".pdf");
+                copy_path = fullfile(copy_dir, save_name);
                 copyfile(save_path+".png", copy_path+".png");
+                copyfile(save_path+".pdf", copy_path+".pdf");
                 copyfile(save_path+".fig", copy_path+".fig");
             end
         end % print

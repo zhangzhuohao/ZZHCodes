@@ -260,12 +260,13 @@ classdef GPSTrajClass < handle
             
             trace_matrix = trace_matrix(:, ind);
             trace_median.trace = median(trace_matrix, 1, 'omitnan');
+            trace_median.trace = smoothdata(trace_median.trace, "gaussian", 5);
 
             num_valid = sum(~isnan(trace_matrix), 1);
             ind_valid = find(num_valid>5);
             trace_median.ci = nan(2, length(trace_median));
             trace_median.ci(:, ind_valid) = bootci(1000, {@(x) median(x, 'omitnan'), trace_matrix(:, ind_valid)}, 'type', 'cper', 'alpha', alpha);
-
+            trace_median.ci = smoothdata(trace_median.ci, 2, "gaussian", 5);
         end % cal_trace_median
 
         %% Calculate distance matrix

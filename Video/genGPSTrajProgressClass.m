@@ -48,8 +48,12 @@ Folders = get_folders(ParentDir, "FolderType", 'Protocol', "Tasks", Tasks(indx))
 for d = 1:length(Folders)
     % Call the recursive function to get a list of all the .mat files in the parent directory and its subdirectories
     ProtocolDir = Folders(d);
-    Files = get_mat_files(ProtocolDir, "FileType", 'TrajSessionClass');
+    BehProgressClassFile = get_mat_files(ProtocolDir, "FileType", 'BehProgressClass');
+    load(BehProgressClassFile);
+    BehProgressClass = obj;
+    clear obj
 
+    Files = get_mat_files(ProtocolDir, "FileType", 'TrajSessionClass');
     if isempty(Files)
         continue
     end
@@ -69,8 +73,8 @@ for d = 1:length(Folders)
     TrajSessionClassAll = TrajSessionClassAll(SortID);
 
     %
-    TrajProgressClass = GPSTrajProgressClass(TrajSessionClassAll, ProtocolDir);
-%     TrajProgressClass.save();
+    TrajProgressClass = GPSTrajProgressClass(TrajSessionClassAll, ProtocolDir, BehProgressClass.BehavTable);
+    TrajProgressClass.save();
     
 %     fig_progress = TrajProgressClass.plotProgress();
 %     TrajProgressClass.print(fig_progress);

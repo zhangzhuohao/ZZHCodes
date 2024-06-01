@@ -9,9 +9,9 @@ end
 
 View = "Top";
 
-% VideoFolder = uigetdir("Z:\YuLab\Work\GPS\Video\");
+VideoFolder = uigetdir("Z:\YuLab\Work\GPS\Video\");
 
-VideoFolder = VideoFolderParent;
+% VideoFolder = VideoFolderParent;
 
 ProtocolFolder = extractAfter(VideoFolder, 'Video\');
 Anm = extractBefore(ProtocolFolder, "\");
