@@ -88,6 +88,7 @@ end
 Folders = SessionFolders(ismember(SessionsAll, Sessions(SessionInd)));
 
 %%
+fprintf("\ngenTrajSessionClass\n")
 for i = 1:length(Folders)
 
     tracking_file = dir(fullfile(Folders(i), "*DLCTrackingOut_*.mat"));
@@ -98,8 +99,6 @@ for i = 1:length(Folders)
     end
 
     TrajSessionClass = GPSTrajSessionClass(fullfile(Folders(i), tracking_file.name), fullfile(Folders(i), behclass_file.name));
-
-    fprintf("\n%s\n", TrajSessionClass.Session);
 
     TrajSessionClass.save();
 

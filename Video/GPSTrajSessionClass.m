@@ -88,6 +88,8 @@ classdef GPSTrajSessionClass < GPSTrajClass
             load(DLCTrackingOutFile, "DLCTrackingOut");
             obj.DLCTracking = DLCTrackingOut;
 
+            fprintf("\n%s\n", obj.Session);
+
             obj.removeOddTrials();
 
             obj.TraceMatrix.In  = obj.get_matrix(obj.Features, obj.TimeFromIn, obj.TimeMatIn);   % time aligned to cent-poke-in time
@@ -102,7 +104,9 @@ classdef GPSTrajSessionClass < GPSTrajClass
             % check time mapping error
             time_error = cellfun(@(t) sum(diff(t)<=0), obj.TimeFromIn);
             ind_odd = find(time_error>0);
-            
+            if ~isempty(ind_odd)
+                fprintf("Remove %d trials for time mapping error\n", length(ind_odd));
+            end
             for i = 1:length(obj.DLCTracking.PoseTracking)
                 obj.DLCTracking.PoseTracking(i).PosData(ind_odd) = [];
                 obj.DLCTracking.PoseTracking(i).BpodEventIndex(:, ind_odd) = [];
@@ -114,7 +118,9 @@ classdef GPSTrajSessionClass < GPSTrajClass
             % check odd cent-in pose
             angle_in = cellfun(@(a, t) a(t==0), obj.AngleHead, obj.TimeFromIn);
             ind_odd  = find(angle_in > mean(angle_in)+5*std(angle_in) | angle_in < mean(angle_in)-5*std(angle_in));
-
+            if ~isempty(ind_odd)
+                fprintf("Remove %d trials for wrong cent-in position\n", length(ind_odd));
+            end
             for i = 1:length(obj.DLCTracking.PoseTracking)
                 obj.DLCTracking.PoseTracking(i).PosData(ind_odd) = [];
                 obj.DLCTracking.PoseTracking(i).BpodEventIndex(:, ind_odd) = [];
@@ -123,20 +129,20 @@ classdef GPSTrajSessionClass < GPSTrajClass
 
             obj.DLCTracking.PortLoc(ind_odd) = [];
 
-%             % check odd cent-out location
-%             loc_x = cellfun(@(a, t) mean(a(t>0 & t<1), 'omitnan'), obj.PosXHead, obj.TimeWarpHD);
-%             loc_out = cellfun(@(a, t) a(find(t<0, 1, 'last')), obj.PosXHead, obj.TimeFromOut);
-%             ind_odd = find(loc_out>mean(loc_x)+3*std(loc_x) | loc_out<mean(loc_x)-3*std(loc_x) | isnan(loc_out));
-%             disp(mean(loc_x)+3*std(loc_x));
-%             disp(mean(loc_x)-3*std(loc_x))
-%             disp(length(ind_odd));
-%             for i = 1:length(obj.DLCTracking.PoseTracking)
-%                 obj.DLCTracking.PoseTracking(i).PosData(ind_odd) = [];
-%                 obj.DLCTracking.PoseTracking(i).BpodEventIndex(:, ind_odd) = [];
-%                 obj.DLCTracking.PoseTracking(i).Performance(ind_odd) = [];
-%             end
-% 
-%             obj.DLCTracking.PortLoc(ind_odd) = [];
+            % check odd cent-out location
+            loc_out_pre  = cellfun(@(a, t) a(find(t<=0, 1, 'last')), obj.PosXHead, obj.TimeFromOut);
+            loc_out_post = cellfun(@(a, t) a(find(t<=10, 1, 'last')), obj.PosXHead, obj.TimeFromOut);
+            ind_odd = find(loc_out_post>median(loc_out_pre)+50 | loc_out_post<median(loc_out_pre)-50);
+            if ~isempty(ind_odd)
+                fprintf("Remove %d trials for wrong cent-out location\n", length(ind_odd));
+            end
+            for i = 1:length(obj.DLCTracking.PoseTracking)
+                obj.DLCTracking.PoseTracking(i).PosData(ind_odd) = [];
+                obj.DLCTracking.PoseTracking(i).BpodEventIndex(:, ind_odd) = [];
+                obj.DLCTracking.PoseTracking(i).Performance(ind_odd) = [];
+            end
+
+            obj.DLCTracking.PortLoc(ind_odd) = [];
         end
 
         %% 
