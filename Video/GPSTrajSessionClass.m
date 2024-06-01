@@ -130,9 +130,11 @@ classdef GPSTrajSessionClass < GPSTrajClass
             obj.DLCTracking.PortLoc(ind_odd) = [];
 
             % check odd cent-out location
-            loc_out_pre  = cellfun(@(a, t) a(find(t<=0, 1, 'last')), obj.PosXHead, obj.TimeFromOut);
-            loc_out_post = cellfun(@(a, t) a(find(t<=10, 1, 'last')), obj.PosXHead, obj.TimeFromOut);
-            ind_odd = find(loc_out_post>median(loc_out_pre)+50 | loc_out_post<median(loc_out_pre)-50);
+            loc_out_pre = cellfun(@(a, t) a(find(t<=0, 5, 'last')), obj.PosXHead, obj.TimeFromOut, 'UniformOutput', false);
+            loc_out_pre = cell2mat(loc_out_pre);
+            loc_out_pre_m = median(loc_out_pre, 1, "omitnan");
+            ind_odd = find(any(abs(loc_out_pre - loc_out_pre_m)>=50, 2));
+%             ind_odd = find(loc_out_post>median(loc_out_pre)+50 | loc_out_post<median(loc_out_pre)-50);
             if ~isempty(ind_odd)
                 fprintf("Remove %d trials for wrong cent-out location\n", length(ind_odd));
             end
