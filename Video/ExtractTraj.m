@@ -51,23 +51,23 @@ opts.EmptyLineRule = "read";
 %     return
 % end
 %%
-% TaskFolder = uigetdir('D:\YuLab\Work\GPS\Video\');
-% if ~TaskFolder
-%     return
-% end
-% 
-TaskFolder = VideoFolderParent;
+TaskFolder = uigetdir('D:\YuLab\Work\GPS\Video\');
+if ~TaskFolder
+    return
+end
+
+% TaskFolder = VideoFolderParent;
 SessionFolders = get_folders(TaskFolder, "FolderType", 'Session');
 
-% [~, SessionsAll] = arrayfun(@(x) fileparts(x), SessionFolders);
-% Sessions = unique(SessionsAll);
-% 
-% [SessionInd, tf] = listdlg("ListString", Sessions, "ListSize", [200, 200]);
-% if ~tf
-%     return
-% end
-% 
-% SessionFolders = SessionFolders(ismember(SessionsAll, Sessions(SessionInd)));
+[~, SessionsAll] = arrayfun(@(x) fileparts(x), SessionFolders);
+Sessions = unique(SessionsAll);
+
+[SessionInd, tf] = listdlg("ListString", Sessions, "ListSize", [200, 200]);
+if ~tf
+    return
+end
+
+SessionFolders = SessionFolders(ismember(SessionsAll, Sessions(SessionInd)));
 
 for s = 1:length(SessionFolders)
 % ClipFolder  = 'D:\YuLab\Work\GPS\Video\Kennard\GPS_13_ThreeFPHoldSRT\20240313\Top\Clips';
