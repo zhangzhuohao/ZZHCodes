@@ -300,6 +300,8 @@ classdef GPSPlot < handle
                     for i = 1:sz_ax(2)
                         data_assigned{i} = data_cell(i);
                     end
+                elseif sz_ax(2)==1 && sz_data(1)==1
+                    data_assigned{1,1} = data_cell(1,:);
                 else
                     if sz_data(2)==sz_ax(2)
                         for i = 1:sz_ax(2)
