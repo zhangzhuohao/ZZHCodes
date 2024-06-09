@@ -105,12 +105,12 @@ for d = 1:length(Folders)
         SessionClass = GPSBehSessionClass(file, AnmInfoFile);
         disp(SessionClass.SaveName);
         SessionClass.save();
-%         SessionClass.print(SessionDataFigsFolder);
+        SessionClass.print(SessionDataFigsFolder);
 
         BehavCsvName = sprintf('GPSBehSessionTable_%s_%s_%s.csv',  SessionClass.Task, SessionClass.Subject, SessionClass.Session);
         writetable(SessionClass.BehavTable, fullfile(file_path, BehavCsvName));
 
-        InterCsvName =sprintf('GPSInterruptTable_%s_%s_%s.csv',  SessionClass.Task, SessionClass.Subject, SessionClass.Session);
+        InterCsvName = sprintf('GPSInterruptTable_%s_%s_%s.csv',  SessionClass.Task, SessionClass.Subject, SessionClass.Session);
         writetable(SessionClass.Interruption, fullfile(file_path, InterCsvName));
     end
 end

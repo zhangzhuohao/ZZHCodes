@@ -241,6 +241,99 @@ classdef GPSPlot < handle
             end
         end % plot_violin_compare
 
+        %
+        function [ax, v] = plot_violin_compare_box(~, ax, data_1, data_2, band_width, varargin)
+
+            % parse input
+            defaultCate = string(1:length(data_1));
+            defaultColor = repmat({[0 0 0]}, 1, 2);
+
+            p = inputParser;
+            addRequired(p,'ax', @ishandle);
+            addRequired(p,'datain_1', @iscell);
+            addRequired(p,'datain_2', @iscell);
+            addParameter(p,'band_width', [], @isnumeric);
+            addParameter(p,'cate_name', defaultCate);
+            addParameter(p,'color', defaultColor);
+            addParameter(p,'scale', 1, @isnumeric);
+            addParameter(p,'rm_outliers', true, @islogical);
+            addParameter(p,'d_violin', .15, @isnumeric);
+            addParameter(p,'d_median', .05, @isnumeric);
+            addParameter(p,'violin_width', .2, @isnumeric);
+            addParameter(p,'violin_alpha', .1, @isnumeric);
+            addParameter(p,'marker_alpha', .4, @isnumeric);
+            addParameter(p,'marker_size', 6, @isnumeric);
+            addParameter(p,'median_size', 6, @isnumeric);
+
+            parse(p, ax, data_1, data_2, band_width, varargin{:});
+
+            ax = p.Results.ax;
+            data_1 = p.Results.datain_1;
+            data_2 = p.Results.datain_2;
+            band_width = p.Results.band_width;
+            cate_name = p.Results.cate_name;
+            color = p.Results.color;
+            scale = p.Results.scale;
+            rm_outliers = p.Results.rm_outliers;
+            d_violin = p.Results.d_violin;
+            d_median = p.Results.d_median;
+            violin_width = p.Results.violin_width;
+            violin_alpha = p.Results.violin_alpha;
+            marker_alpha = p.Results.marker_alpha;
+            marker_size = p.Results.marker_size;
+            median_size = p.Results.median_size;
+            
+            % check input
+            if length(data_1)~=length(data_2)
+                error("input data dont match");
+            else
+                n_cate = length(data_1);
+            end
+            if length(color)==1
+                color = repmat(color, 1, 2);
+            end
+
+            % remove outliers
+            if rm_outliers
+                data_1 = cellfun(@(x) rmoutliers(x(~isnan(x))), data_1, 'UniformOutput', false);
+                data_2 = cellfun(@(x) rmoutliers(x(~isnan(x))), data_2, 'UniformOutput', false);
+            end
+
+            % 
+            data = {data_1, data_2};
+
+            % violin plot
+            axes(ax);
+            d_violin = d_violin * [-1 1];
+            d_median = d_median * [-1 1];
+            half_violin = ["left", "right"];
+
+            v = cell(1, 2);
+            for i = 1:2
+                d_m_v = d_median(i) - d_violin(i);
+                for j = 1:n_cate
+                    if isempty(data{i}{j})
+                        continue;
+                    end
+                    if isempty(band_width)
+                        v{i}{j} = Violin(data{i}(j), j + d_violin(i), 'ViolinColor', color(i), 'ViolinAlpha', {violin_alpha}, ...
+                            'MarkerSize', marker_size, ...
+                            'HalfViolin', half_violin(i), 'Width', violin_width); % , 'BoxColor', color{i}
+                    else
+                        v{i}{j} = Violin(data{i}(j), j + d_violin(i), 'ViolinColor', color(i), 'ViolinAlpha', {violin_alpha}, ...
+                            'BandWidth', scale*band_width, 'MarkerSize', marker_size, ...
+                            'HalfViolin', half_violin(i), 'Width', violin_width); % , 'BoxColor', color{i}
+                    end
+                    v{i}{j}.MedianPlot.XData   = v{i}{j}.MedianPlot.XData + d_m_v;
+                    v{i}{j}.BoxPlot.XData      = v{i}{j}.BoxPlot.XData + d_m_v;
+                    v{i}{j}.WhiskerPlot.XData  = v{i}{j}.WhiskerPlot.XData + d_m_v;
+                    v{i}{j}.ScatterPlot.MarkerFaceAlpha = marker_alpha;
+                    v{i}{j}.MedianPlot.SizeData = median_size;
+                end
+            end
+            set(ax, 'Box', 'off', 'XTick', 1:n_cate, 'XTickLabel', cate_name, 'XLim', [.5 n_cate+.5]);
+        end % plot_violin_compare_box
+
         function ax = add_shade(~, ax, zone, varargin)
 
             % parsing input
@@ -265,7 +358,6 @@ classdef GPSPlot < handle
 
             children = ax.Children;
             set(ax, 'Children', [children(end); children(1:end-1)]);
-
         end % add_shade
 
         %% For easy plot
