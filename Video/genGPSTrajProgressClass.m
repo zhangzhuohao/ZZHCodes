@@ -49,6 +49,9 @@ for d = 1:length(Folders)
     % Call the recursive function to get a list of all the .mat files in the parent directory and its subdirectories
     ProtocolDir = Folders(d);
     BehProgressClassFile = get_mat_files(ProtocolDir, "FileType", 'BehProgressClass');
+    if isempty(BehProgressClassFile)
+        continue
+    end
     load(BehProgressClassFile);
     BehProgressClass = obj;
     clear obj

@@ -35,6 +35,8 @@ classdef GPSTrajProgressClass < GPSTrajClass
         TimeWarpHD
 
         % Port location
+        PortLeft
+        PortRight
         PortVec
         PortCent
 
@@ -131,7 +133,9 @@ classdef GPSTrajProgressClass < GPSTrajClass
                 "TimeFromOut"
                 "TimeFromCue"
                 "TimeWarpHD"
-                "PortVec" % port location
+                "PortLeft" % port location
+                "PortRight"
+                "PortVec"
                 "PortCent"
                 "AngleHead" % head position
                 "PosXHead"

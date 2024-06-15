@@ -41,6 +41,8 @@ classdef GPSTrajSessionClass < GPSTrajClass
         TimeFromCue
         TimeWarpHD
 
+        PortLeft
+        PortRight
         PortVec
         PortCent
 
@@ -192,6 +194,14 @@ classdef GPSTrajSessionClass < GPSTrajClass
             time_warped = cellfun(@(x, y) x ./ y, obj.TimeFromIn, in2out, 'UniformOutput', false);
         end
 
+        function port_left = get.PortLeft(obj)
+            port_left = arrayfun(@(x) (x.L - x.R) / 2, obj.DLCTracking.PortLoc', 'UniformOutput', false);
+        end
+
+        function port_right = get.PortRight(obj)
+            port_right = arrayfun(@(x) (x.R - x.L) / 2, obj.DLCTracking.PortLoc', 'UniformOutput', false);
+        end
+
         function port_vec = get.PortVec(obj)
             port_vec = arrayfun(@(x) x.R - x.L, obj.DLCTracking.PortLoc', 'UniformOutput', false);
         end
@@ -275,8 +285,8 @@ classdef GPSTrajSessionClass < GPSTrajClass
         %% Speed (X) of head
         function speed_x_head = get.SpeedXHead(obj)
             
-            d_x = cellfun(@(x) obj.cal_diff(x'), obj.PosXHead, 'UniformOutput', false);
-            d_t = cellfun(@(t) obj.cal_diff(t'), obj.TimeFromIn, 'UniformOutput', false);
+            d_x = cellfun(@(x) obj.cal_diff(x), obj.PosXHead, 'UniformOutput', false);
+            d_t = cellfun(@(t) obj.cal_diff(t), obj.TimeFromIn, 'UniformOutput', false);
 
             speed_x_head = cellfun(@(dx, dt) dx ./ dt, d_x, d_t, 'UniformOutput', false);
             speed_x_head = cellfun(@(x) smoothdata(x, "gaussian", 5), speed_x_head, 'UniformOutput', false);
@@ -285,8 +295,8 @@ classdef GPSTrajSessionClass < GPSTrajClass
         %% Speed (Y) of head
         function speed_y_head = get.SpeedYHead(obj)
             
-            d_y = cellfun(@(y) obj.cal_diff(y'), obj.PosYHead, 'UniformOutput', false);
-            d_t = cellfun(@(t) obj.cal_diff(t'), obj.TimeFromIn, 'UniformOutput', false);
+            d_y = cellfun(@(y) obj.cal_diff(y), obj.PosYHead, 'UniformOutput', false);
+            d_t = cellfun(@(t) obj.cal_diff(t), obj.TimeFromIn, 'UniformOutput', false);
 
             speed_y_head = cellfun(@(dx, dt) dx ./ dt, d_y, d_t, 'UniformOutput', false);
             speed_y_head = cellfun(@(x) smoothdata(x, "gaussian", 5), speed_y_head, 'UniformOutput', false);

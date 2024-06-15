@@ -19,10 +19,10 @@ classdef GPSTrajClass < handle
         BandWidth  = 0.05;
 
         % Time points for interpolation
-        TimeMatIn   = -100:10:3000;
-        TimeMatOut  = -2100:10:1000;
-        TimeMatCue  = -2000:10:1100;
-        TimeMatHD   = -0.25:0.005:1.25;
+        TimeMatIn   = -100:20:3000;
+        TimeMatOut  = -2100:20:1000;
+        TimeMatCue  = -2000:20:1100;
+        TimeMatHD   = -0.25:0.01:1.25;
 
         % Movement features extracted
         Features = [
@@ -288,8 +288,8 @@ classdef GPSTrajClass < handle
 
             % warp trace
             if strcmp(warp_method, 'linear')
-                t_origin = cellfun(@(x) linspace(0, 1, length(x)), trace, 'UniformOutput', false);
-                trace_len = cellfun(@(x) length(x), trace);
+                t_origin = cellfun(@(x) linspace(0, 1, size(x, 2)), trace, 'UniformOutput', false);
+                trace_len = cellfun(@(x) size(x, 2), trace);
                 t_warped = linspace(0, 1, max(trace_len));
                 trace = obj.interp_trace(trace, t_origin, t_warped);
             end
@@ -313,7 +313,7 @@ classdef GPSTrajClass < handle
                     if any(isnan(trace{m}), "all") || any(isnan(trace{n}), "all")
                         dist_mat(m, n) = nan;
                     else
-                        num_points = max([length(trace{m}), length(trace{n})]);
+                        num_points = max([size(trace{m}, 2), size(trace{n}, 2)]);
                         switch warp_method
                             case 'dtw'
                                 dist_mat(m, n) = dtw(trace{m}, trace{n}) / num_points;
@@ -342,7 +342,7 @@ classdef GPSTrajClass < handle
         end % cal_dist
 
         %% plot function
-        function [ax, trace_plot] = plot_trace(~, ax, time_trace, trace, varargin)
+        function ax = plot_trace(~, ax, time_trace, trace, varargin)
             % check aquired input
             if length(time_trace)~=length(trace)
                 error("Length of time_trace and trace should be the same.");
@@ -390,13 +390,13 @@ classdef GPSTrajClass < handle
 
             % plot trace
             set(ax, 'NextPlot', 'add');
-            trace_plot = [];
             for i = 1:n_trace
-                trace_plot = [trace_plot; plot(ax, time_trace{i}, trace{i}, 'Color', [color(i, :) alpha(i)], 'LineStyle', ls(i), 'LineWidth', lw(i))];
+                plot(ax, time_trace{i}, trace{i}, 'Color', [color(i, :) alpha(i)], 'LineStyle', ls(i), 'LineWidth', lw(i));
             end
             if shuffle
-                id_shuffle = randperm(n_trace);
-                set(ax, 'Children', trace_plot(id_shuffle));
+                trace_plot = ax.Children;
+                id_shuffle = randperm(length(trace_plot));
+                ax.Children = trace_plot(id_shuffle);
             end
         end % plot_trace
 
@@ -465,16 +465,13 @@ classdef GPSTrajClass < handle
 
             % plot trace
             set(ax, 'NextPlot', 'add');
-            trace_plot_multi = [];
             for i = 1:n_1
                 for j = 1:n_2
-                    [~, trace_plot] = obj.plot_trace(ax, time_cell{i,j}, trace_cell{i,j}, 'color', color{i,j}, 'lw', lw{i,j}, 'ls', ls{i,j}, 'alpha', alpha{i,j}, 'shuffle', false);
-                    trace_plot_multi = [trace_plot_multi; trace_plot];
+                    obj.plot_trace(ax, time_cell{i,j}, trace_cell{i,j}, 'color', color{i,j}, 'lw', lw{i,j}, 'ls', ls{i,j}, 'alpha', alpha{i,j}, 'shuffle', false);
                 end
             end
             if shuffle
-                id_shuffle = randperm(length(trace_plot_multi));
-                set(ax, 'Children', trace_plot_multi(id_shuffle));
+                ax.Children = ax.Children(randperm(length(ax.Children)));
             end
         end % plot_trace_multi
 

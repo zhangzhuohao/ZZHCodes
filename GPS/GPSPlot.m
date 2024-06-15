@@ -357,7 +357,7 @@ classdef GPSPlot < handle
             end
 
             children = ax.Children;
-            set(ax, 'Children', [children(end); children(1:end-1)]);
+            set(ax, 'Children', [children(2:end); children(1)]);
         end % add_shade
 
         %% For easy plot
