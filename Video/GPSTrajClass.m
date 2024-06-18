@@ -319,11 +319,14 @@ classdef GPSTrajClass < handle
                                 dist_mat(m, n) = dtw(trace{m}, trace{n}) / num_points;
                             case 'linear'
                                 dist_mat(m, n) = sum(sqrt(sum((trace{m}-trace{n}).^2, 1))) / num_points;
+                            case 'correlation'
+                                corr_coef = corrcoef(trace{m}, trace{n});
+                                dist_mat(m, n) = corr_coef(1,2);
                         end
                         num_calculated = num_calculated + 1;
 
                         if disp_iter
-                            if ~mod(num_calculated, floor(num_to_cal/100))
+                            if ~mod(num_calculated, floor(num_to_cal/10))
                                 fprintf('%.0f / %.0f    - %.0f%%\n', num_calculated, num_to_cal, 100*num_calculated/num_to_cal);
                             end
                         end
