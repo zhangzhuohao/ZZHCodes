@@ -185,6 +185,10 @@ classdef GPSBehSessionClass < GPSBehClass & GPSPlot
                     obj.Task = "ThreeFPHold";
                     obj.SortLabels = ["TargetFP", "LeftRight"];
                     obj.SortVars   = ["FP"      , "PortCorrect"];
+                case {'3FPHoldCRTProbe', '3FPHoldSRTProbe', '3FPHoldWMProbe'}
+                    obj.Task = "ThreeFPHoldProbe";
+                    obj.SortLabels = ["TargetFP", "LeftRight"];
+                    obj.SortVars   = ["FP"      , "PortCorrect"];
                 case {'KornblumHold', 'KornblumHoldEmpty'}
                     obj.Task = "KornblumHold";
                     obj.SortLabels = ["CueUncue", "LeftRight"];
@@ -464,14 +468,14 @@ classdef GPSBehSessionClass < GPSBehClass & GPSPlot
         end
 
         function mt_sorted = get.MTSorted(obj)
-            ind = obj.Stage==1 & obj.Outcome=="Correct";
+            ind = obj.Stage==1 & obj.PortChosen==obj.PortCorrect;
             mt_this = obj.MT(ind);
             refs_this = cellfun(@(x) x(ind), obj.SortRefs, 'UniformOutput', false);
             mt_sorted = obj.sort_data(mt_this, refs_this, obj.SortCodes);
         end
 
         function mt_stat = get.MTStat(obj)
-            ind = obj.Stage==1 & obj.Outcome=="Correct";
+            ind = obj.Stage==1 & obj.PortChosen==obj.PortCorrect;
             mt_this = obj.MT(ind);
             refs_this = cellfun(@(x) x(ind), obj.SortRefs, 'UniformOutput', false);
             mt_stat = obj.get_stat(mt_this, refs_this, obj.SortCodes, obj.SortVars, 1);
@@ -484,14 +488,14 @@ classdef GPSBehSessionClass < GPSBehClass & GPSPlot
         end
 
         function ct_sorted = get.CTSorted(obj)
-            ind = obj.Stage==1 & obj.Outcome=="Correct";
+            ind = obj.Stage==1 & obj.PortChosen==obj.PortCorrect;
             ct_this = obj.CT(ind);
             refs_this = cellfun(@(x) x(ind), obj.SortRefs, 'UniformOutput', false);
             ct_sorted = obj.sort_data(ct_this, refs_this, obj.SortCodes);
         end
 
         function ct_stat = get.CTStat(obj)
-            ind = obj.Stage==1 & obj.Outcome=="Correct";
+            ind = obj.Stage==1 & obj.PortChosen==obj.PortCorrect;
             ct_this = obj.CT(ind);
             refs_this = cellfun(@(x) x(ind), obj.SortRefs, 'UniformOutput', false);
             ct_stat = obj.get_stat(ct_this, refs_this, obj.SortCodes, obj.SortVars, 1);

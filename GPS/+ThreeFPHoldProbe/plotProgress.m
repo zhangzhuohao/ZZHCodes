@@ -4,7 +4,7 @@ beh = obj.BehavTable;
 
 beh_sorted = obj.sort_table(beh(beh.Stage==1, :), obj.SortVars, obj.SortCodes);
 beh_sorted_st = obj.sort_table(beh(beh.Stage==1, :), [], []);
-beh_sorted_mt = obj.sort_table(beh(beh.Stage==1 & beh.Outcome=="Correct", :), obj.SortVars, obj.SortCodes);
+beh_sorted_mt = obj.sort_table(beh(beh.Stage==1 & beh.PortChosen==beh.PortCorrect, :), obj.SortVars, obj.SortCodes);
 
 perf_sorted = obj.sort_table(obj.Performance.Session, obj.SortVars, obj.SortCodes);
 stat_sorted = obj.sort_table(obj.HDStat.Session, obj.SortVars, obj.SortCodes);
@@ -31,17 +31,17 @@ C = GPSColor();
 ax_sz_1 = [6 2];
 ax_sz_2 = [6 1.4];
 ax_sz_3 = [12.5 2];
-ax_sz_4 = [4 2];
+ax_sz_4 = [2.75 2];
 
 [x_grid, y_grid] = meshgrid([1.2 7.7 16 22.5], [16 13 10 7 4 1]);
 ax_grid = cat(3, x_grid, y_grid);
 ax_grid = mat2cell(ax_grid, ones(1,size(x_grid, 1)), ones(1,size(x_grid, 2)), 2);
 ax_grid = cellfun(@(x) squeeze(x)', ax_grid, 'UniformOutput', false);
 
-ls = [":", "-.", "-"];
-lw = [1.3 1.15 1];
+ls = [":", "-.", "-", "-"];
+lw = [1.3 1.15 1 .25];
 rw = .5;
-n_s = 3;
+n_s = 4;
 
 % Figure
 fig_progress = figure(12); clf(fig_progress);
@@ -53,15 +53,15 @@ set_fig_title(fig_progress, fig_title);
 % performance track
 ax_perf_track = obj.assign_ax_to_fig(fig_progress, 3, 2, [ax_grid{2,1} ax_sz_1.*[2 2]+[.5 1]], ax_sz_2);
 perf_track = obj.splice_data(obj.PerformanceTrack.Session);
-data_perf_track = obj.assign_data_to_ax(ax_perf_track, perf_track);
-draw_perf_track(obj, ax_perf_track, data_perf_track, repmat(cellstr(ls'), 1, 2), repmat(mat2cell(lw', [1 1 1]), 1, 2));
+data_perf_track = obj.assign_data_to_ax(ax_perf_track, perf_track(1:3, :));
+draw_perf_track(obj, ax_perf_track, data_perf_track, repmat(cellstr(ls(1:3)'), 1, 2), repmat(mat2cell(lw(1:3)', [1 1 1]), 1, 2));
 title(ax_perf_track{1,1}, 'Left' , 'FontWeight', 'bold', 'Color', C.PortL);
 title(ax_perf_track{1,2}, 'Right', 'FontWeight', 'bold', 'Color', C.PortR);
 
 % performance progress
 ax_perf = obj.assign_ax_to_fig(fig_progress, 1, 2, [ax_grid{3,1} ax_sz_1.*[2 1]+[.5 0]], ax_sz_1);
 data_perf = obj.assign_data_to_ax(ax_perf, perf_sorted);
-draw_perf_progress(obj, ax_perf, data_perf, ls, lw);
+draw_perf_progress(obj, ax_perf, data_perf, ls(1:3), lw(1:3));
 
 % pdf heatmap of hold duration
 pdf_x = obj.Bins.HD;
@@ -176,10 +176,11 @@ for i = 1:n_s
 end
 draw_violin(obj, ax_hd_v, data_hd_v, obj.BandWidth, c_hd, obj.TargetFP, rw);
 
+% Reaction time
 % violin
-ax_rt_v = obj.assign_ax_to_fig(fig_progress, 1, n_s, [ax_grid{4,3} ax_sz_3], ax_sz_4);
-data_rt_v = cell(1,n_s);
-for i = 1:n_s
+ax_rt_v = obj.assign_ax_to_fig(fig_progress, 1, 3, [ax_grid{4,3} 9.25 2], ax_sz_4);
+data_rt_v = cell(1,3);
+for i = 1:3
     set(ax_rt_v{i}, "YLim", [0 .5], "YTick", [0 .5]);
     data_rt_v{i} = cellfun(@(x) x(i, :), obj.RTSorted.Session, 'UniformOutput', false);
     if i==1
@@ -258,7 +259,7 @@ for i = 1:sz_draw(1)
         set(ax, 'XLim', .5+[0 obj.NumSessions], 'YLim', [0 100], 'XTick', 0:5:obj.NumSessions);
         mark_sessions(ax, session_sep, session_chemo, sep_lesion);
         for k = 1:3
-            plot_perf_progress(obj, ax, perf_progress{i,j}{1}, ls(k), lw(k), ms(k), lag(k));
+            plot_perf_progress(obj, ax, perf_progress{i,j}{k}, ls(k), lw(k), ms(k), lag(k));
         end
 
         if i==sz_draw(1) && j==1

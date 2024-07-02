@@ -242,7 +242,7 @@ classdef GPSPlot < handle
         end % plot_violin_compare
 
         %
-        function [ax, v] = plot_violin_compare_box(~, ax, data_1, data_2, band_width, varargin)
+        function [ax, v] = plot_violin_compare_box(~, ax, data_1, data_2, varargin)
 
             % parse input
             defaultCate = string(1:length(data_1));
@@ -264,8 +264,9 @@ classdef GPSPlot < handle
             addParameter(p,'marker_alpha', .4, @isnumeric);
             addParameter(p,'marker_size', 6, @isnumeric);
             addParameter(p,'median_size', 6, @isnumeric);
+            addParameter(p,'median_text', false, @islogical);
 
-            parse(p, ax, data_1, data_2, band_width, varargin{:});
+            parse(p, ax, data_1, data_2, varargin{:});
 
             ax = p.Results.ax;
             data_1 = p.Results.datain_1;
@@ -282,6 +283,7 @@ classdef GPSPlot < handle
             marker_alpha = p.Results.marker_alpha;
             marker_size = p.Results.marker_size;
             median_size = p.Results.median_size;
+            median_text = p.Results.median_text;
             
             % check input
             if length(data_1)~=length(data_2)
@@ -301,6 +303,11 @@ classdef GPSPlot < handle
 
             % 
             data = {data_1, data_2};
+            for i = 1:2
+                for j = 1:length(data_1)
+                    data{i}{j} = scale * data{i}{j};
+                end
+            end
 
             % violin plot
             axes(ax);
@@ -324,11 +331,31 @@ classdef GPSPlot < handle
                             'BandWidth', scale*band_width, 'MarkerSize', marker_size, ...
                             'HalfViolin', half_violin(i), 'Width', violin_width); % , 'BoxColor', color{i}
                     end
-                    v{i}{j}.MedianPlot.XData   = v{i}{j}.MedianPlot.XData + d_m_v;
-                    v{i}{j}.BoxPlot.XData      = v{i}{j}.BoxPlot.XData + d_m_v;
-                    v{i}{j}.WhiskerPlot.XData  = v{i}{j}.WhiskerPlot.XData + d_m_v;
-                    v{i}{j}.ScatterPlot.MarkerFaceAlpha = marker_alpha;
-                    v{i}{j}.MedianPlot.SizeData = median_size;
+                    if ~isempty(v{i}{j}.MedianPlot)
+                        v{i}{j}.MedianPlot.XData    = v{i}{j}.MedianPlot.XData + d_m_v;
+                        v{i}{j}.MedianPlot.SizeData = median_size;
+                        if median_text
+                            switch scale
+                                case 1
+                                    median_format = '%.2f';
+                                case 1000
+                                    median_format = '%.0f';
+                            end
+                            switch i
+                                case 1
+                                    text(ax, v{i}{j}.MedianPlot.XData, ax.YLim(1) + 0.8*range(ax.YLim), sprintf(median_format, v{i}{j}.MedianPlot.YData), 'FontSize', 5, 'HorizontalAlignment', 'right');
+                                case 2
+                                    text(ax, v{i}{j}.MedianPlot.XData, ax.YLim(1) + 0.8*range(ax.YLim), sprintf(median_format, v{i}{j}.MedianPlot.YData), 'FontSize', 5, 'HorizontalAlignment', 'left');
+                            end
+                        end
+                    end
+                    if ~isempty(v{i}{j}.BoxPlot)
+                        v{i}{j}.BoxPlot.XData      = v{i}{j}.BoxPlot.XData + d_m_v;
+                    end
+                    if ~isempty(v{i}{j}.WhiskerPlot)
+                        v{i}{j}.WhiskerPlot.XData  = v{i}{j}.WhiskerPlot.XData + d_m_v;
+                        v{i}{j}.ScatterPlot.MarkerFaceAlpha = marker_alpha;
+                    end
                 end
             end
             set(ax, 'Box', 'off', 'XTick', 1:n_cate, 'XTickLabel', cate_name, 'XLim', [.5 n_cate+.5]);
