@@ -258,7 +258,7 @@ for i = 1:sz_draw(1)
         set(ax, 'XLim', .5+[0 obj.NumSessions], 'YLim', [0 100], 'XTick', 0:5:obj.NumSessions);
         mark_sessions(ax, session_sep, session_chemo, sep_lesion);
         for k = 1:3
-            plot_perf_progress(obj, ax, perf_progress{i,j}{1}, ls(k), lw(k), ms(k), lag(k));
+            plot_perf_progress(obj, ax, perf_progress{i,j}{k}, ls(k), lw(k), ms(k), lag(k));
         end
 
         if i==sz_draw(1) && j==1

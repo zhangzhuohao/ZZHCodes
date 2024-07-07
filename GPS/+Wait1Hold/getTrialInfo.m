@@ -25,7 +25,7 @@ obj.ChoicePokeTime = zeros(obj.NumTrials, 1);
 
 obj.PortCorrect = zeros(obj.NumTrials, 1);
 obj.PortChosen = zeros(obj.NumTrials, 1);
-obj.Outcome = cell(obj.NumTrials, 1);
+obj.Outcome = strings(obj.NumTrials, 1);
 
 for i = 1:obj.NumTrials
     iStates = SessionData.RawEvents.Trial{i}.States;
@@ -43,7 +43,7 @@ for i = 1:obj.NumTrials
     obj.PortCorrect(i) = SessionData.Custom.CorPort(i);
 
     if ~isnan(iStates.Premature(1)) % Premature
-        obj.Outcome{i} = 'Premature';
+        obj.Outcome(i) = 'Premature';
         obj.CentPokeOutTime{i} = iStates.FP(:, 2);
         obj.ChoiceCueTime(i, :) = [nan, nan]; % when premature, the choice light would not lit up
         obj.TriggerCueTime(i) = nan;
@@ -51,10 +51,10 @@ for i = 1:obj.NumTrials
         obj.PortChosen(i) = nan;
 
         if iStates.FP(end, 2) - iStates.FP(1, 1) > obj.FP(i)
-            obj.Outcome{i} = 'Bug';
+            obj.Outcome(i) = 'Bug';
         end
     elseif ~isnan(iStates.WrongPort(1)) % selected the wrong port
-        obj.Outcome{i} = 'Wrong';
+        obj.Outcome(i) = 'Wrong';
         if isfield(iStates, 'Wait4Out')
             if ~isnan(iStates.Wait4Out(2))
                 obj.CentPokeOutTime{i} = [iStates.FP(1:end-1, 2); iStates.Wait4Out(:, 2)];
@@ -77,7 +77,7 @@ for i = 1:obj.NumTrials
             obj.PortChosen(i) = NaN;
         end
     elseif ~isnan(iStates.Wait4Reward(1))
-        obj.Outcome{i} = 'Correct';
+        obj.Outcome(i) = 'Correct';
         if isfield(iStates, 'Wait4Out')
             if ~isnan(iStates.Wait4Out(2))
                 obj.CentPokeOutTime{i} = [iStates.FP(1:end-1, 2); iStates.Wait4Out(:, 2)];
@@ -99,7 +99,7 @@ for i = 1:obj.NumTrials
             obj.PortChosen(i) = NaN;
         end
     else
-        obj.Outcome{i} = 'Bug';
+        obj.Outcome(i) = 'Bug';
     end
 end
 

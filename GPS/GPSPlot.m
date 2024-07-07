@@ -265,6 +265,7 @@ classdef GPSPlot < handle
             addParameter(p,'marker_size', 6, @isnumeric);
             addParameter(p,'median_size', 6, @isnumeric);
             addParameter(p,'median_text', false, @islogical);
+            addParameter(p,'box_width', 0.03, @isnumeric);
 
             parse(p, ax, data_1, data_2, varargin{:});
 
@@ -284,6 +285,7 @@ classdef GPSPlot < handle
             marker_size = p.Results.marker_size;
             median_size = p.Results.median_size;
             median_text = p.Results.median_text;
+            box_width   = p.Results.box_width;
             
             % check input
             if length(data_1)~=length(data_2)
@@ -334,6 +336,8 @@ classdef GPSPlot < handle
                     if ~isempty(v{i}{j}.MedianPlot)
                         v{i}{j}.MedianPlot.XData    = v{i}{j}.MedianPlot.XData + d_m_v;
                         v{i}{j}.MedianPlot.SizeData = median_size;
+                        v{i}{j}.MedianPlot.Marker = '_';
+                        v{i}{j}.MedianPlot.MarkerEdgeColor = [1 1 1];
                         if median_text
                             switch scale
                                 case 1
@@ -350,7 +354,8 @@ classdef GPSPlot < handle
                         end
                     end
                     if ~isempty(v{i}{j}.BoxPlot)
-                        v{i}{j}.BoxPlot.XData      = v{i}{j}.BoxPlot.XData + d_m_v;
+                        v{i}{j}.BoxPlot.XData = v{i}{j}.BoxPlot.XData + d_m_v;
+                        v{i}{j}.BoxWidth = box_width;
                     end
                     if ~isempty(v{i}{j}.WhiskerPlot)
                         v{i}{j}.WhiskerPlot.XData  = v{i}{j}.WhiskerPlot.XData + d_m_v;

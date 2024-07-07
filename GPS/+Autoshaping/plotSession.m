@@ -12,8 +12,7 @@ plotsize1 = [8 4];
 plotsize2 = [2 4];
 plotsize3 = [4 4];
 
-uicontrol('Style', 'text', 'parent', 22, 'units', 'normalized', 'position', [0.25 0.95 0.5 0.04],...
-    'string', [obj.Subject ' / ' obj.Session ' / ' obj.Task], 'fontweight', 'bold', 'backgroundcolor', [1 1 1]);
+set_fig_title(fig, obj.Subject+" / "+obj.Session+" / "+obj.Task);
 
 %% Make a diagram of the setup
 ha1 = axes;
@@ -62,24 +61,13 @@ stairs(center_pokes, 1:length(center_pokes), 'color', 'k', 'LineWidth', 1.5);
 ha3 = axes;
 set(ha3,  'units', 'centimeters', 'position', [1.5 11-2*plotsize1(2)-2 plotsize1], 'nextplot', 'add', 'ylim', [0 100], 'xlim', [1 3600], 'yscale', 'linear', 'fontsize', 8)
 set(ha3, 'xlim', [0 center_pokes(end)+5])
-WinSize = floor(obj.NumTrials/5);
-StepSize = max(1, floor(WinSize/5));
-CountStart = 1;
-WinPos = [];
-CorrectRatio_L = [];
-CorrectRatio_R = [];
 
-while CountStart+WinSize < obj.NumTrials
-    thisWin = CountStart:(CountStart+WinSize);
-    CorrectRatio_L = [CorrectRatio_L 100*sum(obj.Ind.correctL(thisWin))/sum(obj.Ind.portL(thisWin))];
-    CorrectRatio_R = [CorrectRatio_R 100*sum(obj.Ind.correctR(thisWin))/sum(obj.Ind.portR(thisWin))];
-    WinPos = [WinPos center_pokes(thisWin(end))];
-    CountStart = CountStart + StepSize;
-end
+perf_L = obj.PerformanceTrack{1};
+perf_R = obj.PerformanceTrack{2};
 
-plot(WinPos, CorrectRatio_L, 'o', 'linestyle', '-', 'color', Color.PortL, ...
+plot(perf_L.Pos, 100*perf_L.Correct, 'o', 'linestyle', '-', 'color', Color.PortL, ...
     'markersize', 5, 'linewidth', 1, 'markerfacecolor', Color.PortL, 'markeredgecolor', 'w');
-plot(WinPos, CorrectRatio_R, 'o', 'linestyle', '-', 'color', Color.PortR, ...
+plot(perf_R.Pos, 100*perf_R.Correct, 'o', 'linestyle', '-', 'color', Color.PortR, ...
     'markersize', 5, 'linewidth', 1, 'markerfacecolor', Color.PortR, 'markeredgecolor', 'w');
 
 xlabel('Time in session (s)')
@@ -95,9 +83,8 @@ set(ha4, 'xlim', [0 center_pokes(end)+5]);
 
 line([center_pokes center_pokes]', [0 0.15], 'color', 'b')
 
-ST_log = log10(obj.ShuttleTime);
 scatter(center_pokes, ...
-    ST_log, ...
+    obj.LogST, ...
     25, 'k', choice_symbols{1}, 'Markerfacealpha', 0.8, 'linewidth', 1.05);
 
 %% Plot shuttle time PDF on the right
@@ -107,7 +94,7 @@ set(ha5, 'units', 'centimeters', 'position', [1.5+2*plotsize1(1)+1.5 11-plotsize
 
 xlabel('Prob. density (1/s)')
 binEdges = 0:0.05:3;
-PDF_ST = ksdensity(ST_log, binEdges);
+PDF_ST = ksdensity(obj.LogST, binEdges);
 plot(ha5, PDF_ST, binEdges, 'color', 'k', 'linewidth', 1.5);
 axis 'auto x'
 
@@ -124,27 +111,27 @@ line([center_pokes center_pokes]', [0 0.2], 'color', 'b')
 % port 1 correct (defined by their action, which is also the target for correct response)
 ind_correctL = obj.PortChosen==1 & strcmp(obj.Outcome, 'Correct');
 hs1 = scatter(center_pokes(ind_correctL), ...
-    obj.MovementTime(ind_correctL), ...
+    obj.MT(ind_correctL), ...
     25, Color.PortL, choice_symbols{1},'Markerfacealpha', 0.8, 'linewidth', 1.05);
-MTCorrect_PortL = obj.MovementTime(ind_correctL);
+MTCorrect_PortL = obj.MT(ind_correctL);
 
 % port 2 correct
 ind_correctR = obj.PortChosen==2 & strcmp(obj.Outcome, 'Correct');
 hs2 = scatter(center_pokes(ind_correctR), ...
-    obj.MovementTime(ind_correctR), ...
+    obj.MT(ind_correctR), ...
     25, Color.PortR, choice_symbols{1}, 'Markerfacealpha', 0.8, 'linewidth', 1.05);
-MTCorrect_PortR = obj.MovementTime(ind_correctR);
+MTCorrect_PortR = obj.MT(ind_correctR);
 
 % port 1 wrong (defined by their action, which is different from target)
 ind_wrong1 = obj.PortCorrect==1 & strcmp(obj.Outcome, 'Wrong');
 hs3 = scatter(center_pokes(ind_wrong1), ...
-    obj.MovementTime(ind_wrong1), ...
+    obj.MT(ind_wrong1), ...
     25, Color.PortL, choice_symbols{2},'Markerfacealpha', 0.8, 'linewidth', 1.5);
 
 % port 2 wrong
 ind_wrong2 = obj.PortCorrect==2 & strcmp(obj.Outcome, 'Wrong');
 hs4 = scatter(center_pokes(ind_wrong2), ...
-    obj.MovementTime(ind_wrong2), ...
+    obj.MT(ind_wrong2), ...
     25, Color.PortR, choice_symbols{2}, 'Markerfacealpha', 0.8, 'linewidth', 1.5);
 
 % legend([hs1 hs2 hs3 hs4], {'Port_{Left} correct', 'Port_{Right} correct', 'Port_{Left} wrong', 'Port_{Right} wrong'}, 'Box', 'off')
@@ -174,9 +161,9 @@ set(ha8,'units', 'centimeters', 'position', [1.5+plotsize1(1)+1, 11, plotsize3],
     'xtick', [1 2], 'xticklabel', {'P_{Left}', 'P_{Right}'}, 'fontsize', 8)
 ylabel('Accuracy (%)');
 
-hb1 = bar(1, 100*sum(ind_correctL)/sum(obj.PortChosen==1), 0.7);
+hb1 = bar(1, 100*sum(ind_correctL)/sum(obj.PortCorrect==1), 0.7);
 set(hb1, 'EdgeColor', 'none', 'facecolor', Color.PortL, 'linewidth', 1);
-hb1b = bar(2, 100*sum(ind_correctR)/sum(obj.PortChosen==2), 0.7);
+hb1b = bar(2, 100*sum(ind_correctR)/sum(obj.PortCorrect==2), 0.7);
 set(hb1b, 'EdgeColor', 'none', 'facecolor', Color.PortR, 'linewidth', 1);
 
 %% Movement time to each port
