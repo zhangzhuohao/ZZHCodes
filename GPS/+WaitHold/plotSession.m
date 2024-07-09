@@ -11,8 +11,7 @@ plotsize1 = [8 4];
 plotsize2 = [2 4];
 plotsize3 = [3.5 4];
 
-uicontrol('Style', 'text', 'parent', 22, 'units', 'normalized', 'position', [0.25 0.95 0.5 0.04],...
-    'string', [obj.Subject ' / ' obj.Session ' / ' obj.Task], 'fontsize', 10, 'fontweight', 'bold', 'backgroundcolor', 'w');
+set_fig_title(fig, obj.Subject+" /"+obj.Session+" / "+obj.Task);
 
 %% Make a diagram of the setup
 ha1 = axes;
@@ -98,10 +97,9 @@ set(ha4, 'xlim', [0 center_pokes(end)+5]);
 
 line([center_pokes center_pokes]', [0 0.15], 'color', 'K')
 
-ST_log = log10(obj.ShuttleTime);
 scatter(center_pokes, ...
-    ST_log, ...
-    24, Color.Control, choice_symbols{1}, 'Markerfacealpha', 0.8, 'linewidth', 1.5);
+    obj.LogST, ...
+    24, 'k', choice_symbols{1}, 'Markerfacealpha', 0.8, 'linewidth', 1.5);
 
 %% Plot shuttle time PDF on the right
 ha5 = axes;
@@ -110,8 +108,8 @@ set(ha5, 'units', 'centimeters', 'position', [1.5+2*plotsize1(1)+1.5 16, plotsiz
 
 xlabel('Prob. density (1/s)')
 binEdges = 0:0.01:3;
-PDF_PortL = ksdensity(ST_log, binEdges);
-plot(ha5, PDF_PortL, binEdges, 'color', Color.Control, 'linewidth', 1.5);
+PDF_LogST = ksdensity(obj.LogST, binEdges);
+plot(ha5, PDF_LogST, binEdges, 'color', 'k', 'linewidth', 1.5);
 axis 'auto x'
 
 %% Plot hold duration and FP
@@ -129,31 +127,31 @@ stairs(center_pokes, obj.FP, 'color', [.7 .7 .7], 'LineWidth', 1.5);
 % port 1 correct (defined by their action, which is also the target for correct response)
 ind_correctL = obj.PortChosen==1 & strcmp(obj.Outcome, 'Correct');
 scatter(center_pokes(ind_correctL), ...
-    obj.HoldDuration(ind_correctL), ...
+    obj.HD(ind_correctL), ...
     18*(obj.FP(ind_correctL)+0.5), Color.PortL, choice_symbols{1},'Markerfacealpha', 0.8, 'linewidth', 1.5);
 
 % port 2 correct
 ind_correctR = obj.PortChosen==2 & strcmp(obj.Outcome, 'Correct');
 scatter(center_pokes(ind_correctR), ...
-    obj.HoldDuration(ind_correctR), ...
+    obj.HD(ind_correctR), ...
     18*(obj.FP(ind_correctR)+0.5), Color.PortR, choice_symbols{1}, 'Markerfacealpha', 0.8, 'linewidth', 1.5);
 
 % port 1 wrong (defined by their action, which is different from target)
 ind_wrongL = obj.PortCorrect==1 & strcmp(obj.Outcome, 'Wrong');
 scatter(center_pokes(ind_wrongL), ...
-    obj.HoldDuration(ind_wrongL), ...
+    obj.HD(ind_wrongL), ...
     22*(obj.FP(ind_wrongL)+0.5), Color.PortL, choice_symbols{2},'Markerfacealpha', 0.8, 'linewidth', 1.5);
 
 % port 2 wrong
 ind_wrongR = obj.PortCorrect==2 & strcmp(obj.Outcome, 'Wrong');
 scatter(center_pokes(ind_wrongR), ...
-    obj.HoldDuration(ind_wrongR), ...
+    obj.HD(ind_wrongR), ...
     22*(obj.FP(ind_wrongR)+0.5), Color.PortR, choice_symbols{2}, 'Markerfacealpha', 0.8, 'linewidth', 1.5);
 
 % premature
 ind_premature = strcmp(obj.Outcome, 'Premature');
 scatter(center_pokes(ind_premature), ...
-    obj.HoldDuration(ind_premature), ...
+    obj.HD(ind_premature), ...
     22*(obj.FP(ind_premature)+0.5), Color.Premature, choice_symbols{2}, 'Markerfacealpha', 0.8, 'linewidth', 1.5);
 
 %% plot hold duration density
@@ -167,7 +165,7 @@ binEdges = 0:0.01:4;
 yline(1.5, 'Color', [.7 .7 .7], 'LineWidth', 1.5, 'LineStyle', '--');
 
 if sum(obj.FP==1.5)
-    PDF = ksdensity(obj.HoldDuration(obj.FP==1.5), binEdges);
+    PDF = ksdensity(obj.HD(obj.FP==1.5), binEdges);
     plot(ha7, PDF, binEdges, 'color', Color.Control, 'linewidth', 1.5)
 end
 
@@ -212,12 +210,12 @@ xlabel('Prob. density (1/s)')
 binEdges = 0:0.01:1;
 
 if sum(ind_correctL & obj.FP==1.5)
-    PDF_PortL = ksdensity(obj.RT(ind_correctL & obj.FP==1.5), binEdges);
-    plot(ha9, PDF_PortL, binEdges, 'color', Color.PortL, 'linewidth', 1.5)
+    PDF_L = ksdensity(obj.RT(ind_correctL & obj.FP==1.5), binEdges);
+    plot(ha9, PDF_L, binEdges, 'color', Color.PortL, 'linewidth', 1.5)
 end
 if sum(ind_correctR & obj.FP==1.5)
-    PDF_PortR = ksdensity(obj.RT(ind_correctR & obj.FP==1.5), binEdges);
-    plot(ha9, PDF_PortR, binEdges, 'color', Color.PortR, 'linewidth', 1.5)
+    PDF_R = ksdensity(obj.RT(ind_correctR & obj.FP==1.5), binEdges);
+    plot(ha9, PDF_R, binEdges, 'color', Color.PortR, 'linewidth', 1.5)
 end
 
 axis 'auto x'
@@ -234,22 +232,22 @@ line([center_pokes center_pokes]', [0 0.15], 'color', 'k')
 
 % port 1 correct (defined by their action, which is also the target for correct response)
 scatter(center_pokes(ind_correctL), ...
-    obj.MovementTime(ind_correctL), ...
+    obj.MT(ind_correctL), ...
     18*(obj.FP(ind_correctL)+0.5), Color.PortL, choice_symbols{1},'Markerfacealpha', 0.8, 'linewidth', 1.5);
 
 % port 2 correct
 scatter(center_pokes(ind_correctR), ...
-    obj.MovementTime(ind_correctR), ...
+    obj.MT(ind_correctR), ...
     18*(obj.FP(ind_correctR)+0.5), Color.PortR, choice_symbols{1}, 'Markerfacealpha', 0.8, 'linewidth', 1.5);
 
 % port 1 wrong (defined by their action, which is different from target)
 scatter(center_pokes(ind_wrongL), ...
-    obj.MovementTime(ind_wrongL), ...
+    obj.MT(ind_wrongL), ...
     22*(obj.FP(ind_wrongL)+0.5), Color.PortL, choice_symbols{2},'Markerfacealpha', 0.8, 'linewidth', 1.5);
 
 % port 2 wrong
 scatter(center_pokes(ind_wrongR), ...
-    obj.MovementTime(ind_wrongR), ...
+    obj.MT(ind_wrongR), ...
     22*(obj.FP(ind_wrongR)+0.5), Color.PortR, choice_symbols{2}, 'Markerfacealpha', 0.8, 'linewidth', 1.5);
 
 % legend([hs1 hs2 hs3 hs4], {'Port_{Left} correct', 'Port_{Right} correct', 'Port_{Left} wrong', 'Port_{Right} wrong'}, 'Box', 'off')
@@ -263,25 +261,27 @@ xlabel('Prob. density (1/s)')
 binEdges = 0:0.01:3;
 
 if sum(ind_correctL & obj.FP==1.5)
-    PDF_PortL = ksdensity(obj.MovementTime(ind_correctL & obj.FP==1.5), binEdges);
-    plot(ha11, PDF_PortL, binEdges, 'color', Color.PortL, 'linewidth', 1.5)
+    PDF_L = ksdensity(obj.MT(ind_correctL & obj.FP==1.5), binEdges);
+    plot(ha11, PDF_L, binEdges, 'color', Color.PortL, 'linewidth', 1.5)
 end
 if sum(ind_correctR & obj.FP==1.5)
-    PDF_PortR = ksdensity(obj.MovementTime(ind_correctR & obj.FP==1.5), binEdges);
-    plot(ha11, PDF_PortR, binEdges, 'color', Color.PortR, 'linewidth', 1.5)
+    PDF_R = ksdensity(obj.MT(ind_correctR & obj.FP==1.5), binEdges);
+    plot(ha11, PDF_R, binEdges, 'color', Color.PortR, 'linewidth', 1.5)
 end
 
 axis 'auto x'
 
 %% Accuracy of each port
 ha12 = axes;
-set(ha12,'units', 'centimeters', 'position', [1.5, 16-3*plotsize1(2)-3, plotsize3], 'nextplot', 'add', 'ylim', [0 100], 'xlim', [0.5 8], ...
+set(ha12,'units', 'centimeters', 'position', [1.5, 16-3*plotsize1(2)-3, plotsize3], 'nextplot', 'add', 'ylim', [0 100], 'xlim', [0.5 10], ...
     'xtick', [1 2.5 3.5 5 6 7.5], 'xticklabel', {'L', 'R', '', '', '', ''}, 'fontsize', 8, 'ticklength', [0.01 0.1])
 ylabel('Performance (%)');
 
-line([1 2.5], [obj.Performance.CorrectRatio(length(obj.MixedFP)) obj.Performance.CorrectRatio(2*length(obj.MixedFP)+1)], 'color', Color.Correct, 'linewidth', 1.2);
-line([3.5 5], [obj.Performance.WrongRatio(length(obj.MixedFP)) obj.Performance.WrongRatio(2*length(obj.MixedFP)+1)], 'color', Color.Wrong, 'linewidth', 1.2);
-line([6 7.5], [obj.Performance.PrematureRatio(length(obj.MixedFP)) obj.Performance.PrematureRatio(2*length(obj.MixedFP)+1)], 'color', Color.Premature, 'linewidth', 1.2);
+line([1 2.5], 100*[obj.Performance.Correct(1) obj.Performance.Correct(2)], 'color', Color.Correct, 'linewidth', 1.2);
+line([3.5 5], 100*[obj.Performance.Wrong(1) obj.Performance.Wrong(2)], 'color', Color.Wrong, 'linewidth', 1.2);
+line([6 7.5], 100*[obj.Performance.Premature(1) obj.Performance.Premature(2)], 'color', Color.Premature, 'linewidth', 1.2);
+line([8.5 7.5], 100*[obj.Performance.Late(1) obj.Performance.Late(2)], 'color', Color.Late, 'linewidth', 1.2);
+
 
 ha121 = axes;
 set(ha121,'units', 'centimeters', 'position', [3.2, 16-3*plotsize1(2)-3+2*plotsize3(2)/3, plotsize3/3], 'nextplot', 'add', 'ylim', [0.5 4.5], 'xlim', [.5 2], ...

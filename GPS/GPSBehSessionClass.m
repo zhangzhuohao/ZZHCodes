@@ -179,8 +179,8 @@ classdef GPSBehSessionClass < GPSBehClass & GPSPlot
                     obj.SortVars   = "PortCorrect";
                 case {'Wait1Hold', 'Wait1HoldSRT', 'Wait1HoldFlash', 'Wait2HoldSRT', 'Wait2HoldFlash'}
                     obj.Task = "WaitHold";
-                    obj.SortLabels = "LeftRight";
-                    obj.SortVars   = "PortCorrect";
+                    obj.SortLabels = ["TargetFP", "LeftRight"];
+                    obj.SortVars   = ["FP"      , "PortCorrect"];
                 case {'3FPHoldFlash', '3FPHoldSRT', '3FPHoldWM'}
                     obj.Task = "ThreeFPHold";
                     obj.SortLabels = ["TargetFP", "LeftRight"];
@@ -221,7 +221,7 @@ classdef GPSBehSessionClass < GPSBehClass & GPSPlot
             obj.get_all_kdes(0);
 
             % Get behavior tables
-            obj.get_Interruption();
+%             obj.get_Interruption();
 
         end % GPSSessionClass
 

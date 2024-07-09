@@ -1,4 +1,4 @@
-function obj = getTrialInfo(obj, SessionData)
+ function obj = getTrialInfo(obj, SessionData)
 % WaitHold task
 % Get trial information of events' time points
 
@@ -219,6 +219,7 @@ obj.Trials(ind_bug)             = [];
 obj.TrialStartTime(ind_bug)     = [];
 
 obj.FP(ind_bug)                 = [];
+obj.RW(ind_bug)                 = [];
 
 obj.InitPokeInTime(ind_bug)     = [];
 obj.InitPokeOutTime(ind_bug)    = [];
