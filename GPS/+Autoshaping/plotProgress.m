@@ -9,7 +9,7 @@ opts.trial_ticks = obj.BehavTable.TrialStartTimeProgress + obj.BehavTable.CentIn
 
 opts.session_sep = zeros(1, obj.NumSessions-1);
 for s = 1:obj.NumSessions-1
-    ind = find(obj.BehavTable.SessionDate==obj.Sessions(s), 1, 'last');
+    ind = find(obj.BehavTable.Session==obj.Sessions(s), 1, 'last');
     opts.session_sep(s) = opts.trial_ticks(ind)+5;
 end
 

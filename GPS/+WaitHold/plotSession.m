@@ -209,11 +209,11 @@ set(ha9, 'units', 'centimeters', 'position', [1.5+2*plotsize1(1)+1.5 16-2*plotsi
 xlabel('Prob. density (1/s)')
 binEdges = 0:0.01:1;
 
-if sum(ind_correctL & obj.FP==1.5)
+if any(~isnan(obj.RT(ind_correctL & obj.FP==1.5)))
     PDF_L = ksdensity(obj.RT(ind_correctL & obj.FP==1.5), binEdges);
     plot(ha9, PDF_L, binEdges, 'color', Color.PortL, 'linewidth', 1.5)
 end
-if sum(ind_correctR & obj.FP==1.5)
+if any(~isnan(obj.RT(ind_correctR & obj.FP==1.5)))
     PDF_R = ksdensity(obj.RT(ind_correctR & obj.FP==1.5), binEdges);
     plot(ha9, PDF_R, binEdges, 'color', Color.PortR, 'linewidth', 1.5)
 end
@@ -301,7 +301,7 @@ ylabel('Reaction time (s)');
 
 if sum((ind_correctL | ind_correctR) & obj.FP==1.5)
 violinplot(obj.RT(ind_correctL | ind_correctR), string(obj.PortCorrect(ind_correctL | ind_correctR)), ...
-    'ViolinColor', [Color.PortL; Color.PortR], 'ViolinAlpha', 0.3, 'GroupOrder', {'1', '2'}, 'ScatterSize', 16);
+    'ViolinColor', [Color.PortL; Color.PortR], 'ViolinAlpha', 0.3, 'GroupOrder', {'1', '2'}, 'MarkerSize', 16);
 end
 set(ha13, 'xticklabel', {'Left', 'Right'});
 box off

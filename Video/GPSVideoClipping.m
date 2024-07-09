@@ -33,7 +33,7 @@ if exist(SaveNameUsedData, "file")
 
     ExportVideoClipFromAvi(BehTable, IntTable, FrameTable, SessionInfo, ClipInfo, ScnScale, 0, "Top", 0);
 
-%     ExportVideoClipFromAvi(BehTable, IntTable, FrameTableFront, SessionInfo, ClipInfo, ScnScale, 0, "Front", 1);
+    ExportVideoClipFromAvi(BehTable, IntTable, FrameTableFront, SessionInfo, ClipInfo, ScnScale, 0, "Front", 1);
 
     fprintf("\n----------------------------------------");
     fprintf("\n----------------------------------------");
@@ -456,7 +456,7 @@ fprintf("\n----------------------------------------");
 
 ExportVideoClipFromAvi(BehTable, IntTable, FrameTable, SessionInfo, ClipInfo, ScnScale, 0, "Top", 0);
 
-% ExportVideoClipFromAvi(BehTable, IntTable, FrameTableFront, SessionInfo, ClipInfo, ScnScale, 0, "Front", 1);
+ExportVideoClipFromAvi(BehTable, IntTable, FrameTableFront, SessionInfo, ClipInfo, ScnScale, 0, "Front", 1);
 
 % ExportVideoClipFromAvi_Field(BehTable, IntTable, FrameTableField, SessionInfo, ClipInfoField, ScnScale, 0, "Field", 0);
 

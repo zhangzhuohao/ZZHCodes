@@ -315,7 +315,6 @@ classdef GPSBehClass < handle
                 data_sorted, win_sz, step_sz, 'UniformOutput', false);
             index_track = cellfun(@(x, w_z, s_z) obj.cal_data_track(x, w_z, s_z), ...
                 index_sorted, win_sz, step_sz, 'UniformOutput', false);
-
         end % get_perf_track
 
         function ratio_track_table = cal_ratio_track(obj, data_origin, labels, win_sz, step_sz)

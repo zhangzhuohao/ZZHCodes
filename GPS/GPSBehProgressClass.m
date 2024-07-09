@@ -116,7 +116,7 @@ classdef GPSBehProgressClass < GPSBehClass & GPSPlot
             obj.NumTrialsSession    = cellfun(@(x) x.NumTrials, SessionClassAll);
             obj.DurationSession     = cellfun(@(x) x.TrialCentInTime(end), SessionClassAll);
             obj.TargetFP            = unique(cell2mat(cellfun(@(x) x.TargetFP, SessionClassAll, 'UniformOutput', false)), "rows");
-            if size(obj.TargetFP, 1)>1
+            if size(obj.TargetFP, 1)>1 && obj.Task~="WaitHold"
                 error("More than one set of target fp");
             end
             fprintf("\n%s: from %s to %s\n", obj.SaveName, obj.Sessions(1), obj.Sessions(end));
@@ -213,7 +213,7 @@ classdef GPSBehProgressClass < GPSBehClass & GPSPlot
             obj.Performance.Session = allPerfs{1};
 
             obj.PerformanceTrack.Session = cellfun(@(x) x.PerformanceTrack, SessionClassAll, 'UniformOutput', false);
-            obj.gather_perf_track();
+%             obj.gather_perf_track();
         end % GPSBehProgressClass
 
         %% Save name for object, figure and csv files

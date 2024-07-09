@@ -221,7 +221,7 @@ classdef GPSBehSessionClass < GPSBehClass & GPSPlot
             obj.get_all_kdes(0);
 
             % Get behavior tables
-%             obj.get_Interruption();
+            obj.get_Interruption();
 
         end % GPSSessionClass
 
@@ -236,7 +236,7 @@ classdef GPSBehSessionClass < GPSBehClass & GPSPlot
 
         function set.Gender(obj, gender)
             if ismember(gender, {'F', 'M'})
-                obj.Strain = string(gender);
+                obj.Gender = string(gender);
             else
                 error("Strain can only be: 'F', 'M'")
             end
