@@ -271,6 +271,16 @@ classdef GPSBehClass < handle
         function ratio_table = cal_ratio(~, data_origin, labels)
 
             n_labels = length(labels);
+            ratio_table = table('Size', [1, 1+n_labels], 'VariableTypes', repmat("double", 1, 1+n_labels), ...
+                'VariableNames', ["N", labels]);
+
+            if isempty(data_origin)
+                ratio_table.N = 0;
+                for i = 1:n_labels
+                    ratio_table.(labels(i)) = 0;
+                end
+                return
+            end
 
             counts = zeros(n_labels, 1);
             for i = 1:n_labels
@@ -279,8 +289,7 @@ classdef GPSBehClass < handle
             counts_total = sum(counts);
 
             ratios = counts ./ counts_total;
-            ratio_table = table('Size', [1, 1+n_labels], 'VariableTypes', repmat("double", 1, 1+n_labels), ...
-                'VariableNames', ["N", labels]);
+            
             ratio_table.N = counts_total;
             for i = 1:n_labels
                 ratio_table.(labels(i)) = ratios(i);

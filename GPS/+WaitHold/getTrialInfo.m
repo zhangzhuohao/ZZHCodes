@@ -47,7 +47,8 @@ else
     end
 end
 obj.FP = roundn(obj.FP, -1);
-obj.TargetFP = .1:.2:1.5;
+obj.TargetFP = (1:15) / 10;
+
 if ~isfield(SessionData.Custom, 'RW')
     obj.RW = nan(obj.NumTrials, 1);
 else
