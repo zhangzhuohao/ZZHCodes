@@ -92,6 +92,8 @@ for i = 1:length(contents)
                 if length(parts)==1 && all(isstrprop(parts{1}, 'digit')) && length(parts{1})==8 % yyyymmss
                     % If the foldername has at least 5 parts and the date part has 8 digits, append the full file path to the cell array
                     folder_names = [folder_names; fullfile(directory, entry.name)];
+                elseif length(parts)==1 && length(parts{1})==9 && all(isstrprop(parts{1}(1:8), 'digit')) % yyyymmssi
+                    folder_names = [folder_names; fullfile(directory, entry.name)];
                 else
                     subdirectory = fullfile(directory, entry.name);
                     subdirectory_folders = get_folders(subdirectory, "FolderType", opts.FolderType, "Tasks", opts.Tasks);

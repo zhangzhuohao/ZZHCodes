@@ -65,7 +65,7 @@ for d = 1:length(Folders)
     clear obj;
     
     % Make sure that those session classes are sorted by their date
-    SessionDate = cell2mat(cellfun(@(x) str2double(x.Session), SessionClassAll, 'UniformOutput', false));
+    SessionDate = cellfun(@(x) x.Session, SessionClassAll);
     [SessionDate, SortID] = sort(SessionDate);
     SessionClassAll = SessionClassAll(SortID);
 

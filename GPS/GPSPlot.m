@@ -107,10 +107,10 @@ classdef GPSPlot < handle
                 if ~isempty(data{i}.ci)
                     if Reversed
                         fill(ax, [data{i}.ci(1,:) flip(data{i}.ci(2,:))], [data{i}.x flip(data{i}.x)], 'r', ...
-                            'FaceColor', Color{i}, 'FaceAlpha', .4, 'EdgeColor', 'none');
+                            'FaceColor', Color{i}, 'FaceAlpha', .3, 'EdgeColor', 'none');
                     else
                         fill(ax, [data{i}.x flip(data{i}.x)], [data{i}.ci(1,:) flip(data{i}.ci(2,:))], 'r', ...
-                            'FaceColor', Color{i}, 'FaceAlpha', .4, 'EdgeColor', 'none');
+                            'FaceColor', Color{i}, 'FaceAlpha', .3, 'EdgeColor', 'none');
                     end
                 end
                 if Reversed
@@ -207,10 +207,14 @@ classdef GPSPlot < handle
 
             %
             axes(ax);
-            v = violinplot({data_2, data_1}, cate_name, ...
-                'ViolinColor', Color([2 1]), 'ViolinAlpha', {.1, .1}, ...
-                'BandWidth', Scale*band_width, 'MarkerSize', 2, ...
-                'ShowMedian', false, 'ShowWhiskers', false, 'ShowBox', false);
+            try
+                v = violinplot({data_2, data_1}, cate_name, ...
+                    'ViolinColor', Color([2 1]), 'ViolinAlpha', {.1, .1}, ...
+                    'BandWidth', Scale*band_width, 'MarkerSize', 2, ...
+                    'ShowMedian', false, 'ShowWhiskers', false, 'ShowBox', false);
+            catch
+
+            end
             xlim(ax, [.5 n_cate+.5]);
 
             for i = 1:n_cate
@@ -263,9 +267,11 @@ classdef GPSPlot < handle
             addParameter(p,'violin_alpha', .1, @isnumeric);
             addParameter(p,'marker_alpha', .4, @isnumeric);
             addParameter(p,'marker_size', 6, @isnumeric);
-            addParameter(p,'median_size', 6, @isnumeric);
+            addParameter(p,'median_size', 24, @isnumeric);
+            addParameter(p,'median_width', 1, @isnumeric);
             addParameter(p,'median_text', false, @islogical);
             addParameter(p,'box_width', 0.03, @isnumeric);
+            addParameter(p,'box_color', repmat({[.5 .5 .5]}, 1, 2));
 
             parse(p, ax, data_1, data_2, varargin{:});
 
@@ -284,8 +290,10 @@ classdef GPSPlot < handle
             marker_alpha = p.Results.marker_alpha;
             marker_size = p.Results.marker_size;
             median_size = p.Results.median_size;
+            median_width = p.Results.median_width;
             median_text = p.Results.median_text;
             box_width   = p.Results.box_width;
+            box_color   = p.Results.box_color;
             
             % check input
             if length(data_1)~=length(data_2)
@@ -336,8 +344,10 @@ classdef GPSPlot < handle
                     if ~isempty(v{i}{j}.MedianPlot)
                         v{i}{j}.MedianPlot.XData    = v{i}{j}.MedianPlot.XData + d_m_v;
                         v{i}{j}.MedianPlot.SizeData = median_size;
+                        v{i}{j}.MedianPlot.LineWidth = median_width;
                         v{i}{j}.MedianPlot.Marker = '_';
                         v{i}{j}.MedianPlot.MarkerEdgeColor = [1 1 1];
+                        
                         if median_text
                             switch scale
                                 case 1
@@ -356,9 +366,12 @@ classdef GPSPlot < handle
                     if ~isempty(v{i}{j}.BoxPlot)
                         v{i}{j}.BoxPlot.XData = v{i}{j}.BoxPlot.XData + d_m_v;
                         v{i}{j}.BoxWidth = box_width;
+                        v{i}{j}.BoxPlot.FaceColor = box_color{i};
+                        v{i}{j}.BoxPlot.EdgeColor = box_color{i};
                     end
                     if ~isempty(v{i}{j}.WhiskerPlot)
                         v{i}{j}.WhiskerPlot.XData  = v{i}{j}.WhiskerPlot.XData + d_m_v;
+                        v{i}{j}.WhiskerPlot.Color  = box_color{i};
                         v{i}{j}.ScatterPlot.MarkerFaceAlpha = marker_alpha;
                     end
                 end

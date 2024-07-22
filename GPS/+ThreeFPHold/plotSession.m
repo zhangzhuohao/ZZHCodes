@@ -58,7 +58,7 @@ ax_hd_s = draw_scatter(obj, fig_session, [7.5 7 ax_sz_1], ax_sz_5, ...
     obj.HDSorted, obj.TimeSorted, obj.OutcomeSorted, ...
     {GPSColor.PortL, GPSColor.PortR}, obj.TargetFP, rw);
 for i = 1:length(ax_hd_s)
-    set(ax_hd_s{i}, 'YLim', [0 2.5]);
+    set(ax_hd_s{i}, 'YLim', [0 3]);
     xlabel(ax_hd_s{i}, []);
 end
 ylabel(ax_hd_s{1}, 'HD (s)', 'FontWeight', 'bold');
@@ -69,7 +69,7 @@ ax_hd_d = draw_density(obj, fig_session, [13 7 3.5 2], ax_sz_3, ...
     {{GPSColor.PortL}, {GPSColor.PortR}}, {ls, ls}, {lw, lw});
 
 for i = 1:length(ax_hd_d)
-    set(ax_hd_d{i}, 'YLim', [0 2.5], 'YTickLabel', []);
+    set(ax_hd_d{i}, 'YLim', [0 3], 'YTickLabel', []);
     xlabel(ax_hd_d{i}, []);
 end
 

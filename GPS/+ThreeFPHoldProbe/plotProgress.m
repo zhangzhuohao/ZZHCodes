@@ -102,7 +102,7 @@ y_lim = max(max(y_lim));
 y_lim = (ceil(y_lim) + round(y_lim)) / 2;
 for i = 1:2
     ax_e_l{i}.YLim = [0 y_lim];
-    ax_e_l{i}.XLim = [0 2.5];
+    ax_e_l{i}.XLim = [0 3];
 end
 
 % Shuttle time
@@ -153,7 +153,7 @@ draw_violin(obj, ax_mt_v, data_mt_v, obj.BandWidth, c_mt, [], []);
 % scatter
 ax_hd_s = obj.assign_ax_to_fig(fig_progress, 1, n_s, [ax_grid{2,3} ax_sz_3], ax_sz_4);
 for i = 1:n_s
-    set(ax_hd_s{i}, "YLim", [0 2.5], "YTick", 0:1:2.5, "YTickLabel", "");
+    set(ax_hd_s{i}, "YLim", [0 3], "YTick", 0:1:3, "YTickLabel", "");
     if i==1
         ylabel(ax_hd_s{i}, 'HD (s)', 'FontWeight', 'bold');
         set(ax_hd_s{i}, "YTickLabel", ax_hd_s{i}.YTick);
@@ -168,7 +168,7 @@ draw_scatter(obj, ax_hd_s, data_hd, "TrialCentInTimeProgress", "HD", c_hd, ["o",
 ax_hd_v = obj.assign_ax_to_fig(fig_progress, 1, n_s, [ax_grid{3,3} ax_sz_3], ax_sz_4);
 data_hd_v = cell(1,n_s);
 for i = 1:n_s
-    set(ax_hd_v{i}, "YLim", [0 2.5], "YTick", 0:1:2.5, "YTickLabel", "");
+    set(ax_hd_v{i}, "YLim", [0 3], "YTick", 0:1:3, "YTickLabel", "");
     data_hd_v{i} = cellfun(@(x) x(i, :), obj.HDSorted.Session, 'UniformOutput', false);
     if i==1
         set(ax_hd_v{i}, "YTickLabel", ax_hd_v{i}.YTick);
@@ -196,7 +196,7 @@ draw_violin(obj, ax_rt_v, data_rt_v, obj.BandWidth, c_hd, [0 0 0], rw);
 % % median
 % ax_median = obj.assign_ax_to_fig(fig_progress, 1, n_s, [ax_grid{1,3} ax_sz_1], ax_sz_3);
 % for i = 1:n_s
-%     ax_median{i}.YLim = [0 2.5];
+%     ax_median{i}.YLim = [0 3];
 % end
 % draw_stat(obj, ax_median, stat, "Median", c_stat, ls, lw, obj.TargetFP, rw);
 % ylabel(ax_median{1}, "HD (s) median", 'FontWeight', 'bold');
@@ -286,13 +286,13 @@ for i = 1:sz_draw(1)
     for j = 1:sz_draw(2)
         ax = ax_cell{i,j};
         set(ax, 'YDir', 'normal', ...
-            'XLim', .5+[0 obj.NumSessions], 'YLim', [0 2.5], 'XTick', 0:5:obj.NumSessions);
+            'XLim', .5+[0 obj.NumSessions], 'YLim', [0 3], 'XTick', 0:5:obj.NumSessions);
         pd_this = normalize(pd_f{i,j}(:), 'range');
         pd_this = reshape(pd_this, size(pd_f{i,j}));
         imagesc(ax, 1:obj.NumSessions, pd_x, pd_this);
         
         for k = 1:length(session_chemo)
-            fill(ax, [-.5 -.5 .5 .5]+session_chemo(k), [0 2.5 2.5 0], 'r', ...
+            fill(ax, [-.5 -.5 .5 .5]+session_chemo(k), [0 3 3 0], 'r', ...
                 'FaceColor', 'none', 'EdgeColor', GPSColor.Treat, 'LineWidth', .8, 'LineStyle', ':');
         end
         if ~isempty(sep_lesion)

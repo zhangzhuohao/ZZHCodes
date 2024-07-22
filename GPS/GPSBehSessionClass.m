@@ -164,8 +164,8 @@ classdef GPSBehSessionClass < GPSBehClass & GPSPlot
             % Session date
             session_bpod = bpod_file_info(end-1);
             session_path = session_path_info(end);
-            if strcmp(session_bpod, session_path)
-                obj.Session = session_bpod;
+            if contains(session_path, session_bpod)
+                obj.Session = session_path;
             else
                 error('Session dates extracted from Bpod file and session folder path do not match.');
             end
@@ -210,7 +210,7 @@ classdef GPSBehSessionClass < GPSBehClass & GPSPlot
             obj.ANMInfo = obj.ANMInfo(strcmp(obj.ANMInfo.Name, obj.Subject), :);
 
             % Session information
-            obj.SessionInfo = readtable(obj.ANMInfoFile, "Sheet", obj.Subject, "TextType", "string");
+            obj.SessionInfo = obj.read_session_table();
             obj.SessionInfo = obj.SessionInfo(strcmp(string(obj.SessionInfo.Session), obj.Session), :);
             obj.SessionStartTime = string(SessionData.Info.SessionStartTime_UTC);
 
@@ -616,6 +616,20 @@ classdef GPSBehSessionClass < GPSBehClass & GPSPlot
             table_new = horzcat(info, table_raw);
         end
 
+        %% Read session table
+        function session_table = read_session_table(obj)
+            opts = spreadsheetImportOptions("NumVariables", 10);
+            opts.Sheet = obj.Subject;
+            opts.DataRange = 'A2';
+            opts.VariableNames = ["Session", "Treatment", "Dose", "Label", "Experimenter", "Task", "SessionFolder", "BpodFile", "SessionClassFile", "UpdateTime"];
+            opts.VariableTypes = ["string", "string", "double", "string", "string", "string", "string", "string", "string", "string"];
+            opts = setvaropts(opts, "Session", "WhitespaceRule", "preserve");
+            opts = setvaropts(opts, ["Session", "Treatment", "Label", "Experimenter", "Task", "SessionFolder", "BpodFile", "SessionClassFile", "UpdateTime"], "EmptyFieldRule", "auto");
+
+            % Import the data
+            session_table = readtable(obj.ANMInfoFile, opts, "UseExcel", false);
+        end
+
         %% Save and print
         function save(obj, copy_dir)
             obj.UpdateTime = string(datetime());
@@ -640,7 +654,7 @@ classdef GPSBehSessionClass < GPSBehClass & GPSPlot
         end % update_SessionInfo
 
         function update_ANMInfoFile(obj)
-            session_sheet = readtable(obj.ANMInfoFile, "Sheet", obj.Subject, "TextType", "string");
+            session_sheet = obj.read_session_table();
             session_ind = strcmp(string(session_sheet.Session), obj.Session);
             session_sheet(session_ind, :) = obj.SessionInfo;
             writetable(session_sheet, obj.ANMInfoFile, "Sheet", obj.Subject);
