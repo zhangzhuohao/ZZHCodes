@@ -60,7 +60,7 @@ classdef GPSBehClass < handle
 
             data_kde.x = bin_edges;
             data_kde.ci = [];
-            if length(data_this) > 5
+            if length(data_this) >= 5
                 data_kde.f = kde(data_this);
                 if cal_ci
                     data_kde.ci = bootci(1000, {kde, data_this}, 'type', 'cper', 'alpha', .05);
