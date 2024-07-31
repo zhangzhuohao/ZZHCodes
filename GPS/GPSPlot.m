@@ -10,6 +10,7 @@ classdef GPSPlot < handle
         function plot_trials(~, ax, data, varargin)
 
             defaultColor = [0 0 0];
+            defaultMarker = 'o';
             defaultSize = 18;
             defaultNumShow = 50;
             defaultFP = zeros(1, length(data));
@@ -17,28 +18,34 @@ classdef GPSPlot < handle
             p = inputParser;
             addParameter(p,'n_show', defaultNumShow, @isnumeric);
             addParameter(p,'FP', defaultFP, @(x) (isvector(x) && length(x)==length(data)));
+            addParameter(p,'Marker', defaultMarker);
             addParameter(p,'FaceColor', defaultColor);
             addParameter(p,'MarkerColor', defaultColor);
             addParameter(p,'MarkerSize', defaultSize);
+            addParameter(p,'FaceAlpha', 0.2);
+            addParameter(p,'MarkerAlpha', 0.6);
 
             parse(p, varargin{:});
 
             n_show = p.Results.n_show;
             FP = p.Results.FP;
+            Marker = p.Results.Marker;
             FaceColor = p.Results.FaceColor;
             MarkerColor = p.Results.MarkerColor;
             MarkerSize = p.Results.MarkerSize;
+            FaceAlpha = p.Results.FaceAlpha;
+            MarkerAlpha = p.Results.MarkerAlpha;
 
             n_show = min([n_show min(cellfun(@(x) length(x), data))]);
 
             for i=1:length(data)
                 if FP(i)~=0
                     fill(ax, [0 FP(i) FP(i) 0], [0 0 1 1]+i-1, 'r', ...
-                        'FaceColor', FaceColor, 'FaceAlpha', .4*FP(i)/max(FP), 'EdgeColor', 'none');
+                        'FaceColor', FaceColor, 'FaceAlpha', FaceAlpha, 'EdgeColor', 'none');
                 end
                 id_show = randperm(length(data{i}), n_show);
-                scatter(ax, data{i}(id_show), linspace(.1, .9, n_show)+i-1, MarkerSize, "filled", ...
-                    "MarkerEdgeColor", "none", "MarkerFaceColor", MarkerColor, "MarkerFaceAlpha", .75*sqrt(FP(i)/max(FP)));
+                scatter(ax, data{i}(id_show), linspace(.1, .9, n_show)+i-1, MarkerSize, "filled", 'Marker', Marker, ...
+                    "MarkerEdgeColor", "none", "MarkerFaceColor", MarkerColor, "MarkerFaceAlpha", MarkerAlpha);
             end
             set(ax, 'XColor', 'none', 'YColor', 'none');
         end % plot_trials
@@ -406,7 +413,15 @@ classdef GPSPlot < handle
         end % add_shade
 
         %% For easy plot
-        function [ax, pos, ax_sz] = assign_ax_to_fig(obj, fig, n_row, n_col, pos, ax_sz)
+        function [ax, pos, ax_sz] = assign_ax_to_fig(obj, fig, n_row, n_col, pos, ax_sz, varargin)
+            % parsing input
+            P = inputParser;
+
+            addParameter(P, 'font_size', 6);
+            parse(P, varargin{:});
+            font_size = P.Results.font_size;
+
+            %
             ax = cell(n_row, n_col);
             [dist_w, dist_h] = obj.get_plot_dist(ax, pos, ax_sz);
 
@@ -416,7 +431,7 @@ classdef GPSPlot < handle
                     y_now = pos(2) + dist_h * (n_row-i);
 
                     ax{i,j} = axes(fig, "Units", "centimeters", "Position", [x_now y_now ax_sz], ...
-                        'NextPlot', 'add', 'FontSize', 8, 'TickDir', 'out');
+                        'NextPlot', 'add', 'FontSize', font_size, 'TickDir', 'out', 'TickLength', [0.02 0.03]);
                 end
             end
         end % assign_ax_to_fig

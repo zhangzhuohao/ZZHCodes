@@ -35,7 +35,7 @@ classdef GPSBehClass < handle
 
             bins.LogST = 0:bins.width:3;
             bins.HD    = 0:bins.width:3;
-            bins.HDv   = .5:bins.width:3;
+            bins.HDv   = 0:bins.width:3;
             bins.RT    = 0:bins.width:2;
             bins.MT    = 0:bins.width:2;
             bins.CT    = 0:bins.width:2.5;
