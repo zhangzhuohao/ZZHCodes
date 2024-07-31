@@ -510,12 +510,14 @@ classdef GPSBehProgressClass < GPSBehClass & GPSPlot
         function save(obj, copy_dir)
             obj.UpdateTime = string(datetime());
 
-            save_path = fullfile(obj.ProtocolDir, obj.SaveName);
-            save(save_path, 'obj');
+            if isfolder(obj.ProtocolDir)
+                save_path = fullfile(obj.ProtocolDir, obj.SaveName);
+                save(save_path, 'obj');
+            end
 
             if nargin==2
                 copy_path = fullfile(copy_dir, obj.SaveName);
-                copyfile(save_path+".mat", copy_path+".mat");
+                copyfile(save_path+".mat", copy_path);
             end
         end % save
 
