@@ -9,8 +9,8 @@ classdef GPSColor
         Premature   = [255  0    0  ] / 255;
         Late        = [140  140  140] / 255
         % Port
-        PortL       = [72   150  230] / 255;
-        PortR       = [72   230  150] / 255;
+        PortL       = [64   136  238] / 255;
+        PortR       = [64   238  136] / 255;
         % Treatment
         Control     = [47   79   79 ] / 255;
         Treat       = [248  124  36 ] / 255;
