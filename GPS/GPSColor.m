@@ -13,7 +13,7 @@ classdef GPSColor
         PortR       = [72   230  150] / 255;
         % Treatment
         Control     = [47   79   79 ] / 255;
-        Treat       = [220  120  25 ] / 255;
+        Treat       = [248  124  36 ] / 255;
         % FP
         FPLong      = [254  245  172] / 255;
         FPMed       = [151  210  236] / 255;

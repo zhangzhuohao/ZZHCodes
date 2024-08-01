@@ -114,10 +114,10 @@ classdef GPSPlot < handle
                 if ~isempty(data{i}.ci)
                     if Reversed
                         fill(ax, [data{i}.ci(1,:) flip(data{i}.ci(2,:))], [data{i}.x flip(data{i}.x)], 'r', ...
-                            'FaceColor', Color{i}, 'FaceAlpha', .3, 'EdgeColor', 'none');
+                            'FaceColor', Color{i}, 'FaceAlpha', .1, 'EdgeColor', Color{i}, 'LineWidth', .2, 'EdgeAlpha', .3);
                     else
                         fill(ax, [data{i}.x flip(data{i}.x)], [data{i}.ci(1,:) flip(data{i}.ci(2,:))], 'r', ...
-                            'FaceColor', Color{i}, 'FaceAlpha', .3, 'EdgeColor', 'none');
+                            'FaceColor', Color{i}, 'FaceAlpha', .1, 'EdgeColor', Color{i}, 'LineWidth', .2, 'EdgeAlpha', .3);
                     end
                 end
                 if Reversed
@@ -392,7 +392,7 @@ classdef GPSPlot < handle
             P = inputParser;
 
             addParameter(P, 'color'  , [1 0 1]);
-            addParameter(P, 'alpha'  , .1);
+            addParameter(P, 'alpha'  , .2);
             addParameter(P, 'reverse', false);
 
             parse(P, varargin{:});
@@ -417,7 +417,7 @@ classdef GPSPlot < handle
             % parsing input
             P = inputParser;
 
-            addParameter(P, 'font_size', 6);
+            addParameter(P, 'font_size', 7);
             parse(P, varargin{:});
             font_size = P.Results.font_size;
 
@@ -493,13 +493,19 @@ classdef GPSPlot < handle
             end
         end % assign_data_to_ax
 
-        function add_serial(~, fig, ax_pos, serial_text, dist)
+        function add_serial(~, fig, ax_pos, serial_text, dist, varargin)
+            % parsing input
+            P = inputParser;
+            addParameter(P, 'font_size', 10);
+            parse(P, varargin{:});
+            font_size = P.Results.font_size;
+
             pos = [ax_pos(1)+dist(1), ax_pos(2)+ax_pos(4)+dist(2), 1 1];
             ax = axes(fig, "Units", "centimeters", "Position", pos, ...
-                'NextPlot', 'add', 'FontSize', 8, 'TickDir', 'out', ...
+                'NextPlot', 'add', 'FontSize', font_size, 'TickDir', 'out', ...
                 'Color', 'none', 'XColor', 'none', 'YColor', 'none',...
                 'XLim', [0 1], 'YLim', [0 1]); %
-            text(ax, 0, 0, serial_text, 'FontSize', 9, 'FontWeight', 'bold', ...
+            text(ax, 0, 0, serial_text, 'FontSize', font_size, 'FontWeight', 'bold', ...
                 'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle');
             drawnow;
         end % add_serial
