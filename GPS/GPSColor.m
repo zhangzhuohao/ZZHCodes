@@ -31,8 +31,8 @@ classdef GPSColor
         LesionEarly = [255  108  34 ] / 255
         LesionExtensive = [82 92 235] / 255;
         % Contra vs. Ipsi
-        Contra = [.7 .1 .1];
-        Ipsi   = [.1 .1 .7];
+        Contra = [.75 .1 .35];
+        Ipsi   = [.35 .1 .75];
     end
 
     methods
