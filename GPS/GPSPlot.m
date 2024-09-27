@@ -114,10 +114,10 @@ classdef GPSPlot < handle
                 if ~isempty(data{i}.ci)
                     if Reversed
                         fill(ax, [data{i}.ci(1,:) flip(data{i}.ci(2,:))], [data{i}.x flip(data{i}.x)], 'r', ...
-                            'FaceColor', Color{i}, 'FaceAlpha', .1, 'EdgeColor', Color{i}, 'LineWidth', .2, 'EdgeAlpha', .3);
+                            'FaceColor', Color{i}, 'FaceAlpha', .2, 'EdgeColor', Color{i}, 'LineWidth', .2, 'EdgeAlpha', .6);
                     else
                         fill(ax, [data{i}.x flip(data{i}.x)], [data{i}.ci(1,:) flip(data{i}.ci(2,:))], 'r', ...
-                            'FaceColor', Color{i}, 'FaceAlpha', .1, 'EdgeColor', Color{i}, 'LineWidth', .2, 'EdgeAlpha', .3);
+                            'FaceColor', Color{i}, 'FaceAlpha', .2, 'EdgeColor', Color{i}, 'LineWidth', .2, 'EdgeAlpha', .6);
                     end
                 end
                 if Reversed

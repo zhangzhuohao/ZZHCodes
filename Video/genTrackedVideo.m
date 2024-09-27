@@ -1,7 +1,7 @@
 %%
 clear; close all
 
-ScnScale   = 1.5;
+ScnScale   = 1.25;
 cRange     = [-90 90];
 lineLength = 60;
 fade_ratio = 0.85;
@@ -28,7 +28,8 @@ indR = find(strcmp(obj.DLCTracking.BodyParts, labelR));
 %%
 clipFiles = dir(fullfile(ClipFolder, '*.avi'));
 NumClips  = length(clipFiles);
-TrialID   = arrayfun(@(x) str2double(x.name(end-6:end-4)), clipFiles);
+TrialName = arrayfun(@(x) split(x.name, '_'), clipFiles, 'UniformOutput', false);
+TrialID   = cellfun(@(x) str2double(x{3}(end-2:end)), TrialName);
 
 LabeledVidFolder = fullfile(ClipFolder, "LabeledVideo");
 if ~isfolder(LabeledVidFolder)
@@ -36,7 +37,7 @@ if ~isfolder(LabeledVidFolder)
 end
 
 for m = 1:NumClips
-    %%
+    %
 
     VidLabelFileName = fullfile(LabeledVidFolder, strcat(clipFiles(m).name(1:end-4), '_Labeled.avi'));
     if ~isempty(dir(VidLabelFileName))
@@ -55,7 +56,7 @@ for m = 1:NumClips
 
     vid = VideoReader(fullfile(ClipFolder, clipFiles(m).name));
 
-    %%
+    %
     fig = figure(36); clf(36);
     set(fig, 'name', "TrackedVideo", 'units', 'pixels', 'position', [5 50 vid.Width/ScnScale vid.Height/ScnScale], ...
         'PaperPositionMode', 'auto', 'color', 'w', 'renderer', 'opengl', 'toolbar', 'none', 'resize', 'off');
@@ -69,12 +70,12 @@ for m = 1:NumClips
         'xlim', [0 vid.Width], 'ylim', [0 vid.Height], 'ydir', 'reverse', 'XColor', 'none', 'YColor', 'none', 'Color', 'none', ...
         'Colormap', mycolormap);
 
-    %%
+    %
     F = struct('cdata', [], 'colormap', []);
 
     img = imagesc(ha1, read(vid, traceL(1, 5)));
 
-    p = plot(ha2, [traceL(1, 1) traceR(1, 1)], [traceL(1, 2) traceR(1, 2)], '-k', 'LineWidth', 1.5);
+    p = plot(ha2, [traceL(1, 1) traceR(1, 1)], [traceL(1, 2) traceR(1, 2)], '-k', 'LineWidth', 4);
 
     k = -1 * diff(p.XData) / diff(p.YData);
 
@@ -96,7 +97,7 @@ for m = 1:NumClips
 
     this_color = mycolormap(color_index, :);
 
-    d(1) = patch(ha2, 'XData', [x1 nan], 'YData', [y1 nan], 'LineWidth', 8, 'EdgeColor', this_color, 'EdgeAlpha', 0.8);
+    d(1) = patch(ha2, 'XData', [x1 nan], 'YData', [y1 nan], 'LineWidth', 12, 'EdgeColor', this_color, 'EdgeAlpha', 0.8);
 
     F(1) = getframe(fig);
 
@@ -131,7 +132,7 @@ for m = 1:NumClips
         this_color = mycolormap(color_index, :);
 
         arrayfun(@(x) set(x, 'EdgeAlpha', x.EdgeAlpha*fade_ratio), d);
-        d(i) = patch(ha2, 'XData', [x1 nan], 'YData', [y1 nan], 'LineWidth', 2, 'EdgeColor', this_color, 'EdgeAlpha', 0.8);
+        d(i) = patch(ha2, 'XData', [x1 nan], 'YData', [y1 nan], 'LineWidth', 6, 'EdgeColor', this_color, 'EdgeAlpha', 0.8);
 
         F(i) = getframe(fig);
     end
@@ -144,12 +145,12 @@ for m = 1:NumClips
         F(end+1) = F(end);
     end
     
-    %%
-
+    %
     close(fig);
 
     writerObj = VideoWriter(VidLabelFileName);
     writerObj.FrameRate = 20;
+    writerObj.Quality = 100;
     % set the seconds per image
     % open the video writer
     open(writerObj);

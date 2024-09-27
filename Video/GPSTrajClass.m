@@ -169,11 +169,11 @@ classdef GPSTrajClass < handle
                 trace_trim = trace;
                 time_trim  = time_trace;
             elseif length(bound_l)==1
-                trace_trim = cellfun(@(x, t) x(t>=bound_l), trace, time_trace, 'UniformOutput', false);
-                time_trim  = cellfun(@(t) t(t>=bound_l), time_trace, 'UniformOutput', false);
+                trace_trim = cellfun(@(x, t) x(:, t>=bound_l), trace, time_trace, 'UniformOutput', false);
+                time_trim  = cellfun(@(t) t(:, t>=bound_l), time_trace, 'UniformOutput', false);
             elseif length(bound_l)==length(trace)
-                trace_trim = cellfun(@(x, t, b) x(t>=b), trace, time_trace, num2cell(bound_l), 'UniformOutput', false);
-                time_trim  = cellfun(@(t, b) t(t>=b), time_trace, num2cell(bound_l), 'UniformOutput', false);
+                trace_trim = cellfun(@(x, t, b) x(:, t>=b), trace, time_trace, num2cell(bound_l), 'UniformOutput', false);
+                time_trim  = cellfun(@(t, b) t(:, t>=b), time_trace, num2cell(bound_l), 'UniformOutput', false);
             else
                 error('Length of trace and bound_l should be matched');
             end
@@ -182,11 +182,11 @@ classdef GPSTrajClass < handle
             if isempty(bound_u)
 
             elseif length(bound_u)==1
-                trace_trim = cellfun(@(x, t) x(t<=bound_u), trace_trim, time_trim, 'UniformOutput', false);
-                time_trim  = cellfun(@(t) t(t<=bound_u), time_trim, 'UniformOutput', false);
+                trace_trim = cellfun(@(x, t) x(:, t<=bound_u), trace_trim, time_trim, 'UniformOutput', false);
+                time_trim  = cellfun(@(t) t(:, t<=bound_u), time_trim, 'UniformOutput', false);
             elseif length(bound_u)==length(trace)
-                trace_trim = cellfun(@(x, t, b) x(t<=b), trace_trim, time_trim, num2cell(bound_u), 'UniformOutput', false);
-                time_trim  = cellfun(@(t, b) t(t<=b), time_trim, num2cell(bound_u), 'UniformOutput', false);
+                trace_trim = cellfun(@(x, t, b) x(:, t<=b), trace_trim, time_trim, num2cell(bound_u), 'UniformOutput', false);
+                time_trim  = cellfun(@(t, b) t(:, t<=b), time_trim, num2cell(bound_u), 'UniformOutput', false);
             else
                 error('Length of trace and bound_l should be matched');
             end
@@ -334,6 +334,11 @@ classdef GPSTrajClass < handle
                 end
             end
             dist_mat = dist_mat + dist_mat';
+            if warp_method=="correlation"
+                for m = 1:num_trials
+                    dist_mat(m, m) = 1;
+                end
+            end
 
             % normalize distance matrix
             switch dist_norm_method

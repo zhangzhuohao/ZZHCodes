@@ -207,41 +207,42 @@ for i = 1:length(tBehEvent) % i is also the trial number
     tthis_frame   = round(iFrameTimesBpod(k) - iFrameTimesBpod(1) - tPre_this);
     time_of_frame = sprintf('%3.0f', tthis_frame);
 
-    text(W-20, 30,  sprintf('%s %s', anm, session), 'color', [255 255 255]/255, 'fontsize',  9, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
-    text(W-20, 70,  beh_type, 'color', [255 255 255]/255, 'fontsize',  9, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
-    text(W-20, 110,  sprintf('Trial %03d', BehTable.Trials(i)), 'color', [255 255 255]/255, 'fontsize',  9, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
-    text(W-20, 150,  sprintf('FP: %d ms', BehTable.FP(i)*1000), 'color', [255 255 255]/255, 'fontsize',  9, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
-    text(W-20, 190,  sprintf('RT: %d ms', round(1000*BehTable.RT(i))), 'color', [255 255 255]/255, 'fontsize',  9, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
-    text(W-20, 230,  thisOutcome, 'color', color.(thisOutcome), 'fontsize',  9, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
-    time_text = text(20, 30, [time_of_frame ' ms'], 'color', [255 215 0]/255, 'fontsize', 10,'fontweight', 'bold');
+    text(W-20, 40,  sprintf('%s %s', anm, session), 'color', [255 255 255]/255, 'FontSize', 20, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
+    text(W-20, 90,  beh_type, 'color', [255 255 255]/255, 'FontSize', 20, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
+    text(W-20, 140,  sprintf('Trial %03d', BehTable.Trials(i)), 'color', [255 255 255]/255, 'FontSize', 20, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
+    text(W-20, 190,  sprintf('FP: %d ms', BehTable.FP(i)*1000), 'color', [255 255 255]/255, 'FontSize', 20, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
+    text(W-20, 240,  sprintf('RT: %d ms', round(1000*BehTable.RT(i))), 'color', [255 255 255]/255, 'FontSize', 20, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
+    text(W-20, 290,  thisOutcome, 'color', color.(thisOutcome), 'FontSize', 20, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
+    time_text = text(20, 40, [time_of_frame ' ms'], 'color', [255 215 0]/255, 'FontSize', 22,'fontweight', 'bold');
     % plot some important behavioral events
 
     ha2 = axes;
-    set(ha2, 'units', 'pixels', 'position', [0.025*scale_ratio*W 0.1*scale_ratio*H 0.95*scale_ratio*W 0.18*scale_ratio*H], ...
+    set(ha2, 'units', 'pixels', 'position', [0.05*scale_ratio*W 0.11*scale_ratio*H 0.9*scale_ratio*W 0.18*scale_ratio*H], ...
         'nextplot', 'add', 'xtick', [-tPre:500:tPost], 'xlim', [-tPre tPost], ...
-        'ycolor', 'none', 'ylim', [0 1.25], 'tickdir', 'out', 'FontSize', 9) %#ok<NBRAK>
+        'ycolor', 'none', 'ylim', [0 1.25], 'tickdir', 'out', 'FontSize', 20) %#ok<NBRAK>
     ha2.XLabel.String = 'Time (ms)';
     ha2.XLabel.FontWeight = 'bold';
+    ha2.XLabel.FontSize = 20;
 
-    time_line = xline(ha2, tthis_frame, 'Color', 'k', 'LineStyle', '-', 'LineWidth', 1, 'Alpha', 0.6);
+    time_line = xline(ha2, tthis_frame, 'Color', 'k', 'LineStyle', '-', 'LineWidth', 2, 'Alpha', 0.6);
 
-    xline(ha2, thisFP, 'Color', 'k', 'LineStyle', ':', 'LineWidth', 1);
+    xline(ha2, thisFP, 'Color', 'k', 'LineStyle', ':', 'LineWidth', 2);
 
-    stairs(ha2, time_elapsed, poke_state, 'Color', 'k', 'LineWidth', 1.5);
-    text(ha2, -tPre+5, 0.35, "Center poke", 'Color', 'k', 'FontSize', 10, 'FontWeight', 'bold');
+    stairs(ha2, time_elapsed, poke_state, 'Color', 'k', 'LineWidth', 2.5);
+    text(ha2, -tPre+5, 0.35, "Center poke", 'Color', 'k', 'FontSize', 20, 'FontWeight', 'bold', 'VerticalAlignment', 'middle');
 
-    patch(ha2, 'XData', [ChoicePokeTime ChoicePokeTime ChoicePokeTime ChoicePokeTime] + [0 25 25 0], ...
-        'YData', [.2 .2 .4 .4], ...
+    patch(ha2, 'XData', [ChoicePokeTime ChoicePokeTime ChoicePokeTime ChoicePokeTime] + [0 40 40 0], ...
+        'YData', [.2 .2 .45 .45], ...
         'FaceColor', color.(thisOutcome), 'EdgeColor', 'none');
 
-    text(ha2, -tPre+5, 0.8, "Choice cue", 'Color', color.Cue, 'FontSize', 10, 'FontWeight', 'bold', 'VerticalAlignment', 'middle');
+    text(ha2, -tPre+5, 0.8, "Choice cue", 'Color', color.Cue, 'FontSize', 20, 'FontWeight', 'bold', 'VerticalAlignment', 'middle');
     patch(ha2, 'XData', [ChoiceCueTime flip(ChoiceCueTime)], ...
-        'YData', [.75 .75 .85 .85], ...
+        'YData', [.7 .7 .85 .85], ...
         'FaceColor', color.Cue, 'FaceAlpha', 0.8, 'EdgeColor', 'none');
 
-    text(ha2, -tPre+5, 1.1, "Trigger cue", 'Color', [30 144 255] / 255, 'FontSize', 10, 'FontWeight', 'bold', 'VerticalAlignment', 'middle');
+    text(ha2, -tPre+5, 1.1, "Trigger cue", 'Color', [30 144 255] / 255, 'FontSize', 20, 'FontWeight', 'bold', 'VerticalAlignment', 'middle');
     patch(ha2, 'XData', [TriggerCueTime flip(TriggerCueTime)], ...
-        'YData', [1.05 1.05 1.15 1.15], ...
+        'YData', [1.0 1.0 1.15 1.15], ...
         'FaceColor', [30 144 255] / 255, 'FaceAlpha', 0.8, 'EdgeColor', 'none');
 
     F(k) = getframe(hf25);

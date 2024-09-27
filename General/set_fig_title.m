@@ -1,4 +1,4 @@
-function set_fig_title(fig, title_text, varargin)
+function title_string = set_fig_title(fig, title_text, varargin)
 
 
 % parsing input
@@ -29,6 +29,6 @@ ax = axes(fig, 'Units', 'centimeters', 'Position', [.5 h-1 w-1 1], ...
     'Color', back_color, 'XColor', 'none', 'YColor', 'none', ...
     'XLim', [-1 1], 'YLim', [-1 1]);
 
-text(ax, 0, 0, title_text, 'FontSize', font_size, 'FontWeight', font_weight, 'Color', font_color, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle');
+title_string = text(ax, 0, 0, title_text, 'FontSize', font_size, 'FontWeight', font_weight, 'Color', font_color, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'middle');
 
 end
