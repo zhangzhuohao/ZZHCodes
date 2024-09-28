@@ -193,6 +193,10 @@ classdef GPSBehSessionClass < GPSBehClass & GPSPlot
                     obj.Task = "KornblumHold";
                     obj.SortLabels = ["CueUncue", "LeftRight"];
                     obj.SortVars   = ["Cued"    , "PortCorrect"];
+                case {'KornblumHoldSide'}
+                    obj.Task = "KornblumHoldSide";
+                    obj.SortLabels = ["CueUncue", "LeftRight"];
+                    obj.SortVars   = ["Cued"    , "PortCorrect"];
                 case {'KornblumHoldMix'}
                     obj.Task = "KornblumHoldMix";
                     obj.SortLabels = ["CueUncue", "Guidance", "LeftRight"];

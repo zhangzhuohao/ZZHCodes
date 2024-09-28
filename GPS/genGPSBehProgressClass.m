@@ -16,6 +16,7 @@ Tasks = [
     "KornblumHold1000SRTSelf";
     "KornblumHold1500SRTSelf";
     "KornblumHold2000SRTSelf";
+    "KornblumHold10001500SRTSelf";
     "KornblumHold2000SRTEmpSelf";
     "KornblumHold2000SRTUnguideSelf";
     "KornblumHold2000SRTMixSelf"
