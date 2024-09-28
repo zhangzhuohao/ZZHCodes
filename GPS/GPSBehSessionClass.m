@@ -354,7 +354,7 @@ classdef GPSBehSessionClass < GPSBehClass & GPSPlot
         function sort_refs = get.SortRefs(obj)
             sort_refs = arrayfun(@(x) obj.(x), obj.SortVars, 'UniformOutput', false);
         end
-        
+
         function sort_codes = get.SortCodes(obj)
             sort_codes = arrayfun(@(x) obj.(x), obj.SortLabels, 'UniformOutput', false);
         end
@@ -366,7 +366,11 @@ classdef GPSBehSessionClass < GPSBehClass & GPSPlot
         end
 
         function st_split = get.STSplit(obj)
-            st_split = obj.split_data(obj.ST(obj.Stage==1), 3);
+            if ~any(obj.Stage==1)
+                st_split = obj.split_data(obj.ST, 3);
+            else
+                st_split = obj.split_data(obj.ST(obj.Stage==1), 3);
+            end
         end
 
         function st_stat = get.STStat(obj)
@@ -376,7 +380,11 @@ classdef GPSBehSessionClass < GPSBehClass & GPSPlot
             end
             order_this = cell2mat(order_cell(:));
 
-            ind = obj.Stage==1;
+            if ~any(obj.Stage==1)
+                ind = obj.Stage==0;
+            else
+                ind = obj.Stage==1;
+            end
             st_this = obj.ST(ind);
             st_stat = obj.get_stat(st_this, {order_this}, {unique(order_this)}, "Order", 1);
             st_stat = obj.add_session_info(st_stat);
@@ -388,7 +396,11 @@ classdef GPSBehSessionClass < GPSBehClass & GPSPlot
         end
 
         function st_split = get.LogSTSplit(obj)
-            st_split = obj.split_data(obj.LogST(obj.Stage==1), 3);
+            if ~any(obj.Stage==1)
+                st_split = obj.split_data(obj.LogST, 3);
+            else
+                st_split = obj.split_data(obj.LogST(obj.Stage==1), 3);
+            end
         end
 
         function st_stat = get.LogSTStat(obj)
@@ -398,7 +410,11 @@ classdef GPSBehSessionClass < GPSBehClass & GPSPlot
             end
             order_this = cell2mat(order_cell(:));
 
-            ind = obj.Stage==1;
+            if ~any(obj.Stage==1)
+                ind = obj.Stage==0;
+            else
+                ind = obj.Stage==1;
+            end            
             st_this = obj.LogST(ind);
             st_stat = obj.get_stat(st_this, {order_this}, {unique(order_this)}, "Order", 1);
             st_stat = obj.add_session_info(st_stat);
