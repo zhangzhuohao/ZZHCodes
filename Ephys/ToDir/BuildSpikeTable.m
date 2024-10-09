@@ -1,6 +1,4 @@
 %% you need to change most of the paths in this block
-addpath(genpath('E:\Code\Kilosort_2_5-master\Kilosort_2_5-master')) % path to kilosort folder
-
 dir_output = './catgt_Exp_g0';
 
 if exist(fullfile(dir_output, 'ops.mat'), 'file') && exist(fullfile(dir_output, 'chanMap.mat'), 'file')
@@ -151,20 +149,20 @@ KilosortOutput.save();
 %% build R
 KilosortOutput.buildRNeuropixels(...
     'KornblumStyle', false,...
-    'ProbeStyle', false,...
+    'ProbeStyle', true,...
     'Subject', 'Michael',...
-    'BpodProtocol', 'OptoRecording',...
-    'Experimenter', 'HY');
+    'BpodProtocol', '3FPHoldSRTProbe',...
+    'Experimenter', 'ZZH');
 
 KilosortOutput.plotChannelActivity();
 
 output = dir("*RTarray*.mat");
 load(output.name);
 
-% For SRT:
-Spikes.SRT.SRTSpikes(r,[]);
-load(output.name);
-Spikes.SRT.PopulationActivity(r);
+% % For SRT:
+% Spikes.SRT.SRTSpikes(r,[]);
+% load(output.name);
+% Spikes.SRT.PopulationActivity(r);
 
 % % For Kornblum:
 % Spikes.Timing.KornblumSpikes(r,[], 'CombineCueUncue', false);

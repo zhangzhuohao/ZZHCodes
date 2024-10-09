@@ -681,13 +681,21 @@ classdef GPSBehSessionClass < GPSBehClass & GPSPlot
         end % update_ANMInfoFile
 
         function print(obj, copy_dir)
-            save_path = fullfile(obj.SessionFolder, obj.SaveName);
+            save_dir = obj.SessionFolder;
+            if ~isfolder(obj.SessionFolder)
+                save_dir = "./";
+            end
+            save_path = fullfile(save_dir, obj.SaveName);
+            
             fig = obj.plot();
             exportgraphics(fig, save_path+".png", 'Resolution', 600);
             exportgraphics(fig, save_path+".pdf", 'ContentType', 'vector');
             saveas(fig, save_path, 'fig');
 
             if nargin==2
+                if save_dir==copy_dir
+                    return
+                end
                 if ~isfolder(copy_dir)
                     mkdir(copy_dir);
                 end
