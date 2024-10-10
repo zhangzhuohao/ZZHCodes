@@ -596,6 +596,7 @@ classdef KilosortOutputClass<handle
             r.Behavior.PrematureIndex = find(r.Behavior.Outcome=='Premature');
             r.Behavior.LateIndex      = find(r.Behavior.Outcome=='Late');
             r.Behavior.WrongIndex     = find(r.Behavior.Outcome=='Wrong');
+            r.Behavior.ProbeIndex     = find(r.Behavior.Outcome=='Probe');
 
             r.Behavior.Foreperiods    = EventOutCombined.FPEphys;
             r.Behavior.CueIndex       = EventOutCombined.CueEphys;
