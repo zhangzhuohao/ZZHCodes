@@ -601,6 +601,7 @@ classdef KilosortOutputClass<handle
             r.Behavior.Foreperiods    = EventOutCombined.FPEphys;
             r.Behavior.CueIndex       = EventOutCombined.CueEphys;
             r.Behavior.PortCorrect    = EventOutCombined.PortCorrectEphys;
+            r.Behavior.PortChosen     = EventOutCombined.PortChosenEphys;
             r.Behavior.Stage          = EventOutCombined.StageEphys;
 
             % Event timing

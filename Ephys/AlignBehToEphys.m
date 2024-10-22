@@ -36,8 +36,9 @@ TriggerBeh      = (Beh.TrialStartTime+Beh.TriggerCueTime)*1000;
 PerformanceBeh  = Beh.Outcome;
 TrialIndexBeh   = Beh.Trials;
 PortCorrectBeh  = Beh.PortCorrect;
+PortChosenBeh   = Beh.PortChosen;
 FPBeh           = Beh.FP;
-CueBeh         = Beh.Cued;
+CueBeh          = Beh.Cued;
 StageBeh        = Beh.Stage;
 
 %
@@ -71,6 +72,10 @@ PortCorrectEphys               = zeros(1, NumTrialsEphys); % each press correspo
 PortCorrectEphys(IndNaN)       = NaN;
 PortCorrectEphys(IndValid)     = PortCorrectBeh(IndMatched(IndValid));
 
+PortChosenEphys                = zeros(1, NumTrialsEphys); % each press corresponds to a behavioral outcome
+PortChosenEphys(IndNaN)        = NaN;
+PortChosenEphys(IndValid)      = PortChosenBeh(IndMatched(IndValid));
+
 StageEphys                     = zeros(1, NumTrialsEphys); % each press corresponds to a behavioral outcome
 StageEphys(IndNaN)             = NaN;
 StageEphys(IndValid)           = StageBeh(IndMatched(IndValid));
@@ -81,6 +86,7 @@ EventOut.OutcomeEphys          = PerformanceEphys;
 EventOut.CueEphys              = CueEphys;
 EventOut.FPEphys               = FPEphys;
 EventOut.PortCorrectEphys      = PortCorrectEphys;
+EventOut.PortChosenEphys       = PortChosenEphys;
 EventOut.StageEphys            = StageEphys;
 
 % there are no marks for trigger and poke-cent-out during GPS neuropixels
