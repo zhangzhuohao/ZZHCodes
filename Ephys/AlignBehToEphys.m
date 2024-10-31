@@ -19,8 +19,8 @@ function EventOut = AlignBehToEphys(EventOut, BehClass)
 
 % these are times for poke-in center, choice and init recorded in ephys.
 PokeCentInEphys   = EventOut.Onset{strcmp(EventOut.EventsLabels, 'PokeCentIn')};
-% PokeChoiceInEphys = EventOut.Onset{strcmp(EventOut.EventsLabels, 'PokeChoiceIn')};
-% PokeInitInEphys   = EventOut.Onset{strcmp(EventOut.EventsLabels, 'PokeInitIn')};
+PokeChoiceInEphys = EventOut.Onset{strcmp(EventOut.EventsLabels, 'PokeChoiceIn')};
+PokeInitInEphys   = EventOut.Onset{strcmp(EventOut.EventsLabels, 'PokeInitIn')};
 
 NumTrialsEphys    = length(PokeCentInEphys);
 
@@ -31,6 +31,7 @@ PokeCentInBeh   = Beh.TrialCentInTime*1000;
 PokeCentOutBeh  = (Beh.TrialStartTime+Beh.CentOutTime)*1000;
 PokeChoiceInBeh = (Beh.TrialStartTime+Beh.ChoicePokeTime)*1000;
 PokeInitInBeh   = (Beh.TrialStartTime+Beh.InitInTime)*1000;
+PokeInitOutBeh  = (Beh.TrialStartTime+Beh.InitOutTime)*1000;
 TriggerBeh      = (Beh.TrialStartTime+Beh.TriggerCueTime)*1000;
 
 PerformanceBeh  = Beh.Outcome;
@@ -91,6 +92,8 @@ EventOut.StageEphys            = StageEphys;
 
 % there are no marks for trigger and poke-cent-out during GPS neuropixels
 % recording, we can fill them in through poke-cent-in time
+
+% Trigger
 TriggerMapped = nan(1, NumTrialsEphys);
 for i = 1:NumTrialsEphys
     iPokeCentInEphys = PokeCentInEphys(i);
@@ -107,6 +110,7 @@ for i = 1:NumTrialsEphys
 end
 TriggerMapped = TriggerMapped(~isnan(TriggerMapped));
 
+% Cent out
 PokeCentOutMapped = nan(1, NumTrialsEphys);
 for i = 1:NumTrialsEphys
     iPokeCentInEphys = PokeCentInEphys(i);
@@ -119,6 +123,53 @@ for i = 1:NumTrialsEphys
         end
     end
 end
+
+% in some cases, there are no marks for choice poke in (premature trials or some probe trials)
+% Choice
+ChoiceInMapped = nan(1, NumTrialsEphys);
+for i = 1:NumTrialsEphys
+    iPokeCentInEphys = PokeCentInEphys(i);
+    if ~isnan(TrialIndexEphys(i))
+        i_trial = TrialIndexEphys(i);
+        iPokeCentInBeh = PokeCentInBeh(i_trial);
+        iPokeChoiceInBeh = PokeChoiceInBeh(i_trial);
+        if i <= NumTrialsEphys
+            if PokeChoiceInBeh(i_trial) > 0
+                ChoiceInMapped(i) = iPokeChoiceInBeh-iPokeCentInBeh+iPokeCentInEphys;
+            end
+        end
+    end
+end
+ChoiceInMapped = ChoiceInMapped(~isnan(ChoiceInMapped));
+% complete the original choice marker from recording
+ChoiceInToFill = false(1, length(ChoiceInMapped));
+for i = 1:length(ChoiceInMapped)
+    dt = min(abs(ChoiceInMapped(i) - PokeChoiceInEphys)); % get the distance between ephys marker and mapped marker
+    if dt > 500 % if the distance is larger than 500ms
+        ChoiceInToFill(i) = true;
+    end
+end
+ChoiceInFilled = [PokeChoiceInEphys', ChoiceInMapped(ChoiceInToFill)];
+ChoiceInFilled = sort(ChoiceInFilled);
+
+% there are no marks for poke-init-out during GPS neuropixels
+% recording, we can fill them in through poke-init-in time
+% Init out
+InitOutMapped = nan(1, NumTrialsEphys);
+for i = 1:NumTrialsEphys
+    iPokeInitInEphys = PokeInitInEphys(i);
+    if ~isnan(TrialIndexEphys(i))
+        i_trial = TrialIndexEphys(i);
+        iPokeInitInBeh = PokeInitInBeh(i_trial);
+        iPokeInitOutBeh = PokeInitOutBeh(i_trial);
+        if i <= NumTrialsEphys
+            if PokeInitOutBeh(i_trial) > 0
+                InitOutMapped(i) = iPokeInitOutBeh-iPokeInitInBeh+iPokeInitInEphys;
+            end
+        end
+    end
+end
+InitOutMapped = InitOutMapped(~isnan(InitOutMapped));
 
 % find out the min distance between triggertimemapped and the ones recorded
 % in blackrock
@@ -151,4 +202,15 @@ end
 EventOut.Onset{strcmp(EventOut.EventsLabels, 'PokeCentOut')}  = PokeCentOutMapped;
 EventOut.Offset{strcmp(EventOut.EventsLabels, 'PokeCentOut')} = PokeCentOutMapped + 200;
 
+if isempty(find(strcmp(EventOut.EventsLabels, 'PokeChoiceIn'), 1))
+    EventOut.EventsLabels{end+1}='PokeChoiceIn';
+end
+EventOut.Onset{strcmp(EventOut.EventsLabels, 'PokeChoiceIn')}  = ChoiceInFilled;
+EventOut.Offset{strcmp(EventOut.EventsLabels, 'PokeChoiceIn')} = ChoiceInFilled + 200;
+
+if isempty(find(strcmp(EventOut.EventsLabels, 'PokeInitOut'), 1))
+    EventOut.EventsLabels{end+1}='PokeInitOut';
+end
+EventOut.Onset{strcmp(EventOut.EventsLabels, 'PokeInitOut')}  = InitOutMapped;
+EventOut.Offset{strcmp(EventOut.EventsLabels, 'PokeInitOut')} = InitOutMapped + 200;
 end % AlignBehToEphys

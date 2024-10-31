@@ -173,7 +173,7 @@ classdef GPSBehSessionClass < GPSBehClass & GPSPlot
             % Task (in general: Autoshaping, Wait, ThreeFP, Timing)
             protocol_bpod = bpod_file_info(end-2);
             switch protocol_bpod % e.g. 'Wait3FPFlash'
-                case {'Autoshaping'}
+                case {'Autoshaping', 'AutoshapingAdvance'}
                     obj.Task = "Autoshaping";
                     obj.SortLabels = "LeftRight";
                     obj.SortVars   = "PortCorrect";
