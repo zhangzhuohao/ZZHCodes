@@ -53,8 +53,15 @@ for i = 1:obj.NumTrials
 
     iStates = SessionData.RawEvents.Trial{i}.States;
     iEvents = SessionData.RawEvents.Trial{i}.Events;
+    if i < obj.NumTrials
+        nextStates = SessionData.RawEvents.Trial{i+1}.States;
+        nextEvents = SessionData.RawEvents.Trial{i+1}.Events;
+    else
+        nextStates = [];
+        nextEvents = [];
+    end
 
-    obj.InitPokeInTime{i} = iEvents.Port3In(iEvents.Port3In>=iStates.Wait4Sample(1) & iEvents.Port3In<=iStates.Wait4Center(2));
+    obj.InitPokeInTime{i}  = iEvents.Port3In(iEvents.Port3In>=iStates.Wait4Sample(1) & iEvents.Port3In<=iStates.Wait4Center(2));
     obj.InitPokeOutTime{i} = iEvents.Port3Out(iEvents.Port3Out>=iStates.Wait4Sample(1) & iEvents.Port3Out<=iStates.Wait4Center(2));
 
     if isfield(iStates, 'Wait4Out')
@@ -187,6 +194,59 @@ for i = 1:obj.NumTrials
     else
         obj.Outcome(i) = "Bug";
     end
+
+    % find possible choice poke time, which was not recorded in the State fields
+    port1_time_this = [];
+    port2_time_this = [];
+    port1_time_next = [];
+    port2_time_next = [];
+    if isnan(obj.ChoicePokeTime(i))
+        if isfield(iEvents, 'Port1In')
+            port1_time_this = iEvents.Port1In;
+            port1_time_this = port1_time_this(port1_time_this>obj.CentPokeOutTime{i}(end));
+        end
+        if isfield(iEvents, 'Port2In')
+            port2_time_this = iEvents.Port2In;
+            port2_time_this = port2_time_this(port2_time_this>obj.CentPokeOutTime{i}(end));
+        end
+
+        if ~isempty(nextEvents)
+            init_time_next = nextEvents.Port3In(1);
+            if isfield(nextEvents, 'Port1In')
+                port1_time_next = nextEvents.Port1In;
+                port1_time_next = port1_time_next(port1_time_next<init_time_next);
+            end
+            if isfield(nextEvents, 'Port2In')
+                port2_time_next = nextEvents.Port2In;
+                port2_time_next = port2_time_next(port2_time_next<init_time_next);
+            end
+        end
+
+        port1_time = [port1_time_this, port1_time_next];
+        port2_time = [port2_time_this, port2_time_next];
+
+        if ~isempty(port1_time)
+            port1_first = port1_time(1);
+        else
+            port1_first = nan;
+        end
+        if ~isempty(port2_time)
+            port2_first = port2_time(1);
+        else
+            port2_first = nan;
+        end
+
+
+        if all(~isnan([port1_first, port2_first])) % poke both, find the first port
+            [obj.ChoicePokeTime(i), obj.PortChosen(i)] = min([port1_first, port2_first]);
+        elseif ~isnan(port1_first) && isnan(port2_first) % only poke port1
+            obj.ChoicePokeTime(i) = port1_first;
+            obj.PortChosen(i) = 1;
+        elseif isnan(port1_first) && ~isnan(port2_first) % only poke port2
+            obj.ChoicePokeTime(i) = port2_first;
+            obj.PortChosen(i) = 2;
+        end
+    end
 end
 
 obj.FP = roundn(obj.FP, -1);
@@ -194,7 +254,7 @@ obj.FP = roundn(obj.FP, -1);
 %% remove bug trials
 ind_bug = obj.Outcome=="Bug" | (obj.FP<=0 & obj.FP~=-1);
 
-obj.NumTrials = obj.NumTrials - sum(ind_bug);
+obj.NumTrials = obj.NumTrials - sum(ind_bug);                                                                                                                                                                                                     
 
 obj.Trials                      = (1:obj.NumTrials)';
 obj.TrialStartTime(ind_bug)     = [];
