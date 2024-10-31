@@ -54,10 +54,8 @@ for i = 1:obj.NumTrials
     iStates = SessionData.RawEvents.Trial{i}.States;
     iEvents = SessionData.RawEvents.Trial{i}.Events;
     if i < obj.NumTrials
-        nextStates = SessionData.RawEvents.Trial{i+1}.States;
         nextEvents = SessionData.RawEvents.Trial{i+1}.Events;
     else
-        nextStates = [];
         nextEvents = [];
     end
 
@@ -210,15 +208,16 @@ for i = 1:obj.NumTrials
             port2_time_this = port2_time_this(port2_time_this>obj.CentPokeOutTime{i}(end));
         end
 
-        if ~isempty(nextEvents)
+        if ~isempty(nextEvents) && obj.Outcome(i)=="Probe"
+            dt = diff(SessionData.TrialStartTimestamp([i i+1]));
             init_time_next = nextEvents.Port3In(1);
             if isfield(nextEvents, 'Port1In')
                 port1_time_next = nextEvents.Port1In;
-                port1_time_next = port1_time_next(port1_time_next<init_time_next);
+                port1_time_next = port1_time_next(port1_time_next<init_time_next) + dt;
             end
             if isfield(nextEvents, 'Port2In')
                 port2_time_next = nextEvents.Port2In;
-                port2_time_next = port2_time_next(port2_time_next<init_time_next);
+                port2_time_next = port2_time_next(port2_time_next<init_time_next) + dt;
             end
         end
 
