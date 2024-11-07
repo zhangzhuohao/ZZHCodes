@@ -9,6 +9,8 @@ function ExportVideoClipFromAviNeuropixels(r, FrameTable, SessionInfo, ClipInfo,
 
 % revised by ZZH, 5/5/2023
 
+img_ratio = .5;
+
 BehClass = r.BehaviorClass;
 rb = r.Behavior;
 
@@ -242,6 +244,8 @@ for i = 1:length(tBehEvent) % i is also the trial number
     clear frames_ifile vidObj
 
     [H, W, nframe] = size(img_extracted); %
+    H = H * img_ratio;
+    W = W * img_ratio;
 
     % height = height - 200;
 
@@ -256,7 +260,8 @@ for i = 1:length(tBehEvent) % i is also the trial number
     axis off
 
     % plot this frame:
-    img = imagesc(ha, img_extracted(:, :, k), [0 250]);
+    img_this = imresize(img_extracted(:, :, k), img_ratio);
+    img = imagesc(ha, img_this, [0 250]);
 
     colormap('gray');
 
@@ -265,18 +270,18 @@ for i = 1:length(tBehEvent) % i is also the trial number
 
 %     text(W-20, 40,  sprintf('%s %s', anm, session), 'color', [255 255 255]/255, 'FontSize', 20, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
 %     text(W-20, 90,  beh_type, 'color', [255 255 255]/255, 'FontSize', 20, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
-%     text(W-20, 140,  sprintf('Trial %03d', BehTable.Trials(i)), 'color', [255 255 255]/255, 'FontSize', 20, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
+%     text(W-20, 160,  sprintf('Trial %03d', BehTable.Trials(i)), 'color', [255 255 255]/255, 'FontSize', 20, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
 %     text(W-20, 190,  sprintf('FP: %d ms', BehTable.FP(i)*1000), 'color', [255 255 255]/255, 'FontSize', 20, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
 %     text(W-20, 240,  sprintf('RT: %d ms', round(1000*BehTable.RT(i))), 'color', [255 255 255]/255, 'FontSize', 20, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
 %     text(W-20, 290,  thisOutcome, 'color', color.(thisOutcome), 'FontSize', 20, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
-    time_text = text(20, H-40, sprintf('Time: %0.2f s', tthis_frame ./ 1000), 'color', [255 215 0]/255, 'FontSize', 16,'fontweight', 'bold');
+    time_text = text(10, H-20, sprintf('Time: %0.2f s', tthis_frame ./ 1000), 'color', [255 215 0]/255, 'FontSize', 11,'fontweight', 'bold');
     % plot some important behavioral events
 
     % raster
     ha_raster = axes;
-    set(ha_raster, 'units', 'pixels', 'position', [0 0.1*scale_ratio*H scale_ratio*W 0.66*scale_ratio*H], 'color', 'none', ...
+    set(ha_raster, 'units', 'pixels', 'position', [0 0.13*scale_ratio*H scale_ratio*W 0.63*scale_ratio*H], 'color', 'none', ...
         'nextplot', 'add', 'xtick', [-tPre:500:tPost], 'xlim', [-tPre tPost], 'xcolor', 'none', ...
-        'ycolor', 'none', 'ydir', 'reverse', 'ylim', [.5 nUnits+.5], 'tickdir', 'out', 'FontSize', 14) %#ok<NBRAK>
+        'ycolor', 'none', 'ydir', 'reverse', 'ylim', [.5 nUnits+.5], 'tickdir', 'out', 'FontSize', 11) %#ok<NBRAK>
 
     for u = 1:nUnits
         c_unit = cUnits(u, :);
@@ -289,23 +294,27 @@ for i = 1:length(tBehEvent) % i is also the trial number
         end
     end
 
-    % time lines
-    ha_tline = axes; 
-    set(ha_tline, 'units', 'pixels', 'position', [0 0.1*scale_ratio*H scale_ratio*W 0.695*scale_ratio*H], 'color', 'none', ...
-        'nextplot', 'add', 'xtick', [-tPre:500:tPost], 'xlim', [-tPre tPost], 'xcolor', 'none', ...
-        'ycolor', 'none', 'ylim', [0 1], 'tickdir', 'out', 'FontSize', 14) %#ok<NBRAK>
+    % event lines
+    ha_eline = axes; 
+    set(ha_eline, 'units', 'pixels', 'position', [0 0.125*scale_ratio*H scale_ratio*W 0.67*scale_ratio*H], 'color', 'none', ...
+        'nextplot', 'add', 'xtick', -tPre:500:tPost, 'xlim', [-tPre tPost], 'xcolor', 'none', ...
+        'ycolor', 'none', 'ylim', [0 1], 'FontSize', 10) % #ok<NBRAK>
 
-    xline(ha_tline, itCentIn - itCentIn, 'Color', cCentIn, 'LineStyle', '-', 'LineWidth', 2, 'Alpha', 1);
-    xline(ha_tline, itCentOut - itCentIn, 'Color', cCentOut, 'LineStyle', '-', 'LineWidth', 2, 'Alpha', 1);
-    xline(ha_tline, itTrigger - itCentIn, 'Color', cTrigger, 'LineStyle', '-', 'LineWidth', 2, 'Alpha', 1);
-    xline(ha_tline, itChoice - itCentIn, 'Color', cChoice, 'LineStyle', '-', 'LineWidth', 2, 'Alpha', 1);
-    
-    time_line = xline(ha_tline, tthis_frame, 'Color', 'w', 'LineStyle', '-', 'LineWidth', 2, 'Alpha', 1);
+    xline(ha_eline, itCentIn - itCentIn, 'Color', cCentIn, 'LineStyle', '-', 'LineWidth', 1.5, 'Alpha', 1);
+    xline(ha_eline, itCentOut - itCentIn, 'Color', cCentOut, 'LineStyle', '-', 'LineWidth', 1.5, 'Alpha', 1);
+    xline(ha_eline, itTrigger - itCentIn, 'Color', cTrigger, 'LineStyle', '-', 'LineWidth', 1.5, 'Alpha', 1);
+    xline(ha_eline, itChoice - itCentIn, 'Color', cChoice, 'LineStyle', '-', 'LineWidth', 1.5, 'Alpha', 1);
+   
+    text(ha_eline, itCentIn-itCentIn-20, 1, 'Cent-In', 'Color', 'w', 'FontSize', 10, 'FontWeight', 'bold', 'HorizontalAlignment', 'right', 'VerticalAlignment', 'top');
+    text(ha_eline, itTrigger-itCentIn-20, 1, 'Trigger', 'Color', 'w', 'FontSize', 10, 'FontWeight', 'bold', 'HorizontalAlignment', 'right', 'VerticalAlignment', 'top');
+    text(ha_eline, itCentOut-itCentIn+20, 1, 'Cent-Out', 'Color', 'w', 'FontSize', 10, 'FontWeight', 'bold', 'HorizontalAlignment', 'left', 'VerticalAlignment', 'top');
+    text(ha_eline, itChoice-itCentIn+20, 1, 'Choice-In', 'Color', 'w', 'FontSize', 10, 'FontWeight', 'bold', 'HorizontalAlignment', 'left', 'VerticalAlignment', 'top');
 
-    text(ha_tline, itCentIn-itCentIn-20, 1, 'Cent-In', 'Color', 'w', 'FontSize', 14, 'HorizontalAlignment', 'right', 'VerticalAlignment', 'top');
-    text(ha_tline, itTrigger-itCentIn-20, 1, 'Trigger', 'Color', 'w', 'FontSize', 14, 'HorizontalAlignment', 'right', 'VerticalAlignment', 'top');
-    text(ha_tline, itCentOut-itCentIn+20, 1, 'Cent-Out', 'Color', 'w', 'FontSize', 14, 'HorizontalAlignment', 'left', 'VerticalAlignment', 'top');
-    text(ha_tline, itChoice-itCentIn+20, 1, 'Choice-In', 'Color', 'w', 'FontSize', 14, 'HorizontalAlignment', 'left', 'VerticalAlignment', 'top');
+    ha_tline = axes;
+    set(ha_tline, 'units', 'pixels', 'position', [0 0.01*scale_ratio*H scale_ratio*W 0.785*scale_ratio*H], 'color', 'none', ...
+        'nextplot', 'add', 'xtick', -tPre:500:tPost, 'xlim', [-tPre tPost], 'xcolor', 'none', ...
+        'ycolor', 'none', 'ylim', [0 1]) % #ok<NBRAK>
+    time_line = xline(ha_tline, tthis_frame, 'Color', 'w', 'LineStyle', '-', 'LineWidth', 1.5, 'Alpha', 1);
 
     % x axis
     x_present = [-800 2800];
@@ -313,15 +322,15 @@ for i = 1:length(tBehEvent) % i is also the trial number
     x_width = x_ratio * scale_ratio * W;
     x_height = 0.01*scale_ratio*H;
     x_pos_x = scale_ratio * W * (tPre+x_present(1)) ./ (tPost+tPre);
-    x_pos_y = 0.09*scale_ratio*H;
+    x_pos_y = 0.12*scale_ratio*H;
 
     ha_x = axes;
     set(ha_x, 'units', 'pixels', 'position', [x_pos_x x_pos_y x_width x_height], 'color', 'none', ...
-        'nextplot', 'add', 'xtick', [-tPre:500:tPost]./1000, 'xlim', x_present./1000, 'xcolor', 'w', ...
-        'ycolor', 'none', 'ydir', 'reverse', 'ylim', [0 1], 'tickdir', 'out', 'FontSize', 14, 'LineWidth', 1) %#ok<NBRAK>
+        'nextplot', 'add', 'xtick', (-tPre:500:tPost)./1000, 'xlim', x_present./1000, 'xcolor', 'w', ...
+        'ycolor', 'none', 'ydir', 'reverse', 'ylim', [0 1], 'tickdir', 'out', 'FontSize', 10, 'LineWidth', 1) % #ok<NBRAK>
     ha_x.XLabel.String = 'Time from Cent-In (s)';
     ha_x.XLabel.FontWeight = 'bold';
-    ha_x.XLabel.FontSize = 14;
+    ha_x.XLabel.FontSize = 10;
 
 %
     F(k) = getframe(hf25);
@@ -333,7 +342,8 @@ for i = 1:length(tBehEvent) % i is also the trial number
 
         time_line.Value = tthis_frame;
 
-        img.CData = img_extracted(:, :, k);
+        img_this = imresize(img_extracted(:, :, k), img_ratio);
+        img.CData = img_this;
 
 %         drawnow;
         % plot or update data in this plot
@@ -345,7 +355,7 @@ for i = 1:length(tBehEvent) % i is also the trial number
 
     writerObj = VideoWriter(VidClipFileName);
     writerObj.FrameRate = 0.4 * median(1000./diff(iFrameTimesPixel));
-    writerObj.Quality = 100;
+%     writerObj.Quality = 100;
     % set the seconds per image
     % open the video writer
     open(writerObj);
