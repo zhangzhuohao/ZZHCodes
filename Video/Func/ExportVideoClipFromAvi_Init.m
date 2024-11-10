@@ -1,4 +1,4 @@
-function ExportVideoClipFromAvi_Field(BehTable, FrameTable, SessionInfo, ClipInfo, scn_scale, remake, x_rev)
+function ExportVideoClipFromAvi_Init(BehTable, FrameTable, SessionInfo, ClipInfo, scn_scale, remake, x_rev)
 
 % ExportVideoClipFromAvi(thisTable, FrameTable, 'Event', VideoEvent,'ANM', ANM, ...
 %     'Pre', Pre, 'Post', Post, 'BehaviorType', BehaviorType, 'Session', Session, 'Remake', 1)
@@ -11,14 +11,12 @@ function ExportVideoClipFromAvi_Field(BehTable, FrameTable, SessionInfo, ClipInf
 
 scale_ratio     =   1 / scn_scale;
 
-color           =   GPSColor();
-
 anm             =   SessionInfo.ANM;
 beh_type        =   SessionInfo.Task;
 session         =   SessionInfo.Session;
 
 event           =   ClipInfo.VideoEvent;
-tPreMax         =   ClipInfo.Pre;
+tPre            =   ClipInfo.Pre;
 tPost           =   ClipInfo.Post;
 
 if nargin<6
@@ -33,9 +31,9 @@ tBehEvent = 1000*(BehTable.(event) + BehTable.TrialStartTime);
 tFramesBpod = FrameTable.tFrames2Bpodms;
 
 % set up video clip storage folder
-thisView   = "Field";
-viewFolder = ClipInfo.VideoFolderField;
-thisFolder = fullfile(ClipInfo.VideoFolderField, 'Clips');
+thisView   = "Init";
+viewFolder = ClipInfo.VideoFolderInit;
+thisFolder = fullfile(ClipInfo.VideoFolderInit, 'Clips');
 
 if ~isfolder(thisFolder)
     mkdir(thisFolder);
@@ -59,12 +57,6 @@ for i = 1:length(tBehEvent) % i is also the trial number
     waitbar(i/length(tBehEvent), wait_bar, sprintf('%d / %d', i, length(tBehEvent)));
 
     itEvent = tBehEvent(i);
-    iShuttleTime = BehTable.ST(i); % Shuttle time of this trial (in sec)
-    if (500 + iShuttleTime*1000) < tPreMax
-        tPre = iShuttleTime*1000;
-    else
-        tPre = tPreMax;
-    end
 
     IndThisClip         =   find(tFramesBpod>=itEvent-tPre & tFramesBpod<=itEvent+tPost);
     if isempty(IndThisClip)
@@ -74,8 +66,7 @@ for i = 1:length(tBehEvent) % i is also the trial number
 
     % check if a video has been created and check if we want to
     % re-create the same video
-    ClipName = sprintf('%s_%s_Trial%03d_FieldView', anm, session, i);
-
+    ClipName = sprintf('%s_%s_Trial%03d_InitView', anm, session, i);
     VidClipFileName = fullfile(thisFolder, [ClipName '.avi']);
     check_this_file = dir(VidClipFileName);
 

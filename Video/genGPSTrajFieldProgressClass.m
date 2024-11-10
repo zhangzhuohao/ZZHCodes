@@ -57,7 +57,7 @@ for d = 1:length(Folders)
     BehProgressClass = obj;
     clear obj
 
-    Files = get_mat_files(ProtocolDir, "FileType", 'TrajSessionClass');
+    Files = get_mat_files(ProtocolDir, "FileType", 'TrajFieldSessionClass');
     if isempty(Files)
         continue
     end
@@ -77,7 +77,7 @@ for d = 1:length(Folders)
     TrajSessionClassAll = TrajSessionClassAll(SortID);
 
     %
-    TrajProgressClass = GPSTrajProgressClass(TrajSessionClassAll, ProtocolDir, BehProgressClass.BehavTable);
+    TrajProgressClass = GPSTrajFieldProgressClass(TrajSessionClassAll, ProtocolDir, BehProgressClass.BehavTable);
     TrajProgressClass.save();
     
 %     fig_progress = TrajProgressClass.plotProgress();

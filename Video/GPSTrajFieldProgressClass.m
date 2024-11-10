@@ -1,4 +1,4 @@
-classdef GPSTrajProgressClass < GPSTrajClass
+classdef GPSTrajFieldProgressClass < GPSTrajClass
     %UNTITLED Summary of this class goes here
     %   Detailed explanation goes here
 
@@ -29,33 +29,35 @@ classdef GPSTrajProgressClass < GPSTrajClass
         TrialInfo
 
         % Trace time points
-        TimeFromIn
-        TimeFromOut
-        TimeFromCue
-        TimeWarpHD
+        TimeFromCentIn
 
-        % Port location
-        PortLeft
-        PortRight
-        PortVec
-        PortCent
+        TimeZoneIn
+        TimeZoneOut
 
-        % Head postion
+        TimeFromZoneIn
+        TimeFromZoneOut
+
+        CrossTime
+        TimeWarpCross
+
+        CorridorLoc
+        tForm
+
         AngleHead
+        AngSpeedHead
+        AngAccHead
+
         PosXHead
         PosYHead
-
-        % Head speed
-        AngSpeedHead
+        PosHeadT
+        
         SpeedXHead
         SpeedYHead
-        SpeedHead
-        SpeedDirHead
-
-        % Head acceleration
-        AngAccHead
         AccXHead
         AccYHead
+
+        SpeedHead
+        SpeedDirHead
         AccHead
         dPhiHead
 
@@ -69,12 +71,23 @@ classdef GPSTrajProgressClass < GPSTrajClass
         DistMatDtw
     end
 
+    properties (Constant)
+        CorridorLength = 300;
+        CorridorWidth  = 153;
+        CorridorLocT = [
+            0   0; % L_U 
+            0   153; % L_D
+            300 0; % R_U
+            300 153; % R_D
+            ]
+    end
+
     properties (Dependent)
         SaveName
     end
 
     methods
-        function obj = GPSTrajProgressClass(TrajSessionClassAll, ProtocolDir, BehavTable)
+        function obj = GPSTrajFieldProgressClass(TrajSessionClassAll, ProtocolDir, BehavTable)
             %UNTITLED Construct an instance of this class
             %   Detailed explanation goes here
             obj.ProtocolDir = ProtocolDir;
@@ -118,38 +131,35 @@ classdef GPSTrajProgressClass < GPSTrajClass
             obj.TrialInfo = obj.splice_data(allTables);
             obj.TrialInfo = addvars(obj.TrialInfo{1}, (1:sum(obj.NumTrialsSession))', 'After', 'Trials', 'NewVariableNames', "Index");
             
-
             % Gather timepoints, trajectories and ports
             obj.gather_all_progress(TrajSessionClassAll);
 
-            obj.gather_all_matrix();
-
+%             obj.gather_all_matrix();
         end
 
         %%
         function gather_all_progress(obj, TrajSessionClassAll)
             vars_to_gather = [
-                "TimeFromIn" % time points
-                "TimeFromOut"
-                "TimeFromCue"
-                "TimeWarpHD"
-                "PortLeft" % port location
-                "PortRight"
-                "PortVec"
-                "PortCent"
-                "AngleHead" % head position
+                "TimeFromCentIn" % time points
+                "TimeZoneIn"
+                "TimeZoneOut"
+                "TimeFromZoneIn"
+                "TimeFromZoneOut" % port location
+                "CrossTime"
+                "TimeWarpCross"
+                "CorridorLoc"
+                "tForm"
                 "PosXHead"
                 "PosYHead"
-                "AngSpeedHead" % head speed
+                "PosHeadT"
                 "SpeedXHead"
                 "SpeedYHead"
                 "SpeedHead"
-                "SpeedDirHead"
-                "AngAccHead" % head acceleration
+%                 "SpeedDirHead"
                 "AccXHead"
                 "AccYHead"
                 "AccHead"
-                "dPhiHead"
+%                 "dPhiHead"
                 ];
             for i = 1:length(vars_to_gather)
                 var_this = vars_to_gather(i);
@@ -190,7 +200,7 @@ classdef GPSTrajProgressClass < GPSTrajClass
 
         %% 
         function save_name = get.SaveName(obj)
-            save_name = sprintf("GPSTrajProgressClass_%s_%s", obj.Protocol, upper(obj.Subject));
+            save_name = sprintf("GPSTrajFieldProgressClass_%s_%s", obj.Protocol, upper(obj.Subject));
         end
 
         %% Save

@@ -7,9 +7,9 @@ for i = 1:length(Drives)
     end
 end
 
-View = "Top";
+View = "Field";
 
-VideoFolder = uigetdir("Z:\YuLab\Work\GPS\Video\");
+VideoFolder = uigetdir("D:\YuLab\Work\GPS\Video\");
 
 % VideoFolder = VideoFolderParent;
 

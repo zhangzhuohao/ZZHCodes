@@ -1,11 +1,11 @@
 function fig = plotTrajSession(obj)
 
-FP_zone = [zeros(3,1) 1000*flip(obj.TargetFP')];
+FP_zone = [zeros(3,1) 1000*flip(obj.TargetFP(1:3)')];
 FP_zone = mat2cell(FP_zone, ones(3,1));
 
 info = obj.TrialInfo;
 sort_refs = {info.FP, info.PortCorrect};
-sort_code = {flip(obj.TargetFP), obj.LeftRight};
+sort_code = {flip(obj.TargetFP(1:3)), obj.LeftRight};
 
 time_sorted = obj.sort_data(obj.TimeFromIn, sort_refs, sort_code);
 ang_sorted  = obj.sort_data(obj.AngleHead, sort_refs, sort_code);

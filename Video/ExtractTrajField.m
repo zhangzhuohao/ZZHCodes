@@ -1,55 +1,46 @@
-% clear;
+clear;
 
-DLCCrop = [0 1280 0 1024];
+DLCCrop = [0 1280 300 900];
 
 BodyParts = {
-    'ear_base_left', ...
-    'ear_base_right', ...
+    'snout', ...
+    'ear_left', ...
+    'ear_right', ...
     'body_1'
     };
 
-Ports = {
-    'port_left', ...
-    'port_right', ...
+Corridor = {
+    'corridor_l_u', ...
+    'corridor_l_d', ...
+    'corridor_r_u', ...
+    'corridor_r_d', ...
     };
 
 %%
-opts = delimitedTextImportOptions("NumVariables", 37);
+opts = delimitedTextImportOptions("NumVariables", 34);
 
 opts.DataLines = [4, Inf];
 opts.Delimiter = ",";
 
-opts.VariableNames = ["frame", ...
-    "ear_tip_left_x",   "ear_tip_left_y",   "ear_tip_left_lh", ...
-    "ear_base_left_x",  "ear_base_left_y",  "ear_base_left_lh", ...
-    "ear_tip_right_x",  "ear_tip_right_y",  "ear_tip_right_lh", ...
-    "ear_base_right_x", "ear_base_right_y", "ear_base_right_lh", ...
-    "body_1_x",         "body_1_y",         "body_1_lh", ...
-    "body_2_x",         "body_2_y",         "body_2_lh", ...
-    "body_3_x",         "body_3_y",         "body_3_lh", ...
-    "tail_left_x",      "tail_left_y",      "tail_left_lh", ...
-    "tail_right_x",     "tail_right_y",     "tail_right_lh", ...
-    "port_left_x",      "port_left_y",      "port_left_lh", ...
-    "port_right_x",     "port_right_y",     "port_right_lh", ...
-    "port_center_x",    "port_center_y",    "port_center_lh"];
+opts.VariableNames = [
+    "frame", ...
+    "corridor_l_u_x", "corridor_l_u_y", "corridor_l_u_lh", ...
+    "corridor_l_d_x", "corridor_l_d_y", "corridor_l_d_lh", ...
+    "corridor_r_u_x", "corridor_r_u_y", "corridor_r_u_lh", ...
+    "corridor_r_d_x", "corridor_r_d_y", "corridor_r_d_lh", ...
+    "snout_x",        "snout_y",        "snout_lh", ...
+    "ear_left_x",     "ear_left_y",     "ear_left_lh", ...
+    "ear_right_x",    "ear_right_y",    "ear_right_lh", ...
+    "body_1_x",       "body_1_y",       "body_1_lh", ...
+    "body_2_x",       "body_2_y",       "body_2_lh", ...
+    "body_3_x",       "body_3_y",       "body_3_lh", ...
+    "tail_x",         "tail_y",         "tail_lh"
+    ];
 
-opts.VariableTypes = repmat("double", 1, 37);
+opts.VariableTypes = repmat("double", 1, 34);
 
 opts.ExtraColumnsRule = "ignore";
 opts.EmptyLineRule = "read";
-
-%%
-% ClipFolder  = uigetdir('D:\YuLab\Work\GPS\Video\Leopold\GPS_12_ThreeFPHoldSRT\');
-% if ~ClipFolder
-%     return
-% end
-% [ViewFolder, dir_name] = fileparts(ClipFolder);
-% [DateFolder, ~] = fileparts(ViewFolder);
-% [TaskFolder, ~] = fileparts(DateFolder);
-% if ~strcmp(dir_name, 'Clips')
-%     fprintf("\nPlease select a 'Clips' folder.\n");
-%     return
-% end
 
 %%
 TaskFolder = uigetdir('D:\YuLab\Work\GPS\Video\');
@@ -70,11 +61,12 @@ end
 
 SessionFolders = SessionFolders(ismember(SessionsAll, Sessions(SessionInd)));
 
+%%
 for s = 1:length(SessionFolders)
-% ClipFolder  = 'D:\YuLab\Work\GPS\Video\Kennard\GPS_13_ThreeFPHoldSRT\20240313\Top\Clips';
-ClipFolder = fullfile(SessionFolders(s), "Top", "Clips");
+% ClipFolder  = 'D:\YuLab\Work\GPS\Video\Kennard\GPS_13_ThreeFPHoldSRT\20240313\Field\Clips';
+ClipFolder = fullfile(SessionFolders(s), "Field", "Clips");
 if ~isfolder(ClipFolder)
-    fprintf("no clip folder in %s", fullfile(SessionFolders(s), "Top"));
+    fprintf("no clip folder in %s", fullfile(SessionFolders(s), "Field"));
 end
 
 %%
@@ -140,36 +132,57 @@ for i = 1:NumClips
     end
 
     trial_info = BehTable(BehTable.Trials==VidMeta.EventIndex, :);
+    st = trial_info.ST * 1000;
 
-    FrameBeg = find(t_frames>=-120, 1);
-    switch trial_info.Outcome{1}
-        case {'Correct', 'Wrong'}
-            FrameEnd = find(t_frames<=(trial_info.ChoicePokeTime-trial_info.(VidMeta.Event))*1000, 1, 'last');
-        case {'Premature'}
-            FrameEnd = find(t_frames<=(trial_info.CentOutTime-trial_info.(VidMeta.Event))*1000+200, 1, 'last');
-        case {'Late', 'LateMiss', 'LateCorrect', 'LateWrong'}
-            FrameEnd = find(t_frames<=(trial_info.CentOutTime-trial_info.(VidMeta.Event))*1000+200, 1, 'last');
-            trial_info.Outcome{1} = 'Late';
+    D = readtable(fullfile(ClipFolder, dlcTable_name), opts);
+    lh_l = D.ear_left_lh;
+    lh_r = D.ear_right_lh;
+
+    valid_id = find(lh_l>.8 & lh_r>.8);
+    if isempty(valid_id)
+        fprintf("\nDrop %d for no good labels\n", VidMeta.EventIndex);
+        continue
     end
+    df = diff(valid_id);
+    f_seg = find(df>2);
+    if ~isempty(f_seg)
+        f_seg = [0; f_seg; length(valid_id)];
+        valid_seg = cell(1, length(f_seg)-1);
+        for j = 1:length(f_seg)-1
+            valid_seg{j} = valid_id(f_seg(j)+1:f_seg(j+1));
+        end
+        len_seg = cellfun(@length, valid_seg);
+        [~, id] = max(len_seg);
+        valid_id = valid_seg{id};
+    end
+
+    FrameBeg = valid_id(1);
+    FrameEnd = valid_id(end);
+
     t_frames = t_frames(FrameBeg:FrameEnd);
 
     % start to update video file
-    D = readtable(fullfile(ClipFolder, dlcTable_name), opts);
+    
     % This is the list of body parts tracked
+    corridor_loc.L_U = [D.corridor_l_u_x D.corridor_l_u_y] + DLCCrop([1 3]);
+    corridor_loc.L_D = [D.corridor_l_d_x D.corridor_l_d_y] + DLCCrop([1 3]);
+    corridor_loc.R_U = [D.corridor_r_u_x D.corridor_r_u_y] + DLCCrop([1 3]);
+    corridor_loc.R_D = [D.corridor_r_d_x D.corridor_r_d_y] + DLCCrop([1 3]);
 
-    port_loc.L = [D.port_left_x D.port_left_y];
-    port_loc.R = [D.port_right_x D.port_right_y];
-
-    if ~any(D.port_left_lh>0.99) || ~any(D.port_right_lh>0.99)
-        fprintf("\nDrop %d for invisible left/right port\n", VidMeta.EventIndex);
+    if ~any(D.corridor_l_u_lh>0.99) || ~any(D.corridor_l_d_lh>0.99) || ~any(D.corridor_r_u_lh>0.99) || ~any(D.corridor_r_d_lh>0.99)
+        fprintf("\nDrop %d for invisible corridor corner\n", VidMeta.EventIndex);
         continue
     else
-        port_loc.L = mean(port_loc.L(D.port_left_lh>0.99 , :));
-        port_loc.R = mean(port_loc.R(D.port_right_lh>0.99, :));
+        corridor_loc.L_U = mean(corridor_loc.L_U(D.corridor_l_u_lh>0.99, :));
+        corridor_loc.L_D = mean(corridor_loc.L_D(D.corridor_l_d_lh>0.99, :));
+        corridor_loc.R_U = mean(corridor_loc.R_U(D.corridor_r_u_lh>0.99, :));
+        corridor_loc.R_D = mean(corridor_loc.R_D(D.corridor_r_d_lh>0.99, :));
     end
 
     DropOut = 0;
-    if size(D, 1) < 198
+
+    dt = diff(t_frames);
+    if any(dt>=3*median(dt))
         DropOut = 1;
         fprintf("\nDrop %d for frame loss\n", VidMeta.EventIndex);
         continue;
@@ -184,7 +197,7 @@ for i = 1:NumClips
         y_pos     =     D.([body_part '_y'])(FrameBeg:FrameEnd) + DLCCrop(3);
         lh        =     D.([body_part '_lh'])(FrameBeg:FrameEnd);
 
-        if j <= 2 % check ear_base_left and ear_base_right
+        if ismember(body_part, {'ear_left', 'ear_right'}) % check ear_base_left and ear_base_right
             bad_label = find(lh < 0.8);
             if ~isempty(bad_label)
                 DropOut = 1;
@@ -212,7 +225,7 @@ for i = 1:NumClips
     end
     if DropOut
         fprintf("\nDrop %d for bad labelling\n", VidMeta.EventIndex);
-        continue;
+% % % % % % % % % % % % % %         continue;
     end
 
     for j = 1:length(BodyParts)
@@ -224,41 +237,40 @@ for i = 1:NumClips
         y_pos     =     D.([body_part '_y'])(FrameBeg:FrameEnd) + DLCCrop(3);
         lh        =     D.([body_part '_lh'])(FrameBeg:FrameEnd);
 
-        if j <=2
-            bad_label = find(lh < 0.8);
-        end
-        if ~isempty(bad_label)
-            fh    =     figure(31); clf(fh);
-            set(fh, 'name', body_part, 'units', 'centimeter', 'position', [5 2 20 1.3*20*1024/1280]);
+%         if ismember(body_part, {'ear_left', 'ear_right'}) % check ear_base_left and ear_base_right
+%             bad_label = find(lh < 0.8);
+%         end
+%         if ~isempty(bad_label)
+%             fh    =     figure(31); clf(fh);
+%             set(fh, 'name', body_part, 'units', 'centimeter', 'position', [5 2 20 1.3*20*1024/1280]);
+% 
+%             ax = axes;
+%             set(ax, 'units', 'norm', 'position', [.05 .05 .9 .9], 'YDir', 'Reverse', 'nextplot', 'add', 'xcolor', 'none', 'ycolor', 'none');
+% 
+%             this_clip = VideoReader(fullfile(ClipFolder, clip_filename));
+%             imagesc(ax, read(this_clip, nframes(bad_label(1))));
+%             drawnow();
+% 
+%             for k = 1:length(bad_label)
+%                 clf(fh);
+%                 ax = axes;
+%                 set(ax, 'units', 'norm', 'position', [.05 .05 .9 .9], 'YDir', 'Reverse', 'nextplot', 'add', 'xcolor', 'none', 'ycolor', 'none');
+% 
+%                 imagesc(ax, read(this_clip, nframes(bad_label(k))));
+%                 scatter(ax, x_pos(bad_label(k)), y_pos(bad_label(k)), 'or');
+% 
+%                 title(body_part, 'Interpreter', 'none');
+%                 axis equal
+% 
+%                 [xi, yi] = getpts(ax);
+% 
+%                 x_pos(bad_label(k)) = xi(end-1);
+%                 y_pos(bad_label(k)) = yi(end-1);
+% 
+%             end
+%             close(fh);
+%         end
 
-            ax = axes;
-            set(ax, 'units', 'norm', 'position', [.05 .05 .9 .9], 'YDir', 'Reverse', 'nextplot', 'add', 'xcolor', 'none', 'ycolor', 'none');
-
-            this_clip = VideoReader(fullfile(ClipFolder, clip_filename));
-            imagesc(ax, read(this_clip, nframes(bad_label(1))));
-            drawnow();
-
-            for k = 1:length(bad_label)
-                clf(fh);
-                ax = axes;
-                set(ax, 'units', 'norm', 'position', [.05 .05 .9 .9], 'YDir', 'Reverse', 'nextplot', 'add', 'xcolor', 'none', 'ycolor', 'none');
-
-                imagesc(ax, read(this_clip, nframes(bad_label(k))));
-                scatter(ax, x_pos(bad_label(k)), y_pos(bad_label(k)), 'or');
-
-                title(body_part, 'Interpreter', 'none');
-                axis equal
-
-                [xi, yi] = getpts(ax);
-
-                x_pos(bad_label(k)) = xi(end-1);
-                y_pos(bad_label(k)) = yi(end-1);
-
-            end
-
-            close(fh);
-
-        end
         pos_data = [x_pos, y_pos, lh, t_frames, nframes];
 
         if isempty(dir(OutFile))
@@ -289,7 +301,7 @@ for i = 1:NumClips
                 error('Cannot find BpodTrialNum or PressTrialNum or EventIndex. Check index')
             end
 
-            DLCTrackingOut.PortLoc(1) = port_loc;
+            DLCTrackingOut.PortLoc(1) = corridor_loc;
 
             save(OutFile, 'DLCTrackingOut');
         
@@ -315,7 +327,7 @@ for i = 1:NumClips
                     DLCTrackingOut.PoseTracking(ind_body).BpodEventIndex(:, end+1)  = [VidMeta.BpodTrialNum; VidMeta.EventTime];
                     DLCTrackingOut.PoseTracking(ind_body).Performance{end+1}        = trial_info.Outcome{1};
                     if j == 1
-                        DLCTrackingOut.PortLoc(end+1) = port_loc;
+                        DLCTrackingOut.PortLoc(end+1) = corridor_loc;
                     end
                 else
                     ind_old = find(DLCTrackingOut.PoseTracking(ind_body).BpodEventIndex(1, :)==VidMeta.BpodTrialNum);
@@ -323,7 +335,7 @@ for i = 1:NumClips
                     DLCTrackingOut.PoseTracking(ind_body).BpodEventIndex(:, ind_old)  = [VidMeta.BpodTrialNum; VidMeta.EventTime];
                     DLCTrackingOut.PoseTracking(ind_body).Performance{ind_old}        = trial_info.Outcome{1};
                     if j == 1
-                        DLCTrackingOut.PortLoc(ind_old) = port_loc;
+                        DLCTrackingOut.PortLoc(ind_old) = corridor_loc;
                     end
                 end
 
@@ -333,7 +345,7 @@ for i = 1:NumClips
                     DLCTrackingOut.PoseTracking(ind_body).BpodEventIndex(:, end+1)  = [VidMeta.EventIndex; VidMeta.EventTime];
                     DLCTrackingOut.PoseTracking(ind_body).Performance{end+1}        = trial_info.Outcome{1};
                     if j == 1
-                        DLCTrackingOut.PortLoc(end+1) = port_loc;
+                        DLCTrackingOut.PortLoc(end+1) = corridor_loc;
                     end                
                 else
                     ind_old = find(DLCTrackingOut.PoseTracking(ind_body).BpodEventIndex(1, :)==VidMeta.EventIndex);
@@ -341,7 +353,7 @@ for i = 1:NumClips
                     DLCTrackingOut.PoseTracking(ind_body).BpodEventIndex(:, ind_old)  = [VidMeta.EventIndex; VidMeta.EventTime];
                     DLCTrackingOut.PoseTracking(ind_body).Performance{ind_old}        = trial_info.Outcome{1};
                     if j == 1
-                        DLCTrackingOut.PortLoc(ind_old) = port_loc;
+                        DLCTrackingOut.PortLoc(ind_old) = corridor_loc;
                     end
                 end
 
@@ -351,7 +363,7 @@ for i = 1:NumClips
                     DLCTrackingOut.PoseTracking(ind_body).MEDPressIndex(:, end+1)  = [VidMeta.PressTrialNum; VidMeta.EventTime];
                     DLCTrackingOut.PoseTracking(ind_body).Performance{end+1}        = trial_info.Outcome{1};
                     if j == 1
-                        DLCTrackingOut.PortLoc(end+1) = port_loc;
+                        DLCTrackingOut.PortLoc(end+1) = corridor_loc;
                     end                
                 else
                     ind_old = find(DLCTrackingOut.PoseTracking(ind_body).MEDPressIndex(1, :)==VidMeta.PressTrialNum);
@@ -359,7 +371,7 @@ for i = 1:NumClips
                     DLCTrackingOut.PoseTracking(ind_body).MEDPressIndex(:, ind_old)  = [VidMeta.PressTrialNum; VidMeta.EventTime];
                     DLCTrackingOut.PoseTracking(ind_body).Performance{ind_old}        = trial_info.Outcome{1};
                     if j == 1
-                        DLCTrackingOut.PortLoc(ind_old) = port_loc;
+                        DLCTrackingOut.PortLoc(ind_old) = corridor_loc;
                     end
                 end
 

@@ -69,7 +69,7 @@ end
 
 %%
 for i = 1:length(SessionFolders)
-    tracking_file = dir(fullfile(SessionFolders(i), "*DLCTrackingOut_Top*.mat"));
+    tracking_file = dir(fullfile(SessionFolders(i), "*DLCTrackingOut_Field*.mat"));
     if isempty(tracking_file)
         SessionFolders(i) = "";
     end
@@ -92,14 +92,14 @@ Folders = SessionFolders(ismember(SessionsAll, Sessions(SessionInd)));
 fprintf("\ngenTrajSessionClass\n")
 for i = 1:length(Folders)
 
-    tracking_file = dir(fullfile(Folders(i), "*DLCTrackingOut_Top*.mat"));
+    tracking_file = dir(fullfile(Folders(i), "*DLCTrackingOut_Field*.mat"));
     behclass_file = dir(fullfile(Folders(i), "*BehSessionClass_*.mat"));
 
     if isempty(tracking_file)
         continue;
     end
 
-    TrajSessionClass = GPSTrajSessionClass(fullfile(Folders(i), tracking_file.name), fullfile(Folders(i), behclass_file.name));
+    TrajSessionClass = GPSTrajFieldSessionClass(fullfile(Folders(i), tracking_file.name), fullfile(Folders(i), behclass_file.name));
 
     TrajSessionClass.save();
 
