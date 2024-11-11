@@ -67,6 +67,14 @@ for i = 1:length(contents)
                 if length(parts)>=3 && strcmp(parts{1}, 'GPSTrajFieldProgressClass')
                     file_names = [file_names; fullfile(directory, entry.name)];
                 end
+            case "TRAJINITSESSIONCLASS"
+                if length(parts)>=3 && strcmp(parts{1}, 'GPSTrajInitSessionClass')
+                    file_names = [file_names; fullfile(directory, entry.name)];
+                end
+            case "TRAJINITPROGRESSCLASS"
+                if length(parts)>=3 && strcmp(parts{1}, 'GPSTrajInitProgressClass')
+                    file_names = [file_names; fullfile(directory, entry.name)];
+                end
         end
     end
 end
