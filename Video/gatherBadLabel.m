@@ -1,15 +1,15 @@
 clear;
 %%
-View = "Top";
+View = "Init";
 
 %%
-TaskFolder = uigetdir('D:\YuLab\Work\GPS\Video\');
+TaskFolder = uigetdir('Z:\YuLab\Work\GPS\Video\');
 if ~TaskFolder
     return
 end
 
 %%
-GatherFolder = fullfile(TaskFolder, "BadLabels");
+GatherFolder = fullfile(TaskFolder, "BadLabels", View);
 if ~isfolder(GatherFolder)
     mkdir(GatherFolder);
 end
@@ -33,7 +33,7 @@ for s = 1:length(SessionFolders)
 %
     ClipFolder = fullfile(SessionFolders(s), View, "Clips");
     if ~isfolder(ClipFolder)
-        fprintf("no clip folder in %s", fullfile(SessionFolders(s), View));
+        fprintf("no clip folder in %s\n", fullfile(SessionFolders(s), View));
         continue;
     end
 

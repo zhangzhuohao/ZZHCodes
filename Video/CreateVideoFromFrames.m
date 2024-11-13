@@ -1,15 +1,15 @@
 % Will use all images in the current folder to make videos
 %%
-View = "Top";
+View = "Init";
 
 %%
-TaskFolder = uigetdir('D:\YuLab\Work\GPS\Video\');
+TaskFolder = uigetdir('Z:\YuLab\Work\GPS\Video\');
 if ~TaskFolder
     return
 end
 
 %%
-GatherFolder = fullfile(TaskFolder, "BadLabels");
+GatherFolder = fullfile(TaskFolder, "BadLabels", View);
 if ~isfolder(GatherFolder)
     mkdir(GatherFolder);
 end
@@ -21,7 +21,7 @@ fprintf("\n%d bad label frames have been gathered to %s.\n", n_bad_labels, Gathe
 
 %% Create videos from video
 
-VidClipName = fullfile(GatherFolder, "RefineVideo.avi");
+VidClipName = fullfile(GatherFolder, sprintf("RefineVideo_%s.avi", View));
 
 writerObj = VideoWriter(VidClipName);
 writerObj.FrameRate = 25; % this is 2 x slower
