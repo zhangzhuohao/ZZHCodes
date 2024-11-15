@@ -517,7 +517,7 @@ classdef GPSBehProgressClass < GPSBehClass & GPSPlot
 
             if nargin==2
                 copy_path = fullfile(copy_dir, obj.SaveName);
-                copyfile(save_path+".mat", copy_path);
+                save(copy_path, 'obj');
             end
         end % save
 

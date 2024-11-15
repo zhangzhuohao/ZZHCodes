@@ -122,7 +122,10 @@ for i = 1:length(tBehEvent) % i is also the trial number
         img_extracted = cat(3, img_extracted, rgb2gray(read(vidObj, VidFrameIndx_thisfile(ii))));
     end
     clear frames_ifile vidObj
-
+% 
+%     if size(img_extracted, 1)==1240
+%         img_extracted = img_extracted(101:1124, 201:1480, :);
+%     end
     [H, W, nframe] = size(img_extracted); %
 
     % height = height - 200;

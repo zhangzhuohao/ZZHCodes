@@ -205,12 +205,17 @@ classdef GPSTrajFieldProgressClass < GPSTrajClass
 
         %% Save
         function save(obj, copy_dir)
-            save_path = fullfile(obj.ProtocolDir, obj.SaveName);
-            save(save_path, 'obj');
+            if isfolder(obj.ProtocolDir)
+                save_path = fullfile(obj.ProtocolDir, obj.SaveName);
+                save(save_path, 'obj');
+            end
 
             if nargin==2
+                if ~isfolder(copy_dir)
+                    mkdir(copy_dir);
+                end
                 copy_path = fullfile(copy_dir, obj.SaveName);
-                copyfile(save_path+".mat", copy_path+".mat");
+                save(copy_path, 'obj');
             end
         end % save
 

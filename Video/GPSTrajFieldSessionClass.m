@@ -353,12 +353,17 @@ classdef GPSTrajFieldSessionClass < GPSTrajClass
 
         %% Save
         function save(obj, copy_dir)
-            save_path = fullfile(obj.SessionFolder, obj.SaveName);
-            save(save_path, 'obj');
+            if isfolder(obj.SessionFolder)
+                save_path = fullfile(obj.SessionFolder, obj.SaveName);
+                save(save_path, 'obj');
+            end
 
             if nargin==2
+                if ~isfolder(copy_dir)
+                    mkdir(copy_dir);
+                end
                 copy_path = fullfile(copy_dir, obj.SaveName);
-                copyfile(save_path+".mat", copy_path+".mat");
+                save(copy_path, 'obj');
             end
         end % save
 
@@ -395,7 +400,7 @@ classdef GPSTrajFieldSessionClass < GPSTrajClass
             set_fig_title(fig, fig_title);
 
             ax = axes(fig, 'Units', 'centimeters', 'Position', [.5 .5 10 4], 'Color', 'none', 'XColor', 'none', 'YColor', 'none', ...
-                'XLim', [-150 350], 'YLim', [-25 175], 'NextPlot', 'add', 'YDir', 'reverse');
+                'NextPlot', 'add', 'YDir', 'reverse'); % 'XLim', [-150 350], 'YLim', [-25 175]
             line(ax, [-60 320], [0 0], 'LineWidth', 1, 'Color', 'k');
             line(ax, [-60 320], [1 1] * obj.CorridorWidth, 'LineWidth', 1, 'Color', 'k');
             line(ax, [1 1] * obj.CorridorLength, [-10 160], 'LineWidth', 2, 'Color', 'k', 'LineStyle', ':');
@@ -403,15 +408,15 @@ classdef GPSTrajFieldSessionClass < GPSTrajClass
             text(ax, 0, -20, 'Out', 'HorizontalAlignment', 'center');
             text(ax, obj.CorridorLength, -20, 'In', 'HorizontalAlignment', 'center');
             for i = 1:obj.NumTrials
-                patch(ax, 'XData', [obj.PosHeadT{i}(1,:) nan], 'YData', [obj.PosHeadT{i}(2,:) nan], 'CData', [obj.TimeWarpCross{i} nan], 'LineWidth', 1, 'EdgeAlpha', .3, 'EdgeColor', 'flat');
+                patch(ax, 'XData', [obj.PosXHead{i} nan], 'YData', [obj.PosYHead{i} nan], 'CData', [obj.TimeFromCentIn{i} nan], 'LineWidth', 1, 'EdgeAlpha', .3, 'EdgeColor', 'flat');
             end
             colormap(ax, 'jet');
-            ax.CLim = [-.2 1.2];
+%             ax.CLim = [-.2 1.2];
 
-            cb = colorbar(ax, 'Units', 'centimeters', 'Position', [10.8 .6 .3 3.8]);
-            cb.Ticks = [0 1];
-            cb.TickLabels = {'In', 'Out'};
-            cb.Label.String = 'norm. time';
+%             cb = colorbar(ax, 'Units', 'centimeters', 'Position', [10.8 .6 .3 3.8]);
+%             cb.Ticks = [0 1];
+%             cb.TickLabels = {'In', 'Out'};
+%             cb.Label.String = 'norm. time';
 
         end % plot
 
