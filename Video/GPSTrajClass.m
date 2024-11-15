@@ -190,8 +190,51 @@ classdef GPSTrajClass < handle
             else
                 error('Length of trace and bound_l should be matched');
             end
-
         end % trim_trace
+
+        %% Map trace (x,y) location
+        function [trace_mapped, map_sz] = map_trace(~, x, y, x_bins, y_bins, varargin)
+            % input
+            P = inputParser;
+
+            addOptional(P, 'smooth', true, @(x) isnumeric(x) || islogical(x));
+            addOptional(P, 'sigma', 0.5, @(x) isnumeric(x) && x>0);
+
+            parse(P, varargin{:});
+
+            smooth = P.Results.smooth;
+            sigma = P.Results.sigma;
+
+            n_trial = length(x);
+            if length(y) ~= n_trial
+                error("length of x and y do not match");
+            end
+
+            map_sz_x = length(x_bins) - 1;
+            map_sz_y = length(y_bins) - 1;
+            map_sz = [map_sz_y map_sz_x];
+
+            trace_mapped = zeros(map_sz_y, map_sz_x, n_trial);
+            for i = 1:n_trial
+                x_i = discretize(x{i}, x_bins);
+                y_i = discretize(y{i}, y_bins);
+                if length(x_i)~=length(y_i)
+                    error("length of x and y in trial %d do not match", i);
+                end
+
+                for j = 1:length(x_i)
+                    if ~isnan(y_i(j)) && ~isnan(x_i(j))
+                        trace_mapped(y_i(j), x_i(j), i) = trace_mapped(y_i(j), x_i(j), i) + 1;
+                    end
+                end
+            end
+
+            if smooth
+                for i = 1:n_trial
+                    trace_mapped(:, :, i) = imgaussfilt(trace_mapped(:, :, i), sigma);
+                end
+            end
+        end
 
         %% Align features to matrix
         function feature_mat = get_matrix(obj, features, time_trace, time_matrix, ind)

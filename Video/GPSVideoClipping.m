@@ -12,7 +12,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear; clc;
 
-ScnScale = 1.25;
+ScnScale = 1.5;
 
 %%
 fprintf("\nGPS video clipping ...\n");
@@ -520,27 +520,27 @@ switch view_front
             case 1
                 switch view_init
                     case 1
-                        save(SaveNameUsedData, 'BehTable', 'IntTable', 'FrameTable', 'FrameTableFront', 'FrameTableField', 'FrameTableInit', 'SessionInfo', 'ClipInfo', 'ClipInfoField', 'ClipInfoInit', 'ScnScale');
+                        save(SaveNameUsedData, 'BehTable', 'IntTable', 'FrameTable', 'FrameTableFront', 'FrameTableField', 'FrameTableInit', 'SessionInfo', 'ClipInfo', 'ClipInfoField', 'ClipInfoInit');
                     case 0
-                        save(SaveNameUsedData, 'BehTable', 'IntTable', 'FrameTable', 'FrameTableFront', 'FrameTableField', 'SessionInfo', 'ClipInfo', 'ClipInfoField', 'ScnScale');
+                        save(SaveNameUsedData, 'BehTable', 'IntTable', 'FrameTable', 'FrameTableFront', 'FrameTableField', 'SessionInfo', 'ClipInfo', 'ClipInfoField');
                 end
             case 0
-                save(SaveNameUsedData, 'BehTable', 'IntTable', 'FrameTable', 'FrameTableFront', 'SessionInfo', 'ClipInfo', 'ScnScale');
+                save(SaveNameUsedData, 'BehTable', 'IntTable', 'FrameTable', 'FrameTableFront', 'SessionInfo', 'ClipInfo');
 
         end
     case 0
-        save(SaveNameUsedData, 'BehTable', 'IntTable', 'FrameTable', 'SessionInfo', 'ClipInfo', 'ScnScale');
+        save(SaveNameUsedData, 'BehTable', 'IntTable', 'FrameTable', 'SessionInfo', 'ClipInfo');
 end
 
 %%
-clearvars -except SaveNameUsedData;
+clearvars -except SaveNameUsedData ScnScale;
 load(SaveNameUsedData);
 
 %%
 fprintf("\n----------------------------------------");
 fprintf("\n----------------------------------------");
 
-% ExportVideoClipFromAvi(BehTable, IntTable, FrameTable, SessionInfo, ClipInfo, ScnScale, 0, "Top", 0);
+ExportVideoClipFromAvi(BehTable, IntTable, FrameTable, SessionInfo, ClipInfo, ScnScale, 0, "Top", 0);
 
 % ExportVideoClipFromAvi(BehTable, IntTable, FrameTableFront, SessionInfo, ClipInfo, ScnScale, 0, "Front", 1);
 
