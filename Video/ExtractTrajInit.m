@@ -145,7 +145,7 @@ for i = 1:NumClips
     FrameEnd = valid_id(end);
 
     t_frames = t_frames(FrameBeg:FrameEnd);
-    if t_frames(1)>-200 || t_frames(end)<200
+    if t_frames(1)>-220 || t_frames(end)<0
         fprintf("\nDrop %d for too few label\n", VidMeta.EventIndex);
         continue
     end

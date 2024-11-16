@@ -400,7 +400,7 @@ classdef GPSTrajFieldSessionClass < GPSTrajClass
             set_fig_title(fig, fig_title);
 
             ax = axes(fig, 'Units', 'centimeters', 'Position', [.5 .5 10 4], 'Color', 'none', 'XColor', 'none', 'YColor', 'none', ...
-                'NextPlot', 'add', 'YDir', 'reverse'); % 'XLim', [-150 350], 'YLim', [-25 175]
+                 'XLim', [-150 350], 'YLim', [-25 175], 'NextPlot', 'add', 'YDir', 'reverse');
             line(ax, [-60 320], [0 0], 'LineWidth', 1, 'Color', 'k');
             line(ax, [-60 320], [1 1] * obj.CorridorWidth, 'LineWidth', 1, 'Color', 'k');
             line(ax, [1 1] * obj.CorridorLength, [-10 160], 'LineWidth', 2, 'Color', 'k', 'LineStyle', ':');
@@ -408,12 +408,14 @@ classdef GPSTrajFieldSessionClass < GPSTrajClass
             text(ax, 0, -20, 'Out', 'HorizontalAlignment', 'center');
             text(ax, obj.CorridorLength, -20, 'In', 'HorizontalAlignment', 'center');
             for i = 1:obj.NumTrials
-                patch(ax, 'XData', [obj.PosXHead{i} nan], 'YData', [obj.PosYHead{i} nan], 'CData', [obj.TimeFromCentIn{i} nan], 'LineWidth', 1, 'EdgeAlpha', .3, 'EdgeColor', 'flat');
+                patch(ax, 'XData', [obj.PosHeadT{i}(1,:) nan], 'YData', [obj.PosHeadT{i}(2,:) nan], 'CData', [obj.TimeFromZoneIn{i} nan], 'LineWidth', 1, 'EdgeAlpha', .3, 'EdgeColor', 'flat');
             end
             colormap(ax, 'jet');
-%             ax.CLim = [-.2 1.2];
+            %             ax.CLim = [-.2 1.2];
+            ax.CLim = [-200 800];
 
-%             cb = colorbar(ax, 'Units', 'centimeters', 'Position', [10.8 .6 .3 3.8]);
+            cb = colorbar(ax, 'Units', 'centimeters', 'Position', [10.8 .6 .3 3.8]);
+            cb.Label.String = 'Time from cross-in (ms)';
 %             cb.Ticks = [0 1];
 %             cb.TickLabels = {'In', 'Out'};
 %             cb.Label.String = 'norm. time';
