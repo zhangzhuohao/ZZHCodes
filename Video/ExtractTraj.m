@@ -164,8 +164,8 @@ for i = 1:NumClips
         fprintf("\nDrop %d for invisible left/right port\n", VidMeta.EventIndex);
         continue
     else
-        port_loc.L = mean(port_loc.L(D.port_left_lh>0.99 , :));
-        port_loc.R = mean(port_loc.R(D.port_right_lh>0.99, :));
+        port_loc.L = mean(port_loc.L(D.port_left_lh>0.99 , :), 1);
+        port_loc.R = mean(port_loc.R(D.port_right_lh>0.99, :), 1);
     end
 
     DropOut = 0;

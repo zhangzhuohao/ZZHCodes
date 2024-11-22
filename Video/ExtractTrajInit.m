@@ -159,7 +159,7 @@ for i = 1:NumClips
         fprintf("\nDrop %d for invisible port\n", VidMeta.EventIndex);
         continue
     else
-        port_loc.Init = mean(port_loc.Init(D.port_lh>0.99, :));
+        port_loc.Init = mean(port_loc.Init(D.port_lh>0.99, :), 1);
     end
 
     DropOut = 0;
@@ -220,9 +220,15 @@ for i = 1:NumClips
         y_pos     =     D.([body_part '_y'])(FrameBeg:FrameEnd) + DLCCrop(3);
         lh        =     D.([body_part '_lh'])(FrameBeg:FrameEnd);
 
-%         if ismember(body_part, {'ear_left', 'ear_right'}) % check ear_base_left and ear_base_right
-%             bad_label = find(lh < 0.8);
-%         end
+        if ismember(body_part, {'ear_left', 'ear_right'}) % check ear_base_left and ear_base_right
+            bad_label = find(lh < 0.8);
+            x_pos(bad_label) = [];
+            y_pos(bad_label) = [];
+            t_frames_nan = t_frames;
+            t_frames_nan(bad_label) = [];
+            x_pos = interp1(t_frames_nan, x_pos, t_frames, 'linear');
+            y_pos = interp1(t_frames_nan, y_pos, t_frames, 'linear');
+        end
 %         if ~isempty(bad_label)
 %             fh    =     figure(31); clf(fh);
 %             set(fh, 'name', body_part, 'units', 'centimeter', 'position', [5 2 20 1.3*20*1024/1280]);
