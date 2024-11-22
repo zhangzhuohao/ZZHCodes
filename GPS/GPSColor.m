@@ -7,7 +7,8 @@ classdef GPSColor
         Correct     = [85   225  0  ] / 255;
         Wrong       = [0    0    172] / 255;
         Premature   = [255  0    0  ] / 255;
-        Late        = [140  140  140] / 255
+        Late        = [140  140  140] / 255;
+        Probe       = [160  82   45 ] / 255;
         % Port
         PortL       = [64   136  238] / 255;
         PortR       = [64   238  136] / 255;

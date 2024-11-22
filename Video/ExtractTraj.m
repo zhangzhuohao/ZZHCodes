@@ -169,7 +169,9 @@ for i = 1:NumClips
     end
 
     DropOut = 0;
-    if size(D, 1) < 198
+
+    dt = diff(t_frames);
+    if any(dt>=3*median(dt))
         DropOut = 1;
         fprintf("\nDrop %d for frame loss\n", VidMeta.EventIndex);
         continue;

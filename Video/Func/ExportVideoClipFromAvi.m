@@ -135,6 +135,8 @@ for i = 1:length(tBehEvent) % i is also the trial number
             thisOutcome = "Late";
         case {'Wrong', 'Wro'}
             thisOutcome = "Wrong";
+        case {'Probe'}
+            thisOutcome = "Probe";
     end
 
     % cue events

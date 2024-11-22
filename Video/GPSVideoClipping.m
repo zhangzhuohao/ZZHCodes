@@ -31,12 +31,12 @@ if exist(SaveNameUsedData, "file")
     fprintf("\n----------------------------------------");
     fprintf("\n----------------------------------------");
 
-%     ExportVideoClipFromAvi(BehTable, IntTable, FrameTable, SessionInfo, ClipInfo, ScnScale, 0, "Top", 0);
+    ExportVideoClipFromAvi(BehTable, IntTable, FrameTable, SessionInfo, ClipInfo, ScnScale, 0, "Top", 0);
 
-%     ExportVideoClipFromAvi(BehTable, IntTable, FrameTableFront, SessionInfo, ClipInfo, ScnScale, 0, "Front", 1);
+    %     ExportVideoClipFromAvi(BehTable, IntTable, FrameTableFront, SessionInfo, ClipInfo, ScnScale, 0, "Front", 1);
 
-ExportVideoClipFromAvi_Field(BehTable, FrameTableField, SessionInfo, ClipInfoField, ScnScale, 1, 0);
-% ExportVideoClipFromAvi_Init(BehTable, FrameTableInit, SessionInfo, ClipInfoInit, ScnScale, 0, 0);
+    ExportVideoClipFromAvi_Field(BehTable, FrameTableField, SessionInfo, ClipInfoField, ScnScale, 0, 0);
+    ExportVideoClipFromAvi_Init(BehTable, FrameTableInit, SessionInfo, ClipInfoInit, ScnScale, 0, 0);
 
     fprintf("\n----------------------------------------");
     fprintf("\n----------------------------------------");
@@ -209,7 +209,7 @@ tCheckingEvent      =   BehTable.(CheckingEvent) + BehTable.TrialStartTime; % in
 % Define mask
 fprintf("\n----------------------------------------");
 fprintf("\n----------------------------------------");
-[Mask, FigMask] = ExtractMask(fullfile(VideoFolderTop, vidFilesTop{1}), [1000 3000]);
+[Mask, FigMask] = ExtractMask(fullfile(VideoFolderTop, vidFilesTop{1}), [3000 5000]);
 % save this fig
 SaveNameFigMask = fullfile(VideoFolder, "ROI_Mask");
 print(FigMask, '-dpng', SaveNameFigMask);
