@@ -32,6 +32,7 @@ classdef GPSTrajInitProgressClass < GPSTrajClass
         TimeFromInitOut
 
         PortLoc
+        AngleHead
         PosXHead
         PosYHead
         PosHeadT
@@ -116,6 +117,7 @@ classdef GPSTrajInitProgressClass < GPSTrajClass
             vars_to_gather = [
                 "TimeFromInitOut" % time points
                 "PortLoc"
+                "AngleHead"
                 "PosXHead"
                 "PosYHead"
                 "SpeedXHead"

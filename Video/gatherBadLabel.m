@@ -1,6 +1,6 @@
 clear;
 %%
-View = "Top";
+View = "Init";
 
 %%
 TaskFolder = uigetdir('D:\YuLab\Work\GPS\Video\');

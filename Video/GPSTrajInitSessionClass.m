@@ -35,6 +35,7 @@ classdef GPSTrajInitSessionClass < GPSTrajClass
 
         PortLoc
 
+        AngleHead
         PosXHead
         PosYHead
         
@@ -130,6 +131,23 @@ classdef GPSTrajInitSessionClass < GPSTrajClass
         %%
         function port_loc = get.PortLoc(obj)
             port_loc = arrayfun(@(x) x.Init, obj.DLCTracking.PortLoc', 'UniformOutput', false);
+        end
+
+        %% Angle of head
+        function head_angle = get.AngleHead(obj)
+
+            indL = find(strcmp("ear_base_left" , obj.DLCTracking.BodyParts));
+            indR = find(strcmp("ear_base_right", obj.DLCTracking.BodyParts));
+
+            posL = obj.DLCTracking.PoseTracking(indL).PosData';
+            posR = obj.DLCTracking.PoseTracking(indR).PosData';
+
+            head_vec = cellfun(@(x, y) y(:, 1:2) - x(:, 1:2), posL, posR, 'UniformOutput', false);
+            head_angle = cellfun(@(x) calAngle(x, [-1 0]), head_vec, 'UniformOutput', false);
+
+            angle_sign = cellfun(@(x, y) 2*(x(:, 2)>=y(:, 2))-1, posL, posR, 'UniformOutput', false);
+            head_angle = cellfun(@(x, y) x.*y, head_angle, angle_sign, 'UniformOutput', false);
+            head_angle = cellfun(@(x) smoothdata(x', "gaussian", 5), head_angle, 'UniformOutput', false);
         end
 
         %% Position of head (X)
