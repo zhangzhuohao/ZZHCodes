@@ -9,7 +9,7 @@ end
 
 View = "Init";
 
-VideoFolder = uigetdir("D:\YuLab\Work\GPS\Video\");
+VideoFolder = uigetdir("T:\YuLab\Work\GPS\Video\");
 
 % VideoFolder = VideoFolderParent;
 

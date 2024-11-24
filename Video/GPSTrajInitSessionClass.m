@@ -102,6 +102,19 @@ classdef GPSTrajInitSessionClass < GPSTrajClass
                 obj.DLCTracking.PoseTracking(i).Performance(ind_odd) = [];
             end
             obj.DLCTracking.PortLoc(ind_odd) = [];
+
+            % check labels after init-out
+            init_error = cellfun(@(t) sum(t>0), obj.TimeFromInitOut);
+            ind_odd = find(init_error<=2);
+            if ~isempty(ind_odd)
+                fprintf("Remove %d trials for too few labels after init-out\n", length(ind_odd));
+            end
+            for i = 1:length(obj.DLCTracking.PoseTracking)
+                obj.DLCTracking.PoseTracking(i).PosData(ind_odd) = [];
+                obj.DLCTracking.PoseTracking(i).BpodEventIndex(:, ind_odd) = [];
+                obj.DLCTracking.PoseTracking(i).Performance(ind_odd) = [];
+            end
+            obj.DLCTracking.PortLoc(ind_odd) = [];
             
         end
 

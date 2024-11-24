@@ -167,7 +167,7 @@ for i = 1:length(tBehEvent) % i is also the trial number
     clear img_extracted
 
     writerObj = VideoWriter(VidClipFileName);
-    writerObj.FrameRate = 1 * median(1000./diff(iFrameTimesBpod));
+    writerObj.FrameRate = 0.5 * median(1000./diff(iFrameTimesBpod));
     % set the seconds per image
     % open the video writer
     open(writerObj);

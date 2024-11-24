@@ -169,14 +169,14 @@ for i = 1:NumClips
     corridor_loc.R_U = [D.corridor_r_u_x D.corridor_r_u_y] + DLCCrop([1 3]);
     corridor_loc.R_D = [D.corridor_r_d_x D.corridor_r_d_y] + DLCCrop([1 3]);
 
-    if ~any(D.corridor_l_u_lh>0.99) || ~any(D.corridor_l_d_lh>0.99) || ~any(D.corridor_r_u_lh>0.99) || ~any(D.corridor_r_d_lh>0.99)
+    if ~any(D.corridor_l_u_lh>0.95) || ~any(D.corridor_l_d_lh>0.95) || ~any(D.corridor_r_u_lh>0.95) || ~any(D.corridor_r_d_lh>0.95)
         fprintf("\nDrop %d for invisible corridor corner\n", VidMeta.EventIndex);
         continue
     else
-        corridor_loc.L_U = mean(corridor_loc.L_U(D.corridor_l_u_lh>0.99, :), 1);
-        corridor_loc.L_D = mean(corridor_loc.L_D(D.corridor_l_d_lh>0.99, :), 1);
-        corridor_loc.R_U = mean(corridor_loc.R_U(D.corridor_r_u_lh>0.99, :), 1);
-        corridor_loc.R_D = mean(corridor_loc.R_D(D.corridor_r_d_lh>0.99, :), 1);
+        corridor_loc.L_U = mean(corridor_loc.L_U(D.corridor_l_u_lh>0.95, :), 1);
+        corridor_loc.L_D = mean(corridor_loc.L_D(D.corridor_l_d_lh>0.95, :), 1);
+        corridor_loc.R_U = mean(corridor_loc.R_U(D.corridor_r_u_lh>0.95, :), 1);
+        corridor_loc.R_D = mean(corridor_loc.R_D(D.corridor_r_d_lh>0.95, :), 1);
     end
 
     DropOut = 0;
