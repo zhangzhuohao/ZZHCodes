@@ -4,10 +4,10 @@ classdef GPSColor
 
     properties (Constant)
         % Performence
-        Correct     = [85   225  0  ] / 255;
+        Correct     = [108  184  48 ] / 255;
         Wrong       = [0    0    172] / 255;
-        Premature   = [255  0    0  ] / 255;
-        Late        = [140  140  140] / 255;
+        Premature   = [230  31   26 ] / 255;
+        Late        = [113  113  113] / 255;
         Probe       = [160  82   45 ] / 255;
         % Port
         PortL       = [64   136  238] / 255;
@@ -33,7 +33,10 @@ classdef GPSColor
         LesionExtensive = [82 92 235] / 255;
         % Contra vs. Ipsi
         Contra = [216 48 96] / 255;
-        Ipsi   = [96 48 216] / 255;
+        Ipsi   = [96  48 216] / 255;
+        % Task paradigm
+        FP = [247 182 45] / 255;
+        RW = [0   152 68] / 255;
     end
 
     methods
