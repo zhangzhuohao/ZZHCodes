@@ -39,8 +39,11 @@ classdef GPSTrajInitSessionClass < GPSTrajClass
         PosXHead
         PosYHead
         
+        SpeedAngHead
         SpeedXHead
         SpeedYHead
+
+        AccAngHead
         AccXHead
         AccYHead
 
@@ -138,7 +141,7 @@ classdef GPSTrajInitSessionClass < GPSTrajClass
 
         %%
         function time_from_in = get.TimeFromInitOut(obj)
-            time_from_in = cellfun(@(x) x(:, 4)', obj.DLCTracking.PoseTracking(1).PosData, 'UniformOutput', false)';
+            time_from_in = cellfun(@(x) round(x(:, 4)'), obj.DLCTracking.PoseTracking(1).PosData, 'UniformOutput', false)';
         end
 
         %%
@@ -160,7 +163,9 @@ classdef GPSTrajInitSessionClass < GPSTrajClass
 
             angle_sign = cellfun(@(x, y) 2*(x(:, 2)>=y(:, 2))-1, posL, posR, 'UniformOutput', false);
             head_angle = cellfun(@(x, y) x.*y, head_angle, angle_sign, 'UniformOutput', false);
-            head_angle = cellfun(@(x) smoothdata(x', "gaussian", 5), head_angle, 'UniformOutput', false);
+
+            head_angle = cellfun(@(x) unwrap(x*pi/180, pi*2/3)*180/pi, head_angle, 'UniformOutput', false);
+            head_angle = cellfun(@(x) smoothdata(x', "gaussian", 3), head_angle, 'UniformOutput', false);
         end
 
         %% Position of head (X)
@@ -175,7 +180,6 @@ classdef GPSTrajInitSessionClass < GPSTrajClass
             head_pos_x = cellfun(@(x) smoothdata(x', "gaussian", 3), head_pos_x, 'UniformOutput', false);
         end
 
-
         %% Position of head (Y)
         function head_pos_y = get.PosYHead(obj)
             indL = find(strcmp("ear_base_left", obj.DLCTracking.BodyParts));
@@ -188,6 +192,15 @@ classdef GPSTrajInitSessionClass < GPSTrajClass
             head_pos_y = cellfun(@(x) smoothdata(x', "gaussian", 3), head_pos_y, 'UniformOutput', false);
         end
 
+        %% Speed (Angle) of head
+        function speed_ang_head = get.SpeedAngHead(obj)
+            d_a = cellfun(@(a) obj.cal_diff(a), obj.AngleHead, 'UniformOutput', false);
+            d_t = cellfun(@(t) obj.cal_diff(t), obj.TimeFromInitOut, 'UniformOutput', false);
+
+            speed_ang_head = cellfun(@(da, dt) da ./ dt, d_a, d_t, 'UniformOutput', false);
+            speed_ang_head = cellfun(@(x) smoothdata(x, "gaussian", 3), speed_ang_head, 'UniformOutput', false);
+        end
+
         %% Speed (X) of head
         function speed_x_head = get.SpeedXHead(obj)
             
@@ -195,7 +208,7 @@ classdef GPSTrajInitSessionClass < GPSTrajClass
             d_t = cellfun(@(t) obj.cal_diff(t), obj.TimeFromInitOut, 'UniformOutput', false);
 
             speed_x_head = cellfun(@(dx, dt) dx ./ dt, d_x, d_t, 'UniformOutput', false);
-            speed_x_head = cellfun(@(x) smoothdata(x, "gaussian", 3), speed_x_head, 'UniformOutput', false);
+%             speed_x_head = cellfun(@(x) smoothdata(x, "gaussian", 3), speed_x_head, 'UniformOutput', false);
         end
 
         %% Speed (Y) of head
@@ -205,7 +218,7 @@ classdef GPSTrajInitSessionClass < GPSTrajClass
             d_t = cellfun(@(t) obj.cal_diff(t), obj.TimeFromInitOut, 'UniformOutput', false);
 
             speed_y_head = cellfun(@(dx, dt) dx ./ dt, d_y, d_t, 'UniformOutput', false);
-            speed_y_head = cellfun(@(x) smoothdata(x, "gaussian", 3), speed_y_head, 'UniformOutput', false);
+%             speed_y_head = cellfun(@(x) smoothdata(x, "gaussian", 3), speed_y_head, 'UniformOutput', false);
         end
 
         %% Acceleration (X) of head
@@ -215,7 +228,7 @@ classdef GPSTrajInitSessionClass < GPSTrajClass
             d_t = cellfun(@(t) obj.cal_diff(t'), obj.TimeFromInitOut, 'UniformOutput', false);
 
             acc_x_head = cellfun(@(ddx, dt) ddx ./ (dt.^2), d_d_x, d_t, 'UniformOutput', false);
-            acc_x_head = cellfun(@(x) smoothdata(x, "gaussian", 3), acc_x_head, 'UniformOutput', false);
+%             acc_x_head = cellfun(@(x) smoothdata(x, "gaussian", 3), acc_x_head, 'UniformOutput', false);
         end
 
         %% Acceleration (Y) of head
@@ -225,7 +238,7 @@ classdef GPSTrajInitSessionClass < GPSTrajClass
             d_t = cellfun(@(t) obj.cal_diff(t'), obj.TimeFromInitOut, 'UniformOutput', false);
 
             acc_y_head = cellfun(@(ddy, dt) ddy ./ (dt.^2), d_d_y, d_t, 'UniformOutput', false);
-            acc_y_head = cellfun(@(x) smoothdata(x, "gaussian", 3), acc_y_head, 'UniformOutput', false);
+%             acc_y_head = cellfun(@(x) smoothdata(x, "gaussian", 3), acc_y_head, 'UniformOutput', false);
         end
 
         %% Speed of head
@@ -236,7 +249,7 @@ classdef GPSTrajInitSessionClass < GPSTrajClass
             d_t = cellfun(@(t) obj.cal_diff(t'), obj.TimeFromInitOut, 'UniformOutput', false);
 
             speed_head = cellfun(@(dx, dy, dt) vecnorm([dx, dy], 2, 2) ./ dt, d_x, d_y, d_t, 'UniformOutput', false);
-            speed_head = cellfun(@(x) smoothdata(x', "gaussian", 3), speed_head, 'UniformOutput', false);
+%             speed_head = cellfun(@(x) smoothdata(x', "gaussian", 3), speed_head, 'UniformOutput', false);
         end
 
         %% Speed direction of head
@@ -253,7 +266,7 @@ classdef GPSTrajInitSessionClass < GPSTrajClass
             angle_sign = cellfun(@(x, y) 2*(x(:, 1)>=y(1))-1, speed_vec, port_vec_vert, 'UniformOutput', false);
             speed_dir_head = cellfun(@(x, y) x.*y, speed_dir_head, angle_sign, 'UniformOutput', false);
 %             speed_dir_head = cellfun(@(x) unwrap(x, 180), speed_dir_head, 'UniformOutput', false);
-            speed_dir_head = cellfun(@(x) smoothdata(x', "gaussian", 3), speed_dir_head, 'UniformOutput', false);
+%             speed_dir_head = cellfun(@(x) smoothdata(x', "gaussian", 3), speed_dir_head, 'UniformOutput', false);
         end
 
         %% Acceleration of head
@@ -264,7 +277,7 @@ classdef GPSTrajInitSessionClass < GPSTrajClass
             d_t = cellfun(@(t) obj.cal_diff(t'), obj.TimeFromInitOut, 'UniformOutput', false);
 
             acc_head = cellfun(@(ddx, ddy, dt) vecnorm([ddx, ddy], 2, 2) ./ (dt.^2), d_d_x, d_d_y, d_t, 'UniformOutput', false);
-            acc_head = cellfun(@(x) smoothdata(x', "gaussian", 3), acc_head, 'UniformOutput', false);
+%             acc_head = cellfun(@(x) smoothdata(x', "gaussian", 3), acc_head, 'UniformOutput', false);
         
         end
 
@@ -286,7 +299,7 @@ classdef GPSTrajInitSessionClass < GPSTrajClass
             d_dir = cellfun(@(dir) obj.cal_diff(dir), speed_dir_head, 'UniformOutput', false);
             d_t = cellfun(@(t) obj.cal_diff(t'), obj.TimeFromInitOut, 'UniformOutput', false);
             dphi_head = cellfun(@(ddir, dt) ddir ./ (dt.^2), d_dir, d_t, 'UniformOutput', false);
-            dphi_head = cellfun(@(x) smoothdata(x', "gaussian", 3), dphi_head, 'UniformOutput', false);
+%             dphi_head = cellfun(@(x) smoothdata(x', "gaussian", 3), dphi_head, 'UniformOutput', false);
 
         end
 

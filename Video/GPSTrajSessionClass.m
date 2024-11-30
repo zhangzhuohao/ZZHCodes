@@ -265,7 +265,6 @@ classdef GPSTrajSessionClass < GPSTrajClass
 
             head_pos_x = cellfun(@(x, y, z) (y(:, 1) + x(:, 1))/2 - z(1), posL, posR, obj.PortCent, 'UniformOutput', false);
             head_pos_x = cellfun(@(x) smoothdata(x', "gaussian", 5), head_pos_x, 'UniformOutput', false);
-
         end
 
         %% Position of head (Y)
@@ -279,7 +278,6 @@ classdef GPSTrajSessionClass < GPSTrajClass
 
             head_pos_y = cellfun(@(x, y, z) (y(:, 2) + x(:, 2))/2 - z(2), posL, posR, obj.PortCent, 'UniformOutput', false);
             head_pos_y = cellfun(@(x) smoothdata(x', "gaussian", 5), head_pos_y, 'UniformOutput', false);
-
         end
 
         %% Speed (X) of head

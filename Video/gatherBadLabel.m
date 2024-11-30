@@ -3,7 +3,7 @@ clear;
 View = "Init";
 
 %%
-TaskFolder = uigetdir('D:\YuLab\Work\GPS\Video\');
+TaskFolder = uigetdir('T:\YuLab\Work\GPS\Video\');
 if ~TaskFolder
     return
 end

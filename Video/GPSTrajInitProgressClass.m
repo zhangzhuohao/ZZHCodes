@@ -37,6 +37,7 @@ classdef GPSTrajInitProgressClass < GPSTrajClass
         PosYHead
         PosHeadT
         
+        SpeedAngHead
         SpeedXHead
         SpeedYHead
         AccXHead
@@ -120,6 +121,7 @@ classdef GPSTrajInitProgressClass < GPSTrajClass
                 "AngleHead"
                 "PosXHead"
                 "PosYHead"
+                "SpeedAngHead"
                 "SpeedXHead"
                 "SpeedYHead"
                 "SpeedHead"

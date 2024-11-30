@@ -1,9 +1,9 @@
 % Will use all images in the current folder to make videos
 %%
-View = "Top";
+View = "Init";
 
 %%
-TaskFolder = uigetdir('D:\YuLab\Work\GPS\Video\');
+TaskFolder = uigetdir('T:\YuLab\Work\GPS\Video\');
 if ~TaskFolder
     return
 end
