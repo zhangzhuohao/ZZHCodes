@@ -12,7 +12,9 @@ Tasks = [
     "ThreeFPHoldSRT";
     "ThreeFPHoldWM";
     "ThreeFPHoldSRTProbe";
+    "KornblumHold500SRT";
     "KornblumHold1000SRT";
+    "KornblumHold500SRTSelf";
     "KornblumHold1000SRTSelf";
     "KornblumHold1500SRTSelf";
     "KornblumHold2000SRTSelf";
