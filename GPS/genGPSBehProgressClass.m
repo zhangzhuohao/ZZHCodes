@@ -75,8 +75,8 @@ for d = 1:length(Folders)
     ProgressClass.get_all_kdes(1);
     ProgressClass.save();
     
-    fig_progress = ProgressClass.plotProgress();
-    ProgressClass.print(fig_progress);
+%     fig_progress = ProgressClass.plotProgress();
+%     ProgressClass.print(fig_progress);
 %     ProgressClass.print("Show", ProtocolDir);
 
     BehavCsvName = fullfile(ProtocolDir, "GPSBehProgressClass_" + ProgressClass.Protocol + "_" + upper(ProgressClass.Subject) + ".csv");
