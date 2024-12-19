@@ -145,10 +145,10 @@ for i = 1:NumClips
     switch trial_info.Outcome{1}
         case {'Correct', 'Wrong'}
             FrameEnd = find(t_frames<=(trial_info.ChoicePokeTime-trial_info.(VidMeta.Event))*1000, 1, 'last');
-        case {'Premature'}
-            FrameEnd = find(t_frames<=(trial_info.CentOutTime-trial_info.(VidMeta.Event))*1000+200, 1, 'last');
+        case {'Premature', 'Probe'}
+            FrameEnd = find(t_frames<=(trial_info.CentOutTime-trial_info.(VidMeta.Event))*1000+500, 1, 'last');
         case {'Late', 'LateMiss', 'LateCorrect', 'LateWrong'}
-            FrameEnd = find(t_frames<=(trial_info.CentOutTime-trial_info.(VidMeta.Event))*1000+200, 1, 'last');
+            FrameEnd = find(t_frames<=(trial_info.CentOutTime-trial_info.(VidMeta.Event))*1000+500, 1, 'last');
             trial_info.Outcome{1} = 'Late';
     end
     t_frames = t_frames(FrameBeg:FrameEnd);
