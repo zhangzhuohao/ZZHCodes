@@ -37,13 +37,13 @@ opts.VariableNames = [
     "tail_x",         "tail_y",         "tail_lh"
     ];
 
-opts.VariableTypes = repmat("double", 1, 34);
+opts.VariableTypes = repmat("double", 1, 34); 
 
 opts.ExtraColumnsRule = "ignore";
 opts.EmptyLineRule = "read";
 
 %%
-TaskFolder = uigetdir('D:\YuLab\Work\GPS\Video\');
+TaskFolder = uigetdir('T:\YuLab\Work\GPS\Video\');
 if ~TaskFolder
     return
 end
