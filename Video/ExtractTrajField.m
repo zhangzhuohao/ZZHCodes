@@ -188,6 +188,12 @@ for i = 1:NumClips
         continue;
     end
 
+    if (FrameEnd-FrameBeg+1) < 2
+        DropOut = 1;
+        fprintf("\nDrop %d for too few frames\n", VidMeta.EventIndex);
+        continue;
+    end
+
     for j = 1:length(BodyParts)
 
         body_part =     BodyParts{j};

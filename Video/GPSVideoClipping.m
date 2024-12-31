@@ -12,7 +12,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clear; clc;
 
-ScnScale = 1.25;
+ScnScl = 1.25;
 
 %%
 fprintf("\nGPS video clipping ...\n");
@@ -31,12 +31,12 @@ if exist(SaveNameUsedData, "file")
     fprintf("\n----------------------------------------");
     fprintf("\n----------------------------------------");
 
-    ExportVideoClipFromAvi(BehTable, IntTable, FrameTable, SessionInfo, ClipInfo, ScnScale, 1, "Top", 0);
+    ExportVideoClipFromAvi(BehTable, IntTable, FrameTable, SessionInfo, ClipInfo, ScnScl, 1, "Top", 0);
 
     %     ExportVideoClipFromAvi(BehTable, IntTable, FrameTableFront, SessionInfo, ClipInfo, ScnScale, 0, "Front", 1);
 
-    ExportVideoClipFromAvi_Field(BehTable, FrameTableField, SessionInfo, ClipInfoField, ScnScale, 1, 0);
-    ExportVideoClipFromAvi_Init(BehTable, FrameTableInit, SessionInfo, ClipInfoInit, ScnScale, 1, 0);
+    ExportVideoClipFromAvi_Field(BehTable, FrameTableField, SessionInfo, ClipInfoField, ScnScl, 1, 0);
+    ExportVideoClipFromAvi_Init(BehTable, FrameTableInit, SessionInfo, ClipInfoInit, ScnScl, 1, 0);
 
     fprintf("\n----------------------------------------");
     fprintf("\n----------------------------------------");
@@ -533,19 +533,19 @@ switch view_front
 end
 
 %%
-clearvars -except SaveNameUsedData ScnScale;
+clearvars -except SaveNameUsedData ScnScl;
 load(SaveNameUsedData);
 
 %%
 fprintf("\n----------------------------------------");
 fprintf("\n----------------------------------------");
 
-ExportVideoClipFromAvi(BehTable, IntTable, FrameTable, SessionInfo, ClipInfo, ScnScale, 0, "Top", 0);
+ExportVideoClipFromAvi(BehTable, IntTable, FrameTable, SessionInfo, ClipInfo, ScnScl, 0, "Top", 0);
 
 % ExportVideoClipFromAvi(BehTable, IntTable, FrameTableFront, SessionInfo, ClipInfo, ScnScale, 0, "Front", 1);
 
-ExportVideoClipFromAvi_Field(BehTable, FrameTableField, SessionInfo, ClipInfoField, ScnScale, 0, 0);
-ExportVideoClipFromAvi_Init(BehTable, FrameTableInit, SessionInfo, ClipInfoInit, ScnScale, 0, 0);
+ExportVideoClipFromAvi_Field(BehTable, FrameTableField, SessionInfo, ClipInfoField, ScnScl, 0, 0);
+ExportVideoClipFromAvi_Init(BehTable, FrameTableInit, SessionInfo, ClipInfoInit, ScnScl, 0, 0);
 
 fprintf("\n----------------------------------------");
 fprintf("\n----------------------------------------");

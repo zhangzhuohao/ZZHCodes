@@ -19,7 +19,8 @@ if ~strcmp(dir_name, 'Clips')
     return
 end
 
-ClassFile = dir(fullfile(ClipFolder, 'GPSTrajectoryClass*.mat'));
+%%
+ClassFile = dir(fullfile(ClipFolder, 'GPSTrajSessionClass*.mat'));
 load(fullfile(ClipFolder, ClassFile.name))
 
 indL = find(strcmp(obj.DLCTracking.BodyParts, labelL));
