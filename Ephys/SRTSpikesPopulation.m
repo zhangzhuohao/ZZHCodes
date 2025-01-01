@@ -1,4 +1,4 @@
-function PSTHOut = SRTSpikesPopulation(r,  varargin)
+function PSTHOut = SRTSpikesPopulation(r, varargin)
 % V3: added a few new parameters
 % V4: 2/17/2021 regular style drinking port. No IR sensor in front of the
 % port.
@@ -22,15 +22,14 @@ function PSTHOut = SRTSpikesPopulation(r,  varargin)
 
 if nargin<1
     load('RTarrayAll.mat')
-end;
-
+end
 
 tic
 
 FRrange = [];
 printname = [];
 printsize = [2 2 20 16];
-tosave =1;
+tosave = 1;
 if nargin>2
     for i=1:2:size(varargin,2)
         switch varargin{i}
@@ -62,7 +61,7 @@ ind_release= find(strcmp(rb.Labels, 'LeverRelease'));
 t_releases = rb.EventTimings(rb.EventMarkers == ind_release);
 
 % index of non-premature releases
-ind_np = setdiff([1:length(rb.Foreperiods)],[rb.DarkIndex; rb.PrematureIndex]);
+ind_np = setdiff(1:length(rb.Foreperiods), [rb.DarkIndex; rb.PrematureIndex]);
 
 % time of all reward delievery
 ind_rewards = find(strcmp(rb.Labels, 'ValveOnset'));
@@ -113,20 +112,20 @@ for i = 1:length(t_triggers)
         
         if abs(ilapse-750)<abs(ilapse-1500)
             t_trigger_short_correct = [t_trigger_short_correct; it_trigger];
-            dt=[dt min(ilapse)-750];
+            dt = [dt min(ilapse)-750];
             plot(it_trigger-750, 4.8, 'r^');
         else
             t_trigger_long_correct = [t_trigger_long_correct; it_trigger];
-            dt=[dt min(ilapse)-1500];
+            dt = [dt min(ilapse)-1500];
             plot(it_trigger-1500, 4.8, 'r^');
-        end;
+        end
     else
         % trigger followed by late release
         t_triggers_late = [t_triggers_late; it_trigger];
         ind_badtriggers = [ind_badtriggers i];
-    end;
+    end
     
-end;
+end
 
 figure(56); clf;
 plot(dt)
@@ -148,8 +147,8 @@ for i =1:length(t_rewards)
     dt = dt(dt>0);
     if ~isempty(dt)
         movetime(i) = dt(end);
-    end;
-end;
+    end
+end
 
 t_rewards = t_rewards(movetime>0);
 movetime = movetime(movetime>0);
@@ -172,7 +171,7 @@ for i =1:length(t_presses)
     press_dur = [t_releases(i) t_presses(i)];
     line(press_dur, [1 1], 'color', 'k', 'linewidth', 2); hold on
     plot(press_dur, 1, 'color', 'k', 'marker','o', 'markersize', 4, 'linewidth',1)
-end;
+end
 text(-1000, 1.1, 'Press', 'color', 'k')
 
 hold on
@@ -181,14 +180,14 @@ text(-1000, 1.3, 'Trigger', 'color', 'g')
 hold on;
 if ~isempty(ind_badtriggers)
     plot(t_triggers(ind_badtriggers), 1.2, 'ro', 'linewidth', 2)
-end;
+end
 
 for i =1:length(t_prematurepresses)
     plot(t_prematurepresses(i), 1.5, 'ko', 'markerfacecolor', 'r')
     ifp = FPs_prematurepresses(i); % current foreperiods
     itpress = t_prematurepresses(i);
     line([itpress itpress+ifp], [1.5 1.5], 'color', 'r', 'linewidth', 2)
-end;
+end
 text(-1000, 1.6, 'Premature', 'color', 'r')
 
 for i =1:length(t_latepresses)
@@ -196,14 +195,14 @@ for i =1:length(t_latepresses)
     ifp = FPs_latepresses(i); % current foreperiods
     itpress = t_latepresses(i);
     line([itpress itpress+ifp], [1.8 1.8], 'color', 'm', 'linewidth', 2)
-end;
+end
 text(-1000, 1.9, 'Late', 'color', 'r')
 
 for i =1:length(t_portin)
     port_access = [t_portin(i) t_portout(i)];
     line(port_access, [2.4 2.4], 'color', 'b', 'linewidth', 2)
     plot(port_access, 2.4, 'color', 'b', 'marker','o', 'markersize', 4, 'linewidth',1)
-end;
+end
 text(-1000, 2.5, 'Poke', 'color', 'b')
 
 plot(t_rewards, 2.0, 'co', 'linewidth', 1)
@@ -228,7 +227,7 @@ rt_correctsorted{2}     =   rt_correct(FPs_correctpresses == 1500);
 t_correctsorted{2} = t_correctsorted{2}(indsort);
 trelease_correctsorted{2} = trelease_correctsorted{2}(indsort);
 
-all_inds =  [1:size(r.Units.SpikeNotes, 1)]; % these are all units collected from this session
+all_inds = 1:size(r.Units.SpikeNotes, 1); % these are all units collected from this session
 
 % Extract these event-related activity
 
@@ -276,7 +275,7 @@ for i = 1:length(all_inds)
     if i==1
         PSTH_PressAll(1, :) = tspressall;
         PSTH_PressAllZ(1, :) = tspressall;
-    end;
+    end
      
     PSTH_PressAll = [PSTH_PressAll; psth_correctpressall];
     
@@ -293,7 +292,7 @@ for i = 1:length(all_inds)
     if i==1
         PSTH_Press{1}(1, :) = ts{1};
         PSTH_PressZ{1}(1, :) = ts{1};
-    end;
+    end
     
     PSTH_Press{1} = [PSTH_Press{1}; psth_correct{1}];
 %     psth_i = [psth_i psth_correct{1}];
@@ -308,7 +307,7 @@ for i = 1:length(all_inds)
     if i==1
         PSTH_Press{2}(1, :) = ts{2};
         PSTH_PressZ{2}(1, :) = ts{2};
-    end;
+    end
     
     PSTH_Press{2} = [PSTH_Press{2}; psth_correct{2}];
 %     psth_i = [psth_i psth_correct{2}];
@@ -328,7 +327,7 @@ for i = 1:length(all_inds)
     if i==1
         PSTH_Trigger(1, :) = ts_goodtrigger;
         PSTH_TriggerZ(1, :) = ts_goodtrigger;
-    end;
+    end
     
     PSTH_Trigger = [PSTH_Trigger; psth_goodtrigger];
     
@@ -357,7 +356,7 @@ for i = 1:length(all_inds)
     if i==1
         PSTH_ReleaseAll(1, :) = tsreleaseall;
         PSTH_ReleaseAllZ(1, :) = tsreleaseall;
-    end;
+    end
     
     PSTH_ReleaseAll = [PSTH_ReleaseAll; psth_correctreleaseall];
     
@@ -374,7 +373,7 @@ for i = 1:length(all_inds)
     if i==1
         PSTH_Release{1}(1, :) = ts_release{1};
         PSTH_ReleaseZ{1}(1, :) = ts_release{1};
-    end;
+    end
     
     PSTH_Release{1} = [PSTH_Release{1}; psth_release_correct{1}];
 %     psth_i = [psth_i psth_release_correct{1}];
@@ -385,7 +384,7 @@ for i = 1:length(all_inds)
     if i==1
         PSTH_Release{2}(1, :) = ts_release{2};
         PSTH_ReleaseZ{2}(1, :) = ts_release{2};
-    end;
+    end
     
     PSTH_Release{2} = [PSTH_Release{2}; psth_release_correct{2}];
 %     psth_i = [psth_i psth_release_correct{2}];
@@ -420,7 +419,7 @@ for i = 1:length(all_inds)
     if i==1
         PSTH_Reward(1, :) = ts_rew;
         PSTH_RewardZ(1, :) = ts_rew;
-    end;
+    end
     
     PSTH_Reward = [PSTH_Reward;psth_rew];
     StatOut = ExamineTaskResponsive(tspkmat_rew, trialspxmat_rew);
@@ -447,14 +446,13 @@ for i = 1:length(all_inds)
     PSTH_RewardZ      =     [PSTH_RewardZ; (psth_rew-mean_psth_i)/sd_psth_i];
     PSTH_TriggerZ       =      [PSTH_TriggerZ; (psth_goodtrigger-mean_psth_i)/sd_psth_i];
 
-    
     close all;
-end;
+end
 
 PSTHOut.Name                 =        r.Meta(1).Subject;
 datestr = datevec(r.Meta(1).DateTime);
 PSTHOut.Session          =    sprintf('%2.0d_%2.0d_%2.0d', datestr(1), datestr(2), datestr(3));
-PSTHOut.Date              =        strrep(r.Meta(1).DateTime(1:11), '-','_')
+PSTHOut.Date              =        strrep(r.Meta(1).DateTime(1:11), '-','_');
 PSTHOut.Units                  =        Units;
 PSTHOut.Press                  =        PSTH_Press;
 PSTHOut.PressZ                  =        PSTH_PressZ;
