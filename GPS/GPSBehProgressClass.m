@@ -540,6 +540,7 @@ classdef GPSBehProgressClass < GPSBehClass & GPSPlot
             save_name = P.Results.save_name;
 
             % 
+            fprintf("\n*********************************\n... Exporting figure ...");
             save_path = fullfile(save_dir, save_name);
             exportgraphics(fig, save_path+".png", 'Resolution', 600);
             exportgraphics(fig, save_path+".pdf", 'ContentType', 'vector');
@@ -554,6 +555,7 @@ classdef GPSBehProgressClass < GPSBehClass & GPSPlot
                 copyfile(save_path+".pdf", copy_path+".pdf");
                 copyfile(save_path+".fig", copy_path+".fig");
             end
+            fprintf("\n*********************************\n\n");
         end
 
     end % methods
