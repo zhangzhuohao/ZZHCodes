@@ -42,7 +42,7 @@ c_port = {p_c*c.Contra+(1-p_c)*[1 1 1], p_c*c.Ipsi+(1-p_c)*[1 1 1]};
 % For PSTH and raster plots
 c_cent_in  = [5 191 219] / 255;
 c_trigger  = [247 182 45] / 255;
-c_cent_out = [87 108 188] / 255;
+c_cent_out = [238 5 219] / 255;
 c_reward   = [164 208 164] / 255;
 
 TargetFPs = unique(PSTHOut.CentIn.FP{1});
@@ -1000,7 +1000,7 @@ for n = 1:nPorts
         xx =  t_mat(ap_mat(:, i)==1);
         yy1 = [0 0.8]-k;
         yy2 = [0 1]-k;
-        xxrt = ipredur;
+        xxrt = -ipredur;
         % plot trigger stimulus FPs_premature_cent_out
 %         itrigger = FP_late_cent_out{n}(i);
         %     plotshaded([0 itrigger], [-k -k; 1-k 1-k], c_trigger);
@@ -1024,7 +1024,7 @@ for n = 1:nPorts
     end
 
     line(xx_all, yy_all, 'color', c_port{n}, 'linewidth', .2)
-    line(xxrt_all, yyrt_all, 'color', c_cent_out, 'linewidth', 1)
+    line(xxrt_all, yyrt_all, 'color', c_cent_in, 'linewidth', 1)
     scatter(x_portin, y_portin, 8, 'o', 'filled','MarkerFaceColor', c_reward,  'markerfacealpha', 0.5, 'MarkerEdgeColor','none')
 end
 

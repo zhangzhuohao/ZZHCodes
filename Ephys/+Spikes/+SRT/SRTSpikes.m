@@ -149,12 +149,21 @@ FP_premature_cent_in  = cell(1, nPorts);
 FP_premature_cent_out = cell(1, nPorts);
 
 for j = 1:nPorts
-    t_premature_cent_in{j}  = cell2mat(t_premature_cent_in_sort(:,j));
-    t_premature_cent_out{j} = cell2mat(t_premature_cent_out_sort(:,j));
+    t_premature_cent_in{j}   = cell2mat(t_premature_cent_in_sort(:,j));
+    t_premature_cent_out{j}  = cell2mat(t_premature_cent_out_sort(:,j));
     HD_premature_cent_in{j}  = cell2mat(HD_premature_sort(:,j));
     HD_premature_cent_out{j} = cell2mat(HD_premature_sort(:,j));
     FP_premature_cent_in{j}  = cell2mat(FP_premature_sort(:,j));
     FP_premature_cent_out{j} = cell2mat(FP_premature_sort(:,j));
+
+    [~, ind_sort] = sort(HD_premature_cent_in{j});
+
+    t_premature_cent_in{j}   = t_premature_cent_in{j}(ind_sort);
+    t_premature_cent_out{j}  = t_premature_cent_out{j}(ind_sort);
+    HD_premature_cent_in{j}  = HD_premature_cent_in{j}(ind_sort);
+    HD_premature_cent_out{j} = HD_premature_cent_out{j}(ind_sort);
+    FP_premature_cent_in{j}  = FP_premature_cent_in{j}(ind_sort);
+    FP_premature_cent_out{j} = FP_premature_cent_out{j}(ind_sort);
 end
 % 1.1.3 Late trials
 
@@ -579,7 +588,7 @@ for iku = 1:length(ku_all)
     disp('##########################################')
     disp(['Computing this unit: ' num2str(ku)])
     disp('##########################################')
-    PSTHOut.PSTH(iku) = ComputePlotPSTH(r, PSTHOut, ku,...
+    PSTHOut.PSTH(iku) = Spike.SRT.ComputePlotPSTH(r, PSTHOut, ku,...
         'CentInTimeDomain', CentInTimeDomain, ...
         'CentOutTimeDomain', CentOutTimeDomain, ...
         'ChoiceTimeDomain', ChoiceTimeDomain,...
@@ -603,7 +612,7 @@ if takeall
     
     r_name = 'RTarray_'+r.BehaviorClass.Subject+'_'+r.BehaviorClass.Session+'.mat';
     save(r_name, 'r');
-    psth_new_name             =      r.BehaviorClass.Subject+'_'+r.BehaviorClass.Session+'_PSTHs.mat';
+    psth_new_name = r.BehaviorClass.Subject+'_'+r.BehaviorClass.Session+'_PSTHs.mat';
     save(psth_new_name, 'PSTHOut');
     try
         % C:\Users\jiani\OneDrive\00_Work\03_Projects\05_Physiology\PSTHs
