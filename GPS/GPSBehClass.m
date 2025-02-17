@@ -68,7 +68,7 @@ classdef GPSBehClass < handle
             else
                 data_kde.f = zeros(1, length(bin_edges));
             end
-        end % calKDE
+        end % cal_kde
 
         %% Data pre-processing
         function data_sorted = sort_data(obj, data_origin, sort_refs, sort_codes)
@@ -83,7 +83,7 @@ classdef GPSBehClass < handle
             if isvector(data_origin)
                 data_origin = data_origin(:);
                 n_data = length(data_origin);
-            elseif ismatrix(data_origin)
+            elseif ismatrix(data_origin) && ~iscell(data_origin)
                 n_data = size(data_origin, 1);
             else
                 error("data_origin should be a vector or a matrix");

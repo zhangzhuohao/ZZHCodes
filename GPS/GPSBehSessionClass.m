@@ -464,7 +464,7 @@ classdef GPSBehSessionClass < GPSBehClass & GPSPlot
         % Reaction time
         function reaction_time = get.RT(obj)
             reaction_time = cellfun(@(x) x(end), obj.CentPokeOutTime) - obj.TriggerCueTime;
-            reaction_time(reaction_time<0.05 | reaction_time>2) = nan;
+%             reaction_time(reaction_time<0.05 | reaction_time>2) = nan;
         end
 
         function rt_sorted = get.RTSorted(obj)
