@@ -197,7 +197,7 @@ for j = 1:nPorts
     hd_late_cent_in{j} = PSTHOut.CentIn.HoldDur.Late{j};
     hd_late_cent_in{j} = hd_late_cent_in{j}(ind);
 
-    FP_late_cent_in{j} = PSTHOut.CentIn.FP{2}{j};
+    FP_late_cent_in{j} = PSTHOut.CentIn.FP{3}{j};
     FP_late_cent_in{j} = FP_late_cent_in{j}(ind);
 
     PSTH.LateCentIn{j} = {psth_late_cent_in{j}, ts_late_cent_in{j}, trialspxmat_late_cent_in{j}, tspkmat_late_cent_in{j}, t_late_cent_in{j}, hd_late_cent_in{j}, FP_late_cent_in{j}};
@@ -222,7 +222,7 @@ for j = 1:nPorts
     hd_late_cent_out{j} = PSTHOut.CentOut.HoldDur.Late{j};
     hd_late_cent_out{j} = hd_late_cent_out{j}(ind);
 
-    FP_late_cent_out{j} = PSTHOut.CentOut.FP{2}{j};
+    FP_late_cent_out{j} = PSTHOut.CentOut.FP{3}{j};
     FP_late_cent_out{j} = FP_late_cent_out{j}(ind);
 
     PSTH.LateCentOut{j} = {psth_late_cent_out{j}, ts_late_cent_out{j}, trialspxmat_late_cent_out{j}, tspkmat_late_cent_out{j}, t_late_cent_out{j}, hd_late_cent_out{j}, FP_late_cent_out{j}};
