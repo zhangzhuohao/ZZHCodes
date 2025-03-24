@@ -314,8 +314,8 @@ classdef GPSPlot < handle
 
             % remove outliers
             if rm_outliers
-                data_1 = cellfun(@(x) rmoutliers(x(~isnan(x))), data_1, 'UniformOutput', false);
-                data_2 = cellfun(@(x) rmoutliers(x(~isnan(x))), data_2, 'UniformOutput', false);
+                data_1 = cellfun(@(x) rmoutliers_tail(x(~isnan(x))), data_1, 'UniformOutput', false);
+                data_2 = cellfun(@(x) rmoutliers_tail(x(~isnan(x))), data_2, 'UniformOutput', false);
             end
 
             % 
