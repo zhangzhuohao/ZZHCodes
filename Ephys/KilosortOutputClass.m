@@ -1730,6 +1730,7 @@ classdef KilosortOutputClass<handle
                 good_unit_channel(k) = sum(all_channels==k);
             end
             colormap_this = jet(max(good_unit_channel)+1);
+            colormap_this(1,:) = zeros(1,3);
             colors = zeros(n_channel,3);
             for k = 1:n_channel
                 colors(k,:) = colormap_this(sum(all_channels==k)+1,:);
@@ -1752,10 +1753,11 @@ classdef KilosortOutputClass<handle
                 'yBarLabel', '1 mm', 'yBarLength', 1000, 'yBarRatio', 1);
             EasyPlot.move(sc, 'dx', -0.5);
 
-            exportgraphics(fig, 'channelActivity.png', 'Resolution', 600);
+            num_s = sum(obj.SpikeTable.KSLabel=="good");
+            num_m = sum(obj.SpikeTable.KSLabel=="mua");
+            exportgraphics(fig, sprintf('channelActivity_s%d_m%d.png', num_s, num_m), 'Resolution', 600);
 %             EasyPlot.cropFigure(fig);
 %             EasyPlot.exportFigure(fig, 'channelActivity');
         end
-
     end
 end
