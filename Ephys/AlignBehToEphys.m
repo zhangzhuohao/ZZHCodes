@@ -156,7 +156,7 @@ ChoiceInFilled = sort(ChoiceInFilled);
 % recording, we can fill them in through poke-init-in time
 % Init out
 InitOutMapped = nan(1, NumTrialsEphys);
-for i = 1:NumTrialsEphys
+for i = 1:length(PokeInitInEphys) % NumTrialsEphys
     iPokeInitInEphys = PokeInitInEphys(i);
     if ~isnan(TrialIndexEphys(i))
         i_trial = TrialIndexEphys(i);

@@ -179,9 +179,9 @@ PopOut.Trigger     = PSTH_Trigger;
 PopOut.TriggerZ    = PSTH_TriggerZ;
 PopOut.TriggerStat = PSTH_TriggerStat;
 
-[PopOut.IndSort, PopOut.IndUnmodulated] = Spikes.SRT.RankActivityFlat(PopOut);
+[PopOut.IndSort, PopOut.IndUnmodulated] = SpikesGPS.SRT.RankActivityFlat(PopOut);
 
-PopOut.IndSort = Spikes.SRT.VisualizePopPSTH(PopOut);
+PopOut.IndSort = SpikesGPS.SRT.VisualizePopPSTH(PopOut);
 
 r.PopPSTH = PopOut;
 r_name = 'RTarray_'+r.PSTH.PSTHs(1).ANM_Session{1}+'_'+strrep(r.PSTH.PSTHs(1).ANM_Session{2}, '_', '')+'.mat';
