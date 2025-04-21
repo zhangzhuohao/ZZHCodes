@@ -70,7 +70,7 @@ disp(['Number of Cent poke-in is ' num2str(length(t_cent_in))]);
 
 % index and time of correct cent_in
 % get correct response
-ind_correct        = find(strcmp(r.Behavior.Outcome, 'Correct'));
+ind_correct        = find(strcmp(rb.Outcome, 'Correct'));
 t_correct_cent_in  = t_cent_in(ind_correct);
 t_correct_cent_out = t_cent_out(ind_correct);
 FPs_correct        = shape_it(rb.Foreperiods(ind_correct));
@@ -104,7 +104,7 @@ RT_cent_out_sort = RT_correct_sort;
 % 1.1.2 Premature trials
 
 %% Premature responses
-ind_premature        = find(strcmp(r.Behavior.Outcome, 'Premature'));
+ind_premature        = find(strcmp(rb.Outcome, 'Premature'));
 t_premature_cent_in  = t_cent_in(ind_premature);
 t_premature_cent_out = t_cent_out(ind_premature);
 FPs_premature        = shape_it(rb.Foreperiods(ind_premature));
@@ -168,7 +168,7 @@ end
 % 1.1.3 Late trials
 
 %% Late response
-ind_late        = find(strcmp(r.Behavior.Outcome, 'Late'));
+ind_late        = find(strcmp(rb.Outcome, 'Late'));
 t_late_cent_in  = t_cent_in(ind_late);
 t_late_cent_out = t_cent_out(ind_late);
 FPs_late        = shape_it(rb.Foreperiods(ind_late));
@@ -450,6 +450,12 @@ InitDur = t_init_out - t_init_in;
 t_init_in_sort           = t_init_in(ind_sort);
 t_init_out_sort          = t_init_out(ind_sort);
 
+% find outcome of previous trial
+for i = 1:length(t_init_in)
+    ind_last_cent_in = find(t_cent_in<t_init_in(i), 1, 'last');
+
+end
+
 %% 2 Check compute range
 
 %% Check ComputeRange
@@ -508,7 +514,6 @@ PSTHOut.ANM_Session = {r.BehaviorClass.Subject, r.BehaviorClass.Session};
 PSTHOut.SpikeNotes  = r.Units.SpikeNotes;
 
 %% 3.1 Cent-In
-
 n_sort = numel(t_correct_cent_in_sort);
 PSTHOut.CentIn.Labels = [repmat({'Correct'}, 1, n_sort), 'Premature', 'Premature', 'Late', 'Late', 'Probe', 'Probe', 'All'];
 
@@ -545,7 +550,6 @@ PSTHOut.CentOut.HoldDur.Late      = HD_late_cent_out;
 PSTHOut.CentOut.HoldDur.Probe     = HD_probe_sort;
 
 %% 3.3 Choice-In
-
 PSTHOut.ChoiceIn.Time                    = t_choice;
 PSTHOut.ChoiceIn.RewardPoke.Time         = t_correct_choice; % it is a cell now!
 PSTHOut.ChoiceIn.RewardPoke.Move_Time    = mt_correct;       % it is a cell now!
@@ -553,7 +557,6 @@ PSTHOut.ChoiceIn.NonrewardPoke.Time      = t_noreward_choice;
 PSTHOut.ChoiceIn.NonrewardPoke.Move_Time = mt_noreward;
 
 %% 3.4 Trigger
-
 n_sort = numel(t_trig_sort);
 PSTHOut.Triggers.Labels          = {'TriggerTime_DifferentFPs' 'TriggerTime_Late'};
 PSTHOut.Triggers.Time            = cell(1, n_sort+2);
@@ -565,7 +568,6 @@ PSTHOut.Triggers.FP             = {repmat(TargetFPs, 1, 2), FP_late_trig};
 PSTHOut.Triggers.Port           = {[ones(1, nFPs) 2*ones(1, nFPs)], Ports};
 
 %% 3.5 InitIn & InitOut
-
 PSTHOut.InitIn.Time     = t_init_in_sort;
 PSTHOut.InitIn.InitDur  = InitDur_sort;
 

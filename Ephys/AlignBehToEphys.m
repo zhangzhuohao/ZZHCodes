@@ -152,11 +152,26 @@ end
 ChoiceInFilled = [PokeChoiceInEphys', ChoiceInMapped(ChoiceInToFill)];
 ChoiceInFilled = sort(ChoiceInFilled);
 
+% Sometimes the recording miss the first init_in signal before cent_in, add that by behavior data from bpod
+if PokeInitInEphys(1) > PokeCentInEphys(1) % missing occurred
+    i_trial = TrialIndexEphys(1);
+    iPokeCentInBeh = PokeCentInBeh(i_trial);
+    iPokeInitInBeh = PokeInitInBeh(i_trial);
+    if ~isnan(iPokeCentInBeh)
+        firstInitInEphys = iPokeInitInBeh-iPokeCentInBeh+PokeCentInEphys(1);
+    end
+    PokeInitInEphys = [firstInitInEphys PokeInitInEphys];
+end
+% Sometimes the recording overtake the last+1 init_in signal without cent_in, we drop that
+if PokeInitInEphys(end) > PokeCentInEphys(end) % missing occurred
+    PokeInitInEphys(end) = [];
+end
+
 % there are no marks for poke-init-out during GPS neuropixels
 % recording, we can fill them in through poke-init-in time
 % Init out
 InitOutMapped = nan(1, NumTrialsEphys);
-for i = 1:length(PokeInitInEphys) % NumTrialsEphys
+for i = 1:NumTrialsEphys
     iPokeInitInEphys = PokeInitInEphys(i);
     if ~isnan(TrialIndexEphys(i))
         i_trial = TrialIndexEphys(i);
