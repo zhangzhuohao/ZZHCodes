@@ -162,8 +162,8 @@ if PokeInitInEphys(1) > PokeCentInEphys(1) % missing occurred
     end
     PokeInitInEphys = [firstInitInEphys PokeInitInEphys];
 end
-% Sometimes the recording overtake the last+1 init_in signal without cent_in, we drop that
-if PokeInitInEphys(end) > PokeCentInEphys(end) % missing occurred
+% Sometimes the recording over-take the last+1 init_in signal without cent_in, we drop that
+if PokeInitInEphys(end) > PokeCentInEphys(end) % over-taking occurred
     PokeInitInEphys(end) = [];
 end
 
