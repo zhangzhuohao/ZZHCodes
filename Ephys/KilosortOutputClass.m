@@ -556,7 +556,7 @@ classdef KilosortOutputClass<handle
 
             % load event mark file
             if exist('./EventOut.mat', 'file')
-                load("./EventOut.mat");
+                load("./EventOut.mat", 'EventOut');
             else
                 error("did not find a event mark file.")
             end

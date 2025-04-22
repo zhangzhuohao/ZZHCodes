@@ -22,6 +22,23 @@ PokeCentInEphys   = EventOut.Onset{strcmp(EventOut.EventsLabels, 'PokeCentIn')};
 PokeChoiceInEphys = EventOut.Onset{strcmp(EventOut.EventsLabels, 'PokeChoiceIn')};
 PokeInitInEphys   = EventOut.Onset{strcmp(EventOut.EventsLabels, 'PokeInitIn')};
 
+% Sometimes the recording miss the first init_in signal before cent_in, we drop that
+if PokeInitInEphys(1) > PokeCentInEphys(1) % missing occurred
+    PokeCentInEphys(1) = [];
+    if PokeChoiceInEphys(1) < PokeCentInEphys(1)
+        PokeChoiceInEphys(1) = [];
+    end
+end
+% Sometimes the recording over-take the last+1 init_in signal without cent_in, we drop that
+if PokeInitInEphys(end) > PokeCentInEphys(end) % over-taking occurred
+    PokeInitInEphys(end) = [];
+end
+
+% Update EventOut
+EventOut.Onset{strcmp(EventOut.EventsLabels, 'PokeCentIn')}   = PokeCentInEphys;
+EventOut.Onset{strcmp(EventOut.EventsLabels, 'PokeChoiceIn')} = PokeChoiceInEphys;
+EventOut.Onset{strcmp(EventOut.EventsLabels, 'PokeInitIn')}   = PokeInitInEphys;
+
 NumTrialsEphys    = length(PokeCentInEphys);
 
 % these are times for poke-in center, choice and init recorded in bpod
@@ -151,21 +168,6 @@ for i = 1:length(ChoiceInMapped)
 end
 ChoiceInFilled = [PokeChoiceInEphys', ChoiceInMapped(ChoiceInToFill)];
 ChoiceInFilled = sort(ChoiceInFilled);
-
-% Sometimes the recording miss the first init_in signal before cent_in, add that by behavior data from bpod
-if PokeInitInEphys(1) > PokeCentInEphys(1) % missing occurred
-    i_trial = TrialIndexEphys(1);
-    iPokeCentInBeh = PokeCentInBeh(i_trial);
-    iPokeInitInBeh = PokeInitInBeh(i_trial);
-    if ~isnan(iPokeCentInBeh)
-        firstInitInEphys = iPokeInitInBeh-iPokeCentInBeh+PokeCentInEphys(1);
-    end
-    PokeInitInEphys = [firstInitInEphys PokeInitInEphys];
-end
-% Sometimes the recording over-take the last+1 init_in signal without cent_in, we drop that
-if PokeInitInEphys(end) > PokeCentInEphys(end) % over-taking occurred
-    PokeInitInEphys(end) = [];
-end
 
 % there are no marks for poke-init-out during GPS neuropixels
 % recording, we can fill them in through poke-init-in time

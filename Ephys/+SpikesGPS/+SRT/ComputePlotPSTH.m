@@ -44,6 +44,9 @@ c_cent_in  = [5 191 219] / 255;
 c_trigger  = [247 182 45] / 255;
 c_cent_out = [238 5 219] / 255;
 c_reward   = [164 208 164] / 255;
+c_precor   = [0 0 0];
+c_preerr   = [160 82 45] / 255;
+
 
 TargetFPs = unique(PSTHOut.CentIn.FP{1});
 nFPs = length(TargetFPs);
@@ -65,7 +68,7 @@ nSort = nFPs * nPorts;
 c_premature = [0.9 0.4 0.1];
 c_late      = [0.6 0.6 0.6];
 c_probe     = [.7 .5 .3];
-printsize   = [2 1 17 25];
+printsize   = [2 2 25 25];
 
 %% PSTHs for CentIn and CentOut
 params_cent_in.pre      = 5000; % take a longer pre-press activity so we can compute z score easily later.
@@ -269,6 +272,7 @@ for j = 1:nPorts
 end
 PSTH.ProbeLabels = {'PSTH', 'tPSTH', 'SpikeMat', 'tSpikeMat', 'tEvents', 'HoldDuration'};
 
+%% PSTH for choice poke
 % use t_reward_poke and move_time to construct reward_poke PSTH
 % reward PSTH
 params_choice.pre  = ChoiceTimeDomain(1);
@@ -310,25 +314,11 @@ for j = 1:nPorts
     PSTH.NonrewardChoice{j} = {psth_nonreward_choice{j}, ts_nonreward_choice{j}, trialspxmat_nonreward_choice{j}, tspkmat_nonreward_choice{j}, t_nonreward_choice{j}, mt_nonreward_choice{j}};
 end
 
+%% PSTH for trigger
 % trigger PSTH
 params_trigger.pre  = TriggerTimeDomain(1);
 params_trigger.post = TriggerTimeDomain(2);
 params_trigger.binwidth = 20;
-
-% late response
-% t_trigger_late    = PSTHOut.Triggers.Time{end};
-% RT_trigger_late   = PSTHOut.Triggers.RT{end};
-% FP_trigger_late   = PSTHOut.Triggers.FP{end};
-% Port_trigger_late = PSTHOut.Triggers.Port{end};
-% 
-% [psth_late_trigger, ts_late_trigger, trialspxmat_late_trigger, tspkmat_late_trigger, t_trigger_late, ind] = jpsth(r.Units.SpikeTimes(ku).timings, t_trigger_late, params_trigger);
-% psth_late_trigger = smoothdata (psth_late_trigger, 'gaussian', 5);
-% 
-% RT_trigger_late   = RT_trigger_late(ind);
-% FP_trigger_late   = FP_trigger_late(ind);
-% Port_trigger_late = Port_trigger_late(ind);
-% 
-% PSTH.TriggerLate   = {psth_late_trigger, ts_late_trigger, trialspxmat_late_trigger, tspkmat_late_trigger, t_trigger_late, RT_trigger_late, FP_trigger_late, Port_trigger_late};
 
 % correct response
 t_trigger_correct           = cell(nFPs, nPorts);
@@ -373,8 +363,50 @@ for j = 1:nPorts
     PSTH.TriggerLate{j} = {psth_trigger_late{j}, ts_trigger_late{j}, trialspxmat_trigger_late{j}, tspkmat_trigger_late{j}, t_trigger_late{j}, rt_trigger_late{j}, FP_trigger_late{j}, Ports(j)};
 end
 
-%% Plot raster and spks
+%% PSTH for init-in and init-out
+% Init-In
+params_initin.pre  = InitInTimeDomain(1);
+params_initin.post = InitInTimeDomain(2);
+params_initin.binwidth = 20;
 
+% Init-In pre-correct
+t_cor = PSTHOut.InitIn.PreCor.Time;
+[psth_cor_initin, ts_cor_initin, trialspxmat_cor_initin, tspkmat_cor_initin, t_cor_initin, ind] = jpsth(r.Units.SpikeTimes(ku).timings, t_cor, params_initin);
+psth_cor_initin = smoothdata(psth_cor_initin, 'gaussian', 5);
+
+dur_cor_initin = PSTHOut.InitIn.PreCor.InitDur(ind);
+PSTH.PreCorrectInitIn = {psth_cor_initin, ts_cor_initin, trialspxmat_cor_initin, tspkmat_cor_initin, t_cor_initin, dur_cor_initin};
+
+% Init-In pre-error
+t_err = PSTHOut.InitIn.PreErr.Time;
+[psth_err_initin, ts_err_initin, trialspxmat_err_initin, tspkmat_err_initin, t_err_initin, ind] = jpsth(r.Units.SpikeTimes(ku).timings, t_err, params_initin);
+psth_err_initin = smoothdata(psth_err_initin, 'gaussian', 5);
+
+dur_err_initin = PSTHOut.InitIn.PreErr.InitDur(ind);
+PSTH.PreErrorInitIn = {psth_err_initin, ts_err_initin, trialspxmat_err_initin, tspkmat_err_initin, t_err_initin, dur_err_initin};
+
+% Init-Out
+params_initout.pre  = InitOutTimeDomain(1);
+params_initout.post = InitOutTimeDomain(2);
+params_initout.binwidth = 20;
+
+% Init-Out pre-correct
+t_cor = PSTHOut.InitOut.PreCor.Time;
+[psth_cor_initout, ts_cor_initout, trialspxmat_cor_initout, tspkmat_cor_initout, t_cor_initout, ind] = jpsth(r.Units.SpikeTimes(ku).timings, t_cor, params_initout);
+psth_cor_initout = smoothdata(psth_cor_initout, 'gaussian', 5);
+
+dur_cor_initout = PSTHOut.InitOut.PreCor.InitDur(ind);
+PSTH.PreCorrectInitOut = {psth_cor_initout, ts_cor_initout, trialspxmat_cor_initout, tspkmat_cor_initout, t_cor_initout, dur_cor_initout};
+
+% Init-Out pre-error
+t_err = PSTHOut.InitOut.PreErr.Time;
+[psth_err_initout, ts_err_initout, trialspxmat_err_initout, tspkmat_err_initout, t_err_initout, ind] = jpsth(r.Units.SpikeTimes(ku).timings, t_err, params_initout);
+psth_err_initout = smoothdata(psth_err_initout, 'gaussian', 5);
+
+dur_err_initout = PSTHOut.InitOut.PreErr.InitDur(ind);
+PSTH.PreErrorInitOut = {psth_err_initout, ts_err_initout, trialspxmat_err_initout, tspkmat_err_initout, t_err_initout, dur_err_initout};
+
+%% Plot raster and spks
 h_psth = 1;
 fig = figure(40); clf(fig);
 set(fig, 'unit', 'centimeters', 'position', printsize, 'paperpositionmode', 'auto' ,'color', 'w', 'Visible', 'on')
@@ -410,10 +442,10 @@ end
 axis 'auto y'
 
 % make raster plot  750 ms FP
-if num2str(length(t_cent_in))>200
-    rasterheight = 0.01;
-elseif num2str(length(t_cent_in))>100
+if length(t_cent_in)>200
     rasterheight = 0.02;
+elseif length(t_cent_in)>100
+    rasterheight = 0.03;
 else
     rasterheight = 0.04;
 end
@@ -750,15 +782,6 @@ for i = 1:nFPs
 end
 axis 'auto y'
 
-% make raster plot  750 ms FP
-if num2str(length(t_cent_out_correct))>200
-    rasterheight = 0.01;
-elseif num2str(length(t_cent_out_correct))>100
-    rasterheight = 0.02;
-else
-    rasterheight = 0.04;
-end
-
 yshift_row2 = yshift_row1 + (h_psth+.1)*nFPs;
 % Plot spike raster of correct trials (all FPs)
 ntrials_cent_out = 0;
@@ -1067,15 +1090,6 @@ for i = 1:nFPs
 end
 axis 'auto y'
 
-% make raster plot  750 ms FP
-if num2str(length(t_trigger_correct))>200
-    rasterheight = 0.01;
-elseif num2str(length(t_trigger_correct))>100
-    rasterheight = 0.02;
-else
-    rasterheight = 0.04;
-end
-
 yshift_row2 = yshift_row1 + (h_psth+.1)*nFPs;
 % Plot spike raster of correct trials (all FPs)
 ntrials_trigger = 0;
@@ -1220,8 +1234,8 @@ uicontrol('Style','text','Units','centimeters','Position',[x_pos-.25 yshift_row5
 
 x_pos = 13;
 w_psth = sum(ChoiceTimeDomain) / 1000;
-% Correct trials
 
+% Correct trials
 % PSTH of correct trials
 yshift_row1 = 1;
 ha_choice_psth = cell(1,nFPs);
@@ -1235,7 +1249,7 @@ for i = 1:nFPs
         %     disp(FRMax)
     end
     if i==nFPs
-        xlabel('Time from Choice (ms)')
+        xlabel('Time from choice (ms)')
         ylabel('Spks per s')
     else
         xticklabels([]);
@@ -1243,15 +1257,6 @@ for i = 1:nFPs
     end
 end
 axis 'auto y'
-
-% make raster plot  750 ms FP
-if num2str(length(t_reward_choice))>200
-    rasterheight = 0.01;
-elseif num2str(length(t_reward_choice))>100
-    rasterheight = 0.02;
-else
-    rasterheight = 0.04;
-end
 
 yshift_row2 = yshift_row1 + (h_psth+.1)*nFPs;
 % Plot spike raster of correct trials (all FPs)
@@ -1306,8 +1311,8 @@ end
 xline(0, 'Color', c_reward, 'LineWidth', 1, 'Alpha', 1);
 title('Reward', 'fontsize', 7, 'fontweight','bold');
 axis off
-% Non-reward trials
 
+% Non-reward trials
 % PSTH of non-reward trials
 yshift_row3 = yshift_row2 + 0.5 + ntrials_reward_choice*rasterheight;
 
@@ -1376,547 +1381,226 @@ uicontrol('Style','text','Units','centimeters','Position',[x_pos-.25 yshift_row5
 
 
 %% Align to InitIn
+x_pos = 17.25;
+w_psth = sum(InitInTimeDomain) / 1000;
 
+% pre-Correct and pre-Error trials
+% PSTH of pre-correct and pre-error trials
+yshift_row1 = 1;
 
+ha_init_in_psth =  axes('unit', 'centimeters', 'position', [x_pos yshift_row1 w_psth h_psth], 'nextplot', 'add',...
+    'xlim',  [-InitInTimeDomain(1) InitInTimeDomain(2)], 'FontSize', 7, 'TickDir', 'Out');
+xline(0, 'Color', 'k', 'LineWidth', 1, 'Alpha', 1);
+if size(trialspxmat_cor_initin, 2)>3
+    plot(ts_cor_initin, psth_cor_initin, 'color', c_precor, 'linewidth', 1)
+end
+if size(trialspxmat_err_initin, 2)>3
+    plot(ts_err_initin, psth_err_initin, 'color', c_preerr, 'linewidth', 1)
+end
+axis 'auto y'
 
+xlabel('Time from init-in (ms)')
+ylabel('Spks per s')
 
+yshift_row2 = yshift_row1 + (h_psth+.1);
+ntrial_precor = length(t_cor_initin); % number of trials
+axes('unit', 'centimeters', 'position', [x_pos yshift_row2 w_psth ntrial_precor*rasterheight],...
+    'nextplot', 'add',...
+    'xlim', [-InitInTimeDomain(1) InitInTimeDomain(2)], 'ylim', [-ntrial_precor 1], 'box', 'on');
+k = 0;
 
+ap_mat = trialspxmat_cor_initin;
+t_mat  = tspkmat_cor_initin;
+xx_all = [];
+yy_all = [];
+xxdur_all = [];
+yydur_all = [];
+for i = 1:size(ap_mat, 2)
+    idur = dur_cor_initin(i);
+    xx =  t_mat(ap_mat(:, i)==1);
+    yy1 = [0 0.8]-k;
+    yy2 = [0 1]-k;
+    xxdur = idur;
+    % plot trigger stimulus FPs_premature_cent_out
+    %         itrigger = FP_late_cent_out{n}(i);
+    %     plotshaded([0 itrigger], [-k -k; 1-k 1-k], c_trigger);
+
+    for i_xx = 1:length(xx)
+        xx_all = [xx_all, xx(i_xx), xx(i_xx), NaN];
+        yy_all = [yy_all, yy1, NaN];
+    end
+    xxdur_all = [xxdur_all, xxdur];
+    yydur_all = [yydur_all, mean(yy2)];
+
+    k = k+1;
+end
+
+line(xx_all, yy_all, 'color', c_precor, 'linewidth', .2)
+scatter(xxdur_all, yydur_all, 8, 'k', 'x')
+
+xline(0, 'Color', 'k', 'LineWidth', 1, 'Alpha', 1);
+title('Pre-correct', 'fontsize', 7, 'fontweight','bold')
+axis off
+
+yshift_row3 = yshift_row2 + 0.5 + ntrial_precor*rasterheight;
+ntrial_preerr = length(t_err_initin); % number of trials
+axes('unit', 'centimeters', 'position', [x_pos yshift_row3 w_psth ntrial_preerr*rasterheight],...
+    'nextplot', 'add',...
+    'xlim', [-InitInTimeDomain(1) InitInTimeDomain(2)], 'ylim', [-ntrial_preerr 1], 'box', 'on');
+k = 0;
+
+ap_mat = trialspxmat_err_initin;
+t_mat  = tspkmat_err_initin;
+xx_all = [];
+yy_all = [];
+xxdur_all = [];
+yydur_all = [];
+for i = 1:size(ap_mat, 2)
+    idur = dur_err_initin(i);
+    xx =  t_mat(ap_mat(:, i)==1);
+    yy1 = [0 0.8]-k;
+    yy2 = [0 1]-k;
+    xxdur = idur;
+    % plot trigger stimulus FPs_premature_cent_out
+    %         itrigger = FP_late_cent_out{n}(i);
+    %     plotshaded([0 itrigger], [-k -k; 1-k 1-k], c_trigger);
+
+    for i_xx = 1:length(xx)
+        xx_all = [xx_all, xx(i_xx), xx(i_xx), NaN];
+        yy_all = [yy_all, yy1, NaN];
+    end
+    xxdur_all = [xxdur_all, xxdur];
+    yydur_all = [yydur_all, mean(yy2)];
+
+    k = k+1;
+end
+
+line(xx_all, yy_all, 'color', c_preerr, 'linewidth', .2)
+scatter(xxdur_all, yydur_all, 8, 'k', 'x')
+
+xline(0, 'Color', 'k', 'LineWidth', 1, 'Alpha', 1);
+title('Pre-error', 'fontsize', 7, 'fontweight','bold')
+axis off
+
+yshift_row4 = yshift_row3 + 0.5 + ntrial_preerr*rasterheight;
+% Add information
+uicontrol('Style','text','Units','centimeters','Position',[x_pos-.25 yshift_row4 4 1],...
+    'string', 'E. InitIn-related', ...
+    'FontName','Dejavu Sans', 'fontweight', 'bold','fontsize', 8,'BackgroundColor',[1 1 1],...
+    'HorizontalAlignment','Left');
 
 %% Align to InitOut
+x_pos = 21;
+w_psth = sum(InitOutTimeDomain) / 1000;
 
+% pre-Correct and pre-Error trials
+% PSTH of pre-correct and pre-error trials
+yshift_row1 = 1;
 
+ha_init_out_psth =  axes('unit', 'centimeters', 'position', [x_pos yshift_row1 w_psth h_psth], 'nextplot', 'add',...
+    'xlim',  [-InitOutTimeDomain(1) InitOutTimeDomain(2)], 'FontSize', 7, 'TickDir', 'Out');
+xline(0, 'Color', 'k', 'LineWidth', 1, 'Alpha', 1);
+if size(trialspxmat_cor_initout, 2)>3
+    plot(ts_cor_initout, psth_cor_initout, 'color', c_precor, 'linewidth', 1)
+end
+if size(trialspxmat_err_initout, 2)>3
+    plot(ts_err_initout, psth_err_initout, 'color', c_preerr, 'linewidth', 1)
+end
+axis 'auto y'
 
+xlabel('Time from init-out (ms)')
+ylabel('Spks per s')
 
+yshift_row2 = yshift_row1 + (h_psth+.1);
+ntrial_precor = length(t_cor_initout); % number of trials
+axes('unit', 'centimeters', 'position', [x_pos yshift_row2 w_psth ntrial_precor*rasterheight],...
+    'nextplot', 'add',...
+    'xlim', [-InitOutTimeDomain(1) InitOutTimeDomain(2)], 'ylim', [-ntrial_precor 1], 'box', 'on');
+k = 0;
 
+ap_mat = trialspxmat_cor_initout;
+t_mat  = tspkmat_cor_initout;
+xx_all = [];
+yy_all = [];
+xxdur_all = [];
+yydur_all = [];
+for i = 1:size(ap_mat, 2)
+    idur = dur_cor_initout(i);
+    xx  =  t_mat(ap_mat(:, i)==1);
+    yy1 = [0 0.8]-k;
+    yy2 = [0 1]-k;
+    xxdur = -idur;
+    % plot trigger stimulus FPs_premature_cent_out
+    %         itrigger = FP_late_cent_out{n}(i);
+    %     plotshaded([0 itrigger], [-k -k; 1-k 1-k], c_trigger);
 
+    for i_xx = 1:length(xx)
+        xx_all = [xx_all, xx(i_xx), xx(i_xx), NaN];
+        yy_all = [yy_all, yy1, NaN];
+    end
+    xxdur_all = [xxdur_all, xxdur];
+    yydur_all = [yydur_all, mean(yy2)];
 
-% % % % % % % % % % % % 
-% % % % % % % % % % % % %% Release PSTHs
-% % % % % % % % % % % % % Release-related PSTHs
-% % % % % % % % % % % % width = 6*sum(CentOutTimeDomain)/sum(CentInTimeDomain);
-% % % % % % % % % % % % yshift_row1 = 1;
-% % % % % % % % % % % % ha_cent_out_psth =  axes('unit', 'centimeters', 'position', [9.25 yshift_row1 width 2], 'nextplot', 'add', ...
-% % % % % % % % % % % %     'xlim', [-CentOutTimeDomain(1) CentOutTimeDomain(2)]);
-% % % % % % % % % % % % yshift_row2 = yshift_row1+2+0.25;
-% % % % % % % % % % % % 
-% % % % % % % % % % % % for i =1:nFPs
-% % % % % % % % % % % %     hplot_cent_out(i) = plot(ts_cent_out{i}, psth_cent_out_correct{i}, 'color', c_FP(i, :),  'linewidth', 1.5);
-% % % % % % % % % % % %     FRMax = max([FRMax max(psth_cent_out_correct{i})]);
-% % % % % % % % % % % % %     disp(FRMax)
-% % % % % % % % % % % % end
-% % % % % % % % % % % % axis 'auto y'
-% % % % % % % % % % % % hline_cent_out = line([0 0], get(gca, 'ylim'), 'color', c_cent_in, 'linewidth', 1);
-% % % % % % % % % % % % xlabel('Time from release (ms)')
-% % % % % % % % % % % % ylabel ('Spks per s')
-% % % % % % % % % % % % 
-% % % % % % % % % % % % % error PSTHs
-% % % % % % % % % % % % ha_cent_out_psth_error =  axes('unit', 'centimeters', 'position', [9.25 yshift_row2 width 2], 'nextplot', 'add', ...
-% % % % % % % % % % % %     'xlim', [-CentOutTimeDomain(1) CentOutTimeDomain(2)], 'xticklabel',[]);
-% % % % % % % % % % % % yshift_row3 = yshift_row2 +2+0.25;
-% % % % % % % % % % % % if  size(trialspxmat_premature_cent_out, 2)>3
-% % % % % % % % % % % %     plot(ts_premature_cent_out, psth_premature_cent_out, 'color', c_premature, 'linewidth', 1.5)
-% % % % % % % % % % % % %     FRMax = max([FRMax max(psth_premature_cent_out)]);
-% % % % % % % % % % % % %     disp(FRMax)
-% % % % % % % % % % % % end
-% % % % % % % % % % % % if  size(trialspxmat_late_cent_out, 2)>3
-% % % % % % % % % % % %     plot(ts_late_cent_out, psth_late_cent_out, 'color', c_late, 'linewidth', 1.5)
-% % % % % % % % % % % % %     FRMax = max([FRMax max(psth_late_cent_out)]);
-% % % % % % % % % % % % %     disp(FRMax)
-% % % % % % % % % % % % end
-% % % % % % % % % % % % axis 'auto y'
-% % % % % % % % % % % % hline_cent_out_error =line([0 0], get(gca, 'ylim'), 'color', c_cent_out, 'linewidth', 1);
-% % % % % % % % % % % % 
-% % % % % % % % % % % % % Make raster plot
-% % % % % % % % % % % % % Plot spike raster of correct trials (all FPs)
-% % % % % % % % % % % % ntrials_cent_out = 0;
-% % % % % % % % % % % % nFP_ij = zeros(1, nFPs);
-% % % % % % % % % % % % for i =1:nFPs
-% % % % % % % % % % % %     nFP_ij(i) = size(trialspxmat_cent_out{i}, 2);
-% % % % % % % % % % % %     ntrials_cent_out = ntrials_cent_out + nFP_ij(i);
-% % % % % % % % % % % % end
-% % % % % % % % % % % % 
-% % % % % % % % % % % % axes('unit', 'centimeters', 'position', [9.25 yshift_row3 width ntrials_cent_out*rasterheight],...
-% % % % % % % % % % % %     'nextplot', 'add',...
-% % % % % % % % % % % %     'xlim', [-CentOutTimeDomain(1) CentOutTimeDomain(2)], 'ylim', [-ntrials_cent_out 1], 'box', 'on');
-% % % % % % % % % % % % yshift_row4 = yshift_row3+ntrials_cent_out*rasterheight+0.5;
-% % % % % % % % % % % % % Paint the foreperiod
-% % % % % % % % % % % % n_start = 1;
-% % % % % % % % % % % % k=0;
-% % % % % % % % % % % % for m =1:nFPs
-% % % % % % % % % % % %     ap_mat = trialspxmat_cent_out{m};
-% % % % % % % % % % % %     t_mat = tspkmat_cent_out{m};
-% % % % % % % % % % % %     rt = rt_cent_out_sorted{m};
-% % % % % % % % % % % %     mFP = TargetFPs(m);
-% % % % % % % % % % % %     xx_all = [];
-% % % % % % % % % % % %     yy_all = [];
-% % % % % % % % % % % %     xxrt_all = [];
-% % % % % % % % % % % %     yyrt_all = [];
-% % % % % % % % % % % %     x_portin = [];
-% % % % % % % % % % % %     y_portin = [];
-% % % % % % % % % % % %     for i =1:nFP_ij(m)
-% % % % % % % % % % % %         irt = rt(i); % time from foreperiod to release
-% % % % % % % % % % % %         xx = t_mat(ap_mat(:, i)==1);
-% % % % % % % % % % % %         yy1 = [0 0.8]-k;
-% % % % % % % % % % % %         yy2 = [0 1]-k;
-% % % % % % % % % % % % 
-% % % % % % % % % % % %         % paint foreperiod
-% % % % % % % % % % % %         plotshaded([-irt-mFP -irt]-n_start, [-k -k; 1-k 1-k], c_trigger);
-% % % % % % % % % % % % 
-% % % % % % % % % % % %         for i_xx = 1:length(xx)
-% % % % % % % % % % % %             xx_all = [xx_all, xx(i_xx), xx(i_xx), NaN];
-% % % % % % % % % % % %             yy_all = [yy_all, yy1, NaN];
-% % % % % % % % % % % %         end
-% % % % % % % % % % % %         xxrt_all = [xxrt_all, -irt-mFP, -irt-mFP, NaN];
-% % % % % % % % % % % %         yyrt_all = [yyrt_all, yy2, NaN];
-% % % % % % % % % % % % 
-% % % % % % % % % % % %         % port access time
-% % % % % % % % % % % %         itrelease =t_cent_out_correct{m}(i);
-% % % % % % % % % % % %         it_choice = t_choice - itrelease;
-% % % % % % % % % % % %         it_choice = it_choice(it_choice>=-CentOutTimeDomain(1) & it_choice<=CentOutTimeDomain(2));
-% % % % % % % % % % % %         if ~isempty(it_choice)
-% % % % % % % % % % % %             it_choice = reshape(it_choice,1,[]);
-% % % % % % % % % % % %             x_portin = [x_portin, it_choice];
-% % % % % % % % % % % %             y_portin = [y_portin, (0.4-k)*ones(1,length(it_choice))];            
-% % % % % % % % % % % %         end
-% % % % % % % % % % % %         k = k+1;
-% % % % % % % % % % % %     end
-% % % % % % % % % % % %     n_start = n_start - nFP_ij(m);
-% % % % % % % % % % % % 
-% % % % % % % % % % % %     line(xx_all, yy_all, 'color', c_FP(m, :), 'linewidth', 1);
-% % % % % % % % % % % %     line(xxrt_all, yyrt_all, 'color', c_cent_in, 'linewidth', 1.5);
-% % % % % % % % % % % %     scatter(x_portin, y_portin, 8, 'o', 'filled','MarkerFaceColor', c_reward,  'markerfacealpha', 0.5, 'MarkerEdgeColor','none');
-% % % % % % % % % % % % end
-% % % % % % % % % % % % line([0 0], get(gca, 'ylim'), 'color', c_cent_out, 'linewidth', 1);
-% % % % % % % % % % % % title('Correct', 'fontsize', 7);
-% % % % % % % % % % % % axis off
-% % % % % % % % % % % % 
-% % % % % % % % % % % % % Premature release raster plot
-% % % % % % % % % % % % ntrial_premature = size(trialspxmat_premature_cent_out, 2); % number of trials
-% % % % % % % % % % % % axes('unit', 'centimeters', 'position', [9.25 yshift_row4 width ntrial_premature*rasterheight],...
-% % % % % % % % % % % %     'nextplot', 'add',...
-% % % % % % % % % % % %     'xlim', [-CentOutTimeDomain(1) CentOutTimeDomain(2)], 'ylim', [-ntrial_premature 1], 'box', 'on');
-% % % % % % % % % % % % yshift_row5    =      yshift_row4 + 0.5 + ntrial_premature*rasterheight;
-% % % % % % % % % % % % ap_mat          =     trialspxmat_premature_cent_out;
-% % % % % % % % % % % % t_mat             =     tspkmat_premature_cent_out;
-% % % % % % % % % % % % k =0;
-% % % % % % % % % % % % xx_all = [];
-% % % % % % % % % % % % yy_all = [];
-% % % % % % % % % % % % x_predur_all = [];
-% % % % % % % % % % % % y_predur_all = [];
-% % % % % % % % % % % % x_portin = [];
-% % % % % % % % % % % % y_portin = [];
-% % % % % % % % % % % % for i =1:size(ap_mat, 2)
-% % % % % % % % % % % %     ipredur = premature_duration_cent_out(i);
-% % % % % % % % % % % %     iFP = FPs_premature_cent_out(i);
-% % % % % % % % % % % %     xx =  t_mat(ap_mat(:, i)==1);
-% % % % % % % % % % % %     yy1 = [0 0.8]-k;
-% % % % % % % % % % % %     yy = [0 1]-k;
-% % % % % % % % % % % % 
-% % % % % % % % % % % %     x_predur_all = [x_predur_all, -ipredur, -ipredur, NaN];
-% % % % % % % % % % % %     y_predur_all = [y_predur_all, yy, NaN];
-% % % % % % % % % % % % 
-% % % % % % % % % % % %     % paint foreperiod
-% % % % % % % % % % % %     plotshaded([-ipredur -ipredur+iFP], [-k -k; 1-k 1-k], c_trigger);
-% % % % % % % % % % % % 
-% % % % % % % % % % % %     for i_xx = 1:length(xx)
-% % % % % % % % % % % %         xx_all = [xx_all, xx(i_xx), xx(i_xx), NaN];
-% % % % % % % % % % % %         yy_all = [yy_all, yy1, NaN];
-% % % % % % % % % % % %     end    
-% % % % % % % % % % % % 
-% % % % % % % % % % % %     % plot port poke time
-% % % % % % % % % % % %     it_choice = t_choice - t_premature_cent_out(i);
-% % % % % % % % % % % %     it_choice = it_choice(it_choice>=-CentOutTimeDomain(1) & it_choice<=CentOutTimeDomain(2));
-% % % % % % % % % % % %     if ~isempty(it_choice)
-% % % % % % % % % % % %         it_choice = reshape(it_choice,1,[]);
-% % % % % % % % % % % %         x_portin = [x_portin, it_choice];
-% % % % % % % % % % % %         y_portin = [y_portin, (0.4-k)*ones(1,length(it_choice))];         
-% % % % % % % % % % % %     end
-% % % % % % % % % % % %     k = k+1;
-% % % % % % % % % % % % end
-% % % % % % % % % % % % 
-% % % % % % % % % % % % line(x_predur_all, y_predur_all, 'color', c_cent_in, 'linewidth', 1.5);
-% % % % % % % % % % % % line(xx_all, yy_all, 'color', c_premature, 'linewidth', 1)
-% % % % % % % % % % % % scatter(x_portin, y_portin, 8, 'o', 'filled','MarkerFaceColor', c_reward,  'markerfacealpha', 0.5, 'MarkerEdgeColor','none')
-% % % % % % % % % % % % 
-% % % % % % % % % % % % line([0 0], get(gca, 'ylim'), 'color', c_cent_out, 'linewidth', 1)
-% % % % % % % % % % % % title('Premature', 'fontsize', 7)
-% % % % % % % % % % % % axis off
-% % % % % % % % % % % % 
-% % % % % % % % % % % % % Late response raster plot
-% % % % % % % % % % % % ntrial_late = size(trialspxmat_late_cent_out, 2); % number of trials
-% % % % % % % % % % % % axes('unit', 'centimeters', 'position', [9.25 yshift_row5  width ntrial_late*rasterheight],...
-% % % % % % % % % % % %     'nextplot', 'add',...
-% % % % % % % % % % % %     'xlim', [-CentOutTimeDomain(1) CentOutTimeDomain(2)], 'ylim', [-ntrial_late 1], 'box', 'on');
-% % % % % % % % % % % % yshift_row6    =      yshift_row5 + 0.5 + ntrial_late*rasterheight;
-% % % % % % % % % % % % ap_mat          =     trialspxmat_late_cent_out;
-% % % % % % % % % % % % t_mat             =     tspkmat_late_cent_out;
-% % % % % % % % % % % % k =0;
-% % % % % % % % % % % % xx_all = [];
-% % % % % % % % % % % % yy_all = [];
-% % % % % % % % % % % % x_latedur_all = [];
-% % % % % % % % % % % % y_latedur_all = [];
-% % % % % % % % % % % % x_portin = [];
-% % % % % % % % % % % % y_portin = [];
-% % % % % % % % % % % % for i =1:size(ap_mat, 2)
-% % % % % % % % % % % %     ilatedur =late_duration_cent_out(i);
-% % % % % % % % % % % %     iFP = FPs_late_cent_out(i);
-% % % % % % % % % % % %     xx =  t_mat(ap_mat(:, i)==1);
-% % % % % % % % % % % %     yy1 = [0 0.8]-k;
-% % % % % % % % % % % %     yy = [0 1]-k;
-% % % % % % % % % % % %     % paint foreperiod
-% % % % % % % % % % % %     plotshaded([-ilatedur -ilatedur+iFP], [-k -k; 1-k 1-k], c_trigger);
-% % % % % % % % % % % %     x_latedur_all = [x_latedur_all, -ilatedur, -ilatedur, NaN];
-% % % % % % % % % % % %     y_latedur_all = [y_latedur_all, yy, NaN];
-% % % % % % % % % % % % 
-% % % % % % % % % % % %     for i_xx = 1:length(xx)
-% % % % % % % % % % % %         xx_all = [xx_all, xx(i_xx), xx(i_xx), NaN];
-% % % % % % % % % % % %         yy_all = [yy_all, yy1, NaN];
-% % % % % % % % % % % %     end  
-% % % % % % % % % % % % 
-% % % % % % % % % % % %     % plot port poke time
-% % % % % % % % % % % %     it_choice = t_choice - t_late_cent_out(i);
-% % % % % % % % % % % %     it_choice = it_choice(it_choice>=-CentInTimeDomain(1) & it_choice<=CentInTimeDomain(2));
-% % % % % % % % % % % %     if ~isempty(it_choice)
-% % % % % % % % % % % %         it_choice = reshape(it_choice,1,[]);
-% % % % % % % % % % % %         x_portin = [x_portin, it_choice];
-% % % % % % % % % % % %         y_portin = [y_portin, (0.4-k)*ones(1,length(it_choice))];  
-% % % % % % % % % % % %     end
-% % % % % % % % % % % %     k = k+1;
-% % % % % % % % % % % % end
-% % % % % % % % % % % % line(x_latedur_all, y_latedur_all, 'color', c_cent_in, 'linewidth', 1.5);
-% % % % % % % % % % % % line(xx_all, yy_all, 'color', c_late, 'linewidth', 1)
-% % % % % % % % % % % % scatter(x_portin, y_portin, 8, 'o', 'filled','MarkerFaceColor', c_reward,  'markerfacealpha', 0.5, 'MarkerEdgeColor','none')
-% % % % % % % % % % % % 
-% % % % % % % % % % % % line([0 0], get(gca, 'ylim'), 'color', c_cent_out, 'linewidth', 1)
-% % % % % % % % % % % % title('Late', 'fontsize', 7)
-% % % % % % % % % % % % axis off
-% % % % % % % % % % % % 
-% % % % % % % % % % % % % Add information
-% % % % % % % % % % % % uicontrol('Style','text','Units','centimeters','Position',[4.75 yshift_row6 width+1 1],...
-% % % % % % % % % % % %     'string', 'B. CentOut-related', ...
-% % % % % % % % % % % %     'FontName','Dejavu Sans', 'fontweight', 'bold','fontsize', 10,'BackgroundColor',[1 1 1],...
-% % % % % % % % % % % %     'HorizontalAlignment','Left');
-% % % % % % % % % % % % 
-% % % % % % % % % % % % 
-% % % % % % % % % % % % %% Reward
-% % % % % % % % % % % % col3 = 13;
-% % % % % % % % % % % % width = 6*sum(ChoiceTimeDomain)/sum(CentInTimeDomain);
-% % % % % % % % % % % % ha_poke =  axes('unit', 'centimeters', 'position', [col3 yshift_row1 width 2], 'nextplot', 'add', ...
-% % % % % % % % % % % %     'xlim', [-ChoiceTimeDomain(1) ChoiceTimeDomain(2)]);
-% % % % % % % % % % % % for i =1:nFPs
-% % % % % % % % % % % %     plot(ts_reward_choice{i}, psth_reward_choice{i}, 'color', c_FP(i, :), 'linewidth', 1.5);
-% % % % % % % % % % % %     FRMax = max([FRMax max(psth_reward_choice{i})]);
-% % % % % % % % % % % % %     disp(FRMax)
-% % % % % % % % % % % % end
-% % % % % % % % % % % % % also add non-rewarded pokes
-% % % % % % % % % % % % plot(ts_nonreward_choice, psth_nonreward_choice, 'color', [0.6 0.6 0.6], 'linewidth', .5);
-% % % % % % % % % % % % xlabel('Time from rewarded/nonrewarded poke (ms)')
-% % % % % % % % % % % % ylabel ('Spks per s')
-% % % % % % % % % % % % axis 'auto y'
-% % % % % % % % % % % % hline_poke = line([0 0], get(gca, 'ylim'), 'color', c_reward, 'linewidth', 1);
-% % % % % % % % % % % % % FRMax = max([FRMax max(psth_nonreward_pokes)]);
-% % % % % % % % % % % % % disp(FRMax)
-% % % % % % % % % % % % % Raster plot
-% % % % % % % % % % % % 
-% % % % % % % % % % % % % Make raster plot
-% % % % % % % % % % % % % Plot spike raster of correct trials (all FPs)
-% % % % % % % % % % % % ntrials_rewardpoke = 0;
-% % % % % % % % % % % % nFP_ij = zeros(1, nFPs);
-% % % % % % % % % % % % for i =1:nFPs
-% % % % % % % % % % % %     nFP_ij(i) = size(trialspxmat_reward_choice{i}, 2);
-% % % % % % % % % % % %     ntrials_rewardpoke = ntrials_rewardpoke + nFP_ij(i);
-% % % % % % % % % % % % end;
-% % % % % % % % % % % % 
-% % % % % % % % % % % % axes('unit', 'centimeters', 'position', [col3 yshift_row2 width ntrials_rewardpoke*rasterheight],...
-% % % % % % % % % % % %     'nextplot', 'add', 'xlim',  [-ChoiceTimeDomain(1) ChoiceTimeDomain(2)], ...
-% % % % % % % % % % % %     'ylim', [-ntrials_rewardpoke 1], 'box', 'on', 'xticklabel', []);
-% % % % % % % % % % % % yshift_row3new = yshift_row2 + ntrials_rewardpoke*rasterheight + 0.5;
-% % % % % % % % % % % % 
-% % % % % % % % % % % % % Paint the foreperiod
-% % % % % % % % % % % % k = 0;
-% % % % % % % % % % % % for m =1:nFPs
-% % % % % % % % % % % %     ap_mat = trialspxmat_reward_choice{m};
-% % % % % % % % % % % %     t_mat = tspkmat_reward_choice{m};
-% % % % % % % % % % % %     move=move_time{m};
-% % % % % % % % % % % %     mFP = TargetFPs(m);
-% % % % % % % % % % % %     xx_all = [];
-% % % % % % % % % % % %     yy_all = [];
-% % % % % % % % % % % %     x_move_all = [];
-% % % % % % % % % % % %     y_move_all = [];
-% % % % % % % % % % % %     x_portin = [];
-% % % % % % % % % % % %     y_portin = [];
-% % % % % % % % % % % %     for i =1:nFP_ij(m)
-% % % % % % % % % % % %         xx =  t_mat(ap_mat(:, i)==1);
-% % % % % % % % % % % %         yy1 = [0 0.8]-k;
-% % % % % % % % % % % %         yy2 = [0 1]-k;
-% % % % % % % % % % % %         imov = -move(i);
-% % % % % % % % % % % % 
-% % % % % % % % % % % %         for i_xx = 1:length(xx)
-% % % % % % % % % % % %             xx_all = [xx_all, xx(i_xx), xx(i_xx), NaN];
-% % % % % % % % % % % %             yy_all = [yy_all, yy1, NaN];
-% % % % % % % % % % % %         end 
-% % % % % % % % % % % % 
-% % % % % % % % % % % %         x_move_all = [x_move_all, imov, imov, NaN];
-% % % % % % % % % % % %         y_move_all = [y_move_all, yy2, NaN];
-% % % % % % % % % % % % 
-% % % % % % % % % % % %         % plot port poke time
-% % % % % % % % % % % %         itreward =t_reward_choice{m}(i);
-% % % % % % % % % % % %         it_choice = t_choice-itreward;
-% % % % % % % % % % % %         it_choice = it_choice(it_choice>=-ChoiceTimeDomain(1) & it_choice<=ChoiceTimeDomain(2));
-% % % % % % % % % % % %         if ~isempty(it_choice)
-% % % % % % % % % % % %             it_choice = reshape(it_choice,1,[]);
-% % % % % % % % % % % %             x_portin = [x_portin, it_choice];
-% % % % % % % % % % % %             y_portin = [y_portin, (0.4-k)*ones(1,length(it_choice))];            
-% % % % % % % % % % % %         end
-% % % % % % % % % % % %         k = k+1;
-% % % % % % % % % % % %     end
-% % % % % % % % % % % %     line(xx_all, yy_all, 'color', c_FP(m,:), 'linewidth', 1)
-% % % % % % % % % % % %     line(x_move_all, y_move_all, 'color', c_cent_out, 'linewidth', 1)
-% % % % % % % % % % % %     scatter(x_portin, y_portin, 8, 'o', 'filled','MarkerFaceColor', c_reward,  'markerfacealpha', 0.5, 'MarkerEdgeColor','none')
-% % % % % % % % % % % % end
-% % % % % % % % % % % % line([0 0], get(gca, 'ylim'), 'color', c_cent_out, 'linewidth', 1);
-% % % % % % % % % % % % title('Correct', 'fontsize', 7);
-% % % % % % % % % % % % axis off
-% % % % % % % % % % % % 
-% % % % % % % % % % % % 
-% % % % % % % % % % % % % Raster plot for unrewarded pokes
-% % % % % % % % % % % % % use at most 50 events
-% % % % % % % % % % % % if size(trialspxmat_nonreward_choice, 2)>50
-% % % % % % % % % % % %     plot_ind = sort(randperm(size(trialspxmat_nonreward_choice, 2), 50));
-% % % % % % % % % % % %     trialspxmat_nonreward_pokes_plot = trialspxmat_nonreward_choice(:, plot_ind);
-% % % % % % % % % % % % else
-% % % % % % % % % % % %     trialspxmat_nonreward_pokes_plot = trialspxmat_nonreward_choice;
-% % % % % % % % % % % %     plot_ind = 1:size(trialspxmat_nonreward_choice, 2);
-% % % % % % % % % % % % end
-% % % % % % % % % % % % 
-% % % % % % % % % % % % ntrial_nonrewardpoke = size(trialspxmat_nonreward_pokes_plot, 2);
-% % % % % % % % % % % % axes('unit', 'centimeters', 'position', [col3 yshift_row3new width ntrial_nonrewardpoke*rasterheight],...
-% % % % % % % % % % % %     'nextplot', 'add', 'xlim',  [-ChoiceTimeDomain(1) ChoiceTimeDomain(2)], ...
-% % % % % % % % % % % %     'ylim', [-ntrial_nonrewardpoke 1], 'box', 'on', 'xticklabel', []);
-% % % % % % % % % % % % yshift_row4new = yshift_row3new+0.5+ntrial_nonrewardpoke*rasterheight;
-% % % % % % % % % % % % k =0;
-% % % % % % % % % % % % move_time_nonreward_plot             =                          mt_nonreward_choice(plot_ind);
-% % % % % % % % % % % % t_nonreward_pokes_plot                  =                          t_nonreward_choice(plot_ind);
-% % % % % % % % % % % % 
-% % % % % % % % % % % % xx_all = [];
-% % % % % % % % % % % % yy_all = [];
-% % % % % % % % % % % % x_move_all = [];
-% % % % % % % % % % % % y_move_all = [];
-% % % % % % % % % % % % x_portin = [];
-% % % % % % % % % % % % y_portin = [];
-% % % % % % % % % % % % for i =1:ntrial_nonrewardpoke
-% % % % % % % % % % % %     if isempty(find(isnan(trialspxmat_nonreward_pokes_plot(:, i)), 1))
-% % % % % % % % % % % %         xx =  tspkmat_nonreward_choice(trialspxmat_nonreward_pokes_plot(:, i)==1);
-% % % % % % % % % % % %         yy1 = [0 0.8]-k;
-% % % % % % % % % % % %         yy2 = [0 1]-k;
-% % % % % % % % % % % %         imov = -move_time_nonreward_plot(i);
-% % % % % % % % % % % % 
-% % % % % % % % % % % %         for i_xx = 1:length(xx)
-% % % % % % % % % % % %             xx_all = [xx_all, xx(i_xx), xx(i_xx), NaN];
-% % % % % % % % % % % %             yy_all = [yy_all, yy1, NaN];
-% % % % % % % % % % % %         end 
-% % % % % % % % % % % % 
-% % % % % % % % % % % %         x_move_all = [x_move_all, imov, imov, NaN];
-% % % % % % % % % % % %         y_move_all = [y_move_all, yy2, NaN];
-% % % % % % % % % % % % 
-% % % % % % % % % % % %         % plot port poke time
-% % % % % % % % % % % %         itreward =t_nonreward_pokes_plot(i);
-% % % % % % % % % % % %         it_choice = t_choice-itreward;
-% % % % % % % % % % % %         it_choice = it_choice(it_choice>=-ChoiceTimeDomain(1) & it_choice<=ChoiceTimeDomain(2));
-% % % % % % % % % % % %         if ~isempty(it_choice)
-% % % % % % % % % % % %             it_choice = reshape(it_choice,1,[]);
-% % % % % % % % % % % %             x_portin = [x_portin, it_choice];
-% % % % % % % % % % % %             y_portin = [y_portin, (0.4-k)*ones(1,length(it_choice))];             
-% % % % % % % % % % % %         end
-% % % % % % % % % % % %     end
-% % % % % % % % % % % %     k = k+1;
-% % % % % % % % % % % % end
-% % % % % % % % % % % % 
-% % % % % % % % % % % % line(xx_all, yy_all, 'color', [0.6 0.6 0.6], 'linewidth', 1)
-% % % % % % % % % % % % line(x_move_all, y_move_all, 'color', c_cent_out, 'linewidth', 1)
-% % % % % % % % % % % % scatter(x_portin, y_portin, 8, 'o', 'filled','MarkerFaceColor', c_reward,  'markerfacealpha', 0.5, 'MarkerEdgeColor','none')
-% % % % % % % % % % % % 
-% % % % % % % % % % % % line([0 0], get(gca, 'ylim'), 'color', c_reward, 'linewidth', 1)
-% % % % % % % % % % % % axis off
-% % % % % % % % % % % % title('Nonrewarded pokes', 'fontname', 'dejavu sans', 'fontsize', 7)
-% % % % % % % % % % % % 
-% % % % % % % % % % % % % Add information  13.5 3+0.5 6 ntrial4*rasterheight
-% % % % % % % % % % % % uicontrol('Style','text','Units','centimeters','Position',[col3-0.5 yshift_row4new 5 1.75],...
-% % % % % % % % % % % %     'string', 'C. Rewarded/Nonrewarded poke-related activity', ...
-% % % % % % % % % % % %     'FontName','Dejavu Sans', 'fontweight', 'bold','fontsize', 10,'BackgroundColor',[1 1 1],'ForegroundColor', 'k', ...
-% % % % % % % % % % % %     'HorizontalAlignment','Left');
-% % % % % % % % % % % % 
-% % % % % % % % % % % % yshift_row5new = yshift_row4new+1.75+1.5;
-% % % % % % % % % % % % 
-% % % % % % % % % % % % %% plot pre-press activity vs trial num or time
-% % % % % % % % % % % % 
-% % % % % % % % % % % % ha10=axes('unit', 'centimeters', 'position', [col3 yshift_row5new 5 2.5], ...
-% % % % % % % % % % % %     'nextplot', 'add', 'xlim', [min(t_correct_cent_in_all/1000) max(t_correct_cent_in_all/1000)]);
-% % % % % % % % % % % % 
-% % % % % % % % % % % % ind_prepress = find(tspkmat_cent_in_all<0);
-% % % % % % % % % % % % spkmat_prepress =  trialspxmat_cent_in_all(ind_prepress, :);
-% % % % % % % % % % % % dur_prepress = abs(tspkmat_cent_in_all(ind_prepress(1)))/1000; % total time
-% % % % % % % % % % % % 
-% % % % % % % % % % % % rate_prepress = sum(spkmat_prepress, 1)/dur_prepress; % spk rate across time
-% % % % % % % % % % % % plot(ha10, t_correct_cent_in_all/1000, rate_prepress, 'k', 'marker', 'o', 'markersize', 3, 'linestyle', 'none');
-% % % % % % % % % % % % 
-% % % % % % % % % % % % % linear regression
-% % % % % % % % % % % % Pfit = polyfit(t_correct_cent_in_all/1000,rate_prepress,1);
-% % % % % % % % % % % % yfit = Pfit(1)*t_correct_cent_in_all/1000+Pfit(2);
-% % % % % % % % % % % % plot(t_correct_cent_in_all/1000,yfit,'r:', 'linewidth', 1.5);
-% % % % % % % % % % % % 
-% % % % % % % % % % % % xlabel('Time (s)')
-% % % % % % % % % % % % ylabel('Spk rate (Hz)')
-% % % % % % % % % % % % 
-% % % % % % % % % % % % yshift_row6new = yshift_row5new+3;
-% % % % % % % % % % % % % Add information  13.5 3+0.5 6 ntrial4*rasterheight
-% % % % % % % % % % % % uicontrol('Style','text','Units','centimeters','Position',[col3-0.5 yshift_row6new 4 0.5],...
-% % % % % % % % % % % %     'string', 'D.  Activity vs time', ...
-% % % % % % % % % % % %     'FontName','Dejavu Sans', 'fontweight', 'bold','fontsize', 10,'BackgroundColor',[1 1 1],'ForegroundColor', 'k', ...
-% % % % % % % % % % % %     'HorizontalAlignment','Left');
-% % % % % % % % % % % % 
-% % % % % % % % % % % % fig_height = max([fig_height, yshift_row6new+1]);
-% % % % % % % % % % % % 
-% % % % % % % % % % % % %% plot trigger-related activity
-% % % % % % % % % % % % col4 = 20;
-% % % % % % % % % % % % width = 6*sum(TriggerTimeDomain)/sum(CentInTimeDomain);
-% % % % % % % % % % % % 
-% % % % % % % % % % % % ha_trigger =  axes('unit', 'centimeters', 'position', [col4 yshift_row1 width 2], 'nextplot', 'add', ...
-% % % % % % % % % % % %     'xlim', [-TriggerTimeDomain(1) TriggerTimeDomain(2)]);
-% % % % % % % % % % % % for i=1:nFPs
-% % % % % % % % % % % %     plot(ts_trigger_correct{i}, psth_trigger_correct{i}, 'color', c_FP(i, :), 'linewidth', 1.5);
-% % % % % % % % % % % %     FRMax = max([FRMax max(psth_trigger_correct{i})]);
-% % % % % % % % % % % % %     disp(FRMax)
-% % % % % % % % % % % % end
-% % % % % % % % % % % % plot(ts_late_trigger, psth_late_trigger, 'color', c_late, 'linewidth', 1.5)
-% % % % % % % % % % % % xlabel('Time from trigger stimulus (ms)')
-% % % % % % % % % % % % ylabel ('Spks per s')
-% % % % % % % % % % % % 
-% % % % % % % % % % % % % FRMax = max([FRMax max(psth_late_trigger)]);
-% % % % % % % % % % % % % disp(FRMax)
-% % % % % % % % % % % % xlim = max(get(gca, 'xlim'));
-% % % % % % % % % % % % axis 'auto y'
-% % % % % % % % % % % % 
-% % % % % % % % % % % % % raster plot of trigger-related activity
-% % % % % % % % % % % % ntrials_trigger = 0;
-% % % % % % % % % % % % nFP_ij = zeros(1, nFPs);
-% % % % % % % % % % % % for i =1:nFPs
-% % % % % % % % % % % %     nFP_ij(i) = size(trialspxmat_trigger_correct{i}, 2);
-% % % % % % % % % % % %     ntrials_trigger = ntrials_trigger + nFP_ij(i);
-% % % % % % % % % % % % end
-% % % % % % % % % % % % 
-% % % % % % % % % % % % axes('unit', 'centimeters', 'position', [col4 yshift_row2 width ntrials_trigger*rasterheight],...
-% % % % % % % % % % % %     'nextplot', 'add',...
-% % % % % % % % % % % %     'xlim', [-TriggerTimeDomain(1) TriggerTimeDomain(2)], 'ylim', [-ntrials_trigger 1], 'box', 'on');
-% % % % % % % % % % % % yshift_row3 = yshift_row2+ntrials_trigger*rasterheight+0.5;
-% % % % % % % % % % % % % Paint the foreperiod
-% % % % % % % % % % % % k=0;
-% % % % % % % % % % % % for m =1:nFPs
-% % % % % % % % % % % %     ap_mat = trialspxmat_trigger_correct{m};
-% % % % % % % % % % % %     t_mat = tspkmat_trigger_correct{m};
-% % % % % % % % % % % %     rt = rt_trigger_correct{m};
-% % % % % % % % % % % %     mFP = TargetFPs(m);
-% % % % % % % % % % % %     xx_all = [];
-% % % % % % % % % % % %     yy_all = [];
-% % % % % % % % % % % %     xxrt_all = [];
-% % % % % % % % % % % %     yyrt_all = [];
-% % % % % % % % % % % %     x_portin = [];
-% % % % % % % % % % % %     y_portin = [];
-% % % % % % % % % % % %     for i =1:nFP_ij(m)
-% % % % % % % % % % % %         irt = rt(i); % time from trigger to release
-% % % % % % % % % % % %         xx = t_mat(ap_mat(:, i)==1);
-% % % % % % % % % % % %         yy1 = [0 0.8]-k;
-% % % % % % % % % % % %         yy = [0 1]-k;
-% % % % % % % % % % % %         % paint foreperiod
-% % % % % % % % % % % %         plotshaded([-mFP 0], [-k -k; 1-k 1-k], c_trigger);
-% % % % % % % % % % % % 
-% % % % % % % % % % % %         for i_xx = 1:length(xx)
-% % % % % % % % % % % %             xx_all = [xx_all, xx(i_xx), xx(i_xx), NaN];
-% % % % % % % % % % % %             yy_all = [yy_all, yy1, NaN];
-% % % % % % % % % % % %         end 
-% % % % % % % % % % % % 
-% % % % % % % % % % % %         % plot release time
-% % % % % % % % % % % %         xxrt_all = [xxrt_all, irt, irt, NaN];
-% % % % % % % % % % % %         yyrt_all = [yyrt_all, yy, NaN];
-% % % % % % % % % % % % 
-% % % % % % % % % % % %         % port access time
-% % % % % % % % % % % %         it_trigger =t_trigger_correct{m}(i);
-% % % % % % % % % % % %         it_choice = t_choice - it_trigger;
-% % % % % % % % % % % %         it_choice = it_choice(it_choice>=-TriggerTimeDomain(1) & it_choice<=TriggerTimeDomain(2));
-% % % % % % % % % % % %         if ~isempty(it_choice)
-% % % % % % % % % % % %             it_choice = reshape(it_choice,1,[]);
-% % % % % % % % % % % %             x_portin = [x_portin, it_choice];
-% % % % % % % % % % % %             y_portin = [y_portin, (0.4-k)*ones(1,length(it_choice))];
-% % % % % % % % % % % %         end
-% % % % % % % % % % % %         k = k+1;
-% % % % % % % % % % % %     end
-% % % % % % % % % % % %     line(xx_all, yy_all, 'color', c_FP(m, :), 'linewidth', 1);
-% % % % % % % % % % % %     line(xxrt_all, yyrt_all, 'color', c_cent_out, 'linewidth', 1.5);
-% % % % % % % % % % % %     scatter(x_portin, y_portin, 8, 'o', 'filled','MarkerFaceColor', c_reward,  'markerfacealpha', 0.5, 'MarkerEdgeColor','none');
-% % % % % % % % % % % % end
-% % % % % % % % % % % % line([0 0], get(gca, 'ylim'), 'color', c_trigger, 'linewidth', 1);
-% % % % % % % % % % % % title('Correct', 'fontsize', 7);
-% % % % % % % % % % % % axis off
-% % % % % % % % % % % % 
-% % % % % % % % % % % % % trigger following late FP
-% % % % % % % % % % % % ntrials_trigger_late = size(trialspxmat_late_trigger, 2);
-% % % % % % % % % % % % axes('unit', 'centimeters', 'position', [col4 yshift_row3 width ntrials_trigger_late*rasterheight],...
-% % % % % % % % % % % %     'nextplot', 'add', 'xlim', [-TriggerTimeDomain(1) TriggerTimeDomain(2)], 'ylim', [-ntrials_trigger_late 1], ...
-% % % % % % % % % % % %     'box', 'on', 'xticklabel', []);
-% % % % % % % % % % % % yshift_row4 = yshift_row3+ntrials_trigger_late*rasterheight+0.5;
-% % % % % % % % % % % % k =0;
-% % % % % % % % % % % % xx_all = [];
-% % % % % % % % % % % % yy_all = [];
-% % % % % % % % % % % % xxrt_all = [];
-% % % % % % % % % % % % yyrt_all = [];
-% % % % % % % % % % % % x_portin = [];
-% % % % % % % % % % % % y_portin = [];
-% % % % % % % % % % % % for i =1:ntrials_trigger_late
-% % % % % % % % % % % %     xx =  tspkmat_late_trigger(trialspxmat_late_trigger(:, i)==1);
-% % % % % % % % % % % %     iFP = FP_trigger_late(i);
-% % % % % % % % % % % %     yy1 = [0 0.8]-k;
-% % % % % % % % % % % %     yy2 = [0 1]-k;
-% % % % % % % % % % % %     % paint foreperiod
-% % % % % % % % % % % %     plotshaded([-iFP 0], [-k -k; 1-k 1-k], c_trigger);
-% % % % % % % % % % % % 
-% % % % % % % % % % % %     for i_xx = 1:length(xx)
-% % % % % % % % % % % %         xx_all = [xx_all, xx(i_xx), xx(i_xx), NaN];
-% % % % % % % % % % % %         yy_all = [yy_all, yy1, NaN];
-% % % % % % % % % % % %     end 
-% % % % % % % % % % % % 
-% % % % % % % % % % % %     % plot release time
-% % % % % % % % % % % %     irt = RT_trigger_late(i);
-% % % % % % % % % % % %     xxrt_all = [xxrt_all, irt, irt, NaN];
-% % % % % % % % % % % %     yyrt_all = [yyrt_all, yy2, NaN];
-% % % % % % % % % % % %     % plot port poke time
-% % % % % % % % % % % %     itrigger = t_trigger_late(i);
-% % % % % % % % % % % %     it_choice = t_choice-itrigger;
-% % % % % % % % % % % %     it_choice = it_choice(it_choice>=-TriggerTimeDomain(1) & it_choice<=TriggerTimeDomain(2));
-% % % % % % % % % % % %     if ~isempty(it_choice)
-% % % % % % % % % % % %         it_choice = reshape(it_choice,1,[]);
-% % % % % % % % % % % %         x_portin = [x_portin, it_choice];
-% % % % % % % % % % % %         y_portin = [y_portin, (0.4-k)*ones(1,length(it_choice))];
-% % % % % % % % % % % %     end
-% % % % % % % % % % % %     k = k+1;
-% % % % % % % % % % % % end
-% % % % % % % % % % % % 
-% % % % % % % % % % % % line(xx_all, yy_all, 'color', c_late, 'linewidth', 1);
-% % % % % % % % % % % % line(xxrt_all, yyrt_all, 'color', c_cent_out, 'linewidth', 1.5);
-% % % % % % % % % % % % scatter(x_portin, y_portin, 8, 'o', 'filled','MarkerFaceColor', c_reward,  'markerfacealpha', 0.5, 'MarkerEdgeColor','none')
-% % % % % % % % % % % % 
-% % % % % % % % % % % % line([0 0], get(gca, 'ylim'), 'color',c_trigger, 'linewidth', 1)
-% % % % % % % % % % % % title('late', 'fontname', 'dejavu sans', 'fontsize', 7)
-% % % % % % % % % % % % axis off
-% % % % % % % % % % % % 
-% % % % % % % % % % % % % Add information
-% % % % % % % % % % % % uicontrol('Style','text','Units','centimeters','Position',[col4-0.5  yshift_row4 5 1.2],...
-% % % % % % % % % % % %     'string', 'E. Trigger-related activity', ...
-% % % % % % % % % % % %     'FontName','Dejavu Sans', 'fontweight', 'bold','fontsize', 10,'BackgroundColor',[1 1 1],'ForegroundColor', 'k', ...
-% % % % % % % % % % % %     'HorizontalAlignment','Left');
-% % % % % % % % % % % % yshift_row5=yshift_row4+1.2+1.2;
-% % % % % % % % % % % % 
+    k = k+1;
+end
 
-FRrange = [0 FRMax*1.1];
+line(xx_all, yy_all, 'color', c_precor, 'linewidth', .2)
+scatter(xxdur_all, yydur_all, 8, 'k', '*')
+
+xline(0, 'Color', 'k', 'LineWidth', 1, 'Alpha', 1);
+title('Pre-correct', 'fontsize', 7, 'fontweight','bold')
+axis off
+
+yshift_row3 = yshift_row2 + 0.5 + ntrial_precor*rasterheight;
+ntrial_preerr = length(t_err_initout); % number of trials
+axes('unit', 'centimeters', 'position', [x_pos yshift_row3 w_psth ntrial_preerr*rasterheight],...
+    'nextplot', 'add',...
+    'xlim', [-InitOutTimeDomain(1) InitOutTimeDomain(2)], 'ylim', [-ntrial_preerr 1], 'box', 'on');
+k = 0;
+
+ap_mat = trialspxmat_err_initout;
+t_mat  = tspkmat_err_initout;
+xx_all = [];
+yy_all = [];
+xxdur_all = [];
+yydur_all = [];
+for i = 1:size(ap_mat, 2)
+    idur = dur_err_initout(i);
+    xx =  t_mat(ap_mat(:, i)==1);
+    yy1 = [0 0.8]-k;
+    yy2 = [0 1]-k;
+    xxdur = -idur;
+    % plot trigger stimulus FPs_premature_cent_out
+    %         itrigger = FP_late_cent_out{n}(i);
+    %     plotshaded([0 itrigger], [-k -k; 1-k 1-k], c_trigger);
+
+    for i_xx = 1:length(xx)
+        xx_all = [xx_all, xx(i_xx), xx(i_xx), NaN];
+        yy_all = [yy_all, yy1, NaN];
+    end
+    xxdur_all = [xxdur_all, xxdur];
+    yydur_all = [yydur_all, mean(yy2)];
+
+    k = k+1;
+end
+
+line(xx_all, yy_all, 'color', c_preerr, 'linewidth', .2)
+scatter(xxdur_all, yydur_all, 8, 'k', '*')
+
+xline(0, 'Color', 'k', 'LineWidth', 1, 'Alpha', 1);
+title('Pre-error', 'fontsize', 7, 'fontweight','bold')
+axis off
+
+yshift_row4 = yshift_row3 + 0.5 + ntrial_preerr*rasterheight;
+% Add information
+uicontrol('Style','text','Units','centimeters','Position',[x_pos-.25 yshift_row4 4 1],...
+    'string', 'F. InitOut-related', ...
+    'FontName','Dejavu Sans', 'fontweight', 'bold','fontsize', 8,'BackgroundColor',[1 1 1],...
+    'HorizontalAlignment','Left');
+
+%% Unify the Y-limits
+FRMax = max([FRMax max(psth_cor_initin) max(psth_err_initin) max(psth_cor_initout) max(psth_err_initout)]);
+FRrange = [0 FRMax*1.05];
 cellfun(@(x) set(x, 'ylim', FRrange), ha_cent_in_psth);
 set(ha_cent_in_psth_late, 'ylim', FRrange);
 set(ha_cent_in_psth_premature, 'ylim', FRrange);
@@ -1929,14 +1613,47 @@ cellfun(@(x) set(x, 'ylim', FRrange), ha_choice_psth);
 set(ha_nonreward_choice_psth, 'ylim', FRrange);
 cellfun(@(x) set(x, 'ylim', FRrange), ha_trigger_psth);
 set(ha_trigger_psth_late, 'ylim', FRrange);
+set(ha_init_in_psth, 'ylim', FRrange);
+set(ha_init_out_psth, 'ylim', FRrange);
+
+%% plot pre-press activity vs trial num or time
+
+col3 = 11;
+yshift_row5new = yshift_row7+.5;
+ha10=axes('unit', 'centimeters', 'position', [col3 yshift_row5new 4 2], ...
+    'nextplot', 'add', 'xlim', [min(t_correct_cent_in_all/1000) max(t_correct_cent_in_all/1000)], 'FontSize', 7, 'TickDir', 'Out');
+
+ind_precentin = find(tspkmat_cent_in_all<0);
+spkmat_prepress =  trialspxmat_cent_in_all(ind_precentin, :);
+dur_prepress = abs(tspkmat_cent_in_all(ind_precentin(1)))/1000; % total time
+
+rate_precentin = sum(spkmat_prepress, 1)/dur_prepress; % spk rate across time
+plot(ha10, t_correct_cent_in_all/1000, rate_precentin, 'k', 'marker', 'o', 'markersize', 3, 'linestyle', 'none');
+
+% linear regression
+Pfit = polyfit(t_correct_cent_in_all/1000,rate_precentin,1);
+yfit = Pfit(1)*t_correct_cent_in_all/1000+Pfit(2);
+plot(t_correct_cent_in_all/1000,yfit,'r:', 'linewidth', 1.5);
+
+xlabel('Time (s)')
+ylabel('Spk rate (Hz)')
+
+yshift_row6new = yshift_row5new+3;
+% Add information  13.5 3+0.5 6 ntrial4*rasterheight
+uicontrol('Style','text','Units','centimeters','Position',[col3-0.5 yshift_row6new 4 0.5],...
+    'string', 'G. Activity vs time', ...
+    'FontName','Dejavu Sans', 'fontweight', 'bold','fontsize', 8,'BackgroundColor',[1 1 1],'ForegroundColor', 'k', ...
+    'HorizontalAlignment','Left');
+
+fig_height = max([fig_height, yshift_row6new+1]);
 
 %% plot spks
 
-col5=10.5;
+col5=17.75;
 thiscolor = [0 0 0];
 Lspk = size(r.Units.SpikeTimes(ku).wave, 2);
-ha0=axes('unit', 'centimeters', 'position', [col5 yshift_row7+.5 1.5 1.5], ...
-    'nextplot', 'add', 'xlim', [0 Lspk], 'ytick', -500:100:200, 'xticklabel', []);
+ha0=axes('unit', 'centimeters', 'position', [col5 yshift_row4+2.5 2 2], ...
+    'nextplot', 'add', 'xlim', [0 Lspk], 'ytick', -500:100:200, 'xticklabel', [], 'FontSize', 7, 'TickDir', 'Out');
 set(ha0, 'nextplot', 'add');
 ylabel('uV')
 allwaves = r.Units.SpikeTimes(ku).wave/4;
@@ -1961,7 +1678,7 @@ kutime2(kutime)=1;
 [c, lags] = xcorr(kutime2, 100); % max lag 100 ms
 c(lags==0)=0;
 
-ha00= axes('unit', 'centimeters', 'position', [col5+1.5+1 yshift_row7+.5 2 1.5], 'nextplot', 'add', 'xlim', [-25 25]);
+ha00= axes('unit', 'centimeters', 'position', [col5+2+1 yshift_row4+2.5 2.5 2], 'nextplot', 'add', 'xlim', [-25 25], 'FontSize', 7, 'TickDir', 'Out');
 if median(c)>1
     set(ha00, 'nextplot', 'add', 'xtick', -50:10:50, 'ytick', [0 median(c)]);
 else
@@ -1982,11 +1699,11 @@ hbar = bar(lags, c);
 set(hbar, 'facecolor', 'k');
 xlabel('Lag(ms)')
 
-yshift_row8 = yshift_row7+3;
+yshift_row8 = yshift_row4+5.5;
 %% Plot all waveforms if it is a polytrode
 
 if isfield(r.Units.SpikeTimes(ku), 'wave_mean')
-    ha_wave_poly = axes('unit', 'centimeters', 'position', [col5 yshift_row8 4 1.5], 'nextplot', 'add');
+    ha_wave_poly = axes('unit', 'centimeters', 'position', [col5 yshift_row8 5 2], 'nextplot', 'add', 'FontSize', 7, 'TickDir', 'Out');
     wave_form = r.Units.SpikeTimes(ku).wave_mean/4;
     PSTH.SpikeWaveMean = wave_form;
     n_chs = size(wave_form, 1); % number of channels
@@ -2030,18 +1747,19 @@ if isfield(r.Units.SpikeTimes(ku), 'wave_mean')
     axis off
     axis tight
 
-    yshift_row9 = yshift_row8+1.5;
+    yshift_row9 = yshift_row8+2;
 else
     yshift_row9 = yshift_row8;
 end
 
 uicontrol('Style','text','Units','centimeters','Position',[col5 yshift_row9 4 1.5],...
-    'string', 'E. Spike waveform and autocorrelation', ...
+    'string', 'H. Spike waveform and autocorrelation', ...
     'FontName','Dejavu Sans', 'fontweight', 'bold','fontsize', 8,'BackgroundColor',[1 1 1],'ForegroundColor', 'k', ...
     'HorizontalAlignment','Left');
+
 fig_height = max([fig_height, yshift_row9+2]);
 % change the height of the figure
-set(gcf, 'position', [2 2 17 fig_height])
+set(gcf, 'position', [printsize(1:3) fig_height])
 
 toc;
 if strcmpi(ToSave,'on')

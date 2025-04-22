@@ -37,8 +37,8 @@ CentInTimeDomain  = [1000 2500]; % default
 CentOutTimeDomain = [1500 1000];
 ChoiceTimeDomain  = [1000 2000];
 TriggerTimeDomain = [500  500];
-InitInTimeDomain  = [1000 2000];
-InitOutTimeDomain = [500  2000];
+InitInTimeDomain  = [1000 1500];
+InitOutTimeDomain = [1000 1500];
 
 c_reward = [237 43 42] / 255;
 ToSave = 'on';
@@ -446,15 +446,38 @@ end
 disp(['Number of Init poke-in is ' num2str(length(t_init_in))]);
 
 InitDur = t_init_out - t_init_in;
-[InitDur_sort, ind_sort] = sort(InitDur);
-t_init_in_sort           = t_init_in(ind_sort);
-t_init_out_sort          = t_init_out(ind_sort);
+Types_prev = cell(1, length(t_init_in));
 
 % find outcome of previous trial
 for i = 1:length(t_init_in)
     ind_last_cent_in = find(t_cent_in<t_init_in(i), 1, 'last');
-
+    if ~isempty(ind_last_cent_in)
+        % check the condition
+        Types_prev{i} = rb.Outcome{ind_last_cent_in};
+    else
+        Types_prev{i} = 'NaN';
+    end
 end
+
+% pre-Correct
+t_cor_init_in  = t_init_in(ismember(Types_prev, 'Correct'));
+t_cor_init_out = t_init_out(ismember(Types_prev, 'Correct'));
+dur_cor_init   = InitDur(ismember(Types_prev, 'Correct'));
+[dur_cor_init_sort, ind_sort] = sort(dur_cor_init);
+t_cor_init_in_sort            = t_cor_init_in(ind_sort);
+t_cor_init_out_sort           = t_cor_init_out(ind_sort);
+
+% pre-Error
+t_err_init_in  = t_init_in(ismember(Types_prev, {'Wrong', 'Late', 'Premature'}));
+t_err_init_out = t_init_out(ismember(Types_prev, {'Wrong', 'Late', 'Premature'}));
+dur_err_init   = InitDur(ismember(Types_prev, {'Wrong', 'Late', 'Premature'}));
+[dur_err_init_sort, ind_sort] = sort(dur_err_init);
+t_err_init_in_sort            = t_err_init_in(ind_sort);
+t_err_init_out_sort           = t_err_init_out(ind_sort);
+
+[InitDur_sort, ind_sort] = sort(InitDur);
+t_init_in_sort           = t_init_in(ind_sort);
+t_init_out_sort          = t_init_out(ind_sort);
 
 %% 2 Check compute range
 
@@ -532,7 +555,6 @@ PSTHOut.CentIn.HoldDur.Late      = HD_late_cent_in;
 PSTHOut.CentIn.HoldDur.Probe     = HD_probe_sort;
 
 %% 3.2 Cent-Out
-
 n_sort = numel(t_correct_cent_out_sort);
 PSTHOut.CentOut.Labels = [repmat({'Correct'}, 1, n_sort), 'Premature', 'Premature', 'Late', 'Late', 'Probe', 'Probe'];
 
@@ -568,11 +590,19 @@ PSTHOut.Triggers.FP             = {repmat(TargetFPs, 1, 2), FP_late_trig};
 PSTHOut.Triggers.Port           = {[ones(1, nFPs) 2*ones(1, nFPs)], Ports};
 
 %% 3.5 InitIn & InitOut
-PSTHOut.InitIn.Time     = t_init_in_sort;
-PSTHOut.InitIn.InitDur  = InitDur_sort;
+PSTHOut.InitIn.Time    = t_init_in_sort;
+PSTHOut.InitIn.InitDur = InitDur_sort;
+PSTHOut.InitIn.PreCor.Time    = t_cor_init_in_sort;
+PSTHOut.InitIn.PreCor.InitDur = dur_cor_init_sort;
+PSTHOut.InitIn.PreErr.Time    = t_err_init_in_sort;
+PSTHOut.InitIn.PreErr.InitDur = dur_err_init_sort;
 
 PSTHOut.InitOut.Time    = t_init_out_sort;
 PSTHOut.InitOut.InitDur = InitDur_sort;
+PSTHOut.InitOut.PreCor.Time    = t_cor_init_out_sort;
+PSTHOut.InitOut.PreCor.InitDur = dur_cor_init_sort;
+PSTHOut.InitOut.PreErr.Time    = t_err_init_out_sort;
+PSTHOut.InitOut.PreErr.InitDur = dur_err_init_sort;
 
 %% 4 Compute PSTH
 
