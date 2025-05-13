@@ -1753,8 +1753,8 @@ classdef KilosortOutputClass<handle
                 'yBarLabel', '1 mm', 'yBarLength', 1000, 'yBarRatio', 1);
             EasyPlot.move(sc, 'dx', -0.5);
 
-            num_s = sum(obj.SpikeTable.KSLabel=="good");
-            num_m = sum(obj.SpikeTable.KSLabel=="mua");
+            num_s = sum(obj.SpikeTable.group=="good");
+            num_m = sum(obj.SpikeTable.group=="mua");
             exportgraphics(fig, sprintf('channelActivity_s%d_m%d.png', num_s, num_m), 'Resolution', 600);
 %             EasyPlot.cropFigure(fig);
 %             EasyPlot.exportFigure(fig, 'channelActivity');

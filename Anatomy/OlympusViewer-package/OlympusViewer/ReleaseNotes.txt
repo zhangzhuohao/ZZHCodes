@@ -1,0 +1,83 @@
+//////////////////////////////////////////////////////////////////////
+	EVIDENT CORPORATION
+	Olympus Viewer ( ImageJ Plugin ) ReleaseNotes.txt
+//////////////////////////////////////////////////////////////////////
+
+This document is a collection of latest and additional information.
+
+//////////////////////////////////////////////////////////////////////
+Release History
+1. System Requirements
+2. Additional Functions
+3. Bug Fixes
+4. Known Issues
+//////////////////////////////////////////////////////////////////////
+Ver2.4.1 2022/12
+1. System Requirements
+	-OS:Windows10 32bit/64bit, Runtime:Visual Studio 2017
+2.Additional Functions
+3.Bug Fixes
+	- Some VSI files are not displayed properly (#3162)
+
+4.Known Issues
+	-Can't load an image having frame size over 2GB.
+	-Can't load an image having pixel size over 1000000000.
+
+Ver2.3.1 2019/10
+1. System Requirements
+	-OS:Windows10 32bit/64bit, Runtime:Visual Studio 2017
+	-OS:Mac OSX 10.9 or later
+2.Additional Functions
+	- Support Macro function
+3.Bug Fixes
+	- Cannot open some VSI files (#1830)
+
+4.Known Issues
+	-Can't load an image having frame size over 2GB.
+	-Can't load an image having pixel size over 1000000000.
+
+Ver2.2.1 2017/09
+1. System Requirements
+	-OS:Windows7 32bit/64bit, Runtime:Visual Studio 2008
+	-OS:Mac OSX 10.7 or Later
+2.Additional Functions
+	- Support virtual stack
+3.Bug Fixes
+
+4.Known Issues
+	-Can't load an image having frame size over 2GB.
+	-Can't load an image having pixel size over 1000000000.
+
+Ver2.1.1 2016/08
+1. System Requirements
+	-OS:Windows7 32bit/64bit, Runtime:Visual Studio 2008
+	-OS:Mac OSX 10.7 or Later
+2.Additional Functions
+	- supporting Mac OSX
+	- Drag & Drop
+	- New properties support
+		- Laser wavelength
+		- Lase power
+		- Emission wave length
+		- Barrier filter name
+		- Hv
+		- Gain
+		- Offset
+		- Pinhole
+		- Scanner type
+		- Integration type/count
+3.Bug Fixes
+	- Bug fix for omp2info( #1564 )
+	- Error handling of stitching feature for different number of  z-frames( #1620 )
+4.Known Issues
+	-Can't load an image having frame size over 2GB.
+	-Can't load an image having pixel size over 1000000000.
+
+Ver1.1.1 2015/05
+1. System Requirements
+	-OS:Windows7 32bit/64bit, Runtime:Visual Studio 2008
+2.Additional Functions
+3.Bug Fixes
+4.Known Issues
+	-Can't load an image having frame size over 2GB.
+	-Can't load an image having pixel size over 1000000000.
