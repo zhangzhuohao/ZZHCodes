@@ -33,7 +33,7 @@ classdef GPSBehClass < handle
         function bins = get.Bins(~)
             bins.width = .002;
 
-            bins.LogST = 0:bins.width:3;
+            bins.LogST = -1:bins.width:2;
             bins.HD    = 0:bins.width:3;
             bins.HDv   = 0:bins.width:3;
             bins.RT    = 0:bins.width:2;
