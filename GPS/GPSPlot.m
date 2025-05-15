@@ -97,7 +97,7 @@ classdef GPSPlot < handle
 
             for i = 1:length(data)
                 if length(FP)==1
-                    if i==1
+                    if i==1 && FP~=0
                         if Reversed
                             yline(ax, FP, 'LineStyle', "-", 'Color', [.5 .5 .5]);
                         else
