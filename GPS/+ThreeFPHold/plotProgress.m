@@ -108,7 +108,7 @@ end
 % Shuttle time
 % scatter
 ax_st_s = obj.assign_ax_to_fig(fig_progress, 1, 1, [ax_grid{1,3} ax_sz_1], ax_sz_1);
-set(ax_st_s{1}, "YLim", [0 1], 'YTick', log10(1:10), 'YTickLabel', ["1", repmat("", 1, 8), "10"]);
+set(ax_st_s{1}, "YLim", [log10(0.5) 1], 'YTick', log10([0.1:0.1:1 2:10]), 'YTickLabel', ["0.1" repmat("",1,8) "1", repmat("", 1, 8), "10"]);
 ylabel(ax_st_s{1}, 'ST (s)', 'FontWeight', 'bold');
 data_st = obj.assign_data_to_ax(ax_st_s, beh_sorted_st);
 c_st  = repmat({[.2 .2 .2]}, 1, 1);
@@ -118,7 +118,7 @@ draw_scatter(obj, ax_st_s, data_st, "TrialCentInTimeProgress", "LogST", c_st, "o
 % violin
 ax_st_v = obj.assign_ax_to_fig(fig_progress, 1, 1, [ax_grid{1,4} ax_sz_1], ax_sz_1);
 data_st_v = cell(1,1);
-set(ax_st_v{1}, "YLim", [0 1], 'YTick', log10(1:10), 'YTickLabel', ["1", repmat("", 1, 8), "10"]);
+set(ax_st_v{1}, "YLim", [log10(0.5) 1], 'YTick', log10([0.1:0.1:1 2:10]), 'YTickLabel', ["0.1" repmat("",1,8) "1", repmat("", 1, 8), "10"]);
 data_st_v{1} = cellfun(@(x) x([1 end]), obj.LogSTSplit.Session, 'UniformOutput', false);
 draw_violin(obj, ax_st_v, data_st_v, obj.BandWidth, c_st, [], []);
 

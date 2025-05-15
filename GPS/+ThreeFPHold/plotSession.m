@@ -36,7 +36,7 @@ ax_st_s = draw_scatter(obj, fig_session, [7.5 10 ax_sz_1], ax_sz_1, ...
     {log10(obj.ST)}, {obj.TrialCentInTime}, ...
     {repmat("Correct", obj.NumTrials, 1)}, {[0 0 0]}, [], []);
 for i = 1:length(ax_st_s)
-    set(ax_st_s{i}, 'YLim', [0 1], 'YTick', log10(1:10), 'YTickLabel', ["1", repmat("", 1, 8), "10"]);
+    set(ax_st_s{i}, 'YLim', [log10(0.5) 1], 'YTick', log10([0.1:0.1:1 2:10]), 'YTickLabel', ["0.1" repmat("",1,8) "1", repmat("", 1, 8), "10"]);
 end
 ylabel(ax_st_s{1}, 'ST (s)', 'FontWeight', 'bold');
 
@@ -47,7 +47,7 @@ ax_st_d = draw_density(obj, fig_session, [13 10 3.5 2], ax_sz_3, ...
     obj.LogSTPDF([1 end])', [], [], ...
     {{c_first}, {c_last}}, {'-', '-'}, {1, 1});
 for i = 1:length(ax_st_d)
-    set(ax_st_d{i}, 'YLim', [0 1], 'YTick', log10(1:10), 'YTickLabel', []);
+    set(ax_st_d{i}, 'YLim', [log10(0.5)  1], 'YTick', log10([0.1:0.1:1 2:10]), 'YTickLabel', []);
 end
 text(ax_st_d{1}, ax_st_d{1}.XLim(2), .9, 'First 1/3', 'Color', c_first, 'FontSize', 7, 'FontWeight', 'bold', 'HorizontalAlignment', 'right');
 text(ax_st_d{2}, ax_st_d{2}.XLim(2), .9, 'Last 1/3' , 'Color', c_last , 'FontSize', 7, 'FontWeight', 'bold', 'HorizontalAlignment', 'right');
