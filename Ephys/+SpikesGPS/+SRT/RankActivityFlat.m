@@ -1,7 +1,11 @@
-function [IndSort, IndInsignificant] = RankActivityFlat(PopOut)
+function [IndSort, IndInsignificant] = RankActivityFlat(PopOut, thres)
 % Jianing Yu 5/15/2023
 % PopOut is population psth produce by Spikes.SRT.PopulationActivity.m
 % 7/8/2023 modified 
+
+if nargin<2
+    thres = 0.75;
+end
 
 FPs = PopOut.FPs;
 nPort = length(PopOut.Ports);
@@ -15,6 +19,7 @@ RewardTimeRange  = [-1000 2000];
 
 PSTHs_Flat = cell(1, nPort);
 IndMax = zeros(n_unit, nPort); % for 2 ports each
+IndThres = zeros(n_unit, nPort); % for 2 ports each
 SigMod = zeros(n_unit, nPort); % if 1, neural activity is significantly modulated at some points
 pVal_critical = 0.05/3;
 pVals = zeros(n_events, n_unit);
@@ -43,13 +48,22 @@ for j = 1:nPort
         if min(pVals(:, i))<pVal_critical
             SigMod(i, j) = 1;
         end
+
+        PSTH_Flat_n = normalize(PSTH_Flat, 2, 'range');
+        id_thres = find(PSTH_Flat_n>thres, 1, 'first');
+        if ~isempty(id_thres)
+            IndThres(i, j) = id_thres;
+        else
+            IndThres(i, j) = 0;
+        end
+        
     end
 end
 
 IndSort = cell(1, nPort);
 IndInsignificant = cell(1, nPort);
 for j = 1:nPort
-    [~, IndSort{j}] = sort(IndMax(:, j));
+    [~, IndSort{j}] = sort(IndThres(:, j));
     SigMod_j   = SigMod(IndSort{j}, j);
     IndSort{j} = [IndSort{j}(SigMod_j==1); IndSort{j}(SigMod_j==0)];
     SigMod_j   = [SigMod_j(SigMod_j==1); SigMod_j(SigMod_j==0)];

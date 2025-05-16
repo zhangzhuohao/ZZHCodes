@@ -1,10 +1,14 @@
-function IndSort = VisualizePopPSTH(Pop)
+function [IndSort, fig] = VisualizePopPSTH(Pop, tosave)
 % Pop = PopOut;
 % 5/14/2023 revised JY
 
 % IndSort = PSTHOut.IndSort;
 % IndSignificant = PSTHOut.IndSignificant;
 % nsig = sum(IndSignificant);
+
+if nargin<2
+    tosave=true;
+end
 
 % visualize PSTH (z score)
 zrange     = [-4 4];
@@ -381,18 +385,22 @@ figsize = get(hf, 'Position');
 figsize(4) = fig_height;
 set(hf, 'Position', figsize)
 
+fig = gcf;
+
 %% Save this figure
-thisFolder = fullfile(pwd, 'Fig');
-if ~exist(thisFolder, 'dir')
-    mkdir(thisFolder)
+if tosave
+    thisFolder = fullfile(pwd, 'Fig');
+    if ~exist(thisFolder, 'dir')
+        mkdir(thisFolder)
+    end
+    tosavename= fullfile(thisFolder, 'PopulationActivity_'+Pop.Name+'_'+strrep(Pop.Session, '_', ''));
+    disp('########## making figure ########## ')
+    tic
+    print (gcf,'-dpdf', tosavename)
+    print (gcf,'-dpng', tosavename, '-r300')
+    print (gcf,'-depsc2', tosavename);
+    toc
 end
-tosavename= fullfile(thisFolder, 'PopulationActivity_'+Pop.Name+'_'+strrep(Pop.Session, '_', ''));
-disp('########## making figure ########## ')
-tic
-print (gcf,'-dpdf', tosavename)
-print (gcf,'-dpng', tosavename, '-r300')
-print (gcf,'-depsc2', tosavename);
-toc
 % % try
 % %     thisFolder = fullfile(findonedrive, '00_Work' , '03_Projects', '05_Physiology', 'Data', 'PopulationPSTH', Pop.Name);
 % %     if ~exist(thisFolder, 'dir')
