@@ -47,7 +47,6 @@ c_reward   = [164 208 164] / 255;
 c_precor   = [0 0 0];
 c_preerr   = [160 82 45] / 255;
 
-
 TargetFPs = unique(PSTHOut.CentIn.FP{1});
 nFPs = length(TargetFPs);
 if nFPs == 2
