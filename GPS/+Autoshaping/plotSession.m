@@ -76,12 +76,13 @@ ylabel('Performance (%)')
 %% Plot shuttle time
 ha4 = axes;
 set(ha4, 'units', 'centimeters', 'position', [1.5+plotsize1(1)+1 11-plotsize1(2)-1 plotsize1], 'nextplot', 'add', ...
-    'ylim', [0 3], 'xlim', [0 3], 'yscale', 'linear','ticklength', [0.01 0.1], 'ytick', 1:3, 'yticklabel', {'10^1', '10^2', '10^3'}, 'fontsize', 8)
+    'ylim', [log10(0.5) 1], 'xlim', [0 3], 'yscale', 'linear','ticklength', [0.01 0.1], ...
+    'YTick', log10([0.1:0.1:1 2:10]), 'YTickLabel', ["0.1" repmat("",1,8) "1", repmat("", 1, 8), "10"], 'fontsize', 8)
 xlabel('Time in session (s)')
 ylabel('Shuttle time (s)')
 set(ha4, 'xlim', [0 center_pokes(end)+5]);
 
-line([center_pokes center_pokes]', [0 0.15], 'color', 'b')
+line([center_pokes center_pokes]', log10(0.5)+[0 0.05], 'color', 'b')
 
 scatter(center_pokes, ...
     obj.LogST, ...
@@ -89,11 +90,12 @@ scatter(center_pokes, ...
 
 %% Plot shuttle time PDF on the right
 ha5 = axes;
-set(ha5, 'units', 'centimeters', 'position', [1.5+2*plotsize1(1)+1.5 11-plotsize1(2)-1 plotsize2], 'nextplot', 'add', 'ylim', [0 3], ...
-    'xlim', [0 5], 'yscale', 'linear', 'yticklabel', [], 'ticklength', [0.02 0.1], 'ytick', 1:3, 'fontsize', 8)
+set(ha5, 'units', 'centimeters', 'position', [1.5+2*plotsize1(1)+1.5 11-plotsize1(2)-1 plotsize2], 'nextplot', 'add', ...
+    'ylim', [log10(0.5) 1], 'xlim', [0 5], 'yscale', 'linear', 'yticklabel', [], 'ticklength', [0.02 0.1], ...
+    'YTick', log10([0.1:0.1:1 2:10]), 'YTickLabel', ["0.1" repmat("",1,8) "1", repmat("", 1, 8), "10"], 'fontsize', 8)
 
 xlabel('Prob. density (1/s)')
-binEdges = 0:0.05:3;
+binEdges = -1:0.002:2;
 PDF_ST = ksdensity(obj.LogST, binEdges);
 plot(ha5, PDF_ST, binEdges, 'color', 'k', 'linewidth', 1.5);
 axis 'auto x'
@@ -101,12 +103,12 @@ axis 'auto x'
 %% plot movement times
 ha6 = axes;
 set(ha6, 'units', 'centimeters', 'position', [1.5+plotsize1(1)+1 11-2*plotsize1(2)-2 plotsize1], 'nextplot', 'add', ...
-    'ylim', [0 4], 'xlim', [1 3600], 'yscale', 'linear', 'ticklength', [0.01 0.1], 'fontsize', 8)
+    'ylim', [0 2], 'xlim', [1 3600], 'yscale', 'linear', 'ticklength', [0.01 0.1], 'fontsize', 8)
 xlabel('Time in session (s)')
 ylabel('Movement time (s)')
 
 set(ha6, 'xlim', [0 center_pokes(end)+5])
-line([center_pokes center_pokes]', [0 0.2], 'color', 'b')
+line([center_pokes center_pokes]', [0 0.1], 'color', 'b')
 
 % port 1 correct (defined by their action, which is also the target for correct response)
 ind_correctL = obj.PortChosen==1 & strcmp(obj.Outcome, 'Correct');
@@ -138,11 +140,11 @@ hs4 = scatter(center_pokes(ind_wrong2), ...
 
 %% Plot movement time PDF on the right
 ha7 = axes;
-set(ha7, 'units', 'centimeters', 'position', [1.5+2*plotsize1(1)+1.5 11-2*plotsize1(2)-2, plotsize2], 'nextplot', 'add', 'ylim', [0 6], ...
-    'xlim', [0 1], 'yscale', 'linear', 'yticklabel', [], 'ticklength', [0.02 0.1], 'fontsize', 8)
+set(ha7, 'units', 'centimeters', 'position', [1.5+2*plotsize1(1)+1.5 11-2*plotsize1(2)-2, plotsize2], 'nextplot', 'add', ...
+    'ylim', [0 2], 'xlim', [0 1], 'yscale', 'linear', 'yticklabel', [], 'ticklength', [0.02 0.1], 'fontsize', 8)
 
 xlabel('Prob. density (1/s)')
-binEdges = 0:0.1:6;
+binEdges = 0:0.002:3;
 
 if ~isempty(MTCorrect_PortL)
     PDF_PortL = ksdensity(MTCorrect_PortL, binEdges);

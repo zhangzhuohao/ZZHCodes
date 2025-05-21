@@ -588,6 +588,8 @@ classdef KilosortOutputClass<handle
             r.Meta.DateTime = datestr(d);
             r.Meta.DateTimeRaw = [d.Year, d.Month, 0, d.Day, d.Hour, d.Minute, d.Second, 0];
 
+            r.ChanMap = obj.ChanMap;
+
             % Trial information
             r.Behavior.Outcome        = EventOutCombined.OutcomeEphys;
             % the followings are redundant but are listed so that other
