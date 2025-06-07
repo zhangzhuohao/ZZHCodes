@@ -490,6 +490,7 @@ classdef KilosortOutputClass<handle
             BpodProtocol = '3FPHoldSRTProbe';
             Experimenter = 'ZZH';
             BehClassPath = [];
+            ImplantLateral = 'R';
 
             if nargin>=2
                 for i=1:2:size(varargin,2)
@@ -506,6 +507,8 @@ classdef KilosortOutputClass<handle
                             Experimenter =  varargin{i+1};
                         case 'BehClassPath'
                             BehClassPath = varargin{i+1};
+                        case 'ImplantLateral'
+                            ImplantLateral = varargin{i+1};
                         otherwise
                             errordlg('unknown argument')
                     end
@@ -582,13 +585,22 @@ classdef KilosortOutputClass<handle
             r = [];
             r.BehaviorClass = BehClass; % added 2023
 
+            % lateral of probe implantation
+            r.ImplantLateral = ImplantLateral;
+
             % update meta
             r.Meta = EventOutCombined.Meta;
             d = datetime(r.Meta.fileCreateTime);
             r.Meta.DateTime = datestr(d);
             r.Meta.DateTimeRaw = [d.Year, d.Month, 0, d.Day, d.Hour, d.Minute, d.Second, 0];
 
+            % Channel map, remove the unconnected channel
             r.ChanMap = obj.ChanMap;
+            r.ChanMap.chanMap     = r.ChanMap.chanMap(r.ChanMap.connected);
+            r.ChanMap.chanMap0ind = r.ChanMap.chanMap0ind(r.ChanMap.connected);
+            r.ChanMap.xcoords     = r.ChanMap.xcoords(r.ChanMap.connected);
+            r.ChanMap.ycoords     = r.ChanMap.ycoords(r.ChanMap.connected);
+            r.ChanMap.kcoords     = r.ChanMap.kcoords(r.ChanMap.connected);
 
             % Trial information
             r.Behavior.Outcome        = EventOutCombined.OutcomeEphys;
@@ -636,6 +648,11 @@ classdef KilosortOutputClass<handle
                 i_label = r.Behavior.Labels{i};
                 ind_label = find(strcmp(EventOutCombined.EventsLabels, i_label), 1);
                 event_onset = EventOutCombined.Onset{ind_label};
+
+                if isempty(event_onset)
+                    continue
+                end
+
                 if size(event_onset, 1) < size(event_onset, 2)
                     event_onset = event_onset';
                 end

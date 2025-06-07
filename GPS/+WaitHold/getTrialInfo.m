@@ -47,7 +47,7 @@ else
     end
 end
 obj.FP = roundn(obj.FP, -1);
-obj.TargetFP = (1:15) / 10;
+obj.TargetFP = roundn((1:15) / 10, -1);
 
 if ~isfield(SessionData.Custom, 'RW')
     obj.RW = nan(obj.NumTrials, 1);
@@ -216,7 +216,7 @@ ind_bug = strcmp(obj.Outcome, "Bug") | obj.FP <= 0;
 
 obj.NumTrials = obj.NumTrials - sum(ind_bug);
 
-obj.Trials = (1:obj.NumTrials)';
+obj.Trials(ind_bug)             = [];
 obj.TrialStartTime(ind_bug)     = [];
 
 obj.FP(ind_bug)                 = [];

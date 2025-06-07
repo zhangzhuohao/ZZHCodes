@@ -295,7 +295,7 @@ switch SessionData.Custom.Version
 
                 obj.ChoiceCueTime(i, :) = [iStates.FP(1) iStates.Wait4Choice(2)]; % duration that the choice light lit up.
                 if ~obj.Cued(i)
-                    obj.TriggerCueTime(i) = obj.CentPokeOutTime{i}(end);
+                    obj.TriggerCueTime(i) = iStates.Wait4Choice(1);
                 else
                     obj.TriggerCueTime(i) = iStates.FP(end, 2);
                 end
@@ -322,7 +322,7 @@ switch SessionData.Custom.Version
                 end
                 obj.ChoiceCueTime(i, :) = [iStates.FP(1) iStates.Wait4Choice(2)]; % duration that the choice light lit up.
                 if ~obj.Cued(i)
-                    obj.TriggerCueTime(i) = obj.CentPokeOutTime{i}(end);
+                    obj.TriggerCueTime(i) = iStates.Wait4Choice(1);
                 else
                     obj.TriggerCueTime(i) = iStates.FP(end, 2);
                 end
@@ -355,7 +355,7 @@ ind_bug = strcmp(obj.Outcome, 'Bug') | obj.FP <= 0;
 
 obj.NumTrials = obj.NumTrials - sum(ind_bug);
 
-obj.Trials                      = (1:obj.NumTrials)';
+obj.Trials(ind_bug)             = [];
 obj.TrialStartTime(ind_bug)     = [];
 
 obj.FP(ind_bug)                 = [];

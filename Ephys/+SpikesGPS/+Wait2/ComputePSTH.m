@@ -22,10 +22,10 @@ TriggerTimeDomain = PSTHOut.TimeDomain.Trigger;
 InitInTimeDomain  = PSTHOut.TimeDomain.InitIn;
 InitOutTimeDomain = PSTHOut.TimeDomain.InitOut;
 
-FPs    = unique(PSTHOut.CentIn.FP{1});
-NumFPs = length(FPs);
+Stages    = logical([0 1]);
+NumStages = length(Stages);
 
-Ports    = unique(PSTHOut.CentIn.Port{1});
+Ports    = r.BehaviorClass.LeftRight;
 NumPorts = length(Ports);
 
 %% PSTHs for CentIn and CentOut
@@ -44,15 +44,16 @@ params_cent_in.pre      = CentInTimeDomain(1);
 params_cent_in.post     = CentInTimeDomain(2);
 params_cent_in.binwidth = 20;
 
-t_cent_in_correct    = cell(NumFPs, NumPorts);
-psth_cent_in_correct = cell(NumFPs, NumPorts);
-ts_cent_in           = cell(NumFPs, NumPorts);
-trialspxmat_cent_in  = cell(NumFPs, NumPorts);
-tspkmat_cent_in      = cell(NumFPs, NumPorts);
-rt_cent_in_sorted    = cell(NumFPs, NumPorts);
+t_cent_in_correct    = cell(NumStages, NumPorts);
+psth_cent_in_correct = cell(NumStages, NumPorts);
+ts_cent_in           = cell(NumStages, NumPorts);
+trialspxmat_cent_in  = cell(NumStages, NumPorts);
+tspkmat_cent_in      = cell(NumStages, NumPorts);
+rt_cent_in_sorted    = cell(NumStages, NumPorts);
+fp_cent_in_sorted    = cell(NumStages, NumPorts);
 
 ind_correct = PSTHOut.CentIn.Labels=="Correct";
-for i = 1:NumFPs
+for i = 1:NumStages
     for j = 1:NumPorts
         t_ij = PSTHOut.CentIn.Time{ind_correct}{i,j};
         [psth_cent_in_correct{i,j}, ts_cent_in{i,j}, trialspxmat_cent_in{i,j}, tspkmat_cent_in{i,j}, t_cent_in_correct{i,j}, ind] = jpsth(r.Units.SpikeTimes(ku).timings, t_ij, params_cent_in);
@@ -61,25 +62,29 @@ for i = 1:NumFPs
         rt_cent_in_sorted{i,j} = PSTHOut.CentIn.RT_Correct{i,j};
         rt_cent_in_sorted{i,j} = rt_cent_in_sorted{i,j}(ind);
 
-        PSTH.CentIn{i,j} = {psth_cent_in_correct{i,j}, ts_cent_in{i,j}, trialspxmat_cent_in{i,j}, tspkmat_cent_in{i,j}, t_cent_in_correct{i,j}, rt_cent_in_sorted{i,j}};
+        fp_cent_in_sorted{i,j} = PSTHOut.CentIn.FP{ind_correct}{i,j};
+        fp_cent_in_sorted{i,j} = fp_cent_in_sorted{i,j}(ind);
+
+        PSTH.CentIn{i,j} = {psth_cent_in_correct{i,j}, ts_cent_in{i,j}, trialspxmat_cent_in{i,j}, tspkmat_cent_in{i,j}, t_cent_in_correct{i,j}, rt_cent_in_sorted{i,j}, fp_cent_in_sorted{i,j}};
     end
 end
-PSTH.CentInLabels = {'PSTH', 'tPSTH', 'SpikeMat', 'tSpikeMat', 'tEvents', 'RT'};
+PSTH.CentInLabels = {'PSTH', 'tPSTH', 'SpikeMat', 'tSpikeMat', 'tEvents', 'RT', 'FP'};
 
 % CentOut PSTH (corrected, sorted)
 params_cent_out.pre      = CentOutTimeDomain(1);
 params_cent_out.post     = CentOutTimeDomain(2);
 params_cent_out.binwidth = 20;
 
-t_cent_out_correct    = cell(NumFPs, NumPorts);
-psth_cent_out_correct = cell(NumFPs, NumPorts);
-ts_cent_out           = cell(NumFPs, NumPorts);
-trialspxmat_cent_out  = cell(NumFPs, NumPorts);
-tspkmat_cent_out      = cell(NumFPs, NumPorts);
-rt_cent_out_sorted    = cell(NumFPs, NumPorts);
+t_cent_out_correct    = cell(NumStages, NumPorts);
+psth_cent_out_correct = cell(NumStages, NumPorts);
+ts_cent_out           = cell(NumStages, NumPorts);
+trialspxmat_cent_out  = cell(NumStages, NumPorts);
+tspkmat_cent_out      = cell(NumStages, NumPorts);
+rt_cent_out_sorted    = cell(NumStages, NumPorts);
+fp_cent_out_sorted    = cell(NumStages, NumPorts);
 
 ind_correct = PSTHOut.CentOut.Labels=="Correct";
-for i = 1:NumFPs
+for i = 1:NumStages
     for j = 1:NumPorts
         t_ij = PSTHOut.CentOut.Time{ind_correct}{i,j};
         [psth_cent_out_correct{i,j}, ts_cent_out{i,j}, trialspxmat_cent_out{i,j}, tspkmat_cent_out{i,j}, t_cent_out_correct{i,j}, ind] = jpsth(r.Units.SpikeTimes(ku).timings, t_ij, params_cent_out);
@@ -88,10 +93,13 @@ for i = 1:NumFPs
         rt_cent_out_sorted{i,j} = PSTHOut.CentOut.RT_Correct{i,j};
         rt_cent_out_sorted{i,j} = rt_cent_out_sorted{i,j}(ind);
 
-        PSTH.CentOut{i,j} = {psth_cent_out_correct{i,j}, ts_cent_out{i,j}, trialspxmat_cent_out{i,j}, tspkmat_cent_out{i,j}, t_cent_out_correct{i,j}, rt_cent_out_sorted{i,j}};
+        fp_cent_out_sorted{i,j} = PSTHOut.CentOut.FP{ind_correct}{i,j};
+        fp_cent_out_sorted{i,j} = fp_cent_out_sorted{i,j}(ind);
+
+        PSTH.CentOut{i,j} = {psth_cent_out_correct{i,j}, ts_cent_out{i,j}, trialspxmat_cent_out{i,j}, tspkmat_cent_out{i,j}, t_cent_out_correct{i,j}, rt_cent_out_sorted{i,j}, fp_cent_out_sorted{i,j}};
     end
 end
-PSTH.CentOutLabels = {'PSTH', 'tPSTH', 'SpikeMat', 'tSpikeMat', 'tEvents', 'RT'};
+PSTH.CentOutLabels = {'PSTH', 'tPSTH', 'SpikeMat', 'tSpikeMat', 'tEvents', 'RT', 'FP'};
 
 % premature cent_in PSTH
 t_premature_cent_in           = cell(1, NumPorts);
@@ -191,47 +199,6 @@ for j = 1:NumPorts
     PSTH.LateCentOut{j} = {psth_late_cent_out{j}, ts_late_cent_out{j}, trialspxmat_late_cent_out{j}, tspkmat_late_cent_out{j}, t_late_cent_out{j}, hd_late_cent_out{j}, FP_late_cent_out{j}};
 end
 
-% probe cent_in PSTH
-t_probe_cent_in           = cell(1, NumPorts);
-psth_probe_cent_in        = cell(1, NumPorts);
-ts_probe_cent_in          = cell(1, NumPorts);
-trialspxmat_probe_cent_in = cell(1, NumPorts);
-tspkmat_probe_cent_in     = cell(1, NumPorts);
-hd_probe_cent_in          = cell(1, NumPorts);
-
-ind_probe = PSTHOut.CentIn.Labels=="Probe";
-for j = 1:NumPorts
-    t_j = PSTHOut.CentIn.Time{ind_probe}{j};
-    [psth_probe_cent_in{j}, ts_probe_cent_in{j}, trialspxmat_probe_cent_in{j}, tspkmat_probe_cent_in{j}, t_probe_cent_in{j}, ind] = jpsth(r.Units.SpikeTimes(ku).timings, t_j, params_cent_in);
-    psth_probe_cent_in{j} = smoothdata(psth_probe_cent_in{j}, 'gaussian', 5);
-
-    hd_probe_cent_in{j} = PSTHOut.CentIn.HoldDur.Probe{j};
-    hd_probe_cent_in{j} = hd_probe_cent_in{j}(ind);
-
-    PSTH.ProbeCentIn{j} = {psth_probe_cent_in{j}, ts_probe_cent_in{j}, trialspxmat_probe_cent_in{j}, tspkmat_probe_cent_in{j}, t_probe_cent_in{j}, hd_probe_cent_in{j}};
-end
-
-% late cent_out PSTH
-t_probe_cent_out           = cell(1, NumPorts);
-psth_probe_cent_out        = cell(1, NumPorts);
-ts_probe_cent_out          = cell(1, NumPorts);
-trialspxmat_probe_cent_out = cell(1, NumPorts);
-tspkmat_probe_cent_out     = cell(1, NumPorts);
-hd_probe_cent_out          = cell(1, NumPorts);
-
-ind_probe = PSTHOut.CentOut.Labels=="Probe";
-for j = 1:NumPorts
-    t_j = PSTHOut.CentOut.Time{ind_probe}{j};
-    [psth_probe_cent_out{j}, ts_probe_cent_out{j}, trialspxmat_probe_cent_out{j}, tspkmat_probe_cent_out{j}, t_probe_cent_out{j}, ind] = jpsth(r.Units.SpikeTimes(ku).timings, t_j, params_cent_out);
-    psth_probe_cent_out{j} = smoothdata(psth_probe_cent_out{j}, 'gaussian', 5);
-
-    hd_probe_cent_out{j} = PSTHOut.CentOut.HoldDur.Probe{j};
-    hd_probe_cent_out{j} = hd_probe_cent_out{j}(ind);
-
-    PSTH.ProbeCentOut{j} = {psth_probe_cent_out{j}, ts_probe_cent_out{j}, trialspxmat_probe_cent_out{j}, tspkmat_probe_cent_out{j}, t_probe_cent_out{j}, hd_probe_cent_out{j}};
-end
-PSTH.ProbeLabels = {'PSTH', 'tPSTH', 'SpikeMat', 'tSpikeMat', 'tEvents', 'HoldDuration'};
-
 %% PSTH for choice poke
 % use t_reward_poke and move_time to construct reward_poke PSTH
 % reward PSTH
@@ -239,13 +206,13 @@ params_choice.pre  = ChoiceTimeDomain(1);
 params_choice.post = ChoiceTimeDomain(2);
 params_choice.binwidth = 20;
 
-t_reward_choice           = cell(NumFPs, NumPorts);
-psth_reward_choice        = cell(NumFPs, NumPorts);
-ts_reward_choice          = cell(NumFPs, NumPorts);
-trialspxmat_reward_choice = cell(NumFPs, NumPorts);
-tspkmat_reward_choice     = cell(NumFPs, NumPorts);
-mt_reward_choice          = cell(NumFPs, NumPorts);
-for i = 1:NumFPs
+t_reward_choice           = cell(NumStages, NumPorts);
+psth_reward_choice        = cell(NumStages, NumPorts);
+ts_reward_choice          = cell(NumStages, NumPorts);
+trialspxmat_reward_choice = cell(NumStages, NumPorts);
+tspkmat_reward_choice     = cell(NumStages, NumPorts);
+mt_reward_choice          = cell(NumStages, NumPorts);
+for i = 1:NumStages
     for j = 1:NumPorts
         t_ij = PSTHOut.ChoiceIn.RewardPoke.Time{i,j};
         [psth_reward_choice{i,j}, ts_reward_choice{i,j}, trialspxmat_reward_choice{i,j}, tspkmat_reward_choice{i,j}, t_reward_choice{i,j}, ind] = jpsth(r.Units.SpikeTimes(ku).timings, t_ij, params_choice);
@@ -280,15 +247,16 @@ params_trigger.post = TriggerTimeDomain(2);
 params_trigger.binwidth = 20;
 
 % correct response
-t_trigger_correct           = cell(NumFPs, NumPorts);
-psth_trigger_correct        = cell(NumFPs, NumPorts);
-ts_trigger_correct          = cell(NumFPs, NumPorts);
-trialspxmat_trigger_correct = cell(NumFPs, NumPorts);
-tspkmat_trigger_correct     = cell(NumFPs, NumPorts);
-rt_trigger_correct          = cell(NumFPs, NumPorts);
+t_trigger_correct           = cell(NumStages, NumPorts);
+psth_trigger_correct        = cell(NumStages, NumPorts);
+ts_trigger_correct          = cell(NumStages, NumPorts);
+trialspxmat_trigger_correct = cell(NumStages, NumPorts);
+tspkmat_trigger_correct     = cell(NumStages, NumPorts);
+rt_trigger_correct          = cell(NumStages, NumPorts);
+fp_trigger_correct          = cell(NumStages, NumPorts);
 
 ind_correct = PSTHOut.Triggers.Labels=="Correct";
-for i = 1:NumFPs
+for i = 1:NumStages
     for j = 1:NumPorts
         t_ij = PSTHOut.Triggers.Time{ind_correct}{i,j};
         [psth_trigger_correct{i,j}, ts_trigger_correct{i,j}, trialspxmat_trigger_correct{i,j}, tspkmat_trigger_correct{i,j}, t_trigger_correct{i,j}, ind] = jpsth(r.Units.SpikeTimes(ku).timings, t_ij, params_trigger);
@@ -296,10 +264,12 @@ for i = 1:NumFPs
 
         rt_trigger_correct{i,j} = PSTHOut.Triggers.RT{ind_correct}{i,j};
         rt_trigger_correct{i,j} = rt_trigger_correct{i,j}(ind);
-        PSTH.Triggers{i,j} = {psth_trigger_correct{i,j}, ts_trigger_correct{i,j}, trialspxmat_trigger_correct{i,j}, tspkmat_trigger_correct{i,j}, t_trigger_correct{i,j}, rt_trigger_correct{i,j}, FPs(i), Ports(j)};
+        fp_trigger_correct{i,j} = PSTHOut.Triggers.FP{ind_correct}{i,j};
+        fp_trigger_correct{i,j} = fp_trigger_correct{i,j}(ind);
+        PSTH.Triggers{i,j} = {psth_trigger_correct{i,j}, ts_trigger_correct{i,j}, trialspxmat_trigger_correct{i,j}, tspkmat_trigger_correct{i,j}, t_trigger_correct{i,j}, rt_trigger_correct{i,j}, fp_trigger_correct{i,j}, Stages(i), Ports(j)};
     end
 end
-PSTH.TriggerLabels = {'PSTH', 'tPSTH', 'SpikeMat', 'tSpikeMat', 'tEvents', 'RT', 'FP', 'Port'};
+PSTH.TriggerLabels = {'PSTH', 'tPSTH', 'SpikeMat', 'tSpikeMat', 'tEvents', 'RT', 'FP', 'Stage', 'Port'};
 
 % late response
 t_trigger_late           = cell(1, NumPorts);

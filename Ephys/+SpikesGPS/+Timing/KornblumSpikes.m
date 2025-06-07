@@ -1,4 +1,4 @@
-function PSTHOut = SRTSpikes(r, ind, varargin)
+function PSTHOut = KornblumSpikes(r, ind, varargin)
 % V3: added a few new parameters
 % V4: 2/17/2021 regular style drinking port. No IR sensor in front of the
 % port.
@@ -34,14 +34,14 @@ end
 ku_all = ind; % ind is used in different places
 
 tic
-ComputeRange = [];  % this is the range where time is extracted. Event times outside of this range will be discarded. Empty means taking everything
+% ComputeRange = [];  % this is the range where time is extracted. Event times outside of this range will be discarded. Empty means taking everything
 
 CentInTimeDomain  = [1000 2500]; % default
 CentOutTimeDomain = [1500 1000];
 ChoiceTimeDomain  = [1000 2000];
-TriggerTimeDomain = [500  500];
+TriggerTimeDomain = [500  500 ];
 InitInTimeDomain  = [1000 1500];
-InitOutTimeDomain = [750 5000];
+InitOutTimeDomain = [750  5000];
 
 ToSave = 'on';
 
@@ -51,9 +51,11 @@ if length(r.BehaviorClass) > 1
     r.BehaviorClass = r.BehaviorClass{1};
 end
 
-FPs    = r.BehaviorClass.TargetFP; % you have to use BuildR2023 or BuildR4Tetrodes2023 to have this included in r.
-FPs    = FPs(FPs>0);
-NumFPs = length(FPs);
+% you have to use BuildR2023 or BuildR4Tetrodes2023 to have this included in r.
+FP = r.BehaviorClass.TargetFP;
+
+Cues    = r.BehaviorClass.CueUncue;
+NumCues = length(Cues);
 
 Ports    = r.BehaviorClass.LeftRight;
 NumPorts = length(Ports);
@@ -76,33 +78,33 @@ disp(['Number of Cent poke-in is ' num2str(length(t_cent_in))]);
 ind_correct        = find(strcmp(rb.Outcome, 'Correct'));
 t_cent_in_correct  = t_cent_in(ind_correct);
 t_cent_out_correct = t_cent_out(ind_correct);
-FP_correct         = shape_it(rb.Foreperiods(ind_correct));
+Cue_correct        = shape_it(rb.CueIndex(ind_correct));
 Port_correct       = shape_it(rb.PortCorrect(ind_correct));
 
-RT_correct         = t_cent_out_correct - t_cent_in_correct - FP_correct*1000;
+HD_correct         = t_cent_out_correct - t_cent_in_correct;
 
 % initialize sorted cells, sorted by FPs and Ports, ordered by reaction time
-t_cent_in_correct_sort  = cell(NumFPs, NumPorts);
-t_cent_out_correct_sort = cell(NumFPs, NumPorts);
-RT_correct_sort         = cell(NumFPs, NumPorts);
-for i = 1:NumFPs
+t_cent_in_correct_sort  = cell(NumCues, NumPorts);
+t_cent_out_correct_sort = cell(NumCues, NumPorts);
+HD_correct_sort         = cell(NumCues, NumPorts);
+for i = 1:NumCues
     for j = 1:NumPorts
         % find this condition
-        ind_ij = find(FP_correct==FPs(i) & Port_correct==Ports(j));
+        ind_ij = find(Cue_correct==Cues(i) & Port_correct==Ports(j));
 
         t_cent_in_correct_sort{i,j}  = t_cent_in_correct(ind_ij);
         t_cent_out_correct_sort{i,j} = t_cent_out_correct(ind_ij);
-        RT_correct_sort{i,j}         = RT_correct(ind_ij);
+        HD_correct_sort{i,j}         = HD_correct(ind_ij);
 
         % sort order by hold duration
-        [RT_correct_sort{i,j}, ind_sort] = sort(RT_correct_sort{i,j});
+        [HD_correct_sort{i,j}, ind_sort] = sort(HD_correct_sort{i,j});
 
         t_cent_in_correct_sort{i,j}  = t_cent_in_correct_sort{i,j}(ind_sort);
         t_cent_out_correct_sort{i,j} = t_cent_out_correct_sort{i,j}(ind_sort);
     end
 end
-RT_cent_in_correct_sort  = RT_correct_sort;
-RT_cent_out_correct_sort = RT_correct_sort;
+HD_cent_in_correct_sort  = HD_correct_sort;
+HD_cent_out_correct_sort = HD_correct_sort;
 
 % 1.1.2 Premature trials
 
@@ -110,25 +112,25 @@ RT_cent_out_correct_sort = RT_correct_sort;
 ind_premature        = find(strcmp(rb.Outcome, 'Premature'));
 t_cent_in_premature  = t_cent_in(ind_premature);
 t_cent_out_premature = t_cent_out(ind_premature);
-FP_premature         = shape_it(rb.Foreperiods(ind_premature));
+Cue_premature        = shape_it(rb.CueIndex(ind_premature));
 Port_premature       = shape_it(rb.PortCorrect(ind_premature));
 
 HD_premature         = t_cent_out_premature - t_cent_in_premature;
 
 % initialize sorted cells, sorted by FPs and Ports, ordered by hold duration
-t_cent_in_premature_sort  = cell(NumFPs, NumPorts);
-t_cent_out_premature_sort = cell(NumFPs, NumPorts);
-HD_premature_sort    = cell(NumFPs, NumPorts);
-FP_premature_sort    = cell(NumFPs, NumPorts);
-Port_premature_sort  = cell(NumFPs, NumPorts);
-for i = 1:NumFPs
+t_cent_in_premature_sort  = cell(NumCues, NumPorts);
+t_cent_out_premature_sort = cell(NumCues, NumPorts);
+HD_premature_sort    = cell(NumCues, NumPorts);
+Cue_premature_sort   = cell(NumCues, NumPorts);
+Port_premature_sort  = cell(NumCues, NumPorts);
+for i = 1:NumCues
     for j = 1:NumPorts
         % find this condition
-        ind_ij = find(FP_premature==FPs(i) & Port_premature==Ports(j));
+        ind_ij = find(Cue_premature==Cues(i) & Port_premature==Ports(j));
 
         t_cent_in_premature_sort{i,j}  = t_cent_in_premature(ind_ij);
         t_cent_out_premature_sort{i,j} = t_cent_out_premature(ind_ij);
-        FP_premature_sort{i,j}         = FP_premature(ind_ij);
+        Cue_premature_sort{i,j}        = Cue_premature(ind_ij);
         Port_premature_sort{i,j}       = Port_premature(ind_ij);
 
         HD_premature_sort{i,j}         = HD_premature(ind_ij);
@@ -138,7 +140,7 @@ for i = 1:NumFPs
 
         t_cent_in_premature_sort{i,j}  = t_cent_in_premature_sort{i,j}(ind_sort);
         t_cent_out_premature_sort{i,j} = t_cent_out_premature_sort{i,j}(ind_sort);
-        FP_premature_sort{i,j}         = FP_premature_sort{i,j}(ind_sort);
+        Cue_premature_sort{i,j}        = Cue_premature_sort{i,j}(ind_sort);
         Port_premature_sort{i,j}       = Port_premature_sort{i,j}(ind_sort);
     end
 end
@@ -148,25 +150,25 @@ t_cent_in_premature  = cell(1, NumPorts);
 t_cent_out_premature = cell(1, NumPorts);
 HD_cent_in_premature  = cell(1, NumPorts);
 HD_cent_out_premature = cell(1, NumPorts);
-FP_cent_in_premature  = cell(1, NumPorts);
-FP_cent_out_premature = cell(1, NumPorts);
+Cue_cent_in_premature  = cell(1, NumPorts);
+Cue_cent_out_premature = cell(1, NumPorts);
 
 for j = 1:NumPorts
-    t_cent_in_premature{j}   = cell2mat(t_cent_in_premature_sort(:,j));
-    t_cent_out_premature{j}  = cell2mat(t_cent_out_premature_sort(:,j));
-    HD_cent_in_premature{j}  = cell2mat(HD_premature_sort(:,j));
-    HD_cent_out_premature{j} = cell2mat(HD_premature_sort(:,j));
-    FP_cent_in_premature{j}  = cell2mat(FP_premature_sort(:,j));
-    FP_cent_out_premature{j} = cell2mat(FP_premature_sort(:,j));
+    t_cent_in_premature{j}    = cell2mat(t_cent_in_premature_sort(:,j));
+    t_cent_out_premature{j}   = cell2mat(t_cent_out_premature_sort(:,j));
+    HD_cent_in_premature{j}   = cell2mat(HD_premature_sort(:,j));
+    HD_cent_out_premature{j}  = cell2mat(HD_premature_sort(:,j));
+    Cue_cent_in_premature{j}  = cell2mat(Cue_premature_sort(:,j));
+    Cue_cent_out_premature{j} = cell2mat(Cue_premature_sort(:,j));
 
     [~, ind_sort] = sort(HD_cent_in_premature{j});
 
-    t_cent_in_premature{j}   = t_cent_in_premature{j}(ind_sort);
-    t_cent_out_premature{j}  = t_cent_out_premature{j}(ind_sort);
-    HD_cent_in_premature{j}  = HD_cent_in_premature{j}(ind_sort);
-    HD_cent_out_premature{j} = HD_cent_out_premature{j}(ind_sort);
-    FP_cent_in_premature{j}  = FP_cent_in_premature{j}(ind_sort);
-    FP_cent_out_premature{j} = FP_cent_out_premature{j}(ind_sort);
+    t_cent_in_premature{j}    = t_cent_in_premature{j}(ind_sort);
+    t_cent_out_premature{j}   = t_cent_out_premature{j}(ind_sort);
+    HD_cent_in_premature{j}   = HD_cent_in_premature{j}(ind_sort);
+    HD_cent_out_premature{j}  = HD_cent_out_premature{j}(ind_sort);
+    Cue_cent_in_premature{j}  = Cue_cent_in_premature{j}(ind_sort);
+    Cue_cent_out_premature{j} = Cue_cent_out_premature{j}(ind_sort);
 end
 
 % 1.1.3 Late trials
@@ -175,26 +177,26 @@ end
 ind_late        = find(strcmp(rb.Outcome, 'Late'));
 t_cent_in_late  = t_cent_in(ind_late);
 t_cent_out_late = t_cent_out(ind_late);
-FPs_late        = shape_it(rb.Foreperiods(ind_late));
+Cues_late       = shape_it(rb.CueIndex(ind_late));
 Ports_late      = shape_it(rb.PortCorrect(ind_late));
 
 HD_late         = t_cent_out_late - t_cent_in_late;
 
 % initialize sorted cells, sorted by FPs and Ports
-HD_late_sort         = cell(NumFPs, NumPorts);
-FP_late_sort         = cell(NumFPs, NumPorts);
-Port_late_sort       = cell(NumFPs, NumPorts);
-t_cent_in_late_sort  = cell(NumFPs, NumPorts);
-t_cent_out_late_sort = cell(NumFPs, NumPorts);
+HD_late_sort         = cell(NumCues, NumPorts);
+Cue_late_sort         = cell(NumCues, NumPorts);
+Port_late_sort       = cell(NumCues, NumPorts);
+t_cent_in_late_sort  = cell(NumCues, NumPorts);
+t_cent_out_late_sort = cell(NumCues, NumPorts);
 
-for i = 1:NumFPs
+for i = 1:NumCues
     for j = 1:NumPorts
         % find this condition
-        ind_ij = find(FPs_late==FPs(i) & Ports_late==Ports(j));
+        ind_ij = find(Cues_late==Cues(i) & Ports_late==Ports(j));
 
         t_cent_in_late_sort{i,j}  = t_cent_in_late(ind_ij);
         t_cent_out_late_sort{i,j} = t_cent_out_late(ind_ij);
-        FP_late_sort{i,j}         = FPs_late(ind_ij);
+        Cue_late_sort{i,j}        = Cues_late(ind_ij);
         Port_late_sort{i,j}       = Ports_late(ind_ij);
 
         HD_late_sort{i,j}         = HD_late(ind_ij);
@@ -204,75 +206,72 @@ for i = 1:NumFPs
 
         t_cent_in_late_sort{i,j}  = t_cent_in_late_sort{i,j}(ind_sort);
         t_cent_out_late_sort{i,j} = t_cent_out_late_sort{i,j}(ind_sort);
-        FP_late_sort{i,j}         = FP_late_sort{i,j}(ind_sort);
+        Cue_late_sort{i,j}         = Cue_late_sort{i,j}(ind_sort);
         Port_late_sort{i,j}       = Port_late_sort{i,j}(ind_sort);
     end
 end
 
 % gather data in sorted order, grouped by ports
-t_cent_in_late   = cell(1, NumPorts);
-t_cent_out_late  = cell(1, NumPorts);
+t_cent_in_late  = cell(1, NumPorts);
+t_cent_out_late = cell(1, NumPorts);
 HD_cent_in_late  = cell(1, NumPorts);
 HD_cent_out_late = cell(1, NumPorts);
-FP_cent_in_late  = cell(1, NumPorts);
-FP_cent_out_late = cell(1, NumPorts);
+Cue_cent_in_late  = cell(1, NumPorts);
+Cue_cent_out_late = cell(1, NumPorts);
 
 for j = 1:NumPorts
     t_cent_in_late{j}  = cell2mat(t_cent_in_late_sort(:,j));
     t_cent_out_late{j} = cell2mat(t_cent_out_late_sort(:,j));
     HD_cent_in_late{j}  = cell2mat(HD_late_sort(:,j));
     HD_cent_out_late{j} = cell2mat(HD_late_sort(:,j));
-    FP_cent_in_late{j}  = cell2mat(FP_late_sort(:,j));
-    FP_cent_out_late{j} = cell2mat(FP_late_sort(:,j));
+    Cue_cent_in_late{j}  = cell2mat(Cue_late_sort(:,j));
+    Cue_cent_out_late{j} = cell2mat(Cue_late_sort(:,j));
 end
 
-% 1.1.4 Probe trials
+% 1.1.4 All performance
+t_cent_in_allperf  = t_cent_in;
+t_cent_out_allperf = t_cent_out;
+Cue_allperf        = shape_it(rb.CueIndex);
+Port_allperf       = shape_it(rb.PortCorrect);
 
-% Probe trials
-ind_probe        = find(strcmp(rb.Outcome, 'Probe'));
-t_cent_in_probe  = t_cent_in(ind_probe);
-t_cent_out_probe = t_cent_out(ind_probe);
-Ports_probe      = shape_it(rb.PortCorrect(ind_probe));
+HD_allperf         = t_cent_out_allperf - t_cent_in_allperf;
 
-HD_probe         = t_cent_out_probe - t_cent_in_probe;
+% initialize sorted cells, sorted by FPs and Ports, ordered by reaction time
+t_cent_in_allperf_sort  = cell(NumCues, NumPorts);
+t_cent_out_allperf_sort = cell(NumCues, NumPorts);
+HD_allperf_sort         = cell(NumCues, NumPorts);
+for i = 1:NumCues
+    for j = 1:NumPorts
+        % find this condition
+        ind_ij = find(Cue_allperf==Cues(i) & Port_allperf==Ports(j));
 
-% initialize sorted cells, sorted by FPs and Ports
-HD_probe_sort         = cell(1, NumPorts);
-Port_probe_sort       = cell(1, NumPorts);
-t_cent_in_probe_sort  = cell(1, NumPorts);
-t_cent_out_probe_sort = cell(1, NumPorts);
+        t_cent_in_allperf_sort{i,j}  = t_cent_in_allperf(ind_ij);
+        t_cent_out_allperf_sort{i,j} = t_cent_out_allperf(ind_ij);
+        HD_allperf_sort{i,j}         = HD_allperf(ind_ij);
 
-for j = 1:NumPorts
-    % find this condition
-    ind_j = find(Ports_probe==Ports(j));
+        % sort order by hold duration
+        [HD_allperf_sort{i,j}, ind_sort] = sort(HD_allperf_sort{i,j});
 
-    t_cent_in_probe_sort{j}  = t_cent_in_probe(ind_j);
-    t_cent_out_probe_sort{j} = t_cent_out_probe(ind_j);
-    Port_probe_sort{j}       = Ports_probe(ind_j);
-
-    HD_probe_sort{j}         = HD_probe(ind_j);
-
-    % sort by hold duration
-    [HD_probe_sort{j}, ind_sort] = sort(HD_probe_sort{j});
-
-    t_cent_in_probe_sort{j}  = t_cent_in_probe_sort{j}(ind_sort);
-    t_cent_out_probe_sort{j} = t_cent_out_probe_sort{j}(ind_sort);
-    Port_probe_sort{j}       = Port_probe_sort{j}(ind_sort);
+        t_cent_in_allperf_sort{i,j}  = t_cent_in_allperf_sort{i,j}(ind_sort);
+        t_cent_out_allperf_sort{i,j} = t_cent_out_allperf_sort{i,j}(ind_sort);
+    end
 end
+HD_cent_in_allperf_sort  = HD_allperf_sort;
+HD_cent_out_allperf_sort = HD_allperf_sort;
 
 %% 1.2 Align to choice-in
 
 % Choice
-tmin          = 200; % allow at least 0.2 second between a successful cent_out and poke
-tmax          = 2000; % allow at most 2 second between a successful cent_out and poke
+tmin       = 200; % allow at least 0.2 second between a successful cent_out and poke
+tmax       = 2000; % allow at most 2 second between a successful cent_out and poke
 
-ind_choice    = find(strcmp(rb.Labels, 'PokeChoiceIn'));
-t_choice      = shape_it(rb.EventTimings(rb.EventMarkers==ind_choice));
+ind_choice = find(strcmp(rb.Labels, 'PokeChoiceIn'));
+t_choice   = shape_it(rb.EventTimings(rb.EventMarkers==ind_choice));
 disp(['Number of Choice poke-in is ' num2str(length(t_choice))]);
 
 % 1.2.1 Rewarded choice poke (correct trials)
 
-FP_choice_correct   = nan(1, length(t_choice)); % find out choice_in FP associated with each reward
+Cue_choice_correct  = nan(1, length(t_choice)); % find out choice_in FP associated with each reward
 Port_choice_correct = nan(1, length(t_choice)); % find out choice_in Port associated with each reward
 MT_correct          = nan(1, length(t_choice));
 
@@ -283,7 +282,7 @@ for i = 1:length(t_choice)
         MT_correct(i) = dt(1);
         ind = find(t_cent_out_correct==t_choice(i)-dt(end)); % find this trial number
         if ~isempty(ind)
-            FP_choice_correct(i)   = FP_correct(ind);
+            Cue_choice_correct(i)  = Cue_correct(ind);
             Port_choice_correct(i) = Port_correct(ind);
         else
             disp('Not found')
@@ -291,10 +290,10 @@ for i = 1:length(t_choice)
     end
 end
 
-ind_valid = ~isnan(MT_correct) & ~isnan(FP_choice_correct) & ~isnan(Port_choice_correct);
+ind_valid = ~isnan(MT_correct) & ~isnan(Cue_choice_correct) & ~isnan(Port_choice_correct);
 MT_correct          = MT_correct(ind_valid);
 t_choice_correct    = t_choice(ind_valid);
-FP_choice_correct   = FP_choice_correct(ind_valid);
+Cue_choice_correct  = Cue_choice_correct(ind_valid);
 Port_choice_correct = Port_choice_correct(ind_valid);
 
 % Check movement time distribution
@@ -305,11 +304,11 @@ xlabel('Movement time (ms)');
 ylabel('Count');
 
 % group choice according to FP and Port, order by MT
-t_choice_correct_sort = cell(NumFPs, NumPorts);
-MT_correct_sort       = cell(NumFPs, NumPorts);
-for i = 1:NumFPs
+t_choice_correct_sort = cell(NumCues, NumPorts);
+MT_correct_sort       = cell(NumCues, NumPorts);
+for i = 1:NumCues
     for j = 1:NumPorts
-        ind_ij = find(FP_choice_correct==FPs(i) & Port_choice_correct==Ports(j));
+        ind_ij = find(Cue_choice_correct==Cues(i) & Port_choice_correct==Ports(j));
         t_choice_correct_sort{i,j} = t_choice_correct(ind_ij);
         MT_correct_sort{i,j}       = MT_correct(ind_ij);
 
@@ -324,11 +323,11 @@ t_choice_correct = t_choice_correct_sort;
 % 1.2.2 Non-rewarded choice poke (wrong or probe trials)
 
 ind_noreward         = find(~strcmp(rb.Outcome, 'Correct'));
-FP_choice_noreward   = nan(1, length(t_choice)); % find out choice_in FP associated with each reward
+Cue_choice_noreward  = nan(1, length(t_choice)); % find out choice_in FP associated with each reward
 Port_choice_noreward = nan(1, length(t_choice)); % find out choice_in Port associated with each reward
 
 t_cent_out_noreward = t_cent_out(ind_noreward);
-FP_noreward         = shape_it(rb.Foreperiods(ind_noreward));
+Cue_noreward        = shape_it(rb.CueIndex(ind_noreward));
 Port_noreward       = shape_it(rb.PortChosen(ind_noreward));
 
 MT_noreward         = nan(1, length(t_choice));
@@ -340,7 +339,7 @@ for i = 1:length(t_choice)
         MT_noreward(i) = dt(1);
         ind = find(t_cent_out_noreward==t_choice(i)-dt(end));
         if ~isempty(ind)
-            FP_choice_noreward(i)   = FP_noreward(ind);
+            Cue_choice_noreward(i)  = Cue_noreward(ind);
             Port_choice_noreward(i) = Port_noreward(ind);
         else
             disp('Not found')
@@ -348,10 +347,10 @@ for i = 1:length(t_choice)
     end
 end
 
-ind_valid = ~isnan(MT_noreward) & ~isnan(FP_choice_noreward) & ~isnan(Port_choice_noreward);
+ind_valid = ~isnan(MT_noreward) & ~isnan(Cue_choice_noreward) & ~isnan(Port_choice_noreward);
 MT_noreward          = MT_noreward(ind_valid);
 t_choice_noreward    = t_choice(ind_valid);
-FP_choice_noreward   = FP_choice_noreward(ind_valid);
+Cue_choice_noreward  = Cue_choice_noreward(ind_valid);
 Port_choice_noreward = Port_choice_noreward(ind_valid);
 
 % Check movement time distribution
@@ -378,16 +377,62 @@ end
 MT_noreward = MT_noreward_sort;
 t_choice_noreward = t_choice_noreward_sort;
 
+% 1.2.3 All performance choice poke
+
+Cue_choice_allperf  = nan(1, length(t_choice)); % find out choice_in FP associated with each reward
+Port_choice_allperf = nan(1, length(t_choice)); % find out choice_in Port associated with each reward
+MT_allperf          = nan(1, length(t_choice));
+
+for i = 1:length(t_choice)
+    dt = t_choice(i) - t_cent_out_allperf;
+    dt = dt(dt>tmin & dt<tmax); % reward must be collected within 2 sec after a allperf cent_out (not limited in task)
+    if ~isempty(dt)
+        MT_allperf(i) = dt(1);
+        ind = find(t_cent_out_allperf==t_choice(i)-dt(end)); % find this trial number
+        if ~isempty(ind)
+            Cue_choice_allperf(i)  = Cue_allperf(ind);
+            Port_choice_allperf(i) = Port_allperf(ind);
+        else
+            disp('Not found')
+        end
+    end
+end
+
+ind_valid = ~isnan(MT_allperf) & ~isnan(Cue_choice_allperf) & ~isnan(Port_choice_allperf);
+MT_allperf          = MT_allperf(ind_valid);
+t_choice_allperf    = t_choice(ind_valid);
+Cue_choice_allperf  = Cue_choice_allperf(ind_valid);
+Port_choice_allperf = Port_choice_allperf(ind_valid);
+
+% group choice according to FP and Port, order by MT
+t_choice_allperf_sort = cell(NumCues, NumPorts);
+MT_allperf_sort       = cell(NumCues, NumPorts);
+for i = 1:NumCues
+    for j = 1:NumPorts
+        ind_ij = find(Cue_choice_allperf==Cues(i) & Port_choice_allperf==Ports(j));
+        t_choice_allperf_sort{i,j} = t_choice_allperf(ind_ij);
+        MT_allperf_sort{i,j}       = MT_allperf(ind_ij);
+
+        % rank them
+        [MT_allperf_sort{i,j}, ind_sort] = sort(MT_allperf_sort{i,j});
+        t_choice_allperf_sort{i,j}       = t_choice_allperf_sort{i,j}(ind_sort);
+    end
+end
+MT_allperf = MT_allperf_sort;
+t_choice_allperf = t_choice_allperf_sort;
+
 %% 1.3 Align to trigger stimulus
 
 %% Trigger
 ind_trig = find(strcmp(rb.Labels, 'Trigger'));
 t_trig   = shape_it(rb.EventTimings(rb.EventMarkers==ind_trig)); % trigger time in ms.
+length(t_trig)
 
 Type_trig = cell(1, length(t_trig));
-FP_trig   = nan(1, length(t_trig));
 Port_trig = nan(1, length(t_trig));
-RT_trig   = nan(1, length(t_trig)); % reaction time (used for ranking later)
+Cue_trig  = nan(1, length(t_trig));
+RT_trig   = nan(1, length(t_trig)); % reaction time
+HD_trig   = nan(1, length(t_trig)); % hold duration (used for ranking later)
 
 for i = 1:length(t_trig)
     % find the most recent cent_in
@@ -395,11 +440,21 @@ for i = 1:length(t_trig)
     if ~isempty(ind_cent_in_recent) && t_trig(i)-t_cent_in(ind_cent_in_recent)<2500
         % check the condition
         Type_trig{i} = rb.Outcome{ind_cent_in_recent};
-        FP_trig(i)   = rb.Foreperiods(ind_cent_in_recent);
         Port_trig(i) = rb.PortCorrect(ind_cent_in_recent);
-        ind_cent_out_following = find(t_cent_out>t_trig(i), 1, 'first');
-        if ~isempty(ind_cent_out_following)
-            RT_trig(i) = t_cent_out(ind_cent_out_following) - t_trig(i);
+        Cue_trig(i)  = rb.CueIndex(ind_cent_in_recent);
+        switch Cue_trig(i)
+            case 0
+                ind_cent_out_ahead = find(t_cent_out<t_trig(i), 1, 'last');
+                if ~isempty(ind_cent_out_ahead)
+                    RT_trig(i) = t_cent_out(ind_cent_out_ahead) - t_trig(i);
+                    HD_trig(i) = t_cent_out(ind_cent_out_ahead) - t_cent_in(ind_cent_in_recent);
+                end
+            case 1
+                ind_cent_out_following = find(t_cent_out>t_trig(i), 1, 'first');
+                if ~isempty(ind_cent_out_following)
+                    RT_trig(i) = t_cent_out(ind_cent_out_following) - t_trig(i);
+                    HD_trig(i) = t_cent_out(ind_cent_out_following) - t_cent_in(ind_cent_in_recent);
+                end
         end
     else
         Type_trig{i} = 'NaN';
@@ -407,34 +462,34 @@ for i = 1:length(t_trig)
 end
 
 % 1.3.1 Correct trigger response
-% trigger according to FPs
-t_trig_correct_sort  = cell(NumFPs, NumPorts);
-RT_trig_correct_sort = cell(NumFPs, NumPorts);
+% both cue and uncue trials (for uncue trials, trigger tone was delivered after cent-out)
+t_trig_correct_sort  = cell(NumCues, NumPorts);
+RT_trig_correct_sort = cell(NumCues, NumPorts);
+HD_trig_correct_sort = cell(NumCues, NumPorts);
 
-for i = 1:NumFPs
+for i = 1:NumCues
     for j = 1:NumPorts
         % sort trigger (to plot)
-        t_trig_correct_sort{i,j}  = t_trig(strcmp(Type_trig, 'Correct') & FP_trig==FPs(i) & Port_trig==Ports(j));
-        RT_trig_correct_sort{i,j} = RT_trig(strcmp(Type_trig, 'Correct') & FP_trig==FPs(i) & Port_trig==Ports(j));
+        t_trig_correct_sort{i,j}  = t_trig(strcmp(Type_trig, 'Correct') & Cue_trig==Cues(i) & Port_trig==Ports(j));
+        RT_trig_correct_sort{i,j} = RT_trig(strcmp(Type_trig, 'Correct') & Cue_trig==Cues(i) & Port_trig==Ports(j));
+        HD_trig_correct_sort{i,j} = HD_trig(strcmp(Type_trig, 'Correct') & Cue_trig==Cues(i) & Port_trig==Ports(j));
         % sort according to reaction time
-        [RT_trig_correct_sort{i,j}, ind_sort] = sort(RT_trig_correct_sort{i,j});
+        [HD_trig_correct_sort{i,j}, ind_sort] = sort(HD_trig_correct_sort{i,j});
         t_trig_correct_sort{i,j}  = t_trig_correct_sort{i,j}(ind_sort);
+        RT_trig_correct_sort{i,j} = RT_trig_correct_sort{i,j}(ind_sort);
     end
 end
 
 % 1.3.2 Late trigger response
 t_trig_late  = cell(1, NumPorts);
 RT_trig_late = cell(1, NumPorts);
-FP_trig_late = cell(1, NumPorts);
 for j = 1:NumPorts
     % group trigger (to plot)
     t_trig_late{j}  = t_trig(strcmp(Type_trig, 'Late') & Port_trig==Ports(j));
     RT_trig_late{j} = RT_trig(strcmp(Type_trig, 'Late') & Port_trig==Ports(j));
-    FP_trig_late{j} = FP_trig(strcmp(Type_trig, 'Late') & Port_trig==Ports(j));
     % order according to reaction time
     [RT_trig_late{j}, ind_sort] = sort(RT_trig_late{j});
-    t_trig_late{j}  = t_trig_late{j}(ind_sort);
-    FP_trig_late{j}  = FP_trig_late{j}(ind_sort);
+    t_trig_late{j} = t_trig_late{j}(ind_sort);
 end
 
 %% 1.4 Align to init-in and init-out
@@ -466,22 +521,6 @@ dur_init_preerr = InitDur(ismember(PreType, {'Wrong', 'Late', 'Premature'}));
 ShuttleTime         = t_cent_in - t_init_out;
 shuttle_time_precor = ShuttleTime(ismember(PreType, 'Correct'));
 shuttle_time_preerr = ShuttleTime(ismember(PreType, {'Wrong', 'Late', 'Premature'}));
-
-% 
-% % Init-In, ordered by drinking duration in init-port (InitDur)
-% % pre-correct
-% t_init_in_precor = t_init_in(ismember(PreType, 'Correct'));
-% dur_init_precor  = InitDur(ismember(PreType, 'Correct'));
-% [dur_init_precor_sort, ind_sort] = sort(dur_init_precor);
-% t_init_in_precor_sort  = t_init_in_precor(ind_sort);
-% % pre-error
-% t_init_in_preerr  = t_init_in(ismember(PreType, {'Wrong', 'Late', 'Premature'}));
-% dur_init_preerr   = InitDur(ismember(PreType, {'Wrong', 'Late', 'Premature'}));
-% [dur_init_preerr_sort, ind_sort] = sort(dur_init_preerr);
-% t_init_in_preerr_sort  = t_init_in_preerr(ind_sort);
-% % all trials
-% [InitDur_sort, ind_sort] = sort(InitDur);
-% t_init_in_sort  = t_init_in(ind_sort);
 
 % pre-correct
 t_init_in_precor  = t_init_in(ismember(PreType, 'Correct'));
@@ -579,6 +618,7 @@ InitDur_sort    = InitDur(ind_sort);
 %% Summarize
 PSTHOut.ANM_Session = {r.BehaviorClass.Subject, r.BehaviorClass.Session};
 PSTHOut.SpikeNotes  = r.Units.SpikeNotes;
+PSTHOut.TargetFP    = FP;
 
 PSTHOut.TimeDomain.CentIn  = CentInTimeDomain;
 PSTHOut.TimeDomain.CentOut = CentOutTimeDomain;
@@ -588,40 +628,42 @@ PSTHOut.TimeDomain.InitIn  = InitInTimeDomain;
 PSTHOut.TimeDomain.InitOut = InitOutTimeDomain;
 
 %% 3.1 Cent-In
-PSTHOut.CentIn.Labels = ["Correct", "Premature", "Late", "Probe", "All"];
+PSTHOut.CentIn.Labels = ["Correct", "Premature", "Late", "AllPerf", "All"];
 
 PSTHOut.CentIn.Time = cell(1, length(PSTHOut.CentIn.Labels));
 PSTHOut.CentIn.Time{1} = t_cent_in_correct_sort;
 PSTHOut.CentIn.Time{2} = t_cent_in_premature;
 PSTHOut.CentIn.Time{3} = t_cent_in_late;
-PSTHOut.CentIn.Time{4} = t_cent_in_probe_sort;
+PSTHOut.CentIn.Time{4} = t_cent_in_allperf_sort;
 PSTHOut.CentIn.Time{5} = t_cent_in;
 
-PSTHOut.CentIn.FP                = {repmat(FPs', 1, 2), FP_cent_in_premature, FP_cent_in_late, nan, rb.Foreperiods};
-PSTHOut.CentIn.Port              = {repmat(Ports, 3, 1), Ports, Ports, Ports, rb.PortCorrect};
-PSTHOut.CentIn.RT_Correct        = RT_cent_in_correct_sort;
+PSTHOut.CentIn.Cue               = {repmat(Cues', 1, 2), Cue_cent_in_premature, Cue_cent_in_late, repmat(Cues', 1, 2), rb.CueIndex};
+PSTHOut.CentIn.Port              = {repmat(Ports, 2, 1), Ports, Ports, Ports, rb.PortCorrect};
+PSTHOut.CentIn.HD_Correct        = HD_cent_in_correct_sort;
 PSTHOut.CentIn.HoldDur.Premature = HD_cent_in_premature;
 PSTHOut.CentIn.HoldDur.Late      = HD_cent_in_late;
-PSTHOut.CentIn.HoldDur.Probe     = HD_probe_sort;
+PSTHOut.CentIn.HoldDur.AllPerf   = HD_cent_in_allperf_sort;
 
 %% 3.2 Cent-Out
-PSTHOut.CentOut.Labels = ["Correct", "Premature", "Late", "Probe"];
+PSTHOut.CentOut.Labels = ["Correct", "Premature", "Late", "AllPerf"];
 
 PSTHOut.CentOut.Time = cell(1, length(PSTHOut.CentOut.Labels));
 PSTHOut.CentOut.Time{1} = t_cent_out_correct_sort;
 PSTHOut.CentOut.Time{2} = t_cent_out_premature;
 PSTHOut.CentOut.Time{3} = t_cent_out_late;
-PSTHOut.CentOut.Time{4} = t_cent_out_probe_sort;
+PSTHOut.CentOut.Time{4} = t_cent_out_allperf_sort;
 
-PSTHOut.CentOut.FP                = {repmat(FPs', 1, 2), FP_cent_out_premature, FP_cent_out_late, nan};
-PSTHOut.CentOut.Port              = {repmat(Ports, 3, 1), Ports, Ports, Ports};
-PSTHOut.CentOut.RT_Correct        = RT_cent_out_correct_sort;
+PSTHOut.CentOut.Cue               = {repmat(Cues', 1, 2), Cue_cent_out_premature, Cue_cent_out_late, repmat(Cues', 1, 2)};
+PSTHOut.CentOut.Port              = {repmat(Ports, 2, 1), Ports, Ports, Ports};
+PSTHOut.CentOut.HD_Correct        = HD_cent_out_correct_sort;
 PSTHOut.CentOut.HoldDur.Premature = HD_cent_out_premature;
 PSTHOut.CentOut.HoldDur.Late      = HD_cent_out_late;
-PSTHOut.CentOut.HoldDur.Probe     = HD_probe_sort;
+PSTHOut.CentOut.HoldDur.AllPerf   = HD_cent_out_allperf_sort;
 
 %% 3.3 Choice-In
 PSTHOut.ChoiceIn.Time                   = t_choice;
+PSTHOut.ChoiceIn.AllPoke.Time           = t_choice_allperf;
+PSTHOut.ChoiceIn.AllPoke.MoveTime       = MT_allperf;
 PSTHOut.ChoiceIn.RewardPoke.Time        = t_choice_correct; % it is a cell now!
 PSTHOut.ChoiceIn.RewardPoke.MoveTime    = MT_correct;       % it is a cell now!
 PSTHOut.ChoiceIn.NonrewardPoke.Time     = t_choice_noreward;
@@ -634,8 +676,8 @@ PSTHOut.Triggers.Time{1} = t_trig_correct_sort;
 PSTHOut.Triggers.Time{2} = t_trig_late;
 
 PSTHOut.Triggers.RT      = {RT_trig_correct_sort, RT_trig_late};
-PSTHOut.Triggers.FP      = {repmat(FPs', 1, 2), FP_trig_late};
-PSTHOut.Triggers.Port    = {repmat(Ports, 3, 1), Ports};
+PSTHOut.Triggers.Port    = {repmat(Ports, 2, 1), Ports};
+PSTHOut.Triggers.Cue     = {repmat(Cues', 1, 2), [1 1]};
 
 %% 3.5 InitIn & InitOut
 PSTHOut.InitIn.Time        = t_init_in_sort;
@@ -674,8 +716,8 @@ for iku = 1:length(ku_all)
     disp(['Computing this unit: ' num2str(ku)])
     disp('##########################################')
 
-    PSTH = SpikesGPS.SRT.ComputePSTH(r, PSTHOut, ku);
-    SpikesGPS.SRT.PlotRasterPSTH(r, PSTHOut, PSTH, ku);
+    PSTH = SpikesGPS.Timing.ComputePSTH(r, PSTHOut, ku);
+    SpikesGPS.Timing.PlotRasterPSTH(r, PSTHOut, PSTH, ku);
     PSTHOut.PSTH(iku) = PSTH;
 end
 

@@ -34,13 +34,6 @@ if PokeInitInEphys(end) > PokeCentInEphys(end) % over-taking occurred
     PokeInitInEphys(end) = [];
 end
 
-% Update EventOut
-EventOut.Onset{strcmp(EventOut.EventsLabels, 'PokeCentIn')}   = PokeCentInEphys;
-EventOut.Onset{strcmp(EventOut.EventsLabels, 'PokeChoiceIn')} = PokeChoiceInEphys;
-EventOut.Onset{strcmp(EventOut.EventsLabels, 'PokeInitIn')}   = PokeInitInEphys;
-
-NumTrialsEphys    = length(PokeCentInEphys);
-
 % these are times for poke-in center, choice and init recorded in bpod
 Beh = BehClass.BehavTable;
 
@@ -51,13 +44,13 @@ PokeInitInBeh   = (Beh.TrialStartTime+Beh.InitInTime)*1000;
 PokeInitOutBeh  = (Beh.TrialStartTime+Beh.InitOutTime)*1000;
 TriggerBeh      = (Beh.TrialStartTime+Beh.TriggerCueTime)*1000;
 
-PerformanceBeh  = Beh.Outcome;
-TrialIndexBeh   = Beh.Trials;
-PortCorrectBeh  = Beh.PortCorrect;
-PortChosenBeh   = Beh.PortChosen;
-FPBeh           = Beh.FP;
-CueBeh          = Beh.Cued;
-StageBeh        = Beh.Stage;
+PerformanceBeh = Beh.Outcome;
+TrialIndexBeh  = Beh.Trials;
+PortCorrectBeh = Beh.PortCorrect;
+PortChosenBeh  = Beh.PortChosen;
+FPBeh          = Beh.FP;
+CueBeh         = Beh.Cued;
+StageBeh       = Beh.Stage;
 
 %
 % Start to map
@@ -66,37 +59,30 @@ StageBeh        = Beh.Stage;
 % IndMatched gives the matching index. 
 
 IndMatched = findseqmatchrev(PokeCentInBeh, PokeCentInEphys, 0, 1); % note that IndMatched has the same length as PokeCentInEphys
-IndNaN     = find(isnan(IndMatched));
 IndValid   = find(~isnan(IndMatched));
 
+PokeCentInEphys   = PokeCentInEphys(IndValid);
+PokeInitInEphys   = PokeInitInEphys(IndValid);
+
+IndMatchedChoice  = findseqmatchrev(PokeChoiceInBeh, PokeChoiceInEphys, 0, 1); % note that IndMatched has the same length as PokeCentInEphys
+IndValidChoice    = ~isnan(IndMatchedChoice);
+PokeChoiceInEphys = PokeChoiceInEphys(IndValidChoice);
+
+% Update EventOut
+EventOut.Onset{strcmp(EventOut.EventsLabels, 'PokeCentIn')}   = PokeCentInEphys;
+EventOut.Onset{strcmp(EventOut.EventsLabels, 'PokeChoiceIn')} = PokeChoiceInEphys;
+EventOut.Onset{strcmp(EventOut.EventsLabels, 'PokeInitIn')}   = PokeInitInEphys;
+
+NumTrialsEphys = length(PokeCentInEphys);
+
 %
-TrialIndexEphys                = 1:NumTrialsEphys; % this is 1 to the total number of poke-cent recorded in ephys
-TrialIndexEphys(IndNaN)        = NaN; % some ephys-poke-cent cannot be mapped
-TrialIndexEphys(IndValid)      = TrialIndexBeh(IndMatched(IndValid)); % only for these presses we can find matching ones in behavior
-
-PerformanceEphys               = strings(1, NumTrialsEphys); % each trial corresponds to a behavioral outcome
-PerformanceEphys(IndNaN)       = "";
-PerformanceEphys(IndValid)     = PerformanceBeh(IndMatched(IndValid));
-
-CueEphys                       = ones(1, NumTrialsEphys); % each press corresponds to a behavioral outcome
-CueEphys(IndNaN)               = NaN;
-CueEphys(IndValid)             = CueBeh(IndMatched(IndValid));
-
-FPEphys                        = zeros(1, NumTrialsEphys); % each press corresponds to a behavioral outcome
-FPEphys(IndNaN)                = NaN;
-FPEphys(IndValid)              = FPBeh(IndMatched(IndValid));
-
-PortCorrectEphys               = zeros(1, NumTrialsEphys); % each press corresponds to a behavioral outcome
-PortCorrectEphys(IndNaN)       = NaN;
-PortCorrectEphys(IndValid)     = PortCorrectBeh(IndMatched(IndValid));
-
-PortChosenEphys                = zeros(1, NumTrialsEphys); % each press corresponds to a behavioral outcome
-PortChosenEphys(IndNaN)        = NaN;
-PortChosenEphys(IndValid)      = PortChosenBeh(IndMatched(IndValid));
-
-StageEphys                     = zeros(1, NumTrialsEphys); % each press corresponds to a behavioral outcome
-StageEphys(IndNaN)             = NaN;
-StageEphys(IndValid)           = StageBeh(IndMatched(IndValid));
+TrialIndexEphys  = TrialIndexBeh(IndMatched(IndValid)); % only for these presses we can find matching ones in behavior
+PerformanceEphys = PerformanceBeh(IndMatched(IndValid));
+CueEphys         = CueBeh(IndMatched(IndValid));
+FPEphys          = FPBeh(IndMatched(IndValid));
+PortCorrectEphys = PortCorrectBeh(IndMatched(IndValid));
+PortChosenEphys  = PortChosenBeh(IndMatched(IndValid));
+StageEphys       = StageBeh(IndMatched(IndValid));
 
 % add information to EventOut
 EventOut.TrialIndexEphys       = TrialIndexEphys;
@@ -198,12 +184,14 @@ line([PokeCentOutMapped' PokeCentOutMapped'], [4 6]', 'color', 'm')
 set(gca, 'ylim', [4 6])
 ylabel('Poke-out center')
 
-subplot(2, 1, 2)
-plot(PokeCentInEphys, 5, 'ko');
-hold on
-line([TriggerMapped' TriggerMapped'], [4 6]', 'color', 'm')
-set(gca, 'ylim', [4 6])
-ylabel('Trigger')
+if ~isempty(TriggerMapped) % In Autoshaping task, there is no trigger
+    subplot(2, 1, 2)
+    plot(PokeCentInEphys, 5, 'ko');
+    hold on
+    line([TriggerMapped' TriggerMapped'], [4 6]', 'color', 'm')
+    set(gca, 'ylim', [4 6])
+    ylabel('Trigger')
+end
 
 % add event time info to EventOut
 if isempty(find(strcmp(EventOut.EventsLabels, 'Trigger'), 1))

@@ -63,6 +63,8 @@ video_accum = 0;
 wait_bar = waitbar(0, sprintf('1 / %d', length(tBehEvent)), 'Name', sprintf('Clipping_%s_%s', anm, session));
 for i = 1:length(tBehEvent) % i is also the trial number
 
+    i_trial = BehTable.Trials(i);
+
     if ~isvalid(wait_bar)
         fprintf("\n****** Interrupted ******\n");
         fprintf("%d / %d clips have been generated\n", i-1, length(tBehEvent));
@@ -82,13 +84,16 @@ for i = 1:length(tBehEvent) % i is also the trial number
     % re-create the same video
     switch event
         case 'PortSamplePokeTime'
-            ClipName = sprintf('%s_%s_SamplePokeTrial%03d', anm, session, BehTable.Trials(i));
+            ClipName = sprintf('%s_%s_SamplePokeTrial%03d', anm, session, i_trial);
 
         case 'PortCenterPokeTime'
-            ClipName = sprintf('%s_%s_CenterPokeTrial%03d', anm, session, BehTable.Trials(i));
+            ClipName = sprintf('%s_%s_CenterPokeTrial%03d', anm, session, i_trial);
 
         case 'CentInTime'
-            ClipName = sprintf('%s_%s_HoldTrial%03d_%sView', anm, session, BehTable.Trials(i), view);
+            ClipName = sprintf('%s_%s_HoldTrial%03d_%sView', anm, session, i_trial, view);
+
+        case 'CentOutTime'
+            ClipName = sprintf('%s_%s_ChoiceTrial%03d_%sView', anm, session, i_trial, view);
     end
 
     VidClipFileName = fullfile(thisFolder, [ClipName '.avi']);
@@ -116,8 +121,8 @@ for i = 1:length(tBehEvent) % i is also the trial number
     CentOutTime     =   (BehTable.TrialStartTime(i) + BehTable.CentOutTime(i))*1000    - iFrameTimesBpod(1) - tPre_this;
     ChoicePokeTime  =   (BehTable.TrialStartTime(i) + BehTable.ChoicePokeTime(i))*1000 - iFrameTimesBpod(1) - tPre_this;
 
-    IntOnTime       =   CentInTime + 1000*IntTable.On(IntTable.Trials==i);
-    IntOffTime      =   CentInTime + IntOnTime + 1000*IntTable.Dur(IntTable.Trials==i);
+    IntOnTime       =   CentInTime + 1000*IntTable.On(IntTable.Trials==i_trial);
+    IntOffTime      =   CentInTime + IntOnTime + 1000*IntTable.Dur(IntTable.Trials==i_trial);
 
     poke_state      =   .5*ones(1, length(time_elapsed));
     poke_state(time_elapsed>=CentInTime & time_elapsed<CentOutTime) = 0.2;
@@ -154,7 +159,7 @@ for i = 1:length(tBehEvent) % i is also the trial number
 
     VidMeta.Session     =   session;
     VidMeta.Event       =   event;
-    VidMeta.EventIndex  =   BehTable.Trials(i);
+    VidMeta.EventIndex  =   i_trial;
     VidMeta.EventTime   =   itEvent/1000; % Event time in sec (Bpod)
     VidMeta.FrameTimesB =   tFramesBpod(IndThisClip); % frame time in ms in behavior time
     VidMeta.FrameIndx   =   IndThisClip; % frame index in original video
@@ -211,7 +216,7 @@ for i = 1:length(tBehEvent) % i is also the trial number
 
     text(W-20, 40,  sprintf('%s %s', anm, session), 'color', [255 255 255]/255, 'FontSize', 20, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
     text(W-20, 90,  beh_type, 'color', [255 255 255]/255, 'FontSize', 20, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
-    text(W-20, 140,  sprintf('Trial %03d', BehTable.Trials(i)), 'color', [255 255 255]/255, 'FontSize', 20, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
+    text(W-20, 140,  sprintf('Trial %03d', i_trial), 'color', [255 255 255]/255, 'FontSize', 20, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
     text(W-20, 190,  sprintf('FP: %d ms', BehTable.FP(i)*1000), 'color', [255 255 255]/255, 'FontSize', 20, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
     text(W-20, 240,  sprintf('RT: %d ms', round(1000*BehTable.RT(i))), 'color', [255 255 255]/255, 'FontSize', 20, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
     text(W-20, 290,  thisOutcome, 'color', color.(thisOutcome), 'FontSize', 20, 'fontweight', 'bold', 'HorizontalAlignment', 'right')

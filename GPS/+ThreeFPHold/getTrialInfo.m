@@ -173,7 +173,7 @@ ind_bug = obj.Outcome=="Bug" | obj.FP <= 0;
 
 obj.NumTrials = obj.NumTrials - sum(ind_bug);
 
-obj.Trials                      = (1:obj.NumTrials)';
+obj.Trials(ind_bug)             = [];
 obj.TrialStartTime(ind_bug)     = [];
 
 obj.FP(ind_bug)                 = [];

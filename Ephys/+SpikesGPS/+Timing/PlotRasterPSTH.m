@@ -27,10 +27,12 @@ TriggerTimeDomain = PSTHOut.TimeDomain.Trigger;
 InitInTimeDomain  = PSTHOut.TimeDomain.InitIn;
 InitOutTimeDomain = PSTHOut.TimeDomain.InitOut;
 
-FPs = unique(PSTHOut.CentIn.FP{1});
-NumFPs = length(FPs);
+FP = PSTH.TargetFP;
 
-Ports = unique(PSTHOut.CentIn.Port{1});
+Cues    = unique(PSTHOut.CentIn.Cue{1}, 'stable');
+NumCues = length(Cues);
+
+Ports    = unique(PSTHOut.CentIn.Port{1}, 'stable');
 NumPorts = length(Ports);
 
 %% Colors for plots
@@ -45,7 +47,7 @@ c_precor   = [0 0 0];
 c_preerr   = [160 82 45] / 255;
 
 % For each FP, not used here
-if NumFPs == 2
+if NumCues == 2
     c_FP = [192, 127, 0; 76, 61, 61]/255;
     lw = [1.5 1];
     ls = [":", "-"];
@@ -100,16 +102,18 @@ ind_t_psth   = strcmp(PSTH.CentInLabels, 'tPSTH');
 ind_spkmat   = strcmp(PSTH.CentInLabels, 'SpikeMat');
 ind_t_spkmat = strcmp(PSTH.CentInLabels, 'tSpikeMat');
 ind_t_event  = strcmp(PSTH.CentInLabels, 'tEvents');
-ind_rt       = strcmp(PSTH.CentInLabels, 'RT');
+ind_hd       = strcmp(PSTH.CentInLabels, 'HoldDuration');
 
 % PSTH of correct trials
 y_col1_row1 = 1;
-ha_cent_in_psth = cell(NumFPs, 1);
-for i = 1:NumFPs
-    yshift = y_col1_row1 + (h_psth+0.1)*(NumFPs-i);
+ha_cent_in_psth = cell(NumCues, 1);
+for i = 1:NumCues
+    yshift = y_col1_row1 + (h_psth+0.1)*(NumCues-i);
     ha_cent_in_psth{i} = axes(fig, 'unit', 'centimeters', 'position', [x_col1 yshift w_psth h_psth], 'nextplot', 'add', 'xlim', [-CentInTimeDomain(1) CentInTimeDomain(2)], 'FontSize', 7, 'TickDir', 'Out');
     xline(0, 'Color', c_cent_in, 'LineWidth', 1, 'Alpha', 1);
-    xline(FPs(i)*1000, 'Color', c_trigger, 'LineWidth', 1, 'Alpha', 1);
+    if Cues(i)
+        xline(FP*1000, 'Color', c_trigger, 'LineWidth', 1, 'Alpha', 1);
+    end
     for j = 1:NumPorts
         t_psth_cent_in = PSTH.CentIn{i,j}{ind_t_psth};
         psth_cent_in   = PSTH.CentIn{i,j}{ind_psth};
@@ -117,7 +121,7 @@ for i = 1:NumFPs
         plot(t_psth_cent_in, psth_cent_in, 'color', c_port{j}, 'linewidth', 1);
         FRMax = max([FRMax max(psth_cent_in)]);
     end
-    if i==NumFPs
+    if i==NumCues
         xlabel('Time from cent-in (ms)')
         ylabel('Spks per s')
     else
@@ -128,10 +132,10 @@ end
 axis 'auto y'
 
 % make raster plot
-y_col1_row2 = y_col1_row1 + (h_psth+.1)*NumFPs;
+y_col1_row2 = y_col1_row1 + (h_psth+.1)*NumCues;
 % Plot spike raster of correct trials (all FPs)
-ntrials_cent_in_ij = zeros(NumFPs, NumPorts);
-for i = 1:NumFPs
+ntrials_cent_in_ij = zeros(NumCues, NumPorts);
+for i = 1:NumCues
     for j = 1:NumPorts
         t_event_cent_in = PSTH.CentIn{i,j}{ind_t_event};
         ntrials_cent_in_ij(i,j) = length(t_event_cent_in);
@@ -144,17 +148,17 @@ axes('unit', 'centimeters', 'position', [x_col1 y_col1_row2 w_psth ntrials_cent_
     'xlim', [-CentInTimeDomain(1) CentInTimeDomain(2)], 'ylim', [-ntrials_cent_in 1]);
 % Paint the foreperiod
 k=0;
-for m = 1:NumFPs
+for m = 1:NumCues
     for n = 1:NumPorts
         t_event = PSTH.CentIn{m,n}{ind_t_event};
         spk_mat = PSTH.CentIn{m,n}{ind_spkmat};
         t_mat   = PSTH.CentIn{m,n}{ind_t_spkmat};
-        rt      = PSTH.CentIn{m,n}{ind_rt};
+        hd      = PSTH.CentIn{m,n}{ind_hd};
 
         xx_all = []; % spike times
         yy_all = [];
-        xxrt_all = []; % reaction (cent-out) times
-        yyrt_all = [];
+        xxhd_all = []; % reaction (cent-out) times
+        yyhd_all = [];
         x_choice = []; % choice times
         y_choice = [];
 
@@ -163,8 +167,7 @@ for m = 1:NumFPs
             yy1 = [.1 .9] - k; % spikes
             yy2 = [0 1] - k;   % events
             
-            irt = rt(i); % time from trigger to cent-out
-            xxrt = irt + FPs(m)*1000;
+            xxhd = hd(i);
 
             % register spikes and events
             if isempty(find(isnan(spk_mat(:, i)), 1))
@@ -172,13 +175,14 @@ for m = 1:NumFPs
                     xx_all = [xx_all, xx(i_xx), xx(i_xx), NaN]; % [x1 x1 nan x2 x2 nan x3 x3 nan ... ]
                     yy_all = [yy_all, yy1, NaN];                % [y1 y1 nan y2 y2 nan y3 y3 nan ... ]
                 end
-                xxrt_all = [xxrt_all, xxrt, xxrt, NaN];
-                yyrt_all = [yyrt_all, yy2, NaN];
+                xxhd_all = [xxhd_all, xxhd, xxhd, NaN];
+                yyhd_all = [yyhd_all, yy2, NaN];
             end
 
             % trigger events
-%             fill(1000*[0 TargetFPs(m) TargetFPs(m) 0],[-k -k 1-k 1-k], 'r', 'FaceColor', c_trigger, 'FaceAlpha', 1, 'EdgeColor', 'none');
-            line(1000*[FPs(m) FPs(m)], yy2, 'Color', c_trigger, 'linewidth', 1);
+            if Cues(m)
+                line(1000*[FP FP], yy2, 'Color', c_trigger, 'linewidth', 1);
+            end
 
             % choice time
             it_cent_in = t_event(i);
@@ -192,89 +196,12 @@ for m = 1:NumFPs
             k = k+1;
         end
         line(xx_all, yy_all, 'color', c_port{n}, 'linewidth', .2);
-        line(xxrt_all, yyrt_all, 'color', c_cent_out, 'linewidth', 1);
+        line(xxhd_all, yyhd_all, 'color', c_cent_out, 'linewidth', 1);
         scatter(x_choice, y_choice, 8, 'o', 'filled', 'MarkerFaceColor', c_reward, 'markerfacealpha', 0.5, 'MarkerEdgeColor', 'none');
     end
 end
 xline(0, 'Color', c_cent_in, 'LineWidth', 1, 'Alpha', 1);
 title('Correct', 'fontsize', 7, 'fontweight','bold');
-axis off
-
-% Probe trials
-ind_psth     = strcmp(PSTH.ProbeLabels, 'PSTH');
-ind_t_psth   = strcmp(PSTH.ProbeLabels, 'tPSTH');
-ind_spkmat   = strcmp(PSTH.ProbeLabels, 'SpikeMat');
-ind_t_spkmat = strcmp(PSTH.ProbeLabels, 'tSpikeMat');
-ind_t_event  = strcmp(PSTH.ProbeLabels, 'tEvents');
-ind_hd       = strcmp(PSTH.ProbeLabels, 'HoldDuration');
-
-% PSTH of probe trials
-y_col1_row3 = y_col1_row2 + ntrials_cent_in*rasterheight + 0.5;
-ha_cent_in_psth_probe = axes('unit', 'centimeters', 'position', [x_col1 y_col1_row3 w_psth h_psth], 'nextplot', 'add',...
-    'xlim',  [-CentInTimeDomain(1) CentInTimeDomain(2)], 'xticklabel', [], 'FontSize', 7, 'TickDir', 'Out');
-xline(0, 'Color', c_cent_in, 'LineWidth', 1, 'Alpha', 1);
-
-% plot psth of probe trials if trial number > 3
-for j = 1:NumPorts
-    if length(PSTH.ProbeCentIn{j}{ind_t_event}) > 3
-        plot(PSTH.ProbeCentIn{j}{ind_t_psth}, PSTH.ProbeCentIn{j}{ind_psth}, 'color', c_port{j}, 'linewidth',1);
-    end
-end
-
-% Probe cent-in raster plot
-y_col1_row4 = y_col1_row3 + (h_psth+.1);
-ntrial_probe = sum(cellfun(@(x) length(x{ind_t_event}), PSTH.ProbeCentIn)); % number of trials
-axes('unit', 'centimeters', 'position', [x_col1 y_col1_row4 w_psth ntrial_probe*rasterheight], ...
-    'nextplot', 'add', 'box', 'on', ...
-    'xlim', [-CentInTimeDomain(1) CentInTimeDomain(2)], 'ylim', [-ntrial_probe 1]);
-k = 0;
-for n = 1:NumPorts
-    t_event = PSTH.ProbeCentIn{n}{ind_t_event};
-    spk_mat = PSTH.ProbeCentIn{n}{ind_spkmat};
-    t_mat   = PSTH.ProbeCentIn{n}{ind_t_spkmat};
-    hd      = PSTH.ProbeCentIn{n}{ind_hd};
-
-    xx_all = []; % spike times
-    yy_all = [];
-    xxrt_all = []; % cent-out times
-    yyrt_all = [];
-    x_choice = []; % choice times
-    y_choice = [];
-
-    for i = 1:size(spk_mat, 2)
-        xx = t_mat(spk_mat(:, i)==1);
-        yy1 = [.1 .9] - k; % spikes
-        yy2 = [0 1] - k;   % events
-
-        xxrt = hd(i);
-
-        % register spikes and events
-        if isempty(find(isnan(spk_mat(:, i)), 1))
-            for i_xx = 1:length(xx)
-                xx_all = [xx_all, xx(i_xx), xx(i_xx), NaN]; % [x1 x1 nan x2 x2 nan x3 x3 nan ... ]
-                yy_all = [yy_all, yy1, NaN];                % [y1 y1 nan y2 y2 nan y3 y3 nan ... ]
-            end
-            xxrt_all = [xxrt_all, xxrt, xxrt, NaN];
-            yyrt_all = [yyrt_all, yy2, NaN];
-        end
-
-        % plot port poke time
-        it_choice = t_choice - t_event(i);
-        it_choice = it_choice(it_choice>=-CentInTimeDomain(1) & it_choice<=CentInTimeDomain(2));
-        if ~isempty(it_choice)
-            it_choice = reshape(it_choice,1,[]);
-            x_choice = [x_choice, it_choice];
-            y_choice = [y_choice, (0.5-k)*ones(1,length(it_choice))];
-        end
-        k = k+1;
-    end
-
-    line(xx_all, yy_all, 'color', c_port{n}, 'linewidth', .2)
-    line(xxrt_all, yyrt_all, 'color', c_cent_out, 'linewidth', 1)
-    scatter(x_choice, y_choice, 8, 'o', 'filled','MarkerFaceColor', c_reward,  'markerfacealpha', 0.5, 'MarkerEdgeColor','none')
-end
-xline(0, 'Color', c_cent_in, 'LineWidth', 1, 'Alpha', 1);
-title('Probe', 'fontsize', 7, 'fontweight','bold')
 axis off
 
 % Late trials
@@ -284,11 +211,11 @@ ind_spkmat   = strcmp(PSTH.LateLabels, 'SpikeMat');
 ind_t_spkmat = strcmp(PSTH.LateLabels, 'tSpikeMat');
 ind_t_event  = strcmp(PSTH.LateLabels, 'tEvents');
 ind_hd       = strcmp(PSTH.LateLabels, 'HoldDuration');
-ind_fp       = strcmp(PSTH.LateLabels, 'FP');
+ind_cue      = strcmp(PSTH.LateLabels, 'Cue');
 
 % PSTH of late trials
-y_col1_row5 = y_col1_row4 + 0.5 + ntrial_probe*rasterheight;
-ha_cent_in_psth_late =  axes('unit', 'centimeters', 'position', [x_col1 y_col1_row5 w_psth h_psth], 'nextplot', 'add',...
+y_col1_row3 = y_col1_row2 + 0.5 + ntrials_cent_in*rasterheight;
+ha_cent_in_psth_late =  axes('unit', 'centimeters', 'position', [x_col1 y_col1_row3 w_psth h_psth], 'nextplot', 'add',...
     'xlim',  [-CentInTimeDomain(1) CentInTimeDomain(2)], 'xticklabel', [], 'FontSize', 7, 'TickDir', 'Out');
 xline(0, 'Color', c_cent_in, 'LineWidth', 1, 'Alpha', 1);
 for j = 1:NumPorts
@@ -298,9 +225,9 @@ for j = 1:NumPorts
 end
 
 % Late response raster plot
-y_col1_row6 = y_col1_row5 + (h_psth+.1);
+y_col1_row4 = y_col1_row3 + (h_psth+.1);
 ntrial_late = sum(cellfun(@(x) length(x{ind_t_event}), PSTH.LateCentIn)); % number of trials
-axes('unit', 'centimeters', 'position', [x_col1 y_col1_row6 w_psth ntrial_late*rasterheight],...
+axes('unit', 'centimeters', 'position', [x_col1 y_col1_row4 w_psth ntrial_late*rasterheight],...
     'nextplot', 'add',...
     'xlim', [-CentInTimeDomain(1) CentInTimeDomain(2)], 'ylim', [-ntrial_late 1], 'box', 'on');
 k = 0;
@@ -309,12 +236,12 @@ for n = 1:NumPorts
     spk_mat = PSTH.LateCentIn{n}{ind_spkmat};
     t_mat   = PSTH.LateCentIn{n}{ind_t_spkmat};
     hd      = PSTH.LateCentIn{n}{ind_hd};
-    fp      = PSTH.LateCentIn{n}{ind_fp};
+    cue     = PSTH.LateCentIn{n}{ind_cue};
 
     xx_all = []; % spike times
     yy_all = [];
-    xxrt_all = []; % cent-out times
-    yyrt_all = [];
+    xxhd_all = []; % cent-out times
+    yyhd_all = [];
     xxfp_all = []; % trigger times
     yyfp_all = [];
     x_choice = []; % choice times
@@ -324,15 +251,19 @@ for n = 1:NumPorts
         xx =  t_mat(spk_mat(:, i)==1);
         yy1 = [.1 .9] - k;
         yy2 = [0 1] - k;
-        xxrt = hd(i);
-        xxfp = fp(i)*1000;
+        xxhd = hd(i);
+        if cue(i)
+            xxfp = FP*1000;
+        else
+            xxfp = nan;
+        end
 
         for i_xx = 1:length(xx)
             xx_all = [xx_all, xx(i_xx), xx(i_xx), NaN];
             yy_all = [yy_all, yy1, NaN];
         end
-        xxrt_all = [xxrt_all, xxrt, xxrt, NaN];
-        yyrt_all = [yyrt_all, yy2, NaN];
+        xxhd_all = [xxhd_all, xxhd, xxhd, NaN];
+        yyhd_all = [yyhd_all, yy2, NaN];
         xxfp_all = [xxfp_all, xxfp, xxfp, NaN];
         yyfp_all = [yyfp_all, yy2, NaN];
 
@@ -348,7 +279,7 @@ for n = 1:NumPorts
     end
 
     line(xx_all, yy_all, 'color', c_port{n}, 'linewidth', .2)
-    line(xxrt_all, yyrt_all, 'color', c_cent_out, 'linewidth', 1)
+    line(xxhd_all, yyhd_all, 'color', c_cent_out, 'linewidth', 1)
     line(xxfp_all, yyfp_all, 'color', c_trigger, 'linewidth', 1)
     scatter(x_choice, y_choice, 8, 'o', 'filled','MarkerFaceColor', c_reward,  'markerfacealpha', 0.5, 'MarkerEdgeColor','none')
 end
@@ -365,8 +296,8 @@ ind_t_event  = strcmp(PSTH.PrematureLabels, 'tEvents');
 ind_hd       = strcmp(PSTH.PrematureLabels, 'HoldDuration');
 
 % PSTH
-y_col1_row7 = y_col1_row6 + 0.5 + ntrial_late*rasterheight;
-ha_cent_in_psth_premature =  axes('unit', 'centimeters', 'position', [x_col1 y_col1_row7 w_psth h_psth], 'nextplot', 'add',...
+y_col1_row5 = y_col1_row4 + 0.5 + ntrial_late*rasterheight;
+ha_cent_in_psth_premature =  axes('unit', 'centimeters', 'position', [x_col1 y_col1_row5 w_psth h_psth], 'nextplot', 'add',...
     'xlim',  [-CentInTimeDomain(1) CentInTimeDomain(2)], 'xticklabel', [], 'FontSize', 7, 'TickDir', 'Out');
 xline(0, 'Color', c_cent_in, 'LineWidth', 1, 'Alpha', 1);
 
@@ -378,9 +309,9 @@ for j = 1:NumPorts
 end
 
 % Premature press raster plot
-y_col1_row8 = y_col1_row7 + (h_psth+.1);
+y_col1_row6 = y_col1_row5 + (h_psth+.1);
 ntrial_premature = sum(cellfun(@(x) length(x{ind_t_event}), PSTH.PrematureCentIn)); % number of trials
-axes('unit', 'centimeters', 'position', [x_col1 y_col1_row8 w_psth ntrial_premature*rasterheight],...
+axes('unit', 'centimeters', 'position', [x_col1 y_col1_row6 w_psth ntrial_premature*rasterheight],...
     'nextplot', 'add',...
     'xlim', [-CentInTimeDomain(1) CentInTimeDomain(2)], 'ylim', [-ntrial_premature 1], 'box', 'on');
 k = 0;
@@ -392,8 +323,8 @@ for n = 1:NumPorts
 
     xx_all = []; % spike times
     yy_all = [];
-    xxrt_all = []; % cent-out times
-    yyrt_all = [];
+    xxhd_all = []; % cent-out times
+    yyhd_all = [];
     x_choice = []; % choice times
     y_choice = [];
 
@@ -401,14 +332,14 @@ for n = 1:NumPorts
         xx =  t_mat(spk_mat(:, i)==1);
         yy1 = [.1 .9] - k;
         yy2 = [0 1] - k;
-        xxrt = hd(i);
+        xxhd = hd(i);
 
         for i_xx = 1:length(xx)
             xx_all = [xx_all, xx(i_xx), xx(i_xx), NaN];
             yy_all = [yy_all, yy1, NaN];
         end
-        xxrt_all = [xxrt_all, xxrt, xxrt, NaN];
-        yyrt_all = [yyrt_all, yy2, NaN];
+        xxhd_all = [xxhd_all, xxhd, xxhd, NaN];
+        yyhd_all = [yyhd_all, yy2, NaN];
 
         % plot choice poke time
         it_choice = t_choice - t_event(i);
@@ -422,7 +353,7 @@ for n = 1:NumPorts
     end
 
     line(xx_all, yy_all, 'color', c_port{n}, 'linewidth', .2)
-    line(xxrt_all, yyrt_all, 'color', c_cent_out, 'linewidth', 1)
+    line(xxhd_all, yyhd_all, 'color', c_cent_out, 'linewidth', 1)
     scatter(x_choice, y_choice, 8, 'o', 'filled','MarkerFaceColor', c_reward,  'markerfacealpha', 0.5, 'MarkerEdgeColor','none')
 end
 xline(0, 'Color', c_cent_in, 'LineWidth', 1, 'Alpha', 1);
@@ -431,33 +362,33 @@ axis off
 
 %% Add overall title
 % this is the position of last panel
-y_col1_row9 = y_col1_row8 + 0.5 + ntrial_premature*rasterheight;
+y_col1_row7 = y_col1_row6 + 0.5 + ntrial_premature*rasterheight;
 % Add information
-uicontrol('Style', 'text', 'Units', 'centimeters', 'Position', [x_col1-.5 y_col1_row9  6 1],...
+uicontrol('Style', 'text', 'Units', 'centimeters', 'Position', [x_col1-.5 y_col1_row7 6 1],...
     'string', 'A. CentIn-related', ...
     'FontName', 'Dejavu Sans', 'fontweight', 'bold', 'fontsize', 8, 'BackgroundColor', [1 1 1],...
     'HorizontalAlignment', 'Left');
 
-y_col1_row10 = y_col1_row9 + w_space;
+y_col1_row8 = y_col1_row7 + w_space;
 ch = r.Units.SpikeNotes(ku, 1);
 unit_no = r.Units.SpikeNotes(ku, 2);
 
 if size(r.Units.SpikeNotes, 2) == 4
     cluster_id = r.Units.SpikeNotes(ku, 4);
-    uicontrol('style', 'text', 'units', 'centimeters', 'position', [x_col1-.25 y_col1_row10 6 1.2],...
+    uicontrol('style', 'text', 'units', 'centimeters', 'position', [x_col1-.25 y_col1_row8 6 1.2],...
         'string', (['Unit #' num2str(ku) ' (Ch ' num2str(ch) ' | UnitOnCh ' num2str(unit_no) ' | ' 'Kilosort cluster ' num2str(cluster_id) ')']),...
         'BackgroundColor','w', 'fontsize', 8, 'fontweight','bold',  'FontName','Dejavu Sans')
 else
     cluster_id = [];
-    uicontrol('style', 'text', 'units', 'centimeters', 'position', [x_col1-.25 y_col1_row10 6 1.2],...
+    uicontrol('style', 'text', 'units', 'centimeters', 'position', [x_col1-.25 y_col1_row8 6 1.2],...
         'string', (['Unit #' num2str(ku) ' (' num2str(ch) ' | ' num2str(unit_no) ')']),...
         'BackgroundColor','w', 'fontsize', 8, 'fontweight','bold',  'FontName','Dejavu Sans')
 end
-uicontrol('style', 'text', 'units', 'centimeters', 'position', [x_col1-.25 y_col1_row10+1.2 4 0.5],...
+uicontrol('style', 'text', 'units', 'centimeters', 'position', [x_col1-.25 y_col1_row8+1.2 4 0.5],...
     'string', ([r.Meta(1).Subject ' ' r.Meta(1).DateTime(1:11)]), 'BackgroundColor','w',...
     'fontsize', 8, 'fontweight', 'bold',  'FontName','Dejavu Sans')
 
-fig_height = y_col1_row10 + 2;
+fig_height = y_col1_row8 + 2;
 
 %% Align to CentOut
 x_col2 = x_col1 + w_psth + w_space;
@@ -469,15 +400,19 @@ ind_t_psth   = strcmp(PSTH.CentOutLabels, 'tPSTH');
 ind_spkmat   = strcmp(PSTH.CentOutLabels, 'SpikeMat');
 ind_t_spkmat = strcmp(PSTH.CentOutLabels, 'tSpikeMat');
 ind_t_event  = strcmp(PSTH.CentOutLabels, 'tEvents');
-ind_rt       = strcmp(PSTH.CentOutLabels, 'RT');
+ind_hd       = strcmp(PSTH.CentOutLabels, 'HoldDuration');
 
 % PSTH of correct trials
 y_col2_row1 = y_col1_row1;
-ha_cent_out_psth = cell(1,NumFPs);
-for i = 1:NumFPs
-    yshift = y_col2_row1 + (h_psth+0.1)*(NumFPs-i);
+ha_cent_out_psth = cell(1,NumCues);
+for i = 1:NumCues
+    yshift = y_col2_row1 + (h_psth+0.1)*(NumCues-i);
     ha_cent_out_psth{i} = axes(fig, 'unit', 'centimeters', 'position', [x_col2 yshift w_psth h_psth], 'nextplot', 'add', 'xlim', [-CentOutTimeDomain(1) CentOutTimeDomain(2)], 'FontSize', 7, 'TickDir', 'Out');
-    xline(0, 'Color', c_cent_out, 'LineWidth', 1, 'Alpha', 1);
+    if Cues(i)
+        xline(0, 'Color', c_cent_out, 'LineWidth', 1, 'Alpha', 1);
+    else
+        xline(0, 'Color', c_cent_out, 'LineWidth', 1, 'Alpha', 1, 'LineStyle', ':');
+    end
     for j = 1:NumPorts
         t_psth_cent_out = PSTH.CentOut{i,j}{ind_t_psth};
         psth_cent_out   = PSTH.CentOut{i,j}{ind_psth};
@@ -485,7 +420,7 @@ for i = 1:NumFPs
         plot(t_psth_cent_out, psth_cent_out, 'color', c_port{j}, 'linewidth', 1);
         FRMax = max([FRMax max(psth_cent_out)]);
     end
-    if i==NumFPs
+    if i==NumCues
         xlabel('Time from cent-out (ms)')
         ylabel('Spks per s')
     else
@@ -498,8 +433,8 @@ axis 'auto y'
 % make raster plot
 y_col2_row2 = y_col1_row2;
 % Plot spike raster of correct trials (all FPs)
-ntrials_cent_out_ij = zeros(NumFPs, NumPorts);
-for i = 1:NumFPs
+ntrials_cent_out_ij = zeros(NumCues, NumPorts);
+for i = 1:NumCues
     for j = 1:NumPorts
         t_event_cent_out = PSTH.CentOut{i,j}{ind_t_event};
         ntrials_cent_out_ij(i,j) = length(t_event_cent_out);
@@ -512,18 +447,18 @@ axes('unit', 'centimeters', 'position', [x_col2 y_col2_row2 w_psth ntrials_cent_
     'xlim', [-CentOutTimeDomain(1) CentOutTimeDomain(2)], 'ylim', [-ntrials_cent_out 1], 'box', 'on');
 
 k=0;
-for m = 1:NumFPs
+for m = 1:NumCues
     for n = 1:NumPorts
         t_event = PSTH.CentOut{m,n}{ind_t_event};
         spk_mat = PSTH.CentOut{m,n}{ind_spkmat};
         t_mat   = PSTH.CentOut{m,n}{ind_t_spkmat};
-        rt      = PSTH.CentOut{m,n}{ind_rt};
-        hd      = rt + FPs(m)*1000;
+        hd      = PSTH.CentOut{m,n}{ind_hd};
+        cue     = Cues(m);
 
         xx_all = []; % spike times
         yy_all = [];
-        xxrt_all = []; % reaction (cent-out) times
-        yyrt_all = [];
+        xxfp_all = []; % trigger times
+        yyfp_all = [];
         xxhd_all = []; % reaction (cent-out) times
         yyhd_all = [];
         x_choice = []; % choice times
@@ -534,7 +469,11 @@ for m = 1:NumFPs
             yy1 = [.1 .9] - k; % spikes
             yy2 = [0 1] - k;   % events
 
-            xxrt = -rt(i);
+            if cue
+                xxfp = -hd(i) + FP*1000;
+            else
+                xxfp = nan;
+            end
             xxhd = -hd(i);
 
             if isempty(find(isnan(spk_mat(:, i)), 1))
@@ -542,8 +481,8 @@ for m = 1:NumFPs
                     xx_all = [xx_all, xx(i_xx), xx(i_xx), NaN];
                     yy_all = [yy_all, yy1, NaN];
                 end
-                xxrt_all = [xxrt_all, xxrt, xxrt, NaN];
-                yyrt_all = [yyrt_all, yy2, NaN];
+                xxfp_all = [xxfp_all, xxfp, xxfp, NaN];
+                yyfp_all = [yyfp_all, yy2, NaN];
                 xxhd_all = [xxhd_all, xxhd, xxhd, NaN];
                 yyhd_all = [yyhd_all, yy2, NaN];
             end
@@ -560,88 +499,13 @@ for m = 1:NumFPs
             k = k+1;
         end
         line(xx_all, yy_all, 'color', c_port{n}, 'linewidth', .2);
-        line(xxrt_all, yyrt_all, 'color', c_trigger, 'linewidth', 1);
+        line(xxfp_all, yyfp_all, 'color', c_trigger, 'linewidth', 1);
         line(xxhd_all, yyhd_all, 'color', c_cent_in, 'linewidth', 1);
         scatter(x_choice, y_choice, 8, 'o', 'filled','MarkerFaceColor', c_reward,  'markerfacealpha', 0.5, 'MarkerEdgeColor','none');
     end
 end
 xline(0, 'Color', c_cent_out, 'LineWidth', 1, 'Alpha', 1);
 title('Correct', 'fontsize', 7, 'fontweight','bold');
-axis off
-
-% Probe trials
-ind_psth     = strcmp(PSTH.ProbeLabels, 'PSTH');
-ind_t_psth   = strcmp(PSTH.ProbeLabels, 'tPSTH');
-ind_spkmat   = strcmp(PSTH.ProbeLabels, 'SpikeMat');
-ind_t_spkmat = strcmp(PSTH.ProbeLabels, 'tSpikeMat');
-ind_t_event  = strcmp(PSTH.ProbeLabels, 'tEvents');
-ind_hd       = strcmp(PSTH.ProbeLabels, 'HoldDuration');
-
-% PSTH of probe trials
-y_col2_row3 = y_col1_row3;
-ha_cent_out_psth_probe = axes('unit', 'centimeters', 'position', [x_col2 y_col2_row3 w_psth h_psth], 'nextplot', 'add',...
-    'xlim',  [-CentOutTimeDomain(1) CentOutTimeDomain(2)], 'xticklabel', [], 'FontSize', 7, 'TickDir', 'Out');
-xline(0, 'Color', c_cent_out, 'LineWidth', 1, 'Alpha', 1);
-
-% plot probe trials as well
-for j = 1:NumPorts
-    if length(PSTH.ProbeCentOut{j}{ind_t_event}) > 3
-        plot(PSTH.ProbeCentOut{j}{ind_t_psth}, PSTH.ProbeCentOut{j}{ind_psth}, 'color', c_port{j}, 'linewidth',1);
-    end
-end
-
-y_col2_row4 = y_col1_row4;
-% Probe cent-out raster plot
-ntrial_probe = sum(cellfun(@(x) length(x{ind_t_event}), PSTH.ProbeCentOut)); % number of trials
-axes('unit', 'centimeters', 'position', [x_col2 y_col2_row4 w_psth ntrial_probe*rasterheight],...
-    'nextplot', 'add',...
-    'xlim', [-CentOutTimeDomain(1) CentOutTimeDomain(2)], 'ylim', [-ntrial_probe 1], 'box', 'on');
-k =0;
-for n = 1:NumPorts
-    t_event = PSTH.ProbeCentOut{n}{ind_t_event};
-    spk_mat = PSTH.ProbeCentOut{n}{ind_spkmat};
-    t_mat   = PSTH.ProbeCentOut{n}{ind_t_spkmat};
-    hd      = PSTH.ProbeCentOut{n}{ind_hd};
-
-    xx_all = []; % spike times
-    yy_all = [];
-    xxrt_all = []; % cent-out times
-    yyrt_all = [];
-    x_choice = []; % choice times
-    y_choice = [];
-
-    for i =1:size(spk_mat, 2)
-        xx =  t_mat(spk_mat(:, i)==1);
-        yy1 = [.1 .9] - k;
-        yy2 = [0 1] - k;
-
-        xxrt = -hd(i);
-
-        % register spikes and events
-        for i_xx = 1:length(xx)
-            xx_all = [xx_all, xx(i_xx), xx(i_xx), NaN];
-            yy_all = [yy_all, yy1, NaN];
-        end
-        xxrt_all = [xxrt_all, xxrt, xxrt, NaN];
-        yyrt_all = [yyrt_all, yy2, NaN];
-
-        % plot port poke time
-        it_choice = t_choice - t_event(i);
-        it_choice = it_choice(it_choice>=-CentOutTimeDomain(1) & it_choice<=CentOutTimeDomain(2));
-        if ~isempty(it_choice)
-            it_choice = reshape(it_choice,1,[]);
-            x_choice = [x_choice, it_choice];
-            y_choice = [y_choice, (0.5-k)*ones(1,length(it_choice))];
-        end
-        k = k+1;
-    end
-
-    line(xx_all, yy_all, 'color', c_port{n}, 'linewidth', .2)
-    line(xxrt_all, yyrt_all, 'color', c_cent_in, 'linewidth', 1)
-    scatter(x_choice, y_choice, 8, 'o', 'filled','MarkerFaceColor', c_reward,  'markerfacealpha', 0.5, 'MarkerEdgeColor','none')
-end
-xline(0, 'Color', c_cent_out, 'LineWidth', 1, 'Alpha', 1);
-title('Probe', 'fontsize', 7, 'fontweight','bold')
 axis off
 
 % Late trials
@@ -651,12 +515,12 @@ ind_spkmat   = strcmp(PSTH.LateLabels, 'SpikeMat');
 ind_t_spkmat = strcmp(PSTH.LateLabels, 'tSpikeMat');
 ind_t_event  = strcmp(PSTH.LateLabels, 'tEvents');
 ind_hd       = strcmp(PSTH.LateLabels, 'HoldDuration');
-ind_fp       = strcmp(PSTH.LateLabels, 'FP');
+ind_cue      = strcmp(PSTH.LateLabels, 'Cue');
 
 % PSTH of late trials
-y_col2_row5 = y_col1_row5;
+y_col2_row3 = y_col1_row3;
 
-ha_cent_out_psth_late =  axes('unit', 'centimeters', 'position', [x_col2 y_col2_row5 w_psth h_psth], 'nextplot', 'add',...
+ha_cent_out_psth_late =  axes('unit', 'centimeters', 'position', [x_col2 y_col2_row3 w_psth h_psth], 'nextplot', 'add',...
     'xlim',  [-CentOutTimeDomain(1) CentOutTimeDomain(2)], 'xticklabel', [], 'FontSize', 7, 'TickDir', 'Out');
 xline(0, 'Color', c_cent_out, 'LineWidth', 1, 'Alpha', 1);
 for j = 1:NumPorts
@@ -666,9 +530,9 @@ for j = 1:NumPorts
 end
 
 % Late response raster plot
-y_col2_row6 = y_col1_row6;
+y_col2_row4 = y_col1_row4;
 ntrial_late = sum(cellfun(@(x) length(x{ind_t_event}), PSTH.LateCentOut)); % number of trials
-axes('unit', 'centimeters', 'position', [x_col2 y_col2_row6 w_psth ntrial_late*rasterheight],...
+axes('unit', 'centimeters', 'position', [x_col2 y_col2_row4 w_psth ntrial_late*rasterheight],...
     'nextplot', 'add',...
     'xlim', [-CentOutTimeDomain(1) CentOutTimeDomain(2)], 'ylim', [-ntrial_late 1], 'box', 'on');
 k = 0;
@@ -677,13 +541,12 @@ for n = 1:NumPorts
     spk_mat = PSTH.LateCentOut{n}{ind_spkmat};
     t_mat   = PSTH.LateCentOut{n}{ind_t_spkmat};
     hd      = PSTH.LateCentOut{n}{ind_hd};
-    fp      = PSTH.LateCentOut{n}{ind_fp};
-    rt      = hd - fp*1000;
+    cue     = PSTH.LateCentOut{n}{ind_cue};
 
     xx_all = []; % spike times
     yy_all = [];
-    xxrt_all = []; % trigger times
-    yyrt_all = [];
+    xxfp_all = []; % trigger times
+    yyfp_all = [];
     xxhd_all = []; % cent-in times
     yyhd_all = [];
     x_choice = []; % choice times
@@ -694,15 +557,19 @@ for n = 1:NumPorts
         yy1 = [.1 .9] - k;
         yy2 = [0 1] - k;
 
-        xxrt = -rt(i);
+        if cue(i)
+            xxfp = -hd(i) + FP*1000;
+        else
+            xxfp = nan;
+        end
         xxhd = -hd(i);
 
         for i_xx = 1:length(xx)
             xx_all = [xx_all, xx(i_xx), xx(i_xx), NaN];
             yy_all = [yy_all, yy1, NaN];
         end
-        xxrt_all = [xxrt_all, xxrt, xxrt, NaN];
-        yyrt_all = [yyrt_all, yy2, NaN];
+        xxfp_all = [xxfp_all, xxfp, xxfp, NaN];
+        yyfp_all = [yyfp_all, yy2, NaN];
         xxhd_all = [xxhd_all, xxhd, xxhd, NaN];
         yyhd_all = [yyhd_all, yy2, NaN];
 
@@ -718,7 +585,7 @@ for n = 1:NumPorts
     end
 
     line(xx_all, yy_all, 'color', c_port{n}, 'linewidth', .2)
-    line(xxrt_all, yyrt_all, 'color', c_trigger, 'linewidth', 1)
+    line(xxfp_all, yyfp_all, 'color', c_trigger, 'linewidth', 1)
     line(xxhd_all, yyhd_all, 'color', c_cent_in, 'linewidth', 1)
     scatter(x_choice, y_choice, 8, 'o', 'filled','MarkerFaceColor', c_reward,  'markerfacealpha', 0.5, 'MarkerEdgeColor','none')
 end
@@ -735,7 +602,7 @@ ind_t_event  = strcmp(PSTH.PrematureLabels, 'tEvents');
 ind_hd       = strcmp(PSTH.PrematureLabels, 'HoldDuration');
 
 % PSTH
-y_col2_row7 = y_col1_row7;
+y_col2_row7 = y_col1_row5;
 ha_cent_out_psth_premature =  axes('unit', 'centimeters', 'position', [x_col2 y_col2_row7 w_psth h_psth], 'nextplot', 'add',...
     'xlim',  [-CentOutTimeDomain(1) CentOutTimeDomain(2)], 'xticklabel', [], 'FontSize', 7, 'TickDir', 'Out');
 xline(0, 'Color', c_cent_out, 'LineWidth', 1, 'Alpha', 1);
@@ -746,7 +613,7 @@ for j = 1:NumPorts
 end
 
 % Premature press raster plot
-y_col2_row8 = y_col1_row8;
+y_col2_row8 = y_col1_row6;
 ntrial_premature = sum(cellfun(@(x) length(x{ind_t_event}), PSTH.PrematureCentOut)); % number of trials
 axes('unit', 'centimeters', 'position', [x_col2 y_col2_row8 w_psth ntrial_premature*rasterheight],...
     'nextplot', 'add',...
@@ -760,8 +627,8 @@ for n = 1:NumPorts
 
     xx_all = []; % spike times
     yy_all = [];
-    xxrt_all = []; % cent-in times
-    yyrt_all = [];
+    xxhd_all = []; % cent-in times
+    yyhd_all = [];
     x_choice = []; % choice times
     y_choice = [];
 
@@ -770,14 +637,14 @@ for n = 1:NumPorts
         yy1 = [.1 .9] - k;
         yy2 = [0 1] - k;
 
-        xxrt = -hd(i);
+        xxhd = -hd(i);
 
         for i_xx = 1:length(xx)
             xx_all = [xx_all, xx(i_xx), xx(i_xx), NaN];
             yy_all = [yy_all, yy1, NaN];
         end
-        xxrt_all = [xxrt_all, xxrt, xxrt, NaN];
-        yyrt_all = [yyrt_all, yy2, NaN];
+        xxhd_all = [xxhd_all, xxhd, xxhd, NaN];
+        yyhd_all = [yyhd_all, yy2, NaN];
 
         % plot port poke time
         it_choice = t_choice - t_event(i);
@@ -791,7 +658,7 @@ for n = 1:NumPorts
     end
 
     line(xx_all, yy_all, 'color', c_port{n}, 'linewidth', .2)
-    line(xxrt_all, yyrt_all, 'color', c_cent_in, 'linewidth', 1)
+    line(xxhd_all, yyhd_all, 'color', c_cent_in, 'linewidth', 1)
     scatter(x_choice, y_choice, 8, 'o', 'filled','MarkerFaceColor', c_reward,  'markerfacealpha', 0.5, 'MarkerEdgeColor','none')
 end
 xline(0, 'Color', c_cent_out, 'LineWidth', 1, 'Alpha', 1);
@@ -800,8 +667,8 @@ axis off
 
 % this is the position of last panel
 % Add information
-y_col2_row9 = y_col1_row9;
-uicontrol('Style', 'text', 'Units', 'centimeters', 'Position', [x_col2-.25 y_col2_row9 4 1],...
+y_col2_row9 = y_col1_row7;
+uicontrol('Style', 'text', 'Units', 'centimeters', 'Position', [x_col2-.25 y_col2_row9 3 1],...
     'string', 'B. CentOut-related', ...
     'FontName', 'Dejavu Sans', 'fontweight', 'bold', 'fontsize', 8, 'BackgroundColor', [1 1 1],...
     'HorizontalAlignment', 'Left');
@@ -818,15 +685,19 @@ ind_spkmat   = strcmp(PSTH.TriggerLabels, 'SpikeMat');
 ind_t_spkmat = strcmp(PSTH.TriggerLabels, 'tSpikeMat');
 ind_t_event  = strcmp(PSTH.TriggerLabels, 'tEvents');
 ind_rt       = strcmp(PSTH.TriggerLabels, 'RT');
-ind_fp       = strcmp(PSTH.TriggerLabels, 'FP');
 
 % PSTH of correct trials
 y_col3_row1 = y_col1_row1;
-ha_trigger_psth = cell(1,NumFPs);
-for i = 1:NumFPs
-    yshift = y_col3_row1 + (h_psth+0.1)*(NumFPs-i);
+ha_trigger_psth = cell(NumCues,NumPorts);
+for i = 1:NumCues
+    yshift = y_col3_row1 + (h_psth+0.1)*(NumCues-i);
     ha_trigger_psth{i} = axes(fig, 'unit', 'centimeters', 'position', [x_col3 yshift w_psth h_psth], 'nextplot', 'add', 'xlim', [-TriggerTimeDomain(1) TriggerTimeDomain(2)], 'FontSize', 7, 'TickDir', 'Out');
-    xline(0, 'Color', c_trigger, 'LineWidth', 1, 'Alpha', 1);
+    switch Cues(i)
+        case 0
+            xline(0, 'Color', c_trigger, 'LineWidth', 1, 'Alpha', 1, 'LineStyle', ':');
+        case 1
+            xline(0, 'Color', c_trigger, 'LineWidth', 1, 'Alpha', 1);
+    end
     for j = 1:NumPorts
         t_psth_trig = PSTH.Triggers{i,j}{ind_t_psth};
         psth_trig   = PSTH.Triggers{i,j}{ind_psth};
@@ -834,7 +705,7 @@ for i = 1:NumFPs
         plot(t_psth_trig, psth_trig, 'color', c_port{j}, 'linewidth', 1);
         FRMax = max([FRMax max(psth_trig)]);
     end
-    if i==NumFPs
+    if i==NumCues
         xlabel('Time from trigger (ms)')
         ylabel('Spks per s')
     else
@@ -843,10 +714,10 @@ for i = 1:NumFPs
     end
 end
 
-y_col3_row2 = y_col1_row2;
+y_col3_row2 = y_col3_row1 + (0.1+h_psth)*NumCues;
 % Plot spike raster of correct trials (all FPs)
-ntrials_trigger_ij = zeros(NumFPs, NumPorts);
-for i = 1:NumFPs
+ntrials_trigger_ij = zeros(NumCues, NumPorts);
+for i = 1:NumCues
     for j = 1:NumPorts
         t_event_trigger = PSTH.Triggers{i,j}{ind_t_event};
         ntrials_trigger_ij(i,j) = length(t_event_trigger);
@@ -858,7 +729,7 @@ axes('unit', 'centimeters', 'position', [x_col3 y_col3_row2 w_psth ntrials_trigg
     'nextplot', 'add',...
     'xlim', [-TriggerTimeDomain(1) TriggerTimeDomain(2)], 'ylim', [-ntrials_trigger 1], 'box', 'on');
 k=0;
-for m = 1:NumFPs
+for m = 1:NumCues
     for n = 1:NumPorts
         t_event = PSTH.Triggers{m,n}{ind_t_event};
         spk_mat = PSTH.Triggers{m,n}{ind_spkmat};
@@ -869,13 +740,21 @@ for m = 1:NumFPs
         yy_all = [];
         xxrt_all = []; % reaction (cent-out) times
         yyrt_all = [];
+        xxtrig_all = [];
+        yytrig_all = [];
         x_choice = []; % choice times
         y_choice = [];
 
-        for i = 1:ntrials_cent_in_ij(m,n)
+        for i = 1:ntrials_trigger_ij(m,n)
             xx = t_mat(spk_mat(:,i)==1);
             yy1 = [.1 .9] - k;
             yy2 = [0 1] - k;
+            switch Cues(m)
+                case 0
+                    yy3 = [.3 .7] - k;
+                case 1
+                    yy3 = [0 1] - k;
+            end
 
             xxrt = rt(i);
 
@@ -886,6 +765,8 @@ for m = 1:NumFPs
                 end
                 xxrt_all = [xxrt_all, xxrt, xxrt, NaN];
                 yyrt_all = [yyrt_all, yy2, NaN];
+                xxtrig_all = [xxtrig_all, 0, 0, NaN];
+                yytrig_all = [yytrig_all, yy3, NaN];
             end
             % port access time
             it_trigger = t_event(i);
@@ -900,16 +781,16 @@ for m = 1:NumFPs
         end
         line(xx_all, yy_all, 'color', c_port{n}, 'linewidth', .2);
         line(xxrt_all, yyrt_all, 'color', c_cent_out, 'linewidth', 1);
+        line(xxtrig_all, yytrig_all, 'color', c_trigger, 'linewidth', 1);
         scatter(x_choice, y_choice, 8, 'o', 'filled','MarkerFaceColor', c_reward,  'markerfacealpha', 0.5, 'MarkerEdgeColor','none');
     end
 end
-xline(0, 'Color', c_trigger, 'LineWidth', 1, 'Alpha', 1);
 title('Correct', 'fontsize', 7, 'fontweight','bold');
 axis off
 
 % Late trials
 % PSTH of late trials
-y_col3_row3 = y_col1_row3;
+y_col3_row3 = y_col3_row2 + 0.5 + ntrials_trigger*rasterheight;
 
 ha_trigger_psth_late =  axes('unit', 'centimeters', 'position', [x_col3 y_col3_row3 w_psth h_psth], 'nextplot', 'add',...
     'xlim',  [-TriggerTimeDomain(1) TriggerTimeDomain(2)], 'xticklabel', [], 'FontSize', 7, 'TickDir', 'Out');
@@ -921,7 +802,7 @@ for j = 1:NumPorts
 end
 
 % Late response raster plot
-y_col3_row4 = y_col1_row4;
+y_col3_row4 = y_col3_row3 + 0.1 + h_psth;
 ntrial_trigger_late = sum(cellfun(@(x) length(x{ind_t_event}), PSTH.TriggerLate)); % number of trials
 axes('unit', 'centimeters', 'position', [x_col3 y_col3_row4 w_psth ntrial_trigger_late*rasterheight],...
     'nextplot', 'add',...
@@ -931,12 +812,12 @@ for n = 1:NumPorts
     t_event = PSTH.TriggerLate{n}{ind_t_event};
     spk_mat = PSTH.TriggerLate{n}{ind_spkmat};
     t_mat   = PSTH.TriggerLate{n}{ind_t_spkmat};
-    rt      = PSTH.TriggerLate{n}{ind_hd};
+    hd      = PSTH.TriggerLate{n}{ind_hd};
 
     xx_all = []; % spike times
     yy_all = [];
-    xxrt_all = []; % cent-out times
-    yyrt_all = [];
+    xxhd_all = []; % cent-out times
+    yyhd_all = [];
     x_choice = []; % choice times
     y_choice = [];
     
@@ -945,14 +826,14 @@ for n = 1:NumPorts
         yy1 = [.1 .9] - k;
         yy2 = [0 1] - k;
 
-        xxrt = rt(i);
+        xxhd = hd(i) - FP*1000;
 
         for i_xx = 1:length(xx)
             xx_all = [xx_all, xx(i_xx), xx(i_xx), NaN];
             yy_all = [yy_all, yy1, NaN];
         end
-        xxrt_all = [xxrt_all, xxrt, xxrt, NaN];
-        yyrt_all = [yyrt_all, yy2, NaN];
+        xxhd_all = [xxhd_all, xxhd, xxhd, NaN];
+        yyhd_all = [yyhd_all, yy2, NaN];
 
         % plot port poke time
         it_choice = t_choice - t_event(i);
@@ -966,7 +847,7 @@ for n = 1:NumPorts
     end
 
     line(xx_all, yy_all, 'color', c_port{n}, 'linewidth', .2)
-    line(xxrt_all, yyrt_all, 'color', c_cent_out, 'linewidth', 1)
+    line(xxhd_all, yyhd_all, 'color', c_cent_out, 'linewidth', 1)
     scatter(x_choice, y_choice, 8, 'o', 'filled','MarkerFaceColor', c_reward,  'markerfacealpha', 0.5, 'MarkerEdgeColor','none')
 end
 xline(0, 'Color', c_trigger, 'LineWidth', 1, 'Alpha', 1);
@@ -975,7 +856,7 @@ axis off
 
 y_col3_row5 = y_col3_row4 + 0.5 + ntrial_trigger_late*rasterheight;
 % Add information
-uicontrol('Style', 'text', 'Units', 'centimeters', 'Position', [x_col3-.25 y_col3_row5 4 1],...
+uicontrol('Style', 'text', 'Units', 'centimeters', 'Position', [x_col3-.25 y_col3_row5 3 1],...
     'string', 'C. Trigger-related', ...
     'FontName', 'Dejavu Sans', 'fontweight', 'bold', 'fontsize', 8, 'BackgroundColor', [1 1 1],...
     'HorizontalAlignment', 'Left');
@@ -994,9 +875,9 @@ ind_mt       = strcmp(PSTH.ChoiceLabels, 'MoveTime');
 
 % PSTH of correct trials
 y_col4_row1 = y_col1_row1;
-ha_choice_psth = cell(1,NumFPs);
-for i = 1:NumFPs
-    yshift = y_col4_row1 + (h_psth+0.1)*(NumFPs-i);
+ha_choice_psth = cell(1,NumCues);
+for i = 1:NumCues
+    yshift = y_col4_row1 + (h_psth+0.1)*(NumCues-i);
     ha_choice_psth{i} = axes(fig, 'unit', 'centimeters', 'position', [x_col4 yshift w_psth h_psth], 'nextplot', 'add', 'xlim', [-ChoiceTimeDomain(1) ChoiceTimeDomain(2)], 'FontSize', 7, 'TickDir', 'Out');
     xline(0, 'Color', c_reward, 'LineWidth', 1, 'Alpha', 1);
     for j = 1:NumPorts
@@ -1006,7 +887,7 @@ for i = 1:NumFPs
         plot(t_psth_reward, psth_reward, 'color', c_port{j}, 'linewidth', 1);
         FRMax = max([FRMax max(psth_reward)]);
     end
-    if i==NumFPs
+    if i==NumCues
         xlabel('Time from choice (ms)')
         ylabel('Spks per s')
     else
@@ -1017,8 +898,8 @@ end
 
 y_col4_row2 = y_col1_row2;
 % Plot spike raster of correct trials (all FPs)
-ntrials_reward_ij = zeros(NumFPs, NumPorts);
-for i = 1:NumFPs
+ntrials_reward_ij = zeros(NumCues, NumPorts);
+for i = 1:NumCues
     for j = 1:NumPorts
         t_event_reward = PSTH.RewardChoice{i,j}{ind_t_event};
         ntrials_reward_ij(i,j) = length(t_event_reward);
@@ -1030,7 +911,7 @@ axes('unit', 'centimeters', 'position', [x_col4 y_col4_row2 w_psth n_trials_rewa
     'nextplot', 'add',...
     'xlim', [-ChoiceTimeDomain(1) ChoiceTimeDomain(2)], 'ylim', [-n_trials_reward 1], 'box', 'on');
 k=0;
-for m = 1:NumFPs
+for m = 1:NumCues
     for n = 1:NumPorts
         spk_mat = PSTH.RewardChoice{m,n}{ind_spkmat};
         t_mat   = PSTH.RewardChoice{m,n}{ind_t_spkmat};
@@ -1041,7 +922,7 @@ for m = 1:NumFPs
         xxmt_all = []; % movement (cent-out to choice) times
         yymt_all = [];
 
-        for i = 1:ntrials_cent_in_ij(m,n)
+        for i = 1:ntrials_reward_ij(m,n)
             xx = t_mat(spk_mat(:,i)==1);
             yy1 = [.1 .9] - k;
             yy2 = [0 1] - k;
@@ -1096,7 +977,7 @@ for n = 1:NumPorts
     xxmt_all = []; % cent-out times
     yymt_all = [];
 
-    for i =1:size(spk_mat, 2)
+    for i = 1:size(spk_mat, 2)
         xx =  t_mat(spk_mat(:, i)==1);
         yy1 = [.1 .9] - k;
         yy2 = [0 1] - k;
@@ -1123,7 +1004,7 @@ axis off
 
 y_col4_row5 = y_col4_row4 + 0.5 + ntrial_nonreward*rasterheight;
 % Add information
-uicontrol('Style', 'text', 'Units', 'centimeters', 'Position', [x_col4-.25 y_col4_row5 4 1],...
+uicontrol('Style', 'text', 'Units', 'centimeters', 'Position', [x_col4-.25 y_col4_row5 3 1],...
     'string', 'D. Reward-related', ...
     'FontName', 'Dejavu Sans', 'fontweight', 'bold', 'fontsize', 8, 'BackgroundColor', [1 1 1],...
     'HorizontalAlignment', 'Left');
@@ -1238,7 +1119,7 @@ axis off
 
 y_col5_row4 = y_col5_row3 + 0.5 + ntrial_preerr*rasterheight;
 % Add information
-uicontrol('Style','text','Units','centimeters','Position',[x_col5-.25 y_col5_row4 4 1],...
+uicontrol('Style','text','Units','centimeters','Position',[x_col5-.25 y_col5_row4 3 1],...
     'string', 'E. InitIn-related', ...
     'FontName','Dejavu Sans', 'fontweight', 'bold','fontsize', 8,'BackgroundColor',[1 1 1],...
     'HorizontalAlignment','Left');
@@ -1350,7 +1231,7 @@ axis off
 
 y_col6_row4 = y_col5_row4;
 % Add information
-uicontrol('Style', 'text', 'Units', 'centimeters', 'Position', [x_col6-.25 y_col6_row4 4 1],...
+uicontrol('Style', 'text', 'Units', 'centimeters', 'Position', [x_col6-.25 y_col6_row4 3 1],...
     'string', 'F. InitOut-related', ...
     'FontName', 'Dejavu Sans', 'fontweight', 'bold', 'fontsize', 8,'BackgroundColor', [1 1 1],...
     'HorizontalAlignment', 'Left');
@@ -1361,12 +1242,10 @@ FRrange = [0 FRMax*1.05];
 cellfun(@(x) set(x, 'ylim', FRrange), ha_cent_in_psth);
 set(ha_cent_in_psth_late, 'ylim', FRrange);
 set(ha_cent_in_psth_premature, 'ylim', FRrange);
-set(ha_cent_in_psth_probe, 'ylim', FRrange);
 % cent-out
 cellfun(@(x) set(x, 'ylim', FRrange), ha_cent_out_psth);
 set(ha_cent_out_psth_late, 'ylim', FRrange);
 set(ha_cent_out_psth_premature, 'ylim', FRrange);
-set(ha_cent_out_psth_probe, 'ylim', FRrange);
 % choice
 cellfun(@(x) set(x, 'ylim', FRrange), ha_choice_psth);
 set(ha_nonreward_choice_psth, 'ylim', FRrange);
@@ -1402,7 +1281,7 @@ ylabel('Spk rate (Hz)')
 
 y_spk_rate = y_spk_rate + 2.5;
 % Add information  13.5 3+0.5 6 ntrial4*rasterheight
-uicontrol('Style', 'text', 'Units', 'centimeters', 'Position', [x_col3-0.25 y_spk_rate 4 0.5],...
+uicontrol('Style', 'text', 'Units', 'centimeters', 'Position', [x_col3-0.25 y_spk_rate 3 0.5],...
     'string', 'G. Activity vs time', ...
     'FontName', 'Dejavu Sans', 'fontweight', 'bold', 'fontsize', 8, 'BackgroundColor', [1 1 1], 'ForegroundColor', 'k', ...
     'HorizontalAlignment', 'Left');
@@ -1546,7 +1425,7 @@ set(fig, 'position', printsize);
 
 %% Save the figure
 toc;
-if strcmpi(ToSave, 'on')
+if strcmpi(ToSave,'on')
     % save to a folder
     anm_name = r.BehaviorClass.Subject;
     session  = r.BehaviorClass.Session;
