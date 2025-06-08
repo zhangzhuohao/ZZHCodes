@@ -293,7 +293,7 @@ PSTHOut.InitIn.PreCor.Time        = t_init_in_precor_sort;
 PSTHOut.InitIn.PreCor.ShuttleTime = shuttle_time_precor_sort;
 PSTHOut.InitIn.PreCor.InitDur     = dur_init_precor_sort;
 PSTHOut.InitIn.PreErr.Time        = t_init_in_preerr_sort;
-PSTHOut.InitIn.PreErr.ShuttleTime = shuttle_time_precor_sort;
+PSTHOut.InitIn.PreErr.ShuttleTime = shuttle_time_preerr_sort;
 PSTHOut.InitIn.PreErr.InitDur     = dur_init_preerr_sort;
 
 PSTHOut.InitOut.Time        = t_init_out_sort;
