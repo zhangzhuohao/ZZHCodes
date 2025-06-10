@@ -15,10 +15,12 @@ sample_rate = str2double(meta.obSampRate);
 %%
 TimeEvents = double(SGLX_readMeta.ExtractDigital(dataArray, meta, 1, 0:2));
 
-%%
 event_labels = {'PokeCentIn', 'PokeChoiceIn', 'PokeInitIn'};
 n_events = length(event_labels);
 
+bit_label = 'PokeCentIn';
+
+%%
 EventOnset_sec = cell(1, n_events);
 EventOffset_sec = cell(1, n_events);
 for k = 1:n_events
@@ -83,7 +85,12 @@ for k = 1:length(event_labels)
 end
 
 event_onset_sec = events_onset_Tprime_ms(idx_for_phy);
+event_offset_sec = events_onset_Tprime_ms(idx_for_phy);
 for k = 1:length(event_onset_sec)
+    if strcmpi(bit_label, event_labels_for_phy{k})
+        [~, ind_head] = decodeBitMarker(event_onset_sec, event_offset_sec, 'bit_len', 60, 'bit_num', 9, 'head_on_dur', 120, 'head_off_dur', 60, 'fs', sample_rate);
+        event_onset_sec{k} = event_onset_sec{k}(ind_head);
+    end
     event_onset_sec{k} = event_onset_sec{k}./1000;
 end
 

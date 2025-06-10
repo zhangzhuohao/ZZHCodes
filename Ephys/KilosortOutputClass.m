@@ -491,6 +491,7 @@ classdef KilosortOutputClass<handle
             Experimenter = 'ZZH';
             BehClassPath = [];
             ImplantLateral = 'R';
+            BitEvent = '';
 
             if nargin>=2
                 for i=1:2:size(varargin,2)
@@ -509,6 +510,8 @@ classdef KilosortOutputClass<handle
                             BehClassPath = varargin{i+1};
                         case 'ImplantLateral'
                             ImplantLateral = varargin{i+1};
+                        case 'BitEvent'
+                            BitEvent = varargin{i+1};
                         otherwise
                             errordlg('unknown argument')
                     end
