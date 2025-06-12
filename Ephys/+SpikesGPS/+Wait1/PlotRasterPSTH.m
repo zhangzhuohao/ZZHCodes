@@ -9,7 +9,7 @@ function PlotRasterPSTH(r, PSTHOut, PSTH, ku, varargin)
 
 % close all;
 ToSave = 'on';
-if nargin>2
+if nargin>4
     for i=1:2:size(varargin,2)
         switch varargin{i}
             case 'ToSave'
