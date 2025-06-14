@@ -578,7 +578,11 @@ classdef KilosortOutputClass<handle
             EventOutCombined = EventOut;
             EventOutCombined = rmfield(EventOutCombined, 'TimeEvents');
 
-            EventOutCombined = AlignBehToEphys(EventOutCombined, BehClass);
+            if isempty(BitEvent)
+                EventOutCombined = AlignBehToEphys(EventOutCombined, BehClass);
+            else
+                EventOutCombined = AlignBehToEphysBit(EventOutCombined, BehClass, BitEvent);
+            end
 
             %% construct an array (r) with aligned behavior, spikes and LFP data.
             % name is r
@@ -606,6 +610,7 @@ classdef KilosortOutputClass<handle
             r.ChanMap.kcoords     = r.ChanMap.kcoords(r.ChanMap.connected);
 
             % Trial information
+            r.Behavior.TrialID        = EventOutCombined.TrialIndexEphys;
             r.Behavior.Outcome        = EventOutCombined.OutcomeEphys;
             % the followings are redundant but are listed so that other
             % programs still work.
