@@ -40,6 +40,7 @@ for i = 1:NumFPs
         j_port = Ports(j);
 
         % order by behavior time
+        trial_id      = sort(r.PSTH.Events.CentIn.TrialID{ind_correct}{i,j});
         centin_times  = sort(r.PSTH.Events.CentIn.Time{ind_correct}{i,j});
         centout_times = sort(r.PSTH.Events.CentOut.Time{ind_correct}{i,j});
         choice_times  = sort(r.PSTH.Events.ChoiceIn.RewardPoke.Time{i,j});
@@ -51,6 +52,7 @@ for i = 1:NumFPs
         ioc_spktimes = {}; % 1*n cell, each entry is a matrix of spike times within warping range
         ioc_sdfs = {}; % 1*n cell, each 
     
+        ind_valid = false(length(centin_times), 1);
         % check if a choice-poke follows cent-out time, if not, we won't include it
         for k = 1:size(hold_pairs, 1)
             k_centout = hold_pairs(k, 2);
@@ -61,6 +63,8 @@ for i = 1:NumFPs
                 % if there is a choice poke after cent-out && there is no
                 % cent-in between cent-out and choice poke && there is a
                 % choice poke within a certain latency after cent-out
+                ind_valid(k) = true;
+
                 ioc_seq   = [ioc_seq; hold_pairs(k,:) k_choice];
                 total_dur = round(k_choice-hold_pairs(k,1)) + pre_*1000 + post_*1000; % the unit is ms, [pre, from cent-in to choice, post]
                 this_spk_train = spktimes(spktimes>=hold_pairs(k,1)-pre_*1000 & spktimes<=k_choice+post_*1000);
@@ -139,7 +143,7 @@ sdf_warped_ci = cell(NumFPs, NumPorts);
 sdf_warped_mean = cell(NumFPs, NumPorts);
 for i = 1:NumFPs
     for j = 1:NumPorts
-        if size(ioc_spk_warped{i}, 1)>10
+        if size(ioc_spk_warped{i,j}, 1)>10
             sdf_warped_ci{i,j} = bootci(1000, @mean, ioc_spk_warped{i,j});
         end
         sdf_warped_mean{i,j} = mean(ioc_spk_warped{i,j}, 1);

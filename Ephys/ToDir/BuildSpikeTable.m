@@ -1,3 +1,4 @@
+% clear; close all;
 %% you need to change most of the paths in this block
 dir_output = './catgt_Exp_g0';
 
@@ -40,7 +41,7 @@ spikeTable.ch = spikeTable.ch+1;
 % Only save labeled clusters and clear noise
 k = 1;
 while k <= height(spikeTable)
-    if isempty(spikeTable(k,:).group{1}) || strcmp(spikeTable(k,:).group{1},'noise')
+    if isempty(spikeTable(k,:).group{1}) || strcmp(spikeTable(k,:).group{1},'noise') || strcmp(spikeTable(k,:).group{1},'unsorted')
         spikeTable(k,:) = [];
     else
         k=k+1;
@@ -147,24 +148,38 @@ KilosortOutput = KilosortOutputClass(spikeTable, chanMap, ops);
 KilosortOutput.save();
 
 %% build R
-KilosortOutput.buildRNeuropixels(...
+KilosortOutput.buildRNeuropixelsGPS(...
     'KornblumStyle', false,...
     'ProbeStyle', true,...
     'Subject', 'Michael',...
     'BpodProtocol', '3FPHoldSRTProbe',...
-    'Experimenter', 'ZZH');
+    'Experimenter', 'ZZH', ...
+    'ImplantLateral', 'R', ...
+    'BitEvent', '');
 
 KilosortOutput.plotChannelActivity();
 
 output = dir("*RTarray*.mat");
 load(output.name);
 
-% For SRT:
-Spikes.SRT.SRTSpikes(r,[]);
-load(output.name);
-Spikes.SRT.PopulationActivity(r);
+%%
+% % For SRT:
+% SpikesGPS.SRT.SRTSpikes(r,[]);
+% load(output.name);
+% SpikesGPS.SRT.PopulationActivity(r);
 
 % % For Kornblum:
-% Spikes.Timing.KornblumSpikes(r,[], 'CombineCueUncue', false);
+% Spikes.Timing.KornblumSpikes(r,[]);
 % load(output.name);
-% Spikes.Timing.KornblumSpikesPopulation(r);
+
+% % For Autoshaping:
+% Spikes.Autoshaping.ChoiceSpikes(r,[]);
+% load(output.name);
+
+% % For Wait1:
+% Spikes.Wait1.Wait1Spikes(r,[]);
+% load(output.name);
+
+% % For Wait2:
+% Spikes.Wait2.Wait2Spikes(r,[]);
+% load(output.name);

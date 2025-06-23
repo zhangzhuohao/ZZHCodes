@@ -85,10 +85,12 @@ for k = 1:length(event_labels)
 end
 
 event_onset_sec = events_onset_Tprime_ms(idx_for_phy);
-event_offset_sec = events_onset_Tprime_ms(idx_for_phy);
+event_offset_sec = events_offset_Tprime_ms(idx_for_phy);
+
+%%
 for k = 1:length(event_onset_sec)
     if strcmpi(bit_label, event_labels_for_phy{k})
-        [~, ind_head] = decodeBitMarker(event_onset_sec, event_offset_sec, 'bit_len', 60, 'bit_num', 9, 'head_on_dur', 120, 'head_off_dur', 60, 'fs', sample_rate);
+        [~, ind_head] = decodeBitMarker(event_onset_sec{k}, event_offset_sec{k}, 'bit_len', 60, 'bit_num', 9, 'head_on_dur', 120, 'head_off_dur', 60, 'fs', sample_rate);
         event_onset_sec{k} = event_onset_sec{k}(ind_head);
     end
     event_onset_sec{k} = event_onset_sec{k}./1000;

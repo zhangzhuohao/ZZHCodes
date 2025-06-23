@@ -113,6 +113,8 @@ plot(tOn, trial_id, '-b');
 if ~isempty(shift_id)
     scatter(tOn(shift_id), trial_id(shift_id), 36, 'red', 'LineWidth', .5);
 end
+ylim([-.5 .5] + [min(trial_id) max(trial_id)]);
+
 if to_print
     print_name = 'BitDecoding';
     print(fig_decode, '-dpng', print_name);
