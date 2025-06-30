@@ -64,8 +64,13 @@ while i < length(tOn)
     end
 
     % find time of LED-off within signal duration
-    t_off_follow = tOff(i:end) - tOn(i);
+    t_off_follow = tOff(tOff>tOn(i)) - tOn(i);
     t_off_follow = t_off_follow(t_off_follow<=head_dur+bit_dur+200); % include extra 200 ms, in case of timestamp shift
+    
+    if(length(t_on_follow)~=length(t_off_follow))
+        i = i+1;
+        continue;
+    end
 
     % transfer time points to signal sequence
     entire_signal = zeros(1, signal_dur);
@@ -106,14 +111,16 @@ shift_id   = shift_diff(diff(shift_diff)==1);
 
 % plot decode results
 fig_decode = figure(38); clf(38);
-set(fig_decode, 'name', 'BitDecoding', 'units', 'centimeters', 'position', [5 1 15 10]);
-hold on;
-scatter(tOn, trial_id, 32, 'blue', 'LineWidth', .5);
-plot(tOn, trial_id, '-b');
+set(fig_decode, 'name', 'BitDecoding', 'units', 'centimeters', 'position', [5 3 10 7], 'PaperUnits', 'centimeters', 'PaperPosition', [5 3 10 7]);
+ax_decode = axes(fig_decode, 'Units', 'centimeters', 'Position', [1.5 1.5 8 5], 'NextPlot', 'add', 'FontSize', 9, 'TickDir', 'out');
+scatter(ax_decode, tOn/1000, trial_id, 32, 'blue', 'LineWidth', .5);
+plot(ax_decode, tOn/1000, trial_id, '-b');
 if ~isempty(shift_id)
-    scatter(tOn(shift_id), trial_id(shift_id), 36, 'red', 'LineWidth', .5);
+    scatter(ax_decode, tOn(shift_id)/1000, trial_id(shift_id), 36, 'red', 'LineWidth', .5);
 end
-ylim([-.5 .5] + [min(trial_id) max(trial_id)]);
+ylim(ax_decode, [-.5 .5] + [min(trial_id) max(trial_id)]);
+xlabel(ax_decode, 'Time (s)');
+ylabel(ax_decode, 'TrialID');
 
 if to_print
     print_name = 'BitDecoding';
