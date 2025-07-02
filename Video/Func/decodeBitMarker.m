@@ -10,6 +10,7 @@ head_off_dur = 60; % ms
 % sample rate
 fs = 50; % ms
 % plot decode result
+record_dur = [];
 to_print = true;
 
 if nargin>2
@@ -25,6 +26,8 @@ if nargin>2
                 head_off_dur = varargin{i+1};
             case 'fs'
                 fs = varargin{i+1};
+            case 'n_samples'
+                record_dur = varargin{i+1};
             case 'to_plot'
                 to_print = varargin{i+1};
             otherwise
@@ -48,6 +51,19 @@ signal_dur = head_dur + bit_dur;
 % exposure time
 exposure_time = round(1000 / fs);
 
+% tolerant duration, use this duration to check if the bitcode was around
+% the start or end of the recording
+tol_dur = signal_dur + 5*exposure_time;
+
+if ~isempty(record_dur)
+    if tOn(1) < tol_dur
+        tOn(abs(tOn-tOn(1))<tol_dur) = [];
+    end
+    if (record_dur-tOn(end)) < tol_dur
+        tOn(abs(tOn-tOn(end))<tol_dur) = [];
+    end
+end
+
 % check signal from the first LED-on
 trial_id = nan(length(tOn), 1); % set a larger initial container
 ind_head = (1:length(tOn))';
@@ -65,9 +81,9 @@ while i < length(tOn)
 
     % find time of LED-off within signal duration
     t_off_follow = tOff(tOff>tOn(i)) - tOn(i);
-    t_off_follow = t_off_follow(t_off_follow<=head_dur+bit_dur+200); % include extra 200 ms, in case of timestamp shift
+    t_off_follow = t_off_follow(t_off_follow<=head_dur+bit_dur+tol_dur); % include extra tolerant duration, in case of timestamp shift
     
-    if(length(t_on_follow)~=length(t_off_follow))
+    if length(t_on_follow)~=length(t_off_follow)
         i = i+1;
         continue;
     end
