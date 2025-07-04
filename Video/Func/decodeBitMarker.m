@@ -10,7 +10,7 @@ head_off_dur = 60; % ms
 % sample rate
 fs = 50; % ms
 % plot decode result
-record_dur = [];
+sample_dur = [];
 to_print = true;
 
 if nargin>2
@@ -26,8 +26,8 @@ if nargin>2
                 head_off_dur = varargin{i+1};
             case 'fs'
                 fs = varargin{i+1};
-            case 'n_samples'
-                record_dur = varargin{i+1};
+            case 'sample_dur'
+                sample_dur = varargin{i+1};
             case 'to_plot'
                 to_print = varargin{i+1};
             otherwise
@@ -55,11 +55,11 @@ exposure_time = round(1000 / fs);
 % the start or end of the recording
 tol_dur = signal_dur + 5*exposure_time;
 
-if ~isempty(record_dur)
+if ~isempty(sample_dur)
     if tOn(1) < tol_dur
         tOn(abs(tOn-tOn(1))<tol_dur) = [];
     end
-    if (record_dur-tOn(end)) < tol_dur
+    if (sample_dur-tOn(end)) < tol_dur
         tOn(abs(tOn-tOn(end))<tol_dur) = [];
     end
 end
@@ -127,14 +127,14 @@ shift_id   = shift_diff(diff(shift_diff)==1);
 
 % plot decode results
 fig_decode = figure(38); clf(38);
-set(fig_decode, 'name', 'BitDecoding', 'units', 'centimeters', 'position', [5 3 10 7], 'PaperUnits', 'centimeters', 'PaperPosition', [5 3 10 7]);
-ax_decode = axes(fig_decode, 'Units', 'centimeters', 'Position', [1.5 1.5 8 5], 'NextPlot', 'add', 'FontSize', 9, 'TickDir', 'out');
-scatter(ax_decode, tOn/1000, trial_id, 32, 'blue', 'LineWidth', .5);
+set(fig_decode, 'name', 'BitDecoding', 'units', 'centimeters', 'position', [5 3 7 5.5], 'PaperUnits', 'centimeters', 'PaperPosition', [5 3 7 5.5]);
+ax_decode = axes(fig_decode, 'Units', 'centimeters', 'Position', [1.5 1.5 5 3.5], 'NextPlot', 'add', 'FontSize', 9, 'TickDir', 'out');
+scatter(ax_decode, tOn/1000, trial_id, 16, 'blue', 'LineWidth', .5);
 plot(ax_decode, tOn/1000, trial_id, '-b');
 if ~isempty(shift_id)
-    scatter(ax_decode, tOn(shift_id)/1000, trial_id(shift_id), 36, 'red', 'LineWidth', .5);
+    scatter(ax_decode, tOn(shift_id)/1000, trial_id(shift_id), 20, 'red', 'LineWidth', .5);
 end
-ylim(ax_decode, [-.5 .5] + [min(trial_id) max(trial_id)]);
+ylim(ax_decode, [0 max(trial_id)]);
 xlabel(ax_decode, 'Time (s)');
 ylabel(ax_decode, 'TrialID');
 
