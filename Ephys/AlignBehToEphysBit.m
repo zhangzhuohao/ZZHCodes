@@ -1,9 +1,10 @@
-function EventOut = AlignBehToEphysBit(EventOut, BehClass)
+function EventOut = AlignBehToEphysBit(EventOut, BehClass, fs, n_samples)
 
 % 3/3/2021 Jianing Yu - AlignMED2BR
 % EventOut comes from BlackRock's digital input
 % bMED is the b array coming from MED data
-% Time of some critical behavioral events (e.g., Trigger stimulus) needs to be mapped to EventOut
+% Time of some critical behavioral events (e.g., Trigger stimulus) needs to
+% be mapped to EventOut 
 % Alignment is performed using press onset data
 % Alignment of each trigger stimulus needs to be adjusted to the preceding press
 % onset
@@ -22,30 +23,34 @@ function EventOut = AlignBehToEphysBit(EventOut, BehClass)
 % is to decode bitcode marker to find corresponding behavior trials, and to complete behavior 
 % events in ephys recording (Trigger, PokeCentOut)
 
-% CentPokeIn events, marked by bitcode. Decode trial number and extract onset timepoints
-PokeCentInEphysOn  = EventOut.Onset{strcmp(EventOut.EventsLabels, 'PokeCentIn')};
-PokeCentInEphysOff = EventOut.Offset{strcmp(EventOut.EventsLabels, 'PokeCentIn')};
-[TrialID, IndHead] = decodeBitMarker(PokeCentInEphysOn, PokeCentInEphysOff, 'bit_len', 60, 'bit_num', 9, 'head_on_dur', 120, 'head_off_dur', 60, 'fs', sample_rate);
-PokeCentInEphysOn  = PokeCentInEphysOn(IndHead);
-PokeCentInEphysOff = PokeCentInEphysOff(IndHead);
-
 % these are times for poke-in center, choice and init recorded in ephys.
+PokeCentInEphysOn    = EventOut.Onset{strcmp(EventOut.EventsLabels, 'PokeCentIn')};
+PokeCentInEphysOff   = EventOut.Offset{strcmp(EventOut.EventsLabels, 'PokeCentIn')};
 PokeChoiceInEphysOn  = EventOut.Onset{strcmp(EventOut.EventsLabels, 'PokeChoiceIn')};
 PokeChoiceInEphysOff = EventOut.Offset{strcmp(EventOut.EventsLabels, 'PokeChoiceIn')};
 PokeInitInEphysOn    = EventOut.Onset{strcmp(EventOut.EventsLabels, 'PokeInitIn')};
 PokeInitInEphysOff   = EventOut.Offset{strcmp(EventOut.EventsLabels, 'PokeInitIn')};
 
 % Sometimes the recording miss the first init_in signal before cent_in, we drop that
-if PokeInitInEphysOn(1) > PokeCentInEphysOn(1) % missing occurred
-    PokeCentInEphysOn(1) = [];
-    if PokeChoiceInEphysOn(1) < PokeCentInEphysOn(1)
-        PokeChoiceInEphysOn(1) = [];
-    end
+PokeCentInEphysOn(PokeCentInEphysOn<PokeInitInEphysOn(1))   = [];
+PokeCentInEphysOff(PokeCentInEphysOff<PokeInitInEphysOn(1)) = [];
+PokeChoiceInEphysOn(PokeChoiceInEphysOn<PokeCentInEphysOn(1))   = [];
+PokeChoiceInEphysOff(PokeChoiceInEphysOff<PokeCentInEphysOn(1)) = [];
+
+% In case the recording was disabled immediately following a cent-poke
+dur_record = 1000 * n_samples / fs; % ms
+if (dur_record-PokeCentInEphysOn(end))<800
+    PokeCentInEphysOn((PokeCentInEphysOn(end)-PokeCentInEphysOn)<800) = [];
 end
+
 % Sometimes the recording over-take the last+1 init_in signal without cent_in, we drop that
-if PokeInitInEphysOn(end) > PokeCentInEphysOn(end) % over-taking occurred
-    PokeInitInEphysOn(end) = [];
-end
+PokeInitInEphysOn(PokeInitInEphysOn>PokeCentInEphysOn(end)) = [];
+PokeInitInEphysOff(PokeInitInEphysOff>PokeCentInEphysOn(end)) = [];
+
+% CentPokeIn events, marked by bitcode. Decode trial number and extract onset timepoints
+[TrialIndexEphys, IndHead] = decodeBitMarker(PokeCentInEphysOn, PokeCentInEphysOff, 'bit_len', 60, 'bit_num', 9, 'head_on_dur', 120, 'head_off_dur', 60, 'fs', fs);
+PokeCentInEphysOn  = PokeCentInEphysOn(IndHead);
+PokeCentInEphysOff = PokeCentInEphysOff(IndHead);
 
 % these are times for poke-in center, choice and init recorded in bpod
 Beh = BehClass.BehavTable;
@@ -65,46 +70,49 @@ FPBeh          = Beh.FP;
 CueBeh         = Beh.Cued;
 StageBeh       = Beh.Stage;
 
+% behavior performance in ephys recording
+NumTrialEphys = length(TrialIndexEphys);
+IndValid = nan(NumTrialEphys);
+for i = 1:NumTrialEphys
+    ind_beh = find(TrialIndexBeh==TrialIndexEphys(i));
+    if length(ind_beh)==1
+        IndValid(i) = ind_beh;
+    end
+end
+
+TrialIndexEphys    = TrialIndexEphys(~isnan(IndValid));
+PokeCentInEphysOn  = PokeCentInEphysOn(~isnan(IndValid));
+PokeCentInEphysOff = PokeCentInEphysOff(~isnan(IndValid));
+
+PerformanceEphys = PerformanceBeh(IndValid);
+PortCorrectEphys = PortCorrectBeh(IndValid);
+PortChosenEphys  = PortChosenBeh(IndValid);
+FPEphys          = FPBeh(IndValid);
+CueEphys         = CueBeh(IndValid);
+StageEphys       = StageBeh(IndValid);
+
 %
 % Start to map
 % PokeCentInBeh is the time recorded in Bpod
 % PokeCentInEphys is the time recorded in Ephys system
 % IndMatched gives the matching index. 
 
-IndMatched = findseqmatchrev(PokeCentInBeh, PokeCentInEphysOn, 0, 1); % note that IndMatched has the same length as PokeCentInEphys
-IndValid   = find(~isnan(IndMatched));
-
-PokeCentInEphysOn   = PokeCentInEphysOn(IndValid);
-PokeInitInEphysOn   = PokeInitInEphysOn(IndValid);
-
-IndMatchedChoice  = findseqmatchrev(PokeChoiceInBeh, PokeChoiceInEphysOn, 0, 1); % note that IndMatched has the same length as PokeCentInEphys
-IndValidChoice    = ~isnan(IndMatchedChoice);
-PokeChoiceInEphysOn = PokeChoiceInEphysOn(IndValidChoice);
-
 % Update EventOut
 EventOut.Onset{strcmp(EventOut.EventsLabels, 'PokeCentIn')}   = PokeCentInEphysOn;
+EventOut.Offset{strcmp(EventOut.EventsLabels, 'PokeCentIn')}  = PokeCentInEphysOff;
 EventOut.Onset{strcmp(EventOut.EventsLabels, 'PokeChoiceIn')} = PokeChoiceInEphysOn;
 EventOut.Onset{strcmp(EventOut.EventsLabels, 'PokeInitIn')}   = PokeInitInEphysOn;
 
 NumTrialsEphys = length(PokeCentInEphysOn);
 
-%
-TrialIndexEphys  = TrialIndexBeh(IndMatched(IndValid)); % only for these presses we can find matching ones in behavior
-PerformanceEphys = PerformanceBeh(IndMatched(IndValid));
-CueEphys         = CueBeh(IndMatched(IndValid));
-FPEphys          = FPBeh(IndMatched(IndValid));
-PortCorrectEphys = PortCorrectBeh(IndMatched(IndValid));
-PortChosenEphys  = PortChosenBeh(IndMatched(IndValid));
-StageEphys       = StageBeh(IndMatched(IndValid));
-
 % add information to EventOut
-EventOut.TrialIndexEphys       = TrialIndexEphys;
-EventOut.OutcomeEphys          = PerformanceEphys;
-EventOut.CueEphys              = CueEphys;
-EventOut.FPEphys               = FPEphys;
-EventOut.PortCorrectEphys      = PortCorrectEphys;
-EventOut.PortChosenEphys       = PortChosenEphys;
-EventOut.StageEphys            = StageEphys;
+EventOut.TrialIndexEphys  = TrialIndexEphys;
+EventOut.OutcomeEphys     = PerformanceEphys;
+EventOut.CueEphys         = CueEphys;
+EventOut.FPEphys          = FPEphys;
+EventOut.PortCorrectEphys = PortCorrectEphys;
+EventOut.PortChosenEphys  = PortChosenEphys;
+EventOut.StageEphys       = StageEphys;
 
 % there are no marks for trigger and poke-cent-out during GPS neuropixels
 % recording, we can fill them in through poke-cent-in time
@@ -231,4 +239,5 @@ if isempty(find(strcmp(EventOut.EventsLabels, 'PokeInitOut'), 1))
 end
 EventOut.Onset{strcmp(EventOut.EventsLabels, 'PokeInitOut')}  = InitOutMapped;
 EventOut.Offset{strcmp(EventOut.EventsLabels, 'PokeInitOut')} = InitOutMapped + 200;
+
 end % AlignBehToEphys

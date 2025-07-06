@@ -491,7 +491,7 @@ classdef KilosortOutputClass<handle
             Experimenter = 'ZZH';
             BehClassPath = [];
             ImplantLateral = 'R';
-            BitEvent = '';
+            BitCode = false;
 
             if nargin>=2
                 for i=1:2:size(varargin,2)
@@ -510,8 +510,8 @@ classdef KilosortOutputClass<handle
                             BehClassPath = varargin{i+1};
                         case 'ImplantLateral'
                             ImplantLateral = varargin{i+1};
-                        case 'BitEvent'
-                            BitEvent = varargin{i+1};
+                        case 'BitCode'
+                            BitCode = varargin{i+1};
                         otherwise
                             errordlg('unknown argument')
                     end
@@ -578,10 +578,10 @@ classdef KilosortOutputClass<handle
             EventOutCombined = EventOut;
             EventOutCombined = rmfield(EventOutCombined, 'TimeEvents');
 
-            if isempty(BitEvent)
+            if ~BitCode
                 EventOutCombined = AlignBehToEphys(EventOutCombined, BehClass);
             else
-                EventOutCombined = AlignBehToEphysBit(EventOutCombined, BehClass, BitEvent);
+                EventOutCombined = AlignBehToEphysBit(EventOutCombined, BehClass, obj.ParamsKilosort.fs, obj.ParamsKilosort.sampsToRead);
             end
 
             %% construct an array (r) with aligned behavior, spikes and LFP data.
