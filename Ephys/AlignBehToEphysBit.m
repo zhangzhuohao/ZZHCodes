@@ -23,9 +23,17 @@ function EventOut = AlignBehToEphysBit(EventOut, BehClass, fs, n_samples)
 % is to decode bitcode marker to find corresponding behavior trials, and to complete behavior 
 % events in ephys recording (Trigger, PokeCentOut)
 
-% these are times for poke-in center, choice and init recorded in ephys.
+% these are times for poke-in center recorded in ephys.
 PokeCentInEphysOn    = EventOut.Onset{strcmp(EventOut.EventsLabels, 'PokeCentIn')};
 PokeCentInEphysOff   = EventOut.Offset{strcmp(EventOut.EventsLabels, 'PokeCentIn')};
+
+% CentPokeIn events, marked by bitcode. Decode trial number and extract onset timepoints
+sample_dur = 1000 * n_samples / fs; % ms
+[TrialIndexEphys, IndHead] = decodeBitMarker(PokeCentInEphysOn, PokeCentInEphysOff, 'bit_len', 60, 'bit_num', 9, 'head_on_dur', 120, 'head_off_dur', 60, 'fs', fs, 'sample_dur', sample_dur);
+PokeCentInEphysOn  = PokeCentInEphysOn(IndHead);
+PokeCentInEphysOff = PokeCentInEphysOff(IndHead);
+
+% these are times for poke-in choice and init recorded in ephys.
 PokeChoiceInEphysOn  = EventOut.Onset{strcmp(EventOut.EventsLabels, 'PokeChoiceIn')};
 PokeChoiceInEphysOff = EventOut.Offset{strcmp(EventOut.EventsLabels, 'PokeChoiceIn')};
 PokeInitInEphysOn    = EventOut.Onset{strcmp(EventOut.EventsLabels, 'PokeInitIn')};
@@ -37,20 +45,9 @@ PokeCentInEphysOff(PokeCentInEphysOff<PokeInitInEphysOn(1)) = [];
 PokeChoiceInEphysOn(PokeChoiceInEphysOn<PokeCentInEphysOn(1))   = [];
 PokeChoiceInEphysOff(PokeChoiceInEphysOff<PokeCentInEphysOn(1)) = [];
 
-% In case the recording was disabled immediately following a cent-poke
-dur_record = 1000 * n_samples / fs; % ms
-if (dur_record-PokeCentInEphysOn(end))<800
-    PokeCentInEphysOn((PokeCentInEphysOn(end)-PokeCentInEphysOn)<800) = [];
-end
-
 % Sometimes the recording over-take the last+1 init_in signal without cent_in, we drop that
 PokeInitInEphysOn(PokeInitInEphysOn>PokeCentInEphysOn(end)) = [];
 PokeInitInEphysOff(PokeInitInEphysOff>PokeCentInEphysOn(end)) = [];
-
-% CentPokeIn events, marked by bitcode. Decode trial number and extract onset timepoints
-[TrialIndexEphys, IndHead] = decodeBitMarker(PokeCentInEphysOn, PokeCentInEphysOff, 'bit_len', 60, 'bit_num', 9, 'head_on_dur', 120, 'head_off_dur', 60, 'fs', fs);
-PokeCentInEphysOn  = PokeCentInEphysOn(IndHead);
-PokeCentInEphysOff = PokeCentInEphysOff(IndHead);
 
 % these are times for poke-in center, choice and init recorded in bpod
 Beh = BehClass.BehavTable;
@@ -72,7 +69,7 @@ StageBeh       = Beh.Stage;
 
 % behavior performance in ephys recording
 NumTrialEphys = length(TrialIndexEphys);
-IndValid = nan(NumTrialEphys);
+IndValid = nan(NumTrialEphys, 1);
 for i = 1:NumTrialEphys
     ind_beh = find(TrialIndexBeh==TrialIndexEphys(i));
     if length(ind_beh)==1
@@ -83,7 +80,10 @@ end
 TrialIndexEphys    = TrialIndexEphys(~isnan(IndValid));
 PokeCentInEphysOn  = PokeCentInEphysOn(~isnan(IndValid));
 PokeCentInEphysOff = PokeCentInEphysOff(~isnan(IndValid));
+PokeInitInEphysOn  = PokeInitInEphysOn(~isnan(IndValid));
+PokeInitInEphysOff = PokeInitInEphysOff(~isnan(IndValid));
 
+IndValid = IndValid(~isnan(IndValid));
 PerformanceEphys = PerformanceBeh(IndValid);
 PortCorrectEphys = PortCorrectBeh(IndValid);
 PortChosenEphys  = PortChosenBeh(IndValid);
@@ -98,10 +98,12 @@ StageEphys       = StageBeh(IndValid);
 % IndMatched gives the matching index. 
 
 % Update EventOut
-EventOut.Onset{strcmp(EventOut.EventsLabels, 'PokeCentIn')}   = PokeCentInEphysOn;
-EventOut.Offset{strcmp(EventOut.EventsLabels, 'PokeCentIn')}  = PokeCentInEphysOff;
-EventOut.Onset{strcmp(EventOut.EventsLabels, 'PokeChoiceIn')} = PokeChoiceInEphysOn;
-EventOut.Onset{strcmp(EventOut.EventsLabels, 'PokeInitIn')}   = PokeInitInEphysOn;
+EventOut.Onset{strcmp(EventOut.EventsLabels, 'PokeCentIn')}    = PokeCentInEphysOn;
+EventOut.Offset{strcmp(EventOut.EventsLabels, 'PokeCentIn')}   = PokeCentInEphysOff;
+EventOut.Onset{strcmp(EventOut.EventsLabels, 'PokeChoiceIn')}  = PokeChoiceInEphysOn;
+EventOut.Offset{strcmp(EventOut.EventsLabels, 'PokeChoiceIn')} = PokeChoiceInEphysOff;
+EventOut.Onset{strcmp(EventOut.EventsLabels, 'PokeInitIn')}    = PokeInitInEphysOn;
+EventOut.Offset{strcmp(EventOut.EventsLabels, 'PokeInitIn')}   = PokeInitInEphysOff;
 
 NumTrialsEphys = length(PokeCentInEphysOn);
 
@@ -122,13 +124,11 @@ TriggerMapped = nan(1, NumTrialsEphys);
 for i = 1:NumTrialsEphys
     iPokeCentInEphys = PokeCentInEphysOn(i);
     if ~isnan(TrialIndexEphys(i))
-        i_trial = TrialIndexEphys(i);
-        iPokeCentInBeh = PokeCentInBeh(i_trial);
-        iTriggerBeh = TriggerBeh(i_trial);
-        if i <= NumTrialsEphys
-            if TriggerBeh(i_trial) > 0
-                TriggerMapped(i) = iTriggerBeh-iPokeCentInBeh+iPokeCentInEphys;
-            end
+        ind_beh = find(TrialIndexBeh==TrialIndexEphys(i));
+        iPokeCentInBeh = PokeCentInBeh(ind_beh);
+        iTriggerBeh = TriggerBeh(ind_beh);
+        if iTriggerBeh > 0
+            TriggerMapped(i) = iTriggerBeh-iPokeCentInBeh+iPokeCentInEphys;
         end
     end
 end
@@ -139,10 +139,10 @@ PokeCentOutMapped = nan(1, NumTrialsEphys);
 for i = 1:NumTrialsEphys
     iPokeCentInEphys = PokeCentInEphysOn(i);
     if ~isnan(TrialIndexEphys(i))
-        i_trial = TrialIndexEphys(i);
-        iPokeCentInBeh  = PokeCentInBeh(i_trial);
-        iPokeCentOutBeh = PokeCentOutBeh(i_trial);
-        if ~isnan(iPokeCentInBeh)
+        ind_beh = find(TrialIndexBeh==TrialIndexEphys(i));
+        iPokeCentInBeh  = PokeCentInBeh(ind_beh);
+        iPokeCentOutBeh = PokeCentOutBeh(ind_beh);
+        if ~isnan(iPokeCentOutBeh)
             PokeCentOutMapped(i) = iPokeCentOutBeh-iPokeCentInBeh+iPokeCentInEphys;
         end
     end
@@ -154,17 +154,16 @@ ChoiceInMapped = nan(1, NumTrialsEphys);
 for i = 1:NumTrialsEphys
     iPokeCentInEphys = PokeCentInEphysOn(i);
     if ~isnan(TrialIndexEphys(i))
-        i_trial = TrialIndexEphys(i);
-        iPokeCentInBeh = PokeCentInBeh(i_trial);
-        iPokeChoiceInBeh = PokeChoiceInBeh(i_trial);
-        if i <= NumTrialsEphys
-            if PokeChoiceInBeh(i_trial) > 0
-                ChoiceInMapped(i) = iPokeChoiceInBeh-iPokeCentInBeh+iPokeCentInEphys;
-            end
+        ind_beh = find(TrialIndexBeh==TrialIndexEphys(i));
+        iPokeCentInBeh = PokeCentInBeh(ind_beh);
+        iPokeChoiceInBeh = PokeChoiceInBeh(ind_beh);
+        if iPokeChoiceInBeh > 0
+            ChoiceInMapped(i) = iPokeChoiceInBeh-iPokeCentInBeh+iPokeCentInEphys;
         end
     end
 end
 ChoiceInMapped = ChoiceInMapped(~isnan(ChoiceInMapped));
+
 % complete the original choice marker from recording
 ChoiceInToFill = false(1, length(ChoiceInMapped));
 for i = 1:length(ChoiceInMapped)
@@ -183,13 +182,11 @@ InitOutMapped = nan(1, NumTrialsEphys);
 for i = 1:NumTrialsEphys
     iPokeInitInEphys = PokeInitInEphysOn(i);
     if ~isnan(TrialIndexEphys(i))
-        i_trial = TrialIndexEphys(i);
-        iPokeInitInBeh = PokeInitInBeh(i_trial);
-        iPokeInitOutBeh = PokeInitOutBeh(i_trial);
-        if i <= NumTrialsEphys
-            if PokeInitOutBeh(i_trial) > 0
-                InitOutMapped(i) = iPokeInitOutBeh-iPokeInitInBeh+iPokeInitInEphys;
-            end
+        ind_beh = find(TrialIndexBeh==TrialIndexEphys(i));
+        iPokeInitInBeh = PokeInitInBeh(ind_beh);
+        iPokeInitOutBeh = PokeInitOutBeh(ind_beh);
+        if iPokeInitOutBeh > 0
+            InitOutMapped(i) = iPokeInitOutBeh-iPokeInitInBeh+iPokeInitInEphys;
         end
     end
 end

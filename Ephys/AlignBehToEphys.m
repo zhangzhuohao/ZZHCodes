@@ -101,13 +101,11 @@ TriggerMapped = nan(1, NumTrialsEphys);
 for i = 1:NumTrialsEphys
     iPokeCentInEphys = PokeCentInEphys(i);
     if ~isnan(TrialIndexEphys(i))
-        i_trial = TrialIndexEphys(i);
-        iPokeCentInBeh = PokeCentInBeh(i_trial);
-        iTriggerBeh = TriggerBeh(i_trial);
-        if i <= NumTrialsEphys
-            if TriggerBeh(i_trial) > 0
-                TriggerMapped(i) = iTriggerBeh-iPokeCentInBeh+iPokeCentInEphys;
-            end
+        ind_beh = find(TrialIndexBeh==TrialIndexEphys(i));
+        iPokeCentInBeh = PokeCentInBeh(ind_beh);
+        iTriggerBeh = TriggerBeh(ind_beh);
+        if iTriggerBeh > 0
+            TriggerMapped(i) = iTriggerBeh-iPokeCentInBeh+iPokeCentInEphys;
         end
     end
 end
@@ -118,10 +116,10 @@ PokeCentOutMapped = nan(1, NumTrialsEphys);
 for i = 1:NumTrialsEphys
     iPokeCentInEphys = PokeCentInEphys(i);
     if ~isnan(TrialIndexEphys(i))
-        i_trial = TrialIndexEphys(i);
-        iPokeCentInBeh  = PokeCentInBeh(i_trial);
-        iPokeCentOutBeh = PokeCentOutBeh(i_trial);
-        if ~isnan(iPokeCentInBeh)
+        ind_beh = find(TrialIndexBeh==TrialIndexEphys(i));
+        iPokeCentInBeh  = PokeCentInBeh(ind_beh);
+        iPokeCentOutBeh = PokeCentOutBeh(ind_beh);
+        if ~isnan(iPokeCentOutBeh)
             PokeCentOutMapped(i) = iPokeCentOutBeh-iPokeCentInBeh+iPokeCentInEphys;
         end
     end
@@ -133,13 +131,11 @@ ChoiceInMapped = nan(1, NumTrialsEphys);
 for i = 1:NumTrialsEphys
     iPokeCentInEphys = PokeCentInEphys(i);
     if ~isnan(TrialIndexEphys(i))
-        i_trial = TrialIndexEphys(i);
-        iPokeCentInBeh = PokeCentInBeh(i_trial);
-        iPokeChoiceInBeh = PokeChoiceInBeh(i_trial);
-        if i <= NumTrialsEphys
-            if PokeChoiceInBeh(i_trial) > 0
-                ChoiceInMapped(i) = iPokeChoiceInBeh-iPokeCentInBeh+iPokeCentInEphys;
-            end
+        ind_beh = find(TrialIndexBeh==TrialIndexEphys(i));
+        iPokeCentInBeh = PokeCentInBeh(ind_beh);
+        iPokeChoiceInBeh = PokeChoiceInBeh(ind_beh);
+        if iPokeChoiceInBeh > 0
+            ChoiceInMapped(i) = iPokeChoiceInBeh-iPokeCentInBeh+iPokeCentInEphys;
         end
     end
 end
@@ -162,13 +158,11 @@ InitOutMapped = nan(1, NumTrialsEphys);
 for i = 1:NumTrialsEphys
     iPokeInitInEphys = PokeInitInEphys(i);
     if ~isnan(TrialIndexEphys(i))
-        i_trial = TrialIndexEphys(i);
-        iPokeInitInBeh = PokeInitInBeh(i_trial);
-        iPokeInitOutBeh = PokeInitOutBeh(i_trial);
-        if i <= NumTrialsEphys
-            if PokeInitOutBeh(i_trial) > 0
-                InitOutMapped(i) = iPokeInitOutBeh-iPokeInitInBeh+iPokeInitInEphys;
-            end
+        ind_beh = find(TrialIndexBeh==TrialIndexEphys(i));
+        iPokeInitInBeh = PokeInitInBeh(ind_beh);
+        iPokeInitOutBeh = PokeInitOutBeh(ind_beh);
+        if iPokeInitOutBeh > 0
+            InitOutMapped(i) = iPokeInitOutBeh-iPokeInitInBeh+iPokeInitInEphys;
         end
     end
 end
@@ -218,4 +212,5 @@ if isempty(find(strcmp(EventOut.EventsLabels, 'PokeInitOut'), 1))
 end
 EventOut.Onset{strcmp(EventOut.EventsLabels, 'PokeInitOut')}  = InitOutMapped;
 EventOut.Offset{strcmp(EventOut.EventsLabels, 'PokeInitOut')} = InitOutMapped + 200;
+
 end % AlignBehToEphys

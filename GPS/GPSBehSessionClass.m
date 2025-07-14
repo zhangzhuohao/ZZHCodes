@@ -566,18 +566,20 @@ classdef GPSBehSessionClass < GPSBehClass & GPSPlot
             inter_on        = cellfun(@(x, y) x(1:end-1) - y(1), obj.CentPokeOutTime, obj.CentPokeInTime, 'UniformOutput', false);
             inter_dur       = cellfun(@(x, y) y(2:end) - x(1:end-1), obj.CentPokeOutTime, obj.CentPokeInTime, 'UniformOutput', false);
             trial           = cellfun(@(x, y) repmat(x, length(y), 1), num2cell(obj.Trials), inter_on, 'UniformOutput', false);
+            order           = cellfun(@(x, y) repmat(x, length(y), 1), num2cell((1:obj.NumTrials)'), inter_on, 'UniformOutput', false);
 
             id = find(obj.Stage & ~cellfun(@isempty, inter_on));
             
             inter_on        = cell2mat(inter_on(id));
             inter_dur       = cell2mat(inter_dur(id));
             trial           = cell2mat(trial(id));
+            order           = cell2mat(order(id));
 
-            port_correct    = obj.PortCorrect(trial);
-            fp              = obj.FP(trial);
-            cued            = obj.Cued(trial);
-            hold_duration   = obj.HD(trial);
-            outcome         = obj.Outcome(trial);
+            port_correct    = obj.PortCorrect(order);
+            fp              = obj.FP(order);
+            cued            = obj.Cued(order);
+            hold_duration   = obj.HD(order);
+            outcome         = obj.Outcome(order);
 
             Subjects = repmat(string(obj.Subject), length(trial), 1);
             Sessions = repmat(string(obj.Session), length(trial), 1);

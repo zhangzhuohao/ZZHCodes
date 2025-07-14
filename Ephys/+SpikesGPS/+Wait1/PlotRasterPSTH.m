@@ -170,7 +170,7 @@ for m = 1:NumStages
             xx = t_mat(spk_mat(:,i)==1);
             yy1 = [.1 .9] - k; % spikes
             yy2 = [0 1] - k;   % events
-            
+
             irt = rt(i); % time from trigger to cent-out
             ifp = fp(i);
             xxrt = irt + ifp*1000;
@@ -294,6 +294,10 @@ uicontrol('Style', 'text', 'Units', 'centimeters', 'Position', [x_col1-.5 y_col1
 y_col1_row6 = y_col1_row5 + w_space;
 ch = r.Units.SpikeNotes(ku, 1);
 unit_no = r.Units.SpikeNotes(ku, 2);
+ch_id = r.ChanMap.chanMap==ch;
+ch_k  = r.ChanMap.kcoords(ch_id);
+ch_x  = r.ChanMap.xcoords(ch_id);
+ch_y  = r.ChanMap.ycoords(ch_id);
 
 if size(r.Units.SpikeNotes, 2) == 4
     cluster_id = r.Units.SpikeNotes(ku, 4);
@@ -1048,7 +1052,8 @@ fig_height = max([fig_height, y_spk_rate+1]);
 thiscolor = [0 0 0];
 spk_len = size(r.Units.SpikeTimes(ku).wave, 2);
 ha_wave = axes('unit', 'centimeters', 'position', [x_col5+.25 y_col5_row4+5 2 2], ...
-    'nextplot', 'add', 'xlim', [0 spk_len], 'ytick', -500:100:200, 'xticklabel', [], 'FontSize', 7, 'TickDir', 'Out');
+    'nextplot', 'add', 'xlim', [0 spk_len], 'ytick', -500:50:200, 'xticklabel', [], 'FontSize', 7, 'TickDir', 'Out', ...
+    'xcolor', 'none', 'ycolor', 'none');
 set(ha_wave, 'nextplot', 'add');
 ylabel('\muV')
 
@@ -1098,73 +1103,10 @@ hbar = bar(lags, c);
 set(hbar, 'facecolor', 'k');
 xlabel('Lag(ms)')
 
-% Plot waveforms of adjacent channels (for neuropixels 1.0, assigned by channel location)
+% Plot waveforms of adjacent channels (for neuropixels 1.0/2.0, assigned by channel location)
 if isfield(r.Units.SpikeTimes(ku), 'wave_mean')
     ha_wave_poly = axes('unit', 'centimeters', 'position', [x_col6 y_col6_row4+2 2.5 6], 'nextplot', 'add', 'FontSize', 7, 'TickDir', 'Out');
-    wave_form = r.Units.SpikeTimes(ku).wave_mean / 4;
-    n_sample = size(wave_form, 2); % sample size per spike
-    
-    PSTH.SpikeWaveMean = wave_form;
-
-    v_sep = 100;
-    h_sep = n_sample;
-
-    xcoords = r.ChanMap.xcoords;
-    ycoords = r.ChanMap.ycoords;
-    x_id = (xcoords-min(xcoords)) / unique(diff(unique(xcoords)));
-    y_id = (ycoords-min(ycoords)) / unique(diff(unique(ycoords)));
-
-    chs = 1:size(wave_form, 1);
-    ch_largest = r.Units.SpikeNotes(ku,1);
-    x_id_0 = x_id(ch_largest);
-    y_id_0 = y_id(ch_largest);
-    if ch_largest < 16
-        ch_selected = 1:32;
-    elseif ch_largest > size(wave_form, 1)-16
-        ch_selected = (-31:0) + size(wave_form, 1);
-    else    
-        if x_id_0 < 2
-            id_show = y_id>=y_id_0-8 & y_id<=y_id_0+7;
-        else
-            id_show = y_id>=y_id_0-7 & y_id<=y_id_0+8;
-        end
-        ch_selected = chs(id_show);
-    end
-    n_chs = length(ch_selected);
-    wave_form = wave_form(ch_selected, :);
-
-    x_id = x_id(ch_selected);
-    y_id = y_id(ch_selected);
-    x_loc = (x_id-min(x_id)) * h_sep;
-    y_loc = (y_id-min(y_id)) * v_sep;
-    ind_largest = find(x_id==x_id_0 & y_id==y_id_0);
-
-    max_x = 0;
-    colors = [25 167 206] / 255;
-
-    t_wave_all = [];
-    wave_all = [];
-    for i = 1:n_chs
-        if x_id(i)==0
-            text(-1, y_loc(i), string(ch_selected(i)), 'FontSize', 6, 'HorizontalAlignment', 'right');
-        end
-
-        if i==ind_largest
-            continue
-        end
-        wave_k = wave_form(i, :) + y_loc(i);
-        t_wave = (1:n_sample) + x_loc(i);
-
-        t_wave_all = [t_wave_all, t_wave, NaN];
-        wave_all = [wave_all, wave_k, NaN];
-        max_x = max([max_x, max(t_wave)]);
-    end
-    plot(ha_wave_poly, t_wave_all, wave_all, 'linewidth', 1, 'color', colors);
-    plot(ha_wave_poly, (1:n_sample) + x_loc(ind_largest), wave_form(ind_largest, :) + y_loc(ind_largest), 'linewidth', 1, 'color', .7*colors);
-
-    set(ha_wave_poly, 'xlim', [0 max_x], 'ylim', [-400 v_sep*16+200]);
-    axis off
-    axis tight
+    PSTH.SpikeWaveMean = plot_adjacent_waveforms(ha_wave_poly, r, ku);
 end
 
 uicontrol('Style', 'text', 'Units', 'centimeters', 'Position', [x_col5-.25 y_col5_row4+7.5 3 1],...
@@ -1184,18 +1126,18 @@ if strcmpi(ToSave, 'on')
     % save to a folder
     anm_name = r.BehaviorClass.Subject;
     session  = r.BehaviorClass.Session;
-    
+
     PSTH.ANM_Session = {anm_name, session};
     thisFolder = fullfile(pwd, 'Fig');
     if ~exist(thisFolder, 'dir')
         mkdir(thisFolder)
     end
-    tosavename2= fullfile(thisFolder, anm_name+"_"+session+"_Ch"+num2str(ch)+"_Unit"+num2str(unit_no));
+    tosavename2= fullfile(thisFolder, anm_name+"_"+session+"_k"+num2str(ch_k)+"_y"+num2str(ch_y)+"_x"+num2str(ch_x)+"_Ch"+num2str(ch)+"_Unit"+num2str(unit_no));
     print (fig, '-dpng', tosavename2, '-r300')
-    
+
     % save PSTH as well save(psth_new_name, 'PSTHOut');
     save(tosavename2+".mat", 'PSTH')
-    
+
     try
         tic
         % C:\Users\jiani\OneDrive\00_Work\03_Projects
@@ -1205,7 +1147,7 @@ if strcmpi(ToSave, 'on')
         end
         copyfile([tosavename2 '.png'], thisFolder)
         copyfile([tosavename2 '.mat'], thisFolder)
-    
+
         toc
     end
 end

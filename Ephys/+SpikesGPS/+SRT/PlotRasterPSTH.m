@@ -1467,70 +1467,7 @@ xlabel('Lag(ms)')
 % Plot waveforms of adjacent channels (for neuropixels 1.0, assigned by channel location)
 if isfield(r.Units.SpikeTimes(ku), 'wave_mean')
     ha_wave_poly = axes('unit', 'centimeters', 'position', [x_col6 y_col6_row4+2 2.5 6], 'nextplot', 'add', 'FontSize', 7, 'TickDir', 'Out');
-    wave_form = r.Units.SpikeTimes(ku).wave_mean / 4;
-    n_sample = size(wave_form, 2); % sample size per spike
-    
-    PSTH.SpikeWaveMean = wave_form;
-
-    v_sep = 100;
-    h_sep = n_sample;
-
-    xcoords = r.ChanMap.xcoords;
-    ycoords = r.ChanMap.ycoords;
-    x_id = (xcoords-min(xcoords)) / unique(diff(unique(xcoords)));
-    y_id = (ycoords-min(ycoords)) / unique(diff(unique(ycoords)));
-
-    chs = 1:size(wave_form, 1);
-    ch_largest = r.Units.SpikeNotes(ku,1);
-    x_id_0 = x_id(ch_largest);
-    y_id_0 = y_id(ch_largest);
-    if ch_largest < 16
-        ch_selected = 1:32;
-    elseif ch_largest > size(wave_form, 1)-16
-        ch_selected = (-31:0) + size(wave_form, 1);
-    else    
-        if x_id_0 < 2
-            id_show = y_id>=y_id_0-8 & y_id<=y_id_0+7;
-        else
-            id_show = y_id>=y_id_0-7 & y_id<=y_id_0+8;
-        end
-        ch_selected = chs(id_show);
-    end
-    n_chs = length(ch_selected);
-    wave_form = wave_form(ch_selected, :);
-
-    x_id = x_id(ch_selected);
-    y_id = y_id(ch_selected);
-    x_loc = (x_id-min(x_id)) * h_sep;
-    y_loc = (y_id-min(y_id)) * v_sep;
-    ind_largest = find(x_id==x_id_0 & y_id==y_id_0);
-
-    max_x = 0;
-    colors = [25 167 206] / 255;
-
-    t_wave_all = [];
-    wave_all = [];
-    for i = 1:n_chs
-        if x_id(i)==0
-            text(-1, y_loc(i), string(ch_selected(i)), 'FontSize', 6, 'HorizontalAlignment', 'right');
-        end
-
-        if i==ind_largest
-            continue
-        end
-        wave_k = wave_form(i, :) + y_loc(i);
-        t_wave = (1:n_sample) + x_loc(i);
-
-        t_wave_all = [t_wave_all, t_wave, NaN];
-        wave_all = [wave_all, wave_k, NaN];
-        max_x = max([max_x, max(t_wave)]);
-    end
-    plot(ha_wave_poly, t_wave_all, wave_all, 'linewidth', 1, 'color', colors);
-    plot(ha_wave_poly, (1:n_sample) + x_loc(ind_largest), wave_form(ind_largest, :) + y_loc(ind_largest), 'linewidth', 1, 'color', .7*colors);
-
-    set(ha_wave_poly, 'xlim', [0 max_x], 'ylim', [-400 v_sep*16+200]);
-    axis off
-    axis tight
+    PSTH.SpikeWaveMean = plot_adjacent_waveforms(ha_wave_poly, r, ku);
 end
 
 uicontrol('Style', 'text', 'Units', 'centimeters', 'Position', [x_col5-.25 y_col5_row4+7.5 3 1],...
