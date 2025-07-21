@@ -240,6 +240,10 @@ uicontrol('Style', 'text', 'Units', 'centimeters', 'Position', [x_col1-.5 y_col1
 y_col1_row6 = y_col1_row5 + w_space;
 ch = r.Units.SpikeNotes(ku, 1);
 unit_no = r.Units.SpikeNotes(ku, 2);
+ch_id = r.ChanMap.chanMap==ch;
+ch_k  = r.ChanMap.kcoords(ch_id);
+ch_x  = r.ChanMap.xcoords(ch_id);
+ch_y  = r.ChanMap.ycoords(ch_id);
 
 if size(r.Units.SpikeNotes, 2) == 4
     cluster_id = r.Units.SpikeNotes(ku, 4);
@@ -932,7 +936,7 @@ if strcmpi(ToSave, 'on')
     if ~exist(thisFolder, 'dir')
         mkdir(thisFolder)
     end
-    tosavename2= fullfile(thisFolder, anm_name+"_"+session+"_Ch"+num2str(ch)+"_Unit"+num2str(unit_no));
+    tosavename2= fullfile(thisFolder, anm_name+"_"+session+"_k"+num2str(ch_k)+"_y"+num2str(ch_y)+"_x"+num2str(ch_x)+"_Ch"+num2str(ch)+"_Unit"+num2str(unit_no));
     print (fig, '-dpng', tosavename2, '-r300')
     
     % save PSTH as well save(psth_new_name, 'PSTHOut');
