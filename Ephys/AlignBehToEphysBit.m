@@ -39,6 +39,11 @@ PokeChoiceInEphysOff = EventOut.Offset{strcmp(EventOut.EventsLabels, 'PokeChoice
 PokeInitInEphysOn    = EventOut.Onset{strcmp(EventOut.EventsLabels, 'PokeInitIn')};
 PokeInitInEphysOff   = EventOut.Offset{strcmp(EventOut.EventsLabels, 'PokeInitIn')};
 
+PokeChoiceInEphysOff(PokeChoiceInEphysOn>sample_dur) = [];
+PokeChoiceInEphysOn(PokeChoiceInEphysOn>sample_dur)  = [];
+PokeInitInEphysOff(PokeInitInEphysOn>sample_dur) = [];
+PokeInitInEphysOn(PokeInitInEphysOn>sample_dur)  = [];
+
 % Sometimes the recording miss the first init_in signal before cent_in, we drop that
 PokeCentInEphysOn(PokeCentInEphysOn<PokeInitInEphysOn(1))   = [];
 PokeCentInEphysOff(PokeCentInEphysOff<PokeInitInEphysOn(1)) = [];

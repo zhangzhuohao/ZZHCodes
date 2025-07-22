@@ -56,10 +56,10 @@ exposure_time = round(1000 / fs);
 tol_dur = signal_dur + 5*exposure_time;
 
 if ~isempty(sample_dur)
-    if tOn(1) < tol_dur
+    while tOn(1) < tol_dur
         tOn(abs(tOn-tOn(1))<tol_dur) = [];
     end
-    if (sample_dur-tOn(end)) < tol_dur
+    while (sample_dur-tOn(end)) < tol_dur
         tOn(abs(tOn-tOn(end))<tol_dur) = [];
     end
 end
