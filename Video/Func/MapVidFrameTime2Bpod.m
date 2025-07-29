@@ -15,9 +15,9 @@ else
         if i==1
             frames_sofar = find(tsROI<=tLEDon(i+1));
         elseif i==length(tLEDon)
-            frames_sofar = find(tsROI>tLEDon(i)-tbeh_lag(i));
+            frames_sofar = find(tsROI>tLEDon(i)-tbeh_lag(i)-500);
         else
-            frames_sofar = find(tsROI>tLEDon(i)-tbeh_lag(i) & tsROI<=tLEDon(i+1));
+            frames_sofar = find(tsROI>tLEDon(i)-tbeh_lag(i)-500 & tsROI<=tLEDon(i+1));
         end
         tframes_in_b(frames_sofar) = tsROI(frames_sofar) - tLEDon(i) + tbeh_trigger(i); % convert the frame time to time in the behavior domain
     end
