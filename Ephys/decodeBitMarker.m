@@ -1,4 +1,4 @@
-function [trial_id, ind_head] = decodeBitMarker(tOn, tOff, varargin)
+function [trial_id, ind_head, fig_decode] = decodeBitMarker(tOn, tOff, varargin)
 
 % Default params
 % led bit code information
@@ -127,7 +127,7 @@ shift_id   = shift_diff(diff(shift_diff)==1);
 
 % plot decode results
 fig_decode = figure(38); clf(38);
-set(fig_decode, 'name', 'BitDecoding', 'units', 'centimeters', 'position', [5 3 7 5.5], 'PaperUnits', 'centimeters', 'PaperPosition', [5 3 7 5.5]);
+set(fig_decode, 'name', 'BitDecoding', 'units', 'centimeters', 'position', [5 3 7 5.5], 'PaperUnits', 'centimeters', 'PaperPosition', [5 3 7 5.5], 'visible', 'on');
 ax_decode = axes(fig_decode, 'Units', 'centimeters', 'Position', [1.5 1.5 5 3.5], 'NextPlot', 'add', 'FontSize', 9, 'TickDir', 'out');
 scatter(ax_decode, tOn/1000, trial_id, 16, 'blue', 'LineWidth', .5);
 plot(ax_decode, tOn/1000, trial_id, '-b');
