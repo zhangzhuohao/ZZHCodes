@@ -1045,7 +1045,7 @@ for m = 1:NumFPs
         xxmt_all = []; % movement (cent-out to choice) times
         yymt_all = [];
 
-        for i = 1:ntrials_cent_in_ij(m,n)
+        for i = 1:size(spk_mat, 2)
             xx = t_mat(spk_mat(:,i)==1);
             yy1 = [.1 .9] - k;
             yy2 = [0 1] - k;
