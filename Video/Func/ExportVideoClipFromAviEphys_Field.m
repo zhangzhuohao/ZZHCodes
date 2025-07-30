@@ -1,7 +1,6 @@
-function ExportVideoClipFromAviEphys_Top(r, FrameInfo, ClipInfo, scn_scale, remake, x_rev)
+function ExportVideoClipFromAviEphys_Field(r, FrameInfo, ClipInfo, scn_scale, remake, x_rev)
 
-
-% ExportVideoClipFromAvi(thisTable, FrameTable, 'Event', VideoEvent,'ANM', ANM, ...
+% ExportVideoClipFromAvi(thisTable, FrameInfo, 'Event', VideoEvent,'ANM', ANM, ...
 %     'Pre', Pre, 'Post', Post, 'BehaviorType', BehaviorType, 'Session', Session, 'Remake', 1)
 % Jianing Yu
 
@@ -9,7 +8,7 @@ function ExportVideoClipFromAviEphys_Top(r, FrameInfo, ClipInfo, scn_scale, rema
 % 4/16/2022
 
 % revised by ZZH, 5/5/2023
-
+% 
 if nargin<4
     remake = 0;
     x_rev   = 0;
@@ -33,9 +32,8 @@ session  = BehClass.Session;
 
 % get clip parameters
 event        = ClipInfo.VideoEvent;
-tPre         = ClipInfo.Pre;
+tPreMax      = ClipInfo.Pre;
 tPost        = ClipInfo.Post;
-time_elapsed = -tPre:0.1:tPost;
 
 % in mili-seconds, timing of selected events.
 tBehEvent = FrameInfo.tEventEphys;
@@ -47,8 +45,8 @@ tFramesEphys = FrameInfo.tFramesInEphys;
 
 % set up video clip storage folder
 thisView   = "Top";
-viewFolder = ClipInfo.VideoFolderTop;
-clipFolder = fullfile(ClipInfo.VideoFolderTop, 'Clips');
+viewFolder = ClipInfo.VideoFolderField;
+clipFolder = fullfile(ClipInfo.VideoFolderField, 'Clips');
 if ~isfolder(clipFolder)
     mkdir(clipFolder);
 end
@@ -62,6 +60,8 @@ id_choicein = find(strcmp(rb.Labels, 'PokeChoiceIn'));
 t_choicein  = rb.EventTimings(rb.EventMarkers==id_choicein);
 id_trigger = find(strcmp(rb.Labels, 'Trigger'));
 t_trigger  = rb.EventTimings(rb.EventMarkers==id_trigger);
+id_initout = find(strcmp(rb.Labels, 'PokeInitOut'));
+t_initout  = rb.EventTimings(rb.EventMarkers==id_initout);
 
 % setting up metadata
 VidsMeta = struct('Session', [], 'Event', [], 'EventIndex', [], 'Performance', [], 'EventTime', [], 'FrameTimesE', [], 'FrameTimesB', [], 'VideoOrg', [], 'FrameIndx', [], 'Code', [], 'CreatedOn', []);
@@ -71,8 +71,8 @@ fprintf("\nStart video clipping ...\n")
 video_accum = 0;
 
 wait_bar = waitbar(0, sprintf('1 / %d', length(tBehEvent)), 'Name', sprintf('Clipping_%s_%s', anm, session));
-for i = 1:length(tBehEvent) % i is not the trial number
-
+for i = 1:length(tBehEvent) % i is also the trial number
+    
     i_trial = Trials(i);
     ind_bpod = find(BehClass.Trials==i_trial);
     ind_ephys = find(rb.TrialID==i_trial);
@@ -85,6 +85,13 @@ for i = 1:length(tBehEvent) % i is not the trial number
     waitbar(i/length(tBehEvent), wait_bar, sprintf('%d / %d', i, length(tBehEvent)));
 
     itEvent = tBehEvent(i);
+    iShuttleTime = t_centin(ind_ephys) - t_initout(ind_ephys); % Shuttle time of this trial (in ms)
+    if (400 + iShuttleTime) < tPreMax
+        tPre = iShuttleTime + 400;
+    else
+        tPre = tPreMax;
+    end
+    time_elapsed = -tPre:0.1:tPost;
 
     IndThisClip = find(tFramesEphys>=itEvent-tPre & tFramesEphys<=itEvent+tPost);
     if isempty(IndThisClip)
@@ -94,19 +101,7 @@ for i = 1:length(tBehEvent) % i is not the trial number
 
     % check if a video has been created and check if we want to
     % re-create the same video
-    switch event
-        case 'PortSamplePokeTime'
-            ClipName = sprintf('%s_%s_SamplePokeTrial%03d', anm, session, i_trial);
-
-        case 'PortCenterPokeTime'
-            ClipName = sprintf('%s_%s_CenterPokeTrial%03d', anm, session, i_trial);
-
-        case 'CentInTime'
-            ClipName = sprintf('%s_%s_HoldTrial%03d_%sView', anm, session, i_trial, thisView);
-
-        case 'CentOutTime'
-            ClipName = sprintf('%s_%s_ChoiceTrial%03d_%sView', anm, session, i_trial, thisView);
-    end
+    ClipName = sprintf('%s_%s_Trial%03d_FieldView', anm, session, i);
 
     VidClipFileName = fullfile(clipFolder, [ClipName '.avi']);
     check_this_file = dir(VidClipFileName);
@@ -126,21 +121,9 @@ for i = 1:length(tBehEvent) % i is not the trial number
         continue
     end
     tPre_this = tFramesEphys(IndThisFrame) - tFramesEphys(IndThisClip(1));
-
+    
     % poke events
-%     SamplePokeTime  =   BehTable.PortSamplePokeTime(i)*1000-iFrameTimesBpod(1);
-%     CentInTime      =   (BehTable.TrialStartTime(i) + BehTable.CentInTime(i))*1000     - iFrameTimesEphys(1) - tPre_this;
-%     CentOutTime     =   (BehTable.TrialStartTime(i) + BehTable.CentOutTime(i))*1000    - iFrameTimesEphys(1) - tPre_this;
-%     ChoicePokeTime  =   (BehTable.TrialStartTime(i) + BehTable.ChoicePokeTime(i))*1000 - iFrameTimesEphys(1) - tPre_this;
-% 
-%     IntOnTime       =   CentInTime + 1000*IntTable.On(IntTable.Trials==i_trial);
-%     IntOffTime      =   CentInTime + IntOnTime + 1000*IntTable.Dur(IntTable.Trials==i_trial);
-%     poke_state      =   .5*ones(1, length(time_elapsed));
-%     poke_state(time_elapsed>=CentInTime & time_elapsed<CentOutTime) = 0.2;
-%     for int = 1:length(IntOnTime)
-%         poke_state(time_elapsed>=IntOnTime(int) & time_elapsed<IntOffTime(int)) = .35;
-%     end
-
+    InitOutTime = t_initout(ind_ephys) - tFramesEphys(IndThisFrame);
     CentInTime  = t_centin(ind_ephys) - tFramesEphys(IndThisFrame);
     CentOutTime = t_centout(ind_ephys) - tFramesEphys(IndThisFrame);
     poke_state  = .5*ones(1, length(time_elapsed));
@@ -186,11 +169,10 @@ for i = 1:length(tBehEvent) % i is not the trial number
     % build video clips, frame by frame
     F = struct('cdata', [], 'colormap', []);
 
-    VidMeta.Subject     = anm;
     VidMeta.Session     = session;
     VidMeta.Event       = event;
-    VidMeta.EventIndex  = i_trial;
-    VidMeta.EventTime   = itEvent/1000; % Event time in sec (Ephys)
+    VidMeta.EventIndex  = i;
+    VidMeta.EventTime   = itEvent/1000; % Event time in sec (Bpod)
     VidMeta.FrameTimesE = tFramesEphys(IndThisClip); % frame time in ms in behavior time
     VidMeta.FrameTimesB = tFramesBpod(IndThisClip); % frame time in ms in behavior time
     VidMeta.FrameIndx   = IndThisClip; % frame index in original video
@@ -209,24 +191,18 @@ for i = 1:length(tBehEvent) % i is not the trial number
     this_video = fullfile(viewFolder, FrameInfo.MyVidFiles{IndThisFrame});
     vidObj = VideoReader(this_video);
     img_extracted = [];
-    if x_rev==1
-        for ii = 1:length(VidFrameIndx_thisfile)
-            img_this = rgb2gray(read(vidObj, VidFrameIndx_thisfile(ii)));
-            img_extracted = cat(3, img_extracted, img_this(:, end:-1:1));
-        end
-    else
-        for ii = 1:length(VidFrameIndx_thisfile)
-            img_extracted = cat(3, img_extracted, rgb2gray(read(vidObj, VidFrameIndx_thisfile(ii))));
-        end
+    for ii = 1:length(VidFrameIndx_thisfile)
+        img_extracted = cat(3, img_extracted, rgb2gray(read(vidObj, VidFrameIndx_thisfile(ii))));
     end
     clear frames_ifile vidObj
-
+% 
+    if size(img_extracted, 1)==1240
+        img_extracted = img_extracted(1:900, :, :);
+    end
     [H, W, nframe] = size(img_extracted); %
-
     % height = height - 200;
 
     %% Make videos
-
     k = 1;
     hf25 = figure(25); clf
     set(hf25, 'name', thisView, 'units', 'pixels', 'position', [5 50 scale_ratio*W 1.3*scale_ratio*H], ...
@@ -234,6 +210,9 @@ for i = 1:length(tBehEvent) % i is not the trial number
 
     ha = axes;
     set(ha, 'units', 'pixels', 'position', [0 .3*scale_ratio*H + 1 scale_ratio*W scale_ratio*H], 'nextplot', 'add', 'xlim', [.5 W+.5], 'ylim', [.5 H+.5], 'ydir', 'reverse')
+    if x_rev==1
+        set(ha, 'xdir', 'reverse');
+    end
     axis off
 
     % plot this frame:
@@ -249,13 +228,14 @@ for i = 1:length(tBehEvent) % i is not the trial number
     text(W-20, 140,  sprintf('Trial %03d', i_trial), 'color', [255 255 255]/255, 'FontSize', 20, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
     text(W-20, 190,  sprintf('FP: %d ms', thisFP), 'color', [255 255 255]/255, 'FontSize', 20, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
     text(W-20, 240,  sprintf('RT: %d ms', round(1000*BehTable.RT(ind_bpod))), 'color', [255 255 255]/255, 'FontSize', 20, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
-    text(W-20, 290,  thisOutcome, 'color', color.(thisOutcome), 'FontSize', 20, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
+    text(W-20, 290,  sprintf('ST: %d ms', round(1000*BehTable.ST(ind_bpod))), 'color', [255 255 255]/255, 'FontSize', 20, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
+    text(W-20, 340,  thisOutcome, 'color', color.(thisOutcome), 'FontSize', 20, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
     time_text = text(20, 40, [time_of_frame ' ms'], 'color', [255 215 0]/255, 'FontSize', 22,'fontweight', 'bold');
     
     % plot some important behavioral events
     ha2 = axes;
     set(ha2, 'units', 'pixels', 'position', [0.05*scale_ratio*W 0.11*scale_ratio*H 0.9*scale_ratio*W 0.18*scale_ratio*H], ...
-        'nextplot', 'add', 'xtick', [-tPre:500:tPost], 'xlim', [-tPre tPost], ...
+        'nextplot', 'add', 'xtick', [-tPreMax:1000:tPost], 'xlim', [-tPre tPost], ...
         'ycolor', 'none', 'ylim', [0 1.25], 'tickdir', 'out', 'FontSize', 20) %#ok<NBRAK>
     ha2.XLabel.String = 'Time (ms)';
     ha2.XLabel.FontWeight = 'bold';
@@ -266,11 +246,14 @@ for i = 1:length(tBehEvent) % i is not the trial number
     xline(ha2, thisFP, 'Color', 'k', 'LineStyle', ':', 'LineWidth', 2);
 
     stairs(ha2, time_elapsed, poke_state, 'Color', 'k', 'LineWidth', 2.5);
-    text(ha2, -tPre+5, 0.35, "Center poke", 'Color', 'k', 'FontSize', 20, 'FontWeight', 'bold', 'VerticalAlignment', 'middle');
+    text(ha2, -tPre+5, 0.35, "Poke", 'Color', 'k', 'FontSize', 20, 'FontWeight', 'bold', 'VerticalAlignment', 'middle');
 
     patch(ha2, 'XData', [ChoicePokeTime ChoicePokeTime ChoicePokeTime ChoicePokeTime] + [0 40 40 0], ...
         'YData', [.2 .2 .45 .45], ...
         'FaceColor', color.(thisOutcome), 'EdgeColor', 'none');
+    patch(ha2, 'XData', [InitOutTime InitOutTime InitOutTime InitOutTime] + [0 40 40 0], ...
+        'YData', [.2 .2 .45 .45], ...
+        'FaceColor', 'k', 'EdgeColor', 'none');
 
     text(ha2, -tPre+5, 0.8, "Choice cue", 'Color', color.Cue, 'FontSize', 20, 'FontWeight', 'bold', 'VerticalAlignment', 'middle');
     patch(ha2, 'XData', [ChoiceCueTime flip(ChoiceCueTime)], ...
