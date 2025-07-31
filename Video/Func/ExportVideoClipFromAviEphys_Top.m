@@ -10,11 +10,11 @@ function ExportVideoClipFromAviEphys_Top(r, FrameInfo, ClipInfo, scn_scale, rema
 
 % revised by ZZH, 5/5/2023
 
-if nargin<4
+if nargin < 5
     remake = 0;
-    x_rev   = 0;
-elseif nargin < 5
-    x_rev   = 0;
+    x_rev  = 0;
+elseif nargin < 6
+    x_rev  = 0;
 end
 
 scale_ratio     =   1 / scn_scale;
