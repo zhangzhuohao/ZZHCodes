@@ -263,8 +263,10 @@ for i = 1:length(tBehEvent) % i is not the trial number
 
     time_line = xline(ha2, tthis_frame, 'Color', 'k', 'LineStyle', '-', 'LineWidth', 2, 'Alpha', 0.6);
 
-    xline(ha2, thisFP, 'Color', 'k', 'LineStyle', ':', 'LineWidth', 2);
-
+    if thisOutcome~="Probe"
+        xline(ha2, thisFP, 'Color', 'k', 'LineStyle', ':', 'LineWidth', 2);
+    end
+    
     stairs(ha2, time_elapsed, poke_state, 'Color', 'k', 'LineWidth', 2.5);
     text(ha2, -tPre+5, 0.35, "Center poke", 'Color', 'k', 'FontSize', 20, 'FontWeight', 'bold', 'VerticalAlignment', 'middle');
 
