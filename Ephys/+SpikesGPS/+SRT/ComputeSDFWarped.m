@@ -24,7 +24,7 @@ NumPorts = length(Ports);
 %% Plot press
 % the whole duration of time warp
 pre_  = 2.5; % 2.5 sec before cent-in, about the lower boundary of shuttle time
-post_ = 2.5; % 2.5 sec after choice
+post_ = 3; % 2.5 sec after choice
 post_keep = 2.5;
 
 warped_time_points = cell(NumFPs, NumPorts);
@@ -118,7 +118,7 @@ for i = 1:NumFPs
             towarp_second   = jsdf(tsdf>=jt(2) & tsdf<jt(3)); % from cent-out to choice
             t_towarp_second = tsdf(tsdf>=jt(2) & tsdf<jt(3)); % from cent-out to choice
 
-            not_warped2 = jsdf(tsdf>jt(3));
+            not_warped2 = jsdf(tsdf>=jt(3));
             not_warped2 = not_warped2(1:post_keep*1000); % max 2.5 sec after choice poke
     
             dt = 1; % 1 ms
