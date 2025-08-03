@@ -102,7 +102,7 @@ for i = 1:length(tEventEphys) % i is also the trial number
 
     % check if a video has been created and check if we want to
     % re-create the same video
-    ClipName = sprintf('%s_%s_Trial%03d_FieldView', anm, session, i);
+    ClipName = sprintf('%s_%s_Trial%03d_FieldView', anm, session, i_trial);
 
     VidClipFileName = fullfile(clipFolder, [ClipName '.avi']);
     check_this_file = dir(VidClipFileName);
