@@ -147,7 +147,7 @@ for i = 1:NumFPs
 end
 
 SDFWarp.t_points = warped_time_points;
-SDFWarp.t_points_mean = ["CentIn", "Trigger", "CentOut", "Choice"];
+SDFWarp.t_points_description = ["CentIn", "Trigger", "CentOut", "Choice"];
 SDFWarp.pre_post_durations = [pre_, post_, post_keep];
 
 SDFWarp.t_warp   = t_warped;
@@ -240,6 +240,7 @@ pool_ioc_sdf_warped.trigger = cell(1, NumPorts);
 pool_t_warped.trigger       = cell(1, NumPorts);
 
 % do not warp cent-in around
+pool_warped_time_points.centin = {0, 0};
 pool_ioc_sdf_warped.centin = cell(1, NumPorts);
 pool_t_warped.centin       = cell(1, NumPorts);
 
@@ -322,7 +323,8 @@ for j = 1:NumPorts
 end
 
 SDFWarpPool.t_points = pool_warped_time_points;
-SDFWarpPool.t_points_description = ["Trigger", "CentOut", "Choice"];
+SDFWarpPool.t_points_description.trigger = ["Trigger", "CentOut", "Choice"];
+SDFWarpPool.t_points_description.centin  = "CentIn";
 SDFWarpPool.pre_post_durations.trigger = [pre_trigger, post_choice, post_keep];
 SDFWarpPool.pre_post_durations.centin  = [pre_centin, post_centin];
 
