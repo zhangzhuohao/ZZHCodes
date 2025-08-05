@@ -383,7 +383,6 @@ uicontrol('Style','text','Units','centimeters','Position', [1 ylevel_now-.75 6 1
     'string', order_note, ...
     'FontName','Dejavu Sans', 'fontweight', 'bold','fontsize', 9,'BackgroundColor','w')
 
-
 % Re-adjust figure height
 fig_height = ylevel_now + 3 + 0.5;
 fig.Position(4) = fig_height;
@@ -440,6 +439,9 @@ if orderby(1)==orderby(2)
     htable = uitable(hf, 'unit', 'centimeters','Data', table_data,...
         'ColumnName', {'UnitID', 'Channel', 'Unit',  'Quality', 'Significant'},...
         'Position', [12.5 ylevel_now-1 10 4], 'ColumnWidth',{60, 60, 60, 60, 70});
+
+    sort_table = table(Unit_Sorted, Chs, Ch_Units, Unit_Quality_Num, SignificantMod, 'VariableNames', {'UnitID', 'Channel', 'Unit',  'Quality', 'Significant'});
+    writetable(sort_table, tosavename+".csv");
 else
     for j = 1:nPort
         x_j = 10 + 6.5*(j-1);

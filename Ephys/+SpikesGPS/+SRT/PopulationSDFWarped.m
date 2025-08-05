@@ -1,195 +1,112 @@
-function PopWarpOut = PopulationSDFWarped(r)
-
+function popWarp = PopulationSDFWarped(r)
 % Gather warped population SDF
-
+%% Units information
 Units = r.Units.SpikeNotes;
-% Extract these event-related activity
-[nFP, nPort] = size(r.PSTH.PSTHs(1).CentIn);
-% nFP = length(r.BehaviorClass.TargetFP);
-% nPort = length(r.BehaviorClass.Ports);
 
-%
-PSTH_CentIn        = cell(nFP, nPort); % one for short FP, one for long FP
-PSTH_CentInZ       = cell(nFP, nPort); % one for short FP, one for long FP 
-PSTH_CentInStat    = cell(nFP, nPort); % this gives the statistics of press
+%% Task information
+FPs    = r.BehaviorClass.TargetFP; % you have to use BuildR2023 or BuildR4Tetrodes2023 to have this included in r.
+FPs    = FPs(FPs>0);
+NumFPs = length(FPs);
 
-PSTH_CentInAll     = []; % merge short and long FPs
-PSTH_CentInAllZ    = []; % one for short FP, one for long FP 
-PSTH_CentInAllStat = [];
+Ports    = r.BehaviorClass.LeftRight;
+NumPorts = length(Ports);
 
-PSTH_CentOut        = cell(nFP, nPort);
-PSTH_CentOutZ       = cell(nFP, nPort);
-PSTH_CentOutStat    = cell(nFP, nPort); % this gives the statistics of release
+popWarp.FPs = FPs;
+popWarp.Ports = Ports;
 
-PSTH_CentOutAll     = []; % merge short and long FPs
-PSTH_CentOutAllZ    = []; % one for short FP, one for long FP 
-PSTH_CentOutAllStat = [];
+%% 
+n_units = size(Units, 1);
+for i = 1:n_units
+    id = Units(i, [1 2]);
+    i_sdf_all = SpikesGPS.SRT.ComputeSDFWarped(r, id);
 
-PSTH_Reward     = cell(nFP, nPort);
-PSTH_RewardZ    = cell(nFP, nPort);
-PSTH_RewardStat = cell(nFP, nPort); % this gives the statistics of release
+    if i==1
+        popWarp.Subject = i_sdf_all.meta.subject;
+        popWarp.Session = i_sdf_all.meta.session;
+        popWarp.Trials  = r.PopPSTH.Trials;
+        popWarp.ImplantLateral = r.ImplantLateral;
 
-PSTH_Trigger     = cell(nFP, nPort);
-PSTH_TriggerZ    = cell(nFP, nPort);
-PSTH_TriggerStat = cell(nFP, nPort); % this gives the statistics of trigger
+        popWarp.Units = Units;
+        popWarp.IndSort = r.PopPSTH.IndSort;
+        popWarp.IndUnmodulated = r.PopPSTH.IndUnmodulated;
 
-if ~isfield(r, 'PSTH')
-    error('Compute PSTH first. Run " >>SRTSpikes(r, []);" ')
-end
+        popWarp.t_points = i_sdf_all.SDFWarp.t_points;
+        popWarp.t_points_description = i_sdf_all.SDFWarp.t_points_description;
 
-n_unit = length(r.PSTH.PSTHs);
-t_baseline = [-5000 -1000]; % from -5000 to -500 ms is considered to be the baseline. 
-% spikes during this period will be used to normalize the neural activity(z score). 
-% if the activity is extremely sparse during this period (e..g, avg rate <
-% 1 Hz), we will then use the whole press_all activity to compute z score. 
+        popWarp.t_warp = i_sdf_all.SDFWarp.t_warp;
 
-for i = 1:n_unit
-    PSTH_baseline = [];
-    if i==1 % first row for time info
-        PSTH_CentInAll(1, :)  = r.PSTH.PSTHs(i).CentInAll{2};
-        PSTH_CentInAllZ(1, :) = r.PSTH.PSTHs(i).CentInAll{2};
+        popWarp.sdf = cell(NumFPs, NumPorts);
+        popWarp.sdf_z = cell(NumFPs, NumPorts);
+        popWarp.sdf_ci_l = cell(NumFPs, NumPorts);
+        popWarp.sdf_ci_u = cell(NumFPs, NumPorts);
     end
-    PSTH_CentInAll = [PSTH_CentInAll; r.PSTH.PSTHs(i).CentInAll{1}];
-    tspkmat_centinall = r.PSTH.PSTHs(i).CentInAll{4};
-    trialspxmat_centinall = r.PSTH.PSTHs(i).CentInAll{3};
-
-    StatOut = ExamineTaskResponsive(tspkmat_centinall, trialspxmat_centinall);
-    StatOut.CellIndx = r.Units.SpikeNotes(i, :);
-    PSTH_CentInAllStat.StatOut(i) = StatOut;
-    PSTH_Trials = zeros(size(r.PSTH.PSTHs(i).CentIn));
-
-    for jfp = 1:nFP
-        for kport = 1:nPort
-            if i==1 % first row for time info
-                PSTH_CentIn{jfp, kport}(1, :)   = r.PSTH.PSTHs(1).CentIn{jfp, kport}{2};
-                PSTH_CentInZ{jfp, kport}(1, :)  = r.PSTH.PSTHs(1).CentIn{jfp, kport}{2};
-                PSTH_CentOut{jfp, kport}(1, :)  = r.PSTH.PSTHs(1).CentOut{jfp, kport}{2};
-                PSTH_CentOutZ{jfp, kport}(1, :) = r.PSTH.PSTHs(1).CentOut{jfp, kport}{2};
-                PSTH_Trigger{jfp, kport}(1, :)  = r.PSTH.PSTHs(1).Triggers{jfp, kport}{2};
-                PSTH_TriggerZ{jfp, kport}(1, :) = r.PSTH.PSTHs(1).Triggers{jfp, kport}{2};
-                PSTH_Reward{jfp, kport}(1, :)   = r.PSTH.PSTHs(1).RewardChoice{jfp, kport}{2};
-                PSTH_RewardZ{jfp, kport}(1, :)  = r.PSTH.PSTHs(1).RewardChoice{jfp, kport}{2};
-            end
-
-            % CentIn
-            PSTH_CentIn{jfp, kport} = [PSTH_CentIn{jfp, kport};  r.PSTH.PSTHs(i).CentIn{jfp, kport}{1}];
-            tspkmat     = r.PSTH.PSTHs(i).CentIn{jfp, kport}{4};
-            trialspxmat = r.PSTH.PSTHs(i).CentIn{jfp, kport}{3};
-
-            % restricting activity to a relatively narrow window.
-            tCentInWin = [-2500 1500];
-            indWin = find(tspkmat>=tCentInWin(1) & tspkmat<= tCentInWin(2));
-            tspkmat = tspkmat(indWin);
-            trialspxmat = trialspxmat(indWin, :);
-
-            StatOut = ExamineTaskResponsive(tspkmat, trialspxmat);
-            StatOut.CellIndx = r.Units.SpikeNotes(i, :);
-            PSTH_CentInStat{jfp, kport}.StatOut(i) = StatOut;
-            PSTH_Trials(jfp, kport) = size(trialspxmat, 2);
-            PSTH_baseline = [PSTH_baseline r.PSTH.PSTHs(i).CentIn{jfp, kport}{1}];
-
-            % CentOut
-            PSTH_CentOut{jfp, kport} = [PSTH_CentOut{jfp, kport};  r.PSTH.PSTHs(i).CentOut{jfp, kport}{1}];
-            tspkmat     = r.PSTH.PSTHs(i).CentOut{jfp, kport}{4};
-            trialspxmat = r.PSTH.PSTHs(i).CentOut{jfp, kport}{3};
-
-            % restricting activity to a relatively narrow window.
-            tCentOutWin = [-500 1000];
-            indWin = find(tspkmat>=tCentOutWin(1) & tspkmat<= tCentOutWin(2));
-            tspkmat = tspkmat(indWin);
-            trialspxmat = trialspxmat(indWin, :);
-
-            StatOut = ExamineTaskResponsive(tspkmat, trialspxmat);
-            StatOut.CellIndx =  r.Units.SpikeNotes(i, :);
-            PSTH_CentOutStat{jfp, kport}.StatOut(i) = StatOut;
-            PSTH_baseline = [PSTH_baseline r.PSTH.PSTHs(i).CentOut{jfp, kport}{1}];
-
-            % Trigger
-            PSTH_Trigger{jfp, kport} = [PSTH_Trigger{jfp, kport}; r.PSTH.PSTHs(i).Triggers{jfp, kport}{1}];
-            tspkmat     = r.PSTH.PSTHs(i).Triggers{jfp, kport}{4};
-            trialspxmat = r.PSTH.PSTHs(i).Triggers{jfp, kport}{3};
-
-            StatOut = ExamineTaskResponsive(tspkmat, trialspxmat);
-            StatOut.CellIndx = r.Units.SpikeNotes(i, :);
-            PSTH_TriggerStat{jfp, kport}.StatOut(i) =  StatOut;
-
-            % Reward
-            PSTH_Reward{jfp, kport} = [PSTH_Reward{jfp, kport};  r.PSTH.PSTHs(i).RewardChoice{jfp, kport}{1}];
-            tspkmat     = r.PSTH.PSTHs(i).RewardChoice{jfp, kport}{4};
-            trialspxmat = r.PSTH.PSTHs(i).RewardChoice{jfp, kport}{3};
-
-            % restricting activity to a relatively narrow window.
-            tRewardWin = [-1000 1000];
-            indWin = find(tspkmat>=tRewardWin(1) & tspkmat<= tRewardWin(2));
-            tspkmat = tspkmat(indWin);
-            trialspxmat = trialspxmat(indWin, :);
-
-            StatOut = ExamineTaskResponsive(tspkmat, trialspxmat);
-            StatOut.CellIndx =  r.Units.SpikeNotes(i, :);
-            PSTH_RewardStat{jfp, kport}.StatOut(i) =  StatOut;
-            PSTH_baseline = [PSTH_baseline  r.PSTH.PSTHs(i).RewardChoice{jfp, kport}{1}];
-
-            % compute z
-            mean_baseline = mean(PSTH_baseline, 'omitnan');
-            sd_baseline   = std(PSTH_baseline, 'omitnan');
-            PSTH_CentInZ{jfp, kport}  = [PSTH_CentInZ{jfp, kport}; (r.PSTH.PSTHs(i).CentIn{jfp, kport}{1}-mean_baseline)/sd_baseline];
-            PSTH_CentOutZ{jfp, kport} = [PSTH_CentOutZ{jfp, kport}; (r.PSTH.PSTHs(i).CentOut{jfp, kport}{1}-mean_baseline)/sd_baseline];
-            PSTH_TriggerZ{jfp, kport} = [PSTH_TriggerZ{jfp, kport}; (r.PSTH.PSTHs(i).Triggers{jfp, kport}{1}-mean_baseline)/sd_baseline];
-            PSTH_RewardZ{jfp, kport}  = [PSTH_RewardZ{jfp, kport}; (r.PSTH.PSTHs(i).RewardChoice{jfp, kport}{1}-mean_baseline)/sd_baseline];
+    for fp = 1:NumFPs
+        for p = 1:NumPorts
+            popWarp.sdf{fp, p} = [popWarp.sdf{fp, p}; i_sdf_all.SDFWarp.sdf_mean{fp, p}];
+            popWarp.sdf_ci_l{fp, p} = [popWarp.sdf_ci_l{fp, p}; i_sdf_all.SDFWarp.sdf_ci{fp, p}(1,:)];
+            popWarp.sdf_ci_u{fp, p} = [popWarp.sdf_ci_u{fp, p}; i_sdf_all.SDFWarp.sdf_ci{fp, p}(2,:)];
         end
+    end    
+
+    % pooled
+    if i==1
+        popWarpPool.t_points = i_sdf_all.SDFWarpPool.t_points;
+        popWarpPool.t_points_description = i_sdf_all.SDFWarpPool.t_points_description;
+
+        popWarpPool.t_warp = i_sdf_all.SDFWarpPool.t_warp;
+
+        popWarpPool.sdf.centin = cell(1, NumPorts);
+        popWarpPool.sdf_z.centin = cell(1, NumPorts);
+        popWarpPool.sdf_ci_l.centin = cell(1, NumPorts);
+        popWarpPool.sdf_ci_u.centin = cell(1, NumPorts);
+
+        popWarpPool.sdf.trigger = cell(1, NumPorts);
+        popWarpPool.sdf_z.trigger = cell(1, NumPorts);
+        popWarpPool.sdf_ci_l.trigger = cell(1, NumPorts);
+        popWarpPool.sdf_ci_u.trigger = cell(1, NumPorts);
+
+        popWarpPool.stat.centin = cell(1, NumPorts);
+        popWarpPool.stat.trigger = cell(1, NumPorts);
+    end
+    for p = 1:NumPorts
+        popWarpPool.sdf.centin{p} = [popWarpPool.sdf.centin{p}; i_sdf_all.SDFWarpPool.sdf_mean.centin{p}];
+        popWarpPool.sdf_ci_l.centin{p} = [popWarpPool.sdf_ci_l.centin{p}; i_sdf_all.SDFWarpPool.sdf_ci.centin{p}(1,:)];
+        popWarpPool.sdf_ci_u.centin{p} = [popWarpPool.sdf_ci_u.centin{p}; i_sdf_all.SDFWarpPool.sdf_ci.centin{p}(2,:)];
+
+        popWarpPool.sdf.trigger{p} = [popWarpPool.sdf.trigger{p}; i_sdf_all.SDFWarpPool.sdf_mean.trigger{p}];
+        popWarpPool.sdf_ci_l.trigger{p} = [popWarpPool.sdf_ci_l.trigger{p}; i_sdf_all.SDFWarpPool.sdf_ci.trigger{p}(1,:)];
+        popWarpPool.sdf_ci_u.trigger{p} = [popWarpPool.sdf_ci_u.trigger{p}; i_sdf_all.SDFWarpPool.sdf_ci.trigger{p}(2,:)];
+
+        popWarpPool.stat.centin{p}(i)  = ExamineTaskResponsive(popWarpPool.t_warp.centin{p}, i_sdf_all.SDFWarpPool.sdf_warp.centin{p}');
+        popWarpPool.stat.trigger{p}(i) = ExamineTaskResponsive(popWarpPool.t_warp.trigger{p}, i_sdf_all.SDFWarpPool.sdf_warp.trigger{p}');
     end
 end
+[IndSort, IndInsignificant] = SpikesGPS.SRT.RankSDFWarpPooled(popWarpPool, 0.75);
+popWarpPool.IndSort = IndSort;
+popWarpPool.IndUnmodulated = IndInsignificant;
 
-PopWarpOut.Name       = r.BehaviorClass.Subject;
-PopWarpOut.ImplantLateral = r.ImplantLateral;
-PopWarpOut.FPs        = r.BehaviorClass.TargetFP(1:nFP);
-PopWarpOut.Ports      = r.BehaviorClass.Ports;
-PopWarpOut.Trials     = PSTH_Trials;
-PopWarpOut.Session    = r.BehaviorClass.Session;
-PopWarpOut.Date       = strrep(r.Meta(1).DateTime(1:11), '-','_');
-PopWarpOut.Units      = Units;
-PopWarpOut.CentIn     = PSTH_CentIn;
-PopWarpOut.CentInZ    = PSTH_CentInZ;
-PopWarpOut.CentInStat = PSTH_CentInStat;
+%% get z-score of warped sdf
+popWarp.sdf_z = cellfun(@(x) normalize(x, 2, 'zscore'), popWarp.sdf, 'UniformOutput', false);
 
-PopWarpOut.CentInAll     = PSTH_CentInAll;
-PopWarpOut.CentInAllZ    = PSTH_CentInAllZ;
-PopWarpOut.CentInAllStat = PSTH_CentInAllStat;
+for p = 1:NumPorts
+    pool_sdf_cat = [popWarpPool.sdf.centin{p} popWarpPool.sdf.trigger{p}];
+    pool_sdf_mean = mean(pool_sdf_cat, 2);
+    pool_sdf_std  = std(pool_sdf_cat, [], 2);
 
-PopWarpOut.CentOut     = PSTH_CentOut;
-PopWarpOut.CentOutZ    = PSTH_CentOutZ;
-PopWarpOut.CentOutStat = PSTH_CentOutStat;
+    popWarpPool.sdf_z.centin{p}  = (popWarpPool.sdf.centin{p} - pool_sdf_mean) ./ pool_sdf_std;
+    popWarpPool.sdf_z.trigger{p} = (popWarpPool.sdf.trigger{p} - pool_sdf_mean) ./ pool_sdf_std;
+end
 
-PopWarpOut.CentOutAll     = PSTH_CentOutAll;
-PopWarpOut.CentOutAllZ    = PSTH_CentOutAllZ;
-PopWarpOut.CentOutAllStat = PSTH_CentOutAllStat;
+popWarp.popWarpPooled = popWarpPool;
 
-PopWarpOut.Reward     = PSTH_Reward;
-PopWarpOut.RewardZ    = PSTH_RewardZ;
-PopWarpOut.RewardStat = PSTH_RewardStat;
+save(sprintf('PopSDFWarped_%s_%s.mat', popWarp.Subject, popWarp.Session), "popWarp");
 
-PopWarpOut.Trigger     = PSTH_Trigger;
-PopWarpOut.TriggerZ    = PSTH_TriggerZ;
-PopWarpOut.TriggerStat = PSTH_TriggerStat;
+r.popSDFWarped = popWarp;
+save(sprintf('RTarray_%s_%s.mat', popWarp.Subject, popWarp.Session), "r");
 
-[PopWarpOut.IndSort, PopWarpOut.IndUnmodulated] = SpikesGPS.SRT.RankActivityFlat(PopWarpOut);
+%% Plot warped SDF
+SpikesGPS.SRT.VisualizePopSDFWarped(popWarp, 'Each');
+SpikesGPS.SRT.VisualizePopSDFWarped(popWarp, 'Ipsi');
+SpikesGPS.SRT.VisualizePopSDFWarped(popWarp, 'Contra');
 
-PopWarpOut.IndSort = SpikesGPS.SRT.VisualizePopPSTH(PopWarpOut, 'Each');
-SpikesGPS.SRT.VisualizePopPSTH(PopWarpOut, 'Ipsi');
-SpikesGPS.SRT.VisualizePopPSTH(PopWarpOut, 'Contra');
-
-r.PopPSTH = PopWarpOut;
-r_name = 'RTarray_'+r.PSTH.PSTHs(1).ANM_Session{1}+'_'+strrep(r.PSTH.PSTHs(1).ANM_Session{2}, '_', '')+'.mat';
-save(r_name, 'r');
-% Save a copy of PSTHOut to a collector folder
-tosavename = 'PopOut_'+r.PSTH.PSTHs(1).ANM_Session{1}+'_'+strrep(r.PSTH.PSTHs(1).ANM_Session{2}, '_', '')+'.mat';
-save(tosavename, 'PopWarpOut');
-
-% thisFolder = fullfile(findonedrive, '00_Work' , '03_Projects', '05_Physiology', 'Data', 'PopulationPSTH', r.PSTH.PSTHs(1).ANM_Session{1});
-% if ~exist(thisFolder, 'dir')
-%     mkdir(thisFolder)
-% end
-% disp('##########  copying PopOut ########## ')
-% tic
-% copyfile(tosavename, thisFolder)
-% toc
+end
