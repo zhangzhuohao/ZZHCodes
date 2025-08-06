@@ -43,10 +43,15 @@ for i = 1:n_units
     for fp = 1:NumFPs
         for p = 1:NumPorts
             popWarp.sdf{fp, p} = [popWarp.sdf{fp, p}; i_sdf_all.SDFWarp.sdf_mean{fp, p}];
-            popWarp.sdf_ci_l{fp, p} = [popWarp.sdf_ci_l{fp, p}; i_sdf_all.SDFWarp.sdf_ci{fp, p}(1,:)];
-            popWarp.sdf_ci_u{fp, p} = [popWarp.sdf_ci_u{fp, p}; i_sdf_all.SDFWarp.sdf_ci{fp, p}(2,:)];
+            if ~isempty(i_sdf_all.SDFWarp.sdf_ci{fp, p})
+                popWarp.sdf_ci_l{fp, p} = [popWarp.sdf_ci_l{fp, p}; i_sdf_all.SDFWarp.sdf_ci{fp, p}(1,:)];
+                popWarp.sdf_ci_u{fp, p} = [popWarp.sdf_ci_u{fp, p}; i_sdf_all.SDFWarp.sdf_ci{fp, p}(2,:)];
+            else
+                popWarp.sdf_ci_l{fp, p} = [popWarp.sdf_ci_l{fp, p}; zeros(1, length(popWarp.t_warp{fp, p}))];
+                popWarp.sdf_ci_u{fp, p} = [popWarp.sdf_ci_u{fp, p}; zeros(1, length(popWarp.t_warp{fp, p}))];
+            end
         end
-    end    
+    end
 
     % pooled
     if i==1

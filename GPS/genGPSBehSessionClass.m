@@ -4,14 +4,18 @@ clear;
 Tasks = [
     "Autoshaping";
     "Wait1Hold";
+    "Wait1Free";
     "Wait1HoldSRT";
+    "Wait1FreeSRT";
     "Wait1HoldCRT";
     "Wait2HoldSRT";
     "Wait2HoldCRT";
+    "Wait2FreeSRT";
     "ThreeFPHoldCRT";
     "ThreeFPHoldSRT";
     "ThreeFPHoldWM";
     "ThreeFPHoldSRTProbe";
+    "ThreeFPFreeSRTProbe";
     "KornblumHold500SRT";
     "KornblumHold1000SRT";
     "KornblumHold500SRTSelf";
@@ -114,8 +118,10 @@ for d = 1:length(Folders)
         BehavCsvName = sprintf('GPSBehSessionTable_%s_%s_%s.csv',  SessionClass.Task, SessionClass.Subject, SessionClass.Session);
         writetable(SessionClass.BehavTable, fullfile(file_path, BehavCsvName));
 
-        InterCsvName = sprintf('GPSInterruptTable_%s_%s_%s.csv',  SessionClass.Task, SessionClass.Subject, SessionClass.Session);
-        writetable(SessionClass.Interruption, fullfile(file_path, InterCsvName));
+        if ~isempty(SessionClass.Interruption)
+            InterCsvName = sprintf('GPSInterruptTable_%s_%s_%s.csv',  SessionClass.Task, SessionClass.Subject, SessionClass.Session);
+            writetable(SessionClass.Interruption, fullfile(file_path, InterCsvName));
+        end
     end
 end
 

@@ -100,7 +100,7 @@ c_hot = c_hot(1:220, :);
 n_trial = length(TrajField.trial_id);
 for i = 1:n_units
     fig_sdf = figure(27); clf(fig_sdf);
-    set(fig_sdf, 'name', 'Spike density against trajectory', 'units', 'centimeters', 'position', [5 3 12.5 9.5], 'PaperUnits', 'centimeters', 'PaperPosition', [5 3 12 12], 'visible', 'on', 'Color', 'w');
+    set(fig_sdf, 'name', 'Spike density against trajectory', 'units', 'centimeters', 'position', [5 3 12.5 9.5], 'PaperUnits', 'centimeters', 'visible', 'on', 'Color', 'w');
     set_fig_title(fig_sdf, sprintf('%s | %s | Channel%s | Unit%s | %s', TrajField.Subject, TrajField.Session, sdf_mapped(i).meta.Channel, sdf_mapped(i).meta.Unit, sdf_mapped(i).meta.Quality));
 
     % spike waveform and aytocorrelation
@@ -192,6 +192,7 @@ for i = 1:n_units
     xticks(ax_speeddir, -180:90:180);
     xlim(ax_speeddir, [-190 190])
 
+    set(fig_sdf, 'PaperPosition', fig_sdf.Position);
     fig_name = sprintf('SpikeTrajField_%s_%s_Ch%s_Unit%s', TrajField.Subject, TrajField.Session, sdf_mapped(i).meta.Channel, sdf_mapped(i).meta.Unit);
     print(fig_sdf, '-dpng', fullfile(fig_folder, fig_name), '-r300');
 

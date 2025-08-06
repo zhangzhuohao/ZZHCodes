@@ -181,8 +181,16 @@ classdef GPSBehSessionClass < GPSBehClass & GPSPlot
                     obj.Task = "WaitHold";
                     obj.SortLabels = ["TargetFP", "LeftRight"];
                     obj.SortVars   = ["FP"      , "PortCorrect"];
+                case {'Wait1Free', 'Wait1FreeSRT', 'Wait2FreeSRT'}
+                    obj.Task = "WaitFree";
+                    obj.SortLabels = ["TargetFP", "LeftRight"];
+                    obj.SortVars   = ["FP"      , "PortCorrect"];
                 case {'3FPHoldFlash', '3FPHoldSRT', '3FPHoldWM'}
                     obj.Task = "ThreeFPHold";
+                    obj.SortLabels = ["TargetFP", "LeftRight"];
+                    obj.SortVars   = ["FP"      , "PortCorrect"];
+                case {'3FPFreeSRTProbe'}
+                    obj.Task = "ThreeFPFreeProbe";
                     obj.SortLabels = ["TargetFP", "LeftRight"];
                     obj.SortVars   = ["FP"      , "PortCorrect"];
                 case {'3FPHoldCRTProbe', '3FPHoldSRTProbe', '3FPHoldWMProbe', '3FPHoldSRT525Probe'}
@@ -225,7 +233,9 @@ classdef GPSBehSessionClass < GPSBehClass & GPSPlot
             obj.get_all_kdes(0);
 
             % Get behavior tables
-            obj.get_Interruption();
+            if ~contains(obj.Task, 'Free')
+                obj.get_Interruption();
+            end
 
         end % GPSSessionClass
 
@@ -422,7 +432,11 @@ classdef GPSBehSessionClass < GPSBehClass & GPSPlot
 
         % Hold duration
         function hold_duration = get.HD(obj)
-            hold_duration = cellfun(@(x, y) y(end) - x(1), obj.CentPokeInTime, obj.CentPokeOutTime);
+            if ~contains(obj.Task, 'Free')
+                hold_duration = cellfun(@(x, y) y(end) - x(1), obj.CentPokeInTime, obj.CentPokeOutTime);
+            else
+                hold_duration = obj.ChoicePokeTime - cellfun(@(x) x(1), obj.CentPokeInTime);
+            end
         end
 
         function hd_sorted = get.HDSorted(obj)
@@ -463,7 +477,11 @@ classdef GPSBehSessionClass < GPSBehClass & GPSPlot
 
         % Reaction time
         function reaction_time = get.RT(obj)
-            reaction_time = cellfun(@(x) x(end), obj.CentPokeOutTime) - obj.TriggerCueTime;
+            if ~contains(obj.Task, 'Free')
+                reaction_time = cellfun(@(x) x(end), obj.CentPokeOutTime) - obj.TriggerCueTime;
+            else
+                reaction_time = obj.ChoicePokeTime - obj.TriggerCueTime;
+            end
 %             reaction_time(reaction_time<0.05 | reaction_time>2) = nan;
         end
 
@@ -484,7 +502,11 @@ classdef GPSBehSessionClass < GPSBehClass & GPSPlot
 
         % Movement time
         function movement_time = get.MT(obj)
-            movement_time = obj.ChoicePokeTime - cellfun(@(x) x(end), obj.CentPokeOutTime);
+            if ~contains(obj.Task, 'Free')
+                movement_time = obj.ChoicePokeTime - cellfun(@(x) x(end), obj.CentPokeOutTime);
+            else
+                movement_time = obj.ChoicePokeTime - obj.TriggerCueTime;
+            end
         end
 
         function mt_sorted = get.MTSorted(obj)
@@ -596,7 +618,11 @@ classdef GPSBehSessionClass < GPSBehClass & GPSPlot
             InitInTime  = cellfun(@(x) x(1),   obj.InitPokeInTime);
             InitOutTime = cellfun(@(x) x(end), obj.InitPokeOutTime);
             CentInTime  = cellfun(@(x) x(1),   obj.CentPokeInTime);
-            CentOutTime = cellfun(@(x) x(end), obj.CentPokeOutTime);
+            if ~contains(obj.Task, 'Free')
+                CentOutTime = cellfun(@(x) x(end), obj.CentPokeOutTime);
+            else
+                CentOutTime = cellfun(@(x) x(1), obj.CentPokeOutTime);
+            end
 
             RWthis = obj.RW;
             if isempty(RWthis)

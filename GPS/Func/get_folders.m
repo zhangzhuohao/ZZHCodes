@@ -19,23 +19,25 @@ if any(strcmp(opts.Tasks, "ALL"))
     opts.Tasks = [
         "Autoshaping";
         "Wait1Hold";
+        "Wait1Free";
+        "Wait1HoldSRT";
+        "Wait1FreeSRT";
         "Wait1HoldCRT";
+        "Wait2HoldSRT";
         "Wait2HoldCRT";
+        "Wait2FreeSRT";
         "ThreeFPHoldCRT";
         "ThreeFPHoldSRT";
         "ThreeFPHoldWM";
-        "KornblumSRT";
-        "Kornblum1000SRT";
-        "Kornblum1000SRTSelf";
-        "Kornblum1500SRTSelf";
-        "Kornblum2000SRTSelf";
-        "Kornblum2000SRTEmpSelf";
-        "Kornblum2000SRTUnguideSelf";
-        "Kornblum2000SRTMixSelf"
+        "ThreeFPHoldSRTProbe";
+        "ThreeFPFreeSRTProbe";
+        "KornblumHold500SRT";
         "KornblumHold1000SRT";
+        "KornblumHold500SRTSelf";
         "KornblumHold1000SRTSelf";
         "KornblumHold1500SRTSelf";
         "KornblumHold2000SRTSelf";
+        "KornblumHold10001500SRTSelf";
         "KornblumHold2000SRTEmpSelf";
         "KornblumHold2000SRTUnguideSelf";
         "KornblumHold2000SRTMixSelf"
