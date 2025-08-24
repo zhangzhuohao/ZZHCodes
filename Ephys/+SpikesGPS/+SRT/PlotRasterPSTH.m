@@ -1386,6 +1386,7 @@ y_spk_rate = max([y_col3_row5 y_col4_row5]) + 2.5;
 ha_spk_rate = axes('unit', 'centimeters', 'position', [x_col3+.5 y_spk_rate 4 2], ...
     'nextplot', 'add', 'xlim', [min(t_cent_in/1000) max(t_cent_in/1000)], 'FontSize', 7, 'TickDir', 'Out');
 
+t_cent_in = PSTH.CentInAll{ind_t_event};
 spk_mat = PSTH.CentInAll{ind_spkmat};
 t_mat   = PSTH.CentInAll{ind_t_spkmat};
 

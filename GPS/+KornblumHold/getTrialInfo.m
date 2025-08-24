@@ -295,7 +295,11 @@ switch SessionData.Custom.Version
 
                 obj.ChoiceCueTime(i, :) = [iStates.FP(1) iStates.Wait4Choice(2)]; % duration that the choice light lit up.
                 if ~obj.Cued(i)
-                    obj.TriggerCueTime(i) = iStates.Wait4Choice(1);
+                    if ~isfield(iStates, "ChoiceGrace")
+                        obj.TriggerCueTime(i) = iStates.Wait4Choice(1);
+                    else
+                        obj.TriggerCueTime(i) = iStates.ChoiceGrace(1);
+                    end
                 else
                     obj.TriggerCueTime(i) = iStates.FP(end, 2);
                 end
@@ -322,7 +326,11 @@ switch SessionData.Custom.Version
                 end
                 obj.ChoiceCueTime(i, :) = [iStates.FP(1) iStates.Wait4Choice(2)]; % duration that the choice light lit up.
                 if ~obj.Cued(i)
-                    obj.TriggerCueTime(i) = iStates.Wait4Choice(1);
+                    if ~isfield(iStates, "ChoiceGrace")
+                        obj.TriggerCueTime(i) = iStates.Wait4Choice(1);
+                    else
+                        obj.TriggerCueTime(i) = iStates.ChoiceGrace(1);
+                    end
                 else
                     obj.TriggerCueTime(i) = iStates.FP(end, 2);
                 end

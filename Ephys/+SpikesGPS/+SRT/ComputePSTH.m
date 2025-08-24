@@ -34,10 +34,10 @@ params_cent_in.post     = CentInTimeDomain(2);
 params_cent_in.binwidth = 20;
 
 t_cent_in = PSTHOut.CentIn.Time{end};
-[psth_cent_in_all, ts_cent_in_all, trialspxmat_cent_in_all, tspkmat_cent_in_all, t_correct_cent_in_all, ~] = jpsth(r.Units.SpikeTimes(ku).timings, t_cent_in, params_cent_in);
+[psth_cent_in_all, ts_cent_in_all, trialspxmat_cent_in_all, tspkmat_cent_in_all, t_cent_in_all, ~] = jpsth(r.Units.SpikeTimes(ku).timings, t_cent_in, params_cent_in);
 
 psth_cent_in_all = smoothdata(psth_cent_in_all, 'gaussian', 5);
-PSTH.CentInAll   = {psth_cent_in_all, ts_cent_in_all, trialspxmat_cent_in_all, tspkmat_cent_in_all,  t_correct_cent_in_all};
+PSTH.CentInAll   = {psth_cent_in_all, ts_cent_in_all, trialspxmat_cent_in_all, tspkmat_cent_in_all,  t_cent_in_all};
 
 % CentIn PSTH (corrected, sorted)
 params_cent_in.pre      = CentInTimeDomain(1);
