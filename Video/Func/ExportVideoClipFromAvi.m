@@ -121,13 +121,17 @@ for i = 1:length(tBehEvent) % i is also the trial number
     CentOutTime     =   (BehTable.TrialStartTime(i) + BehTable.CentOutTime(i))*1000    - iFrameTimesBpod(1) - tPre_this;
     ChoicePokeTime  =   (BehTable.TrialStartTime(i) + BehTable.ChoicePokeTime(i))*1000 - iFrameTimesBpod(1) - tPre_this;
 
-    IntOnTime       =   CentInTime + 1000*IntTable.On(IntTable.Trials==i_trial);
-    IntOffTime      =   CentInTime + IntOnTime + 1000*IntTable.Dur(IntTable.Trials==i_trial);
+    if ~isempty(IntTable)
+        IntOnTime       =   CentInTime + 1000*IntTable.On(IntTable.Trials==i_trial);
+        IntOffTime      =   CentInTime + IntOnTime + 1000*IntTable.Dur(IntTable.Trials==i_trial);
+    end
 
     poke_state      =   .5*ones(1, length(time_elapsed));
     poke_state(time_elapsed>=CentInTime & time_elapsed<CentOutTime) = 0.2;
-    for int = 1:length(IntOnTime)
-        poke_state(time_elapsed>=IntOnTime(int) & time_elapsed<IntOffTime(int)) = .35;
+    if ~isempty(IntTable)
+        for int = 1:length(IntOnTime)
+            poke_state(time_elapsed>=IntOnTime(int) & time_elapsed<IntOffTime(int)) = .35;
+        end
     end
 
     thisFP          =   CentInTime + BehTable.FP(i)*1000;
@@ -145,7 +149,7 @@ for i = 1:length(tBehEvent) % i is also the trial number
     end
 
     % cue events
-    ChoiceCueTime   =   (BehTable.TrialStartTime(i) + [BehTable.ChoiceCueTime_1(i) BehTable.ChoiceCueTime_2(i)])*1000 - iFrameTimesBpod(1) - tPre_this;
+    ChoiceCueTime   =   (BehTable.TrialStartTime(i) + BehTable.ChoiceCueTime(i,:))*1000 - iFrameTimesBpod(1) - tPre_this;
     TriggerCueTime  =   [0 250] + (BehTable.TrialStartTime(i) + BehTable.TriggerCueTime(i))*1000 - iFrameTimesBpod(1) - tPre_this;
 
     if strcmp(beh_type, "KornblumSRT")

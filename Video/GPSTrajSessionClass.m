@@ -220,9 +220,11 @@ classdef GPSTrajSessionClass < GPSTrajClass
             posR = obj.DLCTracking.PoseTracking(indR).PosData';
 
             head_vec = cellfun(@(x, y) y(:, 1:2) - x(:, 1:2), posL, posR, 'UniformOutput', false);
-            head_angle = cellfun(@(x, y) calAngle(x, y), head_vec, obj.PortVec, 'UniformOutput', false);
+%             head_angle = cellfun(@(x, y) calAngle(x, y), head_vec, obj.PortVec, 'UniformOutput', false);
+            head_angle = cellfun(@(x, y) calAngle(x, [-1 0]), head_vec, 'UniformOutput', false);
 
-            angle_sign = cellfun(@(x, y) 2*(x(:, 2)>=y(2))-1, head_vec, obj.PortVec, 'UniformOutput', false);
+%             angle_sign = cellfun(@(x, y) 2*(x(:, 2)>=y(2))-1, head_vec, obj.PortVec, 'UniformOutput', false);
+            angle_sign = cellfun(@(x, y) 2*(x(:, 2)>=0)-1, head_vec, 'UniformOutput', false);
             head_angle = cellfun(@(x, y) x.*y, head_angle, angle_sign, 'UniformOutput', false);
             head_angle = cellfun(@(x) smoothdata(x', "gaussian", 5), head_angle, 'UniformOutput', false);
         end
@@ -338,11 +340,13 @@ classdef GPSTrajSessionClass < GPSTrajClass
             d_y = cellfun(@(y) obj.cal_diff(y'), obj.PosYHead, 'UniformOutput', false);
 
             speed_vec = cellfun(@(dx, dy) [dx, dy], d_x, d_y, 'UniformOutput', false);
-            port_vec_vert = cellfun(@(pv) [1 -1] .* [pv(2) pv(1)], obj.PortVec, 'UniformOutput', false);
+%             port_vec_vert = cellfun(@(pv) [1 -1] .* [pv(2) pv(1)], obj.PortVec, 'UniformOutput', false);
 
-            speed_dir_head = cellfun(@(x, y) calAngle(x, y), speed_vec, port_vec_vert, 'UniformOutput', false);
+%             speed_dir_head = cellfun(@(x, y) calAngle(x, y), speed_vec, port_vec_vert, 'UniformOutput', false);
+            speed_dir_head = cellfun(@(x, y) calAngle(x, [0 1]), speed_vec, port_vec_vert, 'UniformOutput', false);
 
-            angle_sign = cellfun(@(x, y) 2*(x(:, 1)>=y(1))-1, speed_vec, port_vec_vert, 'UniformOutput', false);
+%             angle_sign = cellfun(@(x, y) 2*(x(:, 1)>=y(1))-1, speed_vec, port_vec_vert, 'UniformOutput', false);
+            angle_sign = cellfun(@(x, y) 2*(x(:, 1)>=0)-1, speed_vec, port_vec_vert, 'UniformOutput', false);
             speed_dir_head = cellfun(@(x, y) x.*y, speed_dir_head, angle_sign, 'UniformOutput', false);
 %             speed_dir_head = cellfun(@(x) unwrap(x, 180), speed_dir_head, 'UniformOutput', false);
             speed_dir_head = cellfun(@(x) smoothdata(x', "gaussian", 5), speed_dir_head, 'UniformOutput', false);

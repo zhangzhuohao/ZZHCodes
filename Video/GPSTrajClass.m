@@ -3,8 +3,8 @@ classdef GPSTrajClass < handle
     %   Detailed explanation goes here
 
     properties (Constant)
-        PerformanceType = ["Correct", "Premature", "Late", "Wrong"];
-        PerformanceCode = [1, -1, -2, 0];
+        PerformanceType = ["Correct", "Premature", "Late", "Wrong", "Probe"];
+        PerformanceCode = [1, -1, -2, 0, -3];
         Definition = [
             "ShuttleTime  (ST): Time of moving from port_init to port_cent";
             "HoldDuration (HD): Time from port_cent poke out to port_choice poke in (for hold paradigm only)";
