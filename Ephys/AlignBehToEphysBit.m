@@ -45,6 +45,7 @@ PokeInitInEphysOff(PokeInitInEphysOn>sample_dur) = [];
 PokeInitInEphysOn(PokeInitInEphysOn>sample_dur)  = [];
 
 % Sometimes the recording miss the first init_in signal before cent_in, we drop that
+TrialIndexEphys(PokeCentInEphysOn<PokeInitInEphysOn(1))   = [];
 PokeCentInEphysOn(PokeCentInEphysOn<PokeInitInEphysOn(1))   = [];
 PokeCentInEphysOff(PokeCentInEphysOff<PokeInitInEphysOn(1)) = [];
 PokeChoiceInEphysOn(PokeChoiceInEphysOn<PokeCentInEphysOn(1))   = [];
