@@ -7,7 +7,7 @@ P = inputParser;
 addRequired(P, 'fig', @isobject);
 addRequired(P, 'title_text', @(x) isstring(x) || ischar(x));
 
-addParameter(P, 'FontSize', 11, @isnumeric);
+addParameter(P, 'FontSize', 9, @isnumeric);
 addParameter(P, 'FontWeight', 'bold', @(x) ismember(x, {'bold', 'normal'}));
 addParameter(P, 'FontColor', 'k');
 addParameter(P, 'BackColor', 'none');
