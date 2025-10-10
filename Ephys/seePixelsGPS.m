@@ -1,5 +1,13 @@
-function [RegularIndex, unitLocation] = seePixels(r, spatial)
-% Jianing Yu 2025.5
+function [RegularIndex, unitLocation] = seePixelsGPS(r, spatial)
+% Revised from Jianing Yu 2025.5
+if nargin < 2
+    if isfield(r, 'ChanMap')
+        spatial = r.ChanMap;
+    else
+        error('Lack spatial information');
+    end
+end
+
 % Plot the spike sorting results of a single session
 nSpk = size(r.Units.SpikeNotes, 1);
 % plot channel information. 
@@ -67,12 +75,14 @@ for i =1:nSpk
 
 end
 
-save(['unitLocation_' r.BehaviorClass.Subject '_' r.BehaviorClass.Date '.mat'], 'unitLocation')
+unit_location_name = sprintf('unitLocation_%s_%s.mat', r.BehaviorClass.Subject, r.BehaviorClass.Session);
+save(unit_location_name, 'unitLocation')
 
 % Make a figure showing spikes
 % Save a 'SpikeQuality_meta' figure to current directory. 
 % An index of good units is also saved. 
-setDefaultStyles
+set_matlab_default
+% setDefaultStyles
 fig = 98;
 figure(fig); clf(fig)
 set(gcf, 'Visible', 'on', 'Units', 'centimeters','Position',[2 2 15 12])
@@ -214,7 +224,8 @@ scatter(ha3, fullWidthHalfHeightSorted(cidx==2), peakTroughSorted(cidx==2),  40,
 % Here we plot the spatial locations. 
 seeUnitLocation(spatial, unitLocation, ha4);
 
-meta = [r.BehaviorClass.Subject ' | ' r.BehaviorClass.Date ' | ' r.BehaviorClass.Protocol];
+meta = sprintf('%s | %s | %s', r.BehaviorClass.Subject, r.BehaviorClass.Session, r.BehaviorClass.Protocol);
+% meta = [r.BehaviorClass.Subject ' | ' r.BehaviorClass.Date ' | ' r.BehaviorClass.Protocol];
 annotation('textbox', 'String', meta, ...
     'units', 'normalized', ...
     'Position', [.1 .95 .8 .05], ...
@@ -222,16 +233,17 @@ annotation('textbox', 'String', meta, ...
     'VerticalAlignment', 'bottom', ...
     'FontSize', 10, ...
     'FontWeight', 'bold',...
-    'FontName', myFont,...
-    'EdgeColor','none');
+    'EdgeColor','none'); %     'FontName', myFont,...
 
 if ~exist('Figure', 'dir')
     mkdir('Figure');
 end
 
-savename1 = fullfile(pwd, 'Figure', ['SpikeQuality_' r.BehaviorClass.Subject '_' r.BehaviorClass.Date '_' r.BehaviorClass.Protocol]);
+savename1 = fullfile(pwd, 'Figure', sprintf('SpikeQuality_%s_%s_%s', r.BehaviorClass.Subject, r.BehaviorClass.Session, r.BehaviorClass.Protocol));
+% savename1 = fullfile(pwd, 'Figure', ['SpikeQuality_' r.BehaviorClass.Subject '_' r.BehaviorClass.Date '_' r.BehaviorClass.Protocol]);
 print(fig, '-dpng', [savename1, '.png']) 
 
 % GoodRegularIndex
-savename1 = fullfile(pwd, ['RegularIndex_' r.BehaviorClass.Subject '_' r.BehaviorClass.Date '_' r.BehaviorClass.Protocol '.mat']);
+savename1 = fullfile(pwd, sprintf('RegularIndex_%s_%s_%s', r.BehaviorClass.Subject, r.BehaviorClass.Session, r.BehaviorClass.Protocol));
+% savename1 = fullfile(pwd, ['RegularIndex_' r.BehaviorClass.Subject '_' r.BehaviorClass.Date '_' r.BehaviorClass.Protocol '.mat']);
 save(savename1, 'RegularIndex')
