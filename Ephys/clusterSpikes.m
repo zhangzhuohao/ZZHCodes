@@ -62,9 +62,9 @@ for i = 1:nSpk
     % collect the first 5 channels
     for j = 1:nWave
         wave_this = allWaves(indSort(j), :);
-        if -min(wave_this)<max(wave_this) % regular spike, negative phase is larger than the  positive phase
-            wave_this = -wave_this;
-        end
+%         if -min(wave_this)<max(wave_this) % regular spike, negative phase is larger than the  positive phase
+%             wave_this = -wave_this;
+%         end
         waveCollection{j} = [waveCollection{j}; wave_this];
     end
 % 
