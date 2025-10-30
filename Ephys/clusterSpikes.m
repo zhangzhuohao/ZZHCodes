@@ -1,7 +1,7 @@
 function RegularIndex = clusterSpikes(r, clusterBy)
 % clusterBy = 'PC';
 if nargin < 2
-    clusterBy = 'PC';
+    clusterBy = 'PeakTrough';
 end
 
 % channel spatial information

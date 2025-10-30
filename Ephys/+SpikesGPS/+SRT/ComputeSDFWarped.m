@@ -1,5 +1,9 @@
-function SDFAll = ComputeSDFWarped(r, id)
+function SDFAll = ComputeSDFWarped(r, id, cal_ci)
 %
+if nargin < 3
+    cal_ci = 1;
+end
+
 % figure out which unit it is
 spk_note = r.Units.SpikeNotes;
 ind_unit = find(spk_note(:, 1)==id(1) & spk_note(:, 2)==id(2));
@@ -62,7 +66,7 @@ for i = 1:n_correct
             spkmat(ind_spikes) = 1;
         end
         % convert the spike train to sdf
-        sdfout = sdf(tsdf/1000, spkmat, 20); % spkout = sdf(tspk, spkin, kernel_width)
+        sdfout = sdf(tsdf/1000, spkmat, 20, 0); % spkout = sdf(tspk, spkin, kernel_width, compute_ci)
 
         SDFCorrect.t_spk_times(i) = {this_spk_train};
         SDFCorrect.t_sdf(i) = {tsdf};
@@ -139,7 +143,7 @@ sdf_warped_ci = cell(NumFPs, NumPorts);
 sdf_warped_mean = cell(NumFPs, NumPorts);
 for i = 1:NumFPs
     for j = 1:NumPorts
-        if size(ioc_sdf_warped{i,j}, 1)>10
+        if size(ioc_sdf_warped{i,j}, 1)>10 && cal_ci
             sdf_warped_ci{i,j} = bootci(1000, @mean, ioc_sdf_warped{i,j});
         end
         sdf_warped_mean{i,j} = mean(ioc_sdf_warped{i,j}, 1);
@@ -206,7 +210,7 @@ for i = 1:n_correct
         spkmat(ind_spikes) = 1;
     end
     % convert the spike train to sdf
-    sdfout = sdf(tsdf/1000, spkmat, 20); % spkout = sdf(tspk, spkin, kernel_width)
+    sdfout = sdf(tsdf/1000, spkmat, 20, 0); % spkout = sdf(tspk, spkin, kernel_width, compute_ci)
 
     SDFCorrect.t_spk_centin(i) = {this_spk_train};
     SDFCorrect.t_sdf_centin(i) = {tsdf};
@@ -226,7 +230,7 @@ for i = 1:n_correct
         spkmat(ind_spikes) = 1;
     end
     % convert the spike train to sdf
-    sdfout = sdf(tsdf/1000, spkmat, 20); % spkout = sdf(tspk, spkin, kernel_width)
+    sdfout = sdf(tsdf/1000, spkmat, 20, 0); % spkout = sdf(tspk, spkin, kernel_width, compute_ci)
 
     SDFCorrect.t_spk_trigger(i) = {this_spk_train};
     SDFCorrect.t_sdf_trigger(i) = {tsdf};
@@ -310,13 +314,13 @@ pool_sdf_warped_mean.centin = cell(1, NumPorts);
 pool_sdf_warped_ci.centin   = cell(1, NumPorts);
 for j = 1:NumPorts
     % trigger around
-    if size(pool_ioc_sdf_warped.trigger{j}, 1)>10
+    if size(pool_ioc_sdf_warped.trigger{j}, 1)>10 && cal_ci
         pool_sdf_warped_ci.trigger{j} = bootci(1000, @mean, pool_ioc_sdf_warped.trigger{j});
     end
     pool_sdf_warped_mean.trigger{j} = mean(pool_ioc_sdf_warped.trigger{j}, 1);
 
     % cent-in around
-    if size(pool_ioc_sdf_warped.centin{j}, 1)>10
+    if size(pool_ioc_sdf_warped.centin{j}, 1)>10 && cal_ci
         pool_sdf_warped_ci.centin{j} = bootci(1000, @mean, pool_ioc_sdf_warped.centin{j});
     end
     pool_sdf_warped_mean.centin{j} = mean(pool_ioc_sdf_warped.centin{j}, 1);
