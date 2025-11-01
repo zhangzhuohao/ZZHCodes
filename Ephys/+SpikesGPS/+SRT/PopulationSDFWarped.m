@@ -92,14 +92,24 @@ popWarpPool.IndUnmodulated = IndInsignificant;
 
 %% get z-score of warped sdf
 popWarp.sdf_z = cellfun(@(x) normalize(x, 2, 'zscore'), popWarp.sdf, 'UniformOutput', false);
+for fp = 1:NumFPs
+    for p = 1:NumPorts
+        popWarp.sdf_z{fp, p}(isnan(popWarp.sdf_z{fp, p})) = 0;
+    end
+end
 
 for p = 1:NumPorts
     pool_sdf_cat = [popWarpPool.sdf.centin{p} popWarpPool.sdf.trigger{p}];
     pool_sdf_mean = mean(pool_sdf_cat, 2);
     pool_sdf_std  = std(pool_sdf_cat, [], 2);
 
-    popWarpPool.sdf_z.centin{p}  = (popWarpPool.sdf.centin{p} - pool_sdf_mean) ./ pool_sdf_std;
-    popWarpPool.sdf_z.trigger{p} = (popWarpPool.sdf.trigger{p} - pool_sdf_mean) ./ pool_sdf_std;
+    if pool_sdf_std==0
+        popWarpPool.sdf_z.centin{p}  = zeros(size(popWarpPool.sdf.centin{p}));
+        popWarpPool.sdf_z.trigger{p} = zeros(size(popWarpPool.sdf.trigger{p}));
+    else
+        popWarpPool.sdf_z.centin{p}  = (popWarpPool.sdf.centin{p} - pool_sdf_mean) ./ pool_sdf_std;
+        popWarpPool.sdf_z.trigger{p} = (popWarpPool.sdf.trigger{p} - pool_sdf_mean) ./ pool_sdf_std;
+    end
 end
 
 popWarp.popWarpPooled = popWarpPool;
