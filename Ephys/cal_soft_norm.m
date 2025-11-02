@@ -1,6 +1,6 @@
 function [g_soft_norm, soft_factor, g_mean] = cal_soft_norm(g, soft_norm)
 
- % Extracted form preprocessing_pca_analysis by J Yu 20250831
+% Extracted form preprocessing_pca_analysis by J Yu 20250831
 % Ideas come from the following
 
 % PCA references:
