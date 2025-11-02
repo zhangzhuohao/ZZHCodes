@@ -127,13 +127,13 @@ xline(ax_corr, 1500, '--w', 'Alpha', 1, 'LineWidth', 1.5); yline(1500, '--w', 'A
 rt_m = mean([t_point{3,1}(3), t_point{3,2}(3)]);
 xline(ax_corr, rt_m, ':w', 'Alpha', 1, 'LineWidth', 1.5); yline(rt_m, ':w', 'Alpha', 1, 'LineWidth', 1.5);
 
-xlabel(ax_corr, 'Time (ms)'); ylabel(ax_corr, 'Time (ms)');
+xlabel(ax_corr, 'Time to Cent-In (ms)'); ylabel(ax_corr, 'Time to Cent-In (ms)');
 
 cb_corr = colorbar(ax_corr, 'Units', 'centimeters', 'Position', [5.75 1 .25 4], 'TickDirection', 'out', 'Ticks', 0:.2:1, 'FontSize', 7);
 cb_corr.Label.String = "Pearson's correlation";
 cb_corr.Label.FontSize = 7;
 
-
+%%
 ax_proj = plt.assign_ax_to_fig(fig_cd, 2, 3, [8 1 10.5 4], [3 1.5]);
 cellfun(@(x) set(x, 'Xlim', [-1500 2500]), ax_proj(:,1:2));
 cellfun(@(x) set(x, 'Xlim', [-3000 1000]), ax_proj(:,3));
