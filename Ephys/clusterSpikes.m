@@ -1,7 +1,10 @@
-function RegularIndex = clusterSpikes(r, clusterBy)
+function RegularIndex = clusterSpikes(r, clusterBy, manual)
 % clusterBy = 'PC';
 if nargin < 2
     clusterBy = 'PeakTrough';
+    manual = 0;
+elseif nargin < 3
+    manual = 0;
 end
 
 % channel spatial information
@@ -100,14 +103,48 @@ end
 X = [X1, fullWidthHalfHeight(:)];
 % Normalize data (optional, if scales differ)
 X = (X - mean(X)) ./ std(X);
-% Run kmeans with optimized parameters
-[cidx, ctrs] = kmeans(X, 2, ...
-    'Distance', 'sqeuclidean', ...
-    'Replicates', 5, ...
-    'Start', 'plus', ...
-    'EmptyAction', 'singleton', ...
-    'MaxIter', 200, ...
-    'Display', 'off');
+
+if manual
+    plt = GPSPlot();
+
+    fig = figure(98); clf(fig);
+    set_fig_default(fig);
+    set(fig, 'Name', 'Spike Features', 'Position', [5 5 5.5 5.5]);
+    set_fig_title(fig, sprintf('SpikeFeatures | %s | %s', r.BehaviorClass.Subject, r.BehaviorClass.Session));
+
+    % cluster scatter plot
+    ax_scatter = plt.assign_ax_to_fig(fig, 1, 1, [1 1 3.5 3.5], [3.5 3.5]);
+    ax_scatter = ax_scatter{1};
+    set(ax_scatter, 'XLim', [0.05 0.4]);
+
+    scatter(ax_scatter, fullWidthHalfHeight, X1, 12, 'black', 'filled', 'MarkerFaceAlpha', .6);
+
+    xlabel(ax_scatter, 'Full width at half width (ms)');
+    switch clusterBy
+        case 'PC'
+            ylabel(ax_scatter, 'Waveform PC-1');
+        case 'PeakTrough'
+            ylabel(ax_scatter, 'Peak to trough ratio');
+    end
+
+    disp('**** Select a region ****');
+
+    roi = drawfreehand(ax_scatter);
+    cidx = inpolygon(fullWidthHalfHeight, X1, roi.Position(:,1), roi.Position(:,2));
+    cidx = cidx' + 1;
+    ctrs = [mean(X(cidx==1, :), 1);
+            mean(X(cidx==2, :), 1)
+            ];
+else
+    % Run kmeans with optimized parameters
+    [cidx, ctrs] = kmeans(X, 2, ...
+        'Distance', 'sqeuclidean', ...
+        'Replicates', 5, ...
+        'Start', 'plus', ...
+        'EmptyAction', 'singleton', ...
+        'MaxIter', 200, ...
+        'Display', 'off');
+end
 
 % % Re-assign cluster index by counts
 % count1 = sum(cidx==1); % Number of points in cluster 1
@@ -145,7 +182,11 @@ plt = GPSPlot();
 fig = figure(98); clf(fig);
 set_fig_default(fig);
 set(fig, 'Name', 'Spike Cluster', 'Position', [5 5 8 5.5]);
-set_fig_title(fig, sprintf('SpikeCluster | %s | %s', r.BehaviorClass.Subject, r.BehaviorClass.Session));
+if manual
+    set_fig_title(fig, sprintf('SpikeCluster | %s | %s (manual)', r.BehaviorClass.Subject, r.BehaviorClass.Session));
+else
+    set_fig_title(fig, sprintf('SpikeCluster | %s | %s', r.BehaviorClass.Subject, r.BehaviorClass.Session));
+end
 
 % cluster scatter plot
 ax_cluster = plt.assign_ax_to_fig(fig, 1, 1, [1 1 3.5 3.5], [3.5 3.5]);

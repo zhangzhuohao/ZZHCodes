@@ -60,14 +60,14 @@ fr_pool_norm = mat2cell(fr_pool_c_norm, n_u, n_t_pool(:)'); % split conditions
 fr_pool_norm = reshape(fr_pool_norm, size(fr_pool));
 
 
-% plot heatmap
+%% plot heatmap
 % regular units only
 ind_sort = cellfun(@(x) x(ismember(x, RegularIndex.Good)), r.popSDFWarped.popWarpPooled.IndSort, 'UniformOutput', false);
 [~,~,ind_sort] = cellfun(@(x) unique(x, 'sorted'), ind_sort, 'UniformOutput', false);
 
 fig_pc = figure(88); clf(fig_pc);
 set_fig_default(fig_pc);
-set(fig_pc, 'Name', 'PCA', 'Position', [5 5 20 16]);
+set(fig_pc, 'Name', 'PCA', 'Position', [5 5 20 14.75]);
 
 % 1750 1250
 ax_pop_centin = plt.assign_ax_to_fig(fig_pc, 1, 2, [1 10.5 8.5 3], [2.8 3]);
@@ -95,7 +95,7 @@ for p = 1:2
         xlabel(ax_pop_trig{p}, 'to Trigger (ms)');
     end
 end
-cb = colorbar(gca, 'Units', 'centimeters', 'Position', [12 10.5 .25 3], 'TickDirection', 'out', 'FontSize', 7);
+cb = colorbar(ax_pop_trig{2}, 'Units', 'centimeters', 'Position', [12 10.5 .25 3], 'TickDirection', 'out', 'FontSize', 7);
 cb.Label.String = "Soft-norm. activity";
 cb.Label.FontSize = 7;
 
@@ -449,6 +449,12 @@ imagesc(ax_coef_all, 10:11, 1:n_u, w_move(ind_sort{1},1:2));
 cb = colorbar(ax_coef_all, 'Units', 'centimeters', 'Position', [17.5 10.5 .25 3], 'TickDirection', 'out', 'FontSize', 7);
 cb.Label.String = "Norm. projection weight";
 cb.Label.FontSize = 7;
+
+set_fig_title(fig_pc, sprintf('%s | %s', r.BehaviorClass.Subject, r.BehaviorClass.Session));
+
+fig_name = sprintf('PCA_%s_%s', r.BehaviorClass.Subject, r.BehaviorClass.Session);
+fig_path = fullfile('Figure', fig_name);
+exportgraphics(fig_pc, sprintf('%s.png', fig_path), 'Resolution', 300);
 
 
 
