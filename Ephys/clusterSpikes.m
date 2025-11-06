@@ -241,7 +241,8 @@ end
 
 savename1 = fullfile(pwd, 'Figure', sprintf('SpikeCluster_%s_%s_%s', r.BehaviorClass.Subject, r.BehaviorClass.Session, r.BehaviorClass.Protocol));
 % savename1 = fullfile(pwd, 'Figure', ['SpikeQuality_' r.BehaviorClass.Subject '_' r.BehaviorClass.Date '_' r.BehaviorClass.Protocol]);
-print(fig, '-dpng', [savename1, '.png']) 
+exportgraphics(fig, [savename1, '.png'], 'Resolution', 300);
+% print(fig, '-dpng', [savename1, '.png']) 
 
 % GoodRegularIndex
 savename1 = fullfile(pwd, sprintf('RegularIndex_%s_%s_%s', r.BehaviorClass.Subject, r.BehaviorClass.Session, r.BehaviorClass.Protocol));
