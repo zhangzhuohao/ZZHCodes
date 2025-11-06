@@ -34,13 +34,26 @@ for i = 1:obj.NumTrials
         continue;
     end
 
-    obj.InitPokeInTime{i} = iEvents.Port3In(iEvents.Port3In>=iStates.Wait4Sample(1) & iEvents.Port3In<=iStates.Wait4Center(2))';
-    obj.InitPokeOutTime{i} = iEvents.Port3Out(iEvents.Port3Out>=iStates.Wait4Sample(1) & iEvents.Port3Out<=iStates.Wait4Center(2))';
+    if isfield(iStates, 'Wait4Center_Stim')
+        if ~isnan(iStates.Wait4Center(1))
+            StateCent = 'Wait4Center';
+        else
+            StateCent = 'Wait4Center_Stim';
+        end
+        obj.InitPokeInTime{i} = iEvents.Port3In(iEvents.Port3In>=iStates.Wait4Sample(1) & iEvents.Port3In<=iStates.(StateCent)(2))';
+        obj.InitPokeOutTime{i} = iEvents.Port3Out(iEvents.Port3Out>=iStates.Wait4Sample(1) & iEvents.Port3Out<=iStates.(StateCent)(2))';
 
-    obj.CentPokeInTime{i} = iEvents.Port4In(iEvents.Port4In>=iStates.Wait4Center(2) & iEvents.Port4In<=iStates.Wait4Choice(1))';
-    obj.CentPokeOutTime{i} = iEvents.Port4Out(iEvents.Port4Out>=iStates.Wait4Center(2) & iEvents.Port4Out<=iStates.Wait4Choice(1))';
-%     obj.CentPokeInTime{i} = iEvents.Port4In(iEvents.Port4In>=iStates.Wait4Center(1) & iEvents.Port4In<=iStates.Wait4Choice(2));
-%     obj.CentPokeOutTime{i} = iEvents.Port4Out(iEvents.Port4Out>=iStates.Wait4Center(1) & iEvents.Port4Out<=iStates.Wait4Choice(2));
+        obj.CentPokeInTime{i} = iEvents.Port4In(iEvents.Port4In>=iStates.(StateCent)(2) & iEvents.Port4In<=iStates.Wait4Choice(1))';
+        obj.CentPokeOutTime{i} = iEvents.Port4Out(iEvents.Port4Out>=iStates.(StateCent)(2) & iEvents.Port4Out<=iStates.Wait4Choice(1))';
+    else
+        obj.InitPokeInTime{i} = iEvents.Port3In(iEvents.Port3In>=iStates.Wait4Sample(1) & iEvents.Port3In<=iStates.Wait4Center(2))';
+        obj.InitPokeOutTime{i} = iEvents.Port3Out(iEvents.Port3Out>=iStates.Wait4Sample(1) & iEvents.Port3Out<=iStates.Wait4Center(2))';
+
+        obj.CentPokeInTime{i} = iEvents.Port4In(iEvents.Port4In>=iStates.Wait4Center(2) & iEvents.Port4In<=iStates.Wait4Choice(1))';
+        obj.CentPokeOutTime{i} = iEvents.Port4Out(iEvents.Port4Out>=iStates.Wait4Center(2) & iEvents.Port4Out<=iStates.Wait4Choice(1))';
+        %     obj.CentPokeInTime{i} = iEvents.Port4In(iEvents.Port4In>=iStates.Wait4Center(1) & iEvents.Port4In<=iStates.Wait4Choice(2));
+        %     obj.CentPokeOutTime{i} = iEvents.Port4Out(iEvents.Port4Out>=iStates.Wait4Center(1) & iEvents.Port4Out<=iStates.Wait4Choice(2));
+    end
 
     obj.ChoiceCueTime(i, :) = [iStates.CentralReward(1) iStates.Wait4Choice(2)];
     obj.ChoicePokeTime(i) = iStates.Wait4Choice(2);

@@ -731,6 +731,11 @@ classdef KilosortOutputClass<handle
 %                 CorrectBehaviorEphysMapping(r,  r.BehaviorClass); % this also save r in the current directory
 %             end
 
+            try
+                r.EphysTable = getEphysTable(r);
+            catch
+            end
+
             tic
             save(aGoodName,'r', '-v7.3');
             toc

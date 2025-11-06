@@ -127,17 +127,17 @@ ct_cent_out_correct_sorted   = cell(1, NumPorts);
 
 ind_correct = PSTHOut.CentOut.Labels=="Correct";
 for j = 1:NumPorts
-    t_j = PSTHOut.CentIn.Time{ind_correct}{j};
+    t_j = PSTHOut.CentOut.Time{ind_correct}{j};
     [psth_cent_out_correct{j}, ts_cent_out_correct{j}, trialspxmat_cent_out_correct{j}, tspkmat_cent_out_correct{j}, t_cent_out_correct{j}, ind] = jpsth(r.Units.SpikeTimes(ku).timings, t_j, params_cent_out);
     psth_cent_out_correct{j} = smoothdata(psth_cent_out_correct{j}, 'gaussian', 5);
 
-    hd_cent_out_correct_sorted{j} = PSTHOut.CentIn.HoldDur{ind_correct}{j};
+    hd_cent_out_correct_sorted{j} = PSTHOut.CentOut.HoldDur{ind_correct}{j};
     hd_cent_out_correct_sorted{j} = hd_cent_out_correct_sorted{j}(ind);
 
-    mt_cent_out_correct_sorted{j} = PSTHOut.CentIn.MovementTime{ind_correct}{j};
+    mt_cent_out_correct_sorted{j} = PSTHOut.CentOut.MovementTime{ind_correct}{j};
     mt_cent_out_correct_sorted{j} = mt_cent_out_correct_sorted{j}(ind);
 
-    ct_cent_out_correct_sorted{j} = PSTHOut.CentIn.ChoiceTime{ind_correct}{j};
+    ct_cent_out_correct_sorted{j} = PSTHOut.CentOut.ChoiceTime{ind_correct}{j};
     ct_cent_out_correct_sorted{j} = ct_cent_out_correct_sorted{j}(ind);
 
     PSTH.CentOut.Correct{j} = {psth_cent_out_correct{j}, ts_cent_out_correct{j}, trialspxmat_cent_out_correct{j}, tspkmat_cent_out_correct{j}, t_cent_out_correct{j}, hd_cent_out_correct_sorted{j}, mt_cent_out_correct_sorted{j}, ct_cent_out_correct_sorted{j}};
@@ -163,13 +163,13 @@ for j = 1:NumPorts
     [psth_cent_out_wrong{j}, ts_cent_out_wrong{j}, trialspxmat_cent_out_wrong{j}, tspkmat_cent_out_wrong{j}, t_cent_out_wrong{j}, ind] = jpsth(r.Units.SpikeTimes(ku).timings, t_j, params_cent_out);
     psth_cent_out_wrong{j} = smoothdata(psth_cent_out_wrong{j}, 'gaussian', 5);
 
-    hd_cent_out_wrong_sorted{j} = PSTHOut.CentIn.HoldDur{ind_wrong}{j};
+    hd_cent_out_wrong_sorted{j} = PSTHOut.CentOut.HoldDur{ind_wrong}{j};
     hd_cent_out_wrong_sorted{j} = hd_cent_out_wrong_sorted{j}(ind);
 
-    mt_cent_out_wrong_sorted{j} = PSTHOut.CentIn.MovementTime{ind_wrong}{j};
+    mt_cent_out_wrong_sorted{j} = PSTHOut.CentOut.MovementTime{ind_wrong}{j};
     mt_cent_out_wrong_sorted{j} = mt_cent_out_wrong_sorted{j}(ind);
 
-    ct_cent_out_wrong_sorted{j} = PSTHOut.CentIn.ChoiceTime{ind_wrong}{j};
+    ct_cent_out_wrong_sorted{j} = PSTHOut.CentOut.ChoiceTime{ind_wrong}{j};
     ct_cent_out_wrong_sorted{j} = ct_cent_out_wrong_sorted{j}(ind);
 
     PSTH.CentOut.Wrong{j} = {psth_cent_out_wrong{j}, ts_cent_out_wrong{j}, trialspxmat_cent_out_wrong{j}, tspkmat_cent_out_wrong{j}, t_cent_out_wrong{j}, hd_cent_out_wrong_sorted{j}, mt_cent_out_wrong_sorted{j}, ct_cent_out_wrong_sorted{j}};

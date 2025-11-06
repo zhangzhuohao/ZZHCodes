@@ -189,7 +189,7 @@ classdef GPSBehSessionClass < GPSBehClass & GPSPlot
                     obj.Task = "ThreeFPHold";
                     obj.SortLabels = ["TargetFP", "LeftRight"];
                     obj.SortVars   = ["FP"      , "PortCorrect"];
-                case {'3FPFreeSRTProbe'}
+                case {'3FPFreeSRTProbe', '3FPFreeCRTProbe'}
                     obj.Task = "ThreeFPFreeProbe";
                     obj.SortLabels = ["TargetFP", "LeftRight"];
                     obj.SortVars   = ["FP"      , "PortCorrect"];

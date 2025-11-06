@@ -262,7 +262,7 @@ PSTHOut.CentIn.MovementTime = {mt_correct_sort, mt_wrong_sort, mt};
 %% 3.2 Cent-Out
 PSTHOut.CentOut.Labels = ["Correct", "Wrong", "All"];
 
-PSTHOut.CentOut.Time = cell(1, length(PSTHOut.CentIn.Labels));
+PSTHOut.CentOut.Time = cell(1, length(PSTHOut.CentOut.Labels));
 PSTHOut.CentOut.Time{1} = t_cent_out_correct_sort;
 PSTHOut.CentOut.Time{2} = t_cent_out_wrong_sort;
 PSTHOut.CentOut.Time{3} = t_cent_out;

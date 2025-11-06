@@ -149,7 +149,11 @@ for i = 1:length(tBehEvent) % i is also the trial number
     end
 
     % cue events
-    ChoiceCueTime   =   (BehTable.TrialStartTime(i) + BehTable.ChoiceCueTime(i,:))*1000 - iFrameTimesBpod(1) - tPre_this;
+    try
+        ChoiceCueTime = (BehTable.TrialStartTime(i) + BehTable.ChoiceCueTime(i,:))*1000 - iFrameTimesBpod(1) - tPre_this;
+    catch
+        ChoiceCueTime = (BehTable.TrialStartTime(i) + [BehTable.ChoiceCueTime_1(i) BehTable.ChoiceCueTime_2(i)])*1000 - iFrameTimesBpod(1) - tPre_this;
+    end
     TriggerCueTime  =   [0 250] + (BehTable.TrialStartTime(i) + BehTable.TriggerCueTime(i))*1000 - iFrameTimesBpod(1) - tPre_this;
 
     if strcmp(beh_type, "KornblumSRT")

@@ -66,9 +66,15 @@ for i = 1:obj.NumTrials
 
     if ~isnan(iStates.ProbeCorrect(1)) || ~isnan(iStates.ProbeWrong(1)) % Probe
         obj.Outcome(i) = "Probe";
-        obj.CentPokeInTime{i} = [iStates.FP(1) iEvents.Port4In(iEvents.Port4In>=iStates.FP(1) & iEvents.Port4In<=iStates.FP(2))];
-        obj.CentPokeOutTime{i} = iEvents.Port4Out(iEvents.Port4Out>=iStates.FP(1) & iEvents.Port4Out<=iStates.FP(2));
-        obj.ChoiceCueTime(i, :) = [iStates.FP(1) iStates.FP(2)];
+        if isfield(iStates, 'FPProbe')
+            FPState = 'FPProbe';
+        else
+            FPState = 'FP';
+        end
+        obj.CentPokeInTime{i} = [iStates.(FPState)(1) iEvents.Port4In(iEvents.Port4In>=iStates.(FPState)(1) & iEvents.Port4In<=iStates.(FPState)(2))];
+        obj.CentPokeOutTime{i} = iEvents.Port4Out(iEvents.Port4Out>=iStates.(FPState)(1) & iEvents.Port4Out<=iStates.(FPState)(2));
+        obj.ChoiceCueTime(i, :) = [iStates.(FPState)(1) iStates.(FPState)(2)];
+
         obj.TriggerCueTime(i) = nan;
         if ~isnan(iStates.ProbeCorrect(1))
             obj.ChoicePokeTime(i) = iStates.ProbeCorrect(1);
