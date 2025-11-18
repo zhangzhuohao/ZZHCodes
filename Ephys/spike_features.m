@@ -79,14 +79,18 @@ function [fwhh, trough_amplitude, peak_amplitude] = analyze_spike_waveform(t, v)
     % Before trough
     pre_crossings = find(diff(sign(v(1:trough_idx) - half_height)) ~= 0);
     if isempty(pre_crossings)
-        error('No crossing found before trough');
+        disp('No crossing found before trough');
+        fwhh = nan;
+        return
     end
     t1_idx = pre_crossings(end);
     
     % After trough
     post_crossings = find(diff(sign(v(trough_idx:end) - half_height)) ~= 0);
     if isempty(post_crossings)
-        error('No crossing found after trough');
+        disp('No crossing found after trough');
+        fwhh = nan;
+        return
     end
     t2_idx = trough_idx + post_crossings(1);
     

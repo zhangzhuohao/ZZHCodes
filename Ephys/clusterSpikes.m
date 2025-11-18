@@ -102,7 +102,7 @@ switch clusterBy
 end
 X = [X1, fullWidthHalfHeight(:)];
 % Normalize data (optional, if scales differ)
-X = (X - mean(X)) ./ std(X);
+X = (X - mean(X, 'omitnan')) ./ std(X, 'omitnan');
 
 if manual
     plt = GPSPlot();
