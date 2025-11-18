@@ -918,7 +918,7 @@ for m = 1:NumStages
         xxmt_all = []; % movement (cent-out to choice) times
         yymt_all = [];
 
-        for i = 1:ntrials_cent_in_ij(m,n)
+        for i = 1:ntrials_reward_ij(m,n)
             xx = t_mat(spk_mat(:,i)==1);
             yy1 = [.1 .9] - k;
             yy2 = [0 1] - k;

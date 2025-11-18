@@ -303,6 +303,7 @@ for j = 1:NumPorts
     ind_j = find(Port_choice_noreward==Ports(j));
     t_choice_noreward_sort{j} = t_choice_noreward(ind_j);
     MT_noreward_sort{j}       = MT_noreward(ind_j);
+    Stage_choice_noreward_sort{j} = Stage_choice_noreward(ind_j);
 
     % rank them
     [MT_noreward_sort{j}, ind_sort] = sort(MT_noreward_sort{j});

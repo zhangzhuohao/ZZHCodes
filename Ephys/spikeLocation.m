@@ -16,6 +16,14 @@ if nargin < 4
     algorithm = 'monopolar_triangulation';
 end
 
+if isfield(channel_locations, 'xcoords')
+    chanMap = channel_locations;
+    chanMap.xcoords = chanMap.xcoords(chanMap.connected == 1);
+    chanMap.ycoords = chanMap.ycoords(chanMap.connected == 1);
+
+    channel_locations = [chanMap.xcoords, chanMap.ycoords];
+end
+
 % get n_nearest_channels from the channels with the largest peak-to-trough value
 peaks_to_trough = max(waveforms_mean, [], 2) - min(waveforms_mean, [], 2);
 [~, idx_max] = max(peaks_to_trough);
