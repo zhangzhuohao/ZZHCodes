@@ -122,10 +122,10 @@ set(ax_corr, 'XLim', [-150.5 2000.5], 'YLim', [-150.5 2000.5], 'YDir', 'reverse'
 
 imagesc(ax_corr, t_warp_len{3}, t_warp_len{3}, cd_corr); colormap('turbo');
 
-xline(ax_corr, 0, '--w', 'Alpha', 1, 'LineWidth', 1.5); yline(0, '--w', 'Alpha', 1, 'LineWidth', 1.5);
-xline(ax_corr, 1500, '--w', 'Alpha', 1, 'LineWidth', 1.5); yline(1500, '--w', 'Alpha', 1, 'LineWidth', 1.5);
+xline(ax_corr, 0, '--w', 'Alpha', 1, 'LineWidth', 1.5); yline(ax_corr, 0, '--w', 'Alpha', 1, 'LineWidth', 1.5);
+xline(ax_corr, 1500, '--w', 'Alpha', 1, 'LineWidth', 1.5); yline(ax_corr, 1500, '--w', 'Alpha', 1, 'LineWidth', 1.5);
 rt_m = mean([t_point{3,1}(3), t_point{3,2}(3)]);
-xline(ax_corr, rt_m, ':w', 'Alpha', 1, 'LineWidth', 1.5); yline(rt_m, ':w', 'Alpha', 1, 'LineWidth', 1.5);
+xline(ax_corr, rt_m, ':w', 'Alpha', 1, 'LineWidth', 1.5); yline(ax_corr, rt_m, ':w', 'Alpha', 1, 'LineWidth', 1.5);
 
 xlabel(ax_corr, 'Time to Cent-In (ms)'); ylabel(ax_corr, 'Time to Cent-In (ms)');
 
