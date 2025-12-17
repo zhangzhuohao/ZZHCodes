@@ -171,9 +171,11 @@ SDFWarp.sdf_ci   = sdf_warped_ci;
 % around cent-in
 pre_centin  = 2.5; % 2.5 sec before cent-in, about the lower boundary of shuttle time
 post_centin = 0.5; % 0.5 sec after cent-in
+post_centin_keep = 0.25;
 
 % around trigger
-pre_trigger = 0.25; % take 0.25 sec after choice at first
+pre_trigger = 0.5; % take 0.25 sec pre trigger at first
+pre_trigger_keep = 0.25;
 post_choice = 3; % take 3 sec after choice at first
 post_keep = 2.5; % should be shorter than post_, to avoid length error
 

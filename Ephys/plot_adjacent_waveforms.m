@@ -32,8 +32,10 @@ switch n_x
         v_sep = 100;
         if ch_largest < 16
             ch_selected = 1:32;
+            id_show = ch_selected;
         elseif ch_largest > size(wave_form, 1)-16
             ch_selected = (-31:0) + size(wave_form, 1);
+            id_show = ch_selected;
         else
             if x_id_0 <= 2
                 id_show = y_id>=y_id_0-8 & y_id<=y_id_0+7;

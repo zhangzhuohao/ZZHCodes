@@ -42,6 +42,8 @@ else
     end
 end
 obj.TargetFP = [.5, 1, 1.5, -1]; % -1 for Probe trial
+obj.CatchFP  = [.125 .25];
+
 obj.RW = SessionData.Custom.RW';
 obj.Cued = ones(obj.NumTrials, 1);
 
@@ -248,7 +250,7 @@ for i = 1:obj.NumTrials
     end
 end
 
-obj.FP = roundn(obj.FP, -1);
+obj.FP = roundn(obj.FP, -3);
 
 %% remove bug trials
 ind_bug = obj.Outcome=="Bug" | (obj.FP<=0 & obj.FP~=-1);

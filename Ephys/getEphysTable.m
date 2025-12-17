@@ -1,6 +1,7 @@
 function EphysTable = getEphysTable(r)
 
 rb = r.Behavior;
+
 EphysTable = r.BehaviorClass.BehavTable(:, ["Subject", "Session", "Trials", "Stage", "FP", "PortCorrect", "PortChosen", "Cued", "Outcome"]);
 EphysTable = EphysTable(ismember(EphysTable.Trials, rb.TrialID), :);
 

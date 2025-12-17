@@ -24,6 +24,7 @@ classdef GPSBehSessionClass < GPSBehClass & GPSPlot
 
         NumTrials % Total trial number, extraced from SessionData.Info
         TargetFP % FP configuration, for ThreeFP paradigm only, [NumTrials x N (number of FPs)]
+        CatchFP
 
         % Trial information
         Trials % Trial index, [NumTrials x 1]
