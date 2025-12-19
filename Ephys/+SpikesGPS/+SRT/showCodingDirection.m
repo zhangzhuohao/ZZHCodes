@@ -30,7 +30,7 @@ n_u = size(fr{1}, 1); % number of units in total
 n_t = cellfun(@(x) size(x, 2), fr); % time length in each conditions
 
 fr_c = cell2mat(fr(:)'); % concatenate all conditions
-fr_c_norm = single(nan(size(fr_c))); % initialize soft-norm output
+fr_c_norm = nan(size(fr_c)); % initialize soft-norm output
 soft_f = zeros(n_u, 1);
 g_mean = zeros(n_u, 1);
 for i = 1:n_u
@@ -58,47 +58,114 @@ fr_c_norm = cell2mat(fr_norm(:)');
 n_u = size(fr_norm{1}, 1); % number of units in total
 n_t = cellfun(@(x) size(x, 2), fr_norm); % time length in each conditions
 
+%% covariance matrix and var.
+% whole trial
+cov_tot = cov(fr_c_norm');
+var_tot = trace(cov_tot);
+% approach
+fr_norm_app = cellfun(@(x, t_w, t_p) x(:, t_w<=t_p(1)), fr_norm, t_warp, t_point, 'UniformOutput', false);
+fr_c_norm_app = cell2mat(fr_norm_app(:)'); % concatenate
+cov_app = cov(fr_c_norm_app');
+var_app = trace(cov_app);
+% hold
+fr_norm_hold = cellfun(@(x, t_w, t_p) x(:, t_w>=t_p(1) & t_w<t_p(2)), fr_norm, t_warp, t_point, 'UniformOutput', false);
+fr_c_norm_hold = cell2mat(fr_norm_hold(:)'); % concatenate
+cov_hold = cov(fr_c_norm_hold');
+var_hold = trace(cov_hold);
+% response
+fr_norm_resp = cellfun(@(x, t_w, t_p) x(:, t_w>=t_p(2) & t_w<t_p(3)), fr_norm, t_warp, t_point, 'UniformOutput', false);
+fr_c_norm_resp = cell2mat(fr_norm_resp(:)'); % concatenate
+cov_resp = cov(fr_c_norm_resp');
+var_resp = trace(cov_resp);
+% move
+fr_norm_move = cellfun(@(x, t_w, t_p) x(:, t_w>=t_p(3) & t_w<t_p(4)), fr_norm, t_warp, t_point, 'UniformOutput', false);
+fr_c_norm_move = cell2mat(fr_norm_move(:)'); % concatenate
+cov_move = cov(fr_c_norm_move');
+var_move = trace(cov_move);
 
 %% Coding directions in different stages
-c_pre_cent  = getSpikeCount(r, 'tCentIn', [-150 0]);
-c_post_cent = getSpikeCount(r, 'tCentIn', [0 150]);
-c_pre_trig  = getSpikeCount(r, 'tTrigger', [-150 0]);
-c_post_trig = getSpikeCount(r, 'tTrigger', [0 150]);
-c_pre_resp  = getSpikeCount(r, 'tCentOut', [-400 0]);
-c_post_resp = getSpikeCount(r, 'tCentOut', [0 400]);
+% c_pre_cent  = getSpikeCount(r, 'tCentIn', [-150 0]);
+% c_post_cent = getSpikeCount(r, 'tCentIn', [0 150]);
+% c_pre_trig  = getSpikeCount(r, 'tTrigger', [-150 0]);
+% c_post_trig = getSpikeCount(r, 'tTrigger', [0 150]);
+% c_pre_resp  = getSpikeCount(r, 'tCentOut', [-400 0]);
+% c_post_resp = getSpikeCount(r, 'tCentOut', [0 400]);
+% 
+% c_pre_cent.Count  = c_pre_cent.Count(:, RegularIndex.Good);
+% c_post_cent.Count = c_post_cent.Count(:, RegularIndex.Good);
+% c_pre_trig.Count  = c_pre_trig.Count(:, RegularIndex.Good);
+% c_post_trig.Count = c_post_trig.Count(:, RegularIndex.Good);
+% c_pre_resp.Count  = c_pre_resp.Count(:, RegularIndex.Good);
+% c_post_resp.Count = c_post_resp.Count(:, RegularIndex.Good);
+% 
+% 
+% id_cd = cell(1,2);
+% for p = 1:2
+%     id_cd{p} = find(r.EphysTable.Outcome=="Correct" & r.EphysTable.PortCorrect==p);
+% end
+% 
+% cd_hold = mean(c_pre_trig.Count(id_cd{1},:)) - mean(c_pre_trig.Count(id_cd{2},:));
+% cd_hold = cd_hold' / norm(cd_hold);
+% 
+% cd_resp = mean(c_post_trig.Count(id_cd{1},:)) - mean(c_post_trig.Count(id_cd{2},:));
+% cd_resp = cd_resp' / norm(cd_resp);
+% 
+% cd_move = mean(c_post_resp.Count(id_cd{1},:)) - mean(c_post_resp.Count(id_cd{2},:));
+% cd_move = cd_move' / norm(cd_move);
+% 
+% id_d = find(r.EphysTable.Outcome=="Correct");
+% d_ramp = mean(c_pre_trig.Count(id_d,:)) - mean(c_post_cent.Count(id_d,:));
+% d_ramp = d_ramp' / norm(d_ramp);
+% 
+% d_trig = mean(c_post_trig.Count(id_d,:)) - mean(c_pre_trig.Count(id_d,:));
+% d_trig = d_trig' / norm(d_trig);
+% 
+% d_move = mean(c_post_resp.Count(id_d,:)) - mean(c_pre_resp.Count(id_d,:));
+% d_move = d_move' / norm(d_move);
 
-c_pre_cent.Count  = c_pre_cent.Count(:, RegularIndex.Good);
-c_post_cent.Count = c_post_cent.Count(:, RegularIndex.Good);
-c_pre_trig.Count  = c_pre_trig.Count(:, RegularIndex.Good);
-c_post_trig.Count = c_post_trig.Count(:, RegularIndex.Good);
-c_pre_resp.Count  = c_pre_resp.Count(:, RegularIndex.Good);
-c_post_resp.Count = c_post_resp.Count(:, RegularIndex.Good);
+c_pre_cent  = cellfun(@(x, t_w, t_p) mean(x(:, t_w>=t_p(1)-150 & t_w<t_p(1)), 2), fr_norm, t_warp, t_point, 'UniformOutput', false);
+c_post_cent = cellfun(@(x, t_w, t_p) mean(x(:, t_w>=t_p(1) & t_w<t_p(1)+500), 2), fr_norm, t_warp, t_point, 'UniformOutput', false);
+c_pre_trig  = cellfun(@(x, t_w, t_p) mean(x(:, t_w>=t_p(2)-150 & t_w<t_p(2)), 2), fr_norm, t_warp, t_point, 'UniformOutput', false);
+c_post_trig = cellfun(@(x, t_w, t_p) mean(x(:, t_w>=t_p(2) & t_w<t_p(2)+150), 2), fr_norm, t_warp, t_point, 'UniformOutput', false);
+c_pre_resp  = cellfun(@(x, t_w, t_p) mean(x(:, t_w>=t_p(3)-150 & t_w<t_p(3)), 2), fr_norm, t_warp, t_point, 'UniformOutput', false);
+c_post_resp = cellfun(@(x, t_w, t_p) mean(x(:, t_w>=t_p(3) & t_w<t_p(3)+150), 2), fr_norm, t_warp, t_point, 'UniformOutput', false);
 
+c_pre_cent  = cat(3, cell2mat(c_pre_cent(:,1)'), cell2mat(c_pre_cent(:,2)'));
+c_post_cent = cat(3, cell2mat(c_post_cent(:,1)'), cell2mat(c_post_cent(:,2)'));
+c_pre_trig  = cat(3, cell2mat(c_pre_trig(:,1)'), cell2mat(c_pre_trig(:,2)'));
+c_post_trig = cat(3, cell2mat(c_post_trig(:,1)'), cell2mat(c_post_trig(:,2)'));
+c_pre_resp  = cat(3, cell2mat(c_pre_resp(:,1)'), cell2mat(c_pre_resp(:,2)'));
+c_post_resp = cat(3, cell2mat(c_post_resp(:,1)'), cell2mat(c_post_resp(:,2)'));
 
-id_cd = cell(1,2);
-for p = 1:2
-    id_cd{p} = find(r.EphysTable.Outcome=="Correct" & r.EphysTable.PortCorrect==p);
-end
+cd_hold = mean(c_pre_trig(:,:,1), 2) - mean(c_pre_trig(:,:,2), 2);
+cd_hold = cd_hold / norm(cd_hold);
+explain_cd_hold = 100 * cd_hold' * cov_hold * cd_hold ./ var_hold;
+explain_cd_hold_tot = 100 * cd_hold' * cov_tot * cd_hold ./ var_tot;
 
-cd_hold = mean(c_pre_trig.Count(id_cd{1},:)) - mean(c_pre_trig.Count(id_cd{2},:));
-cd_hold = cd_hold' / norm(cd_hold);
+cd_resp = mean(c_post_trig(:,:,1), 2) - mean(c_post_trig(:,:,2), 2);
+cd_resp = cd_resp / norm(cd_resp);
+explain_cd_resp = 100 * cd_resp' * cov_resp * cd_resp ./ var_resp;
+explain_cd_resp_tot = 100 * cd_resp' * cov_tot * cd_resp ./ var_tot;
 
-cd_resp = mean(c_post_trig.Count(id_cd{1},:)) - mean(c_post_trig.Count(id_cd{2},:));
-cd_resp = cd_resp' / norm(cd_resp);
+cd_move = mean(c_post_resp(:,:,1), 2) - mean(c_post_resp(:,:,2), 2);
+cd_move = cd_move / norm(cd_move);
+explain_cd_move = 100 * cd_move' * cov_move * cd_move ./ var_move;
+explain_cd_move_tot = 100 * cd_move' * cov_tot * cd_move ./ var_tot;
 
-cd_move = mean(c_post_resp.Count(id_cd{1},:)) - mean(c_post_resp.Count(id_cd{2},:));
-cd_move = cd_move' / norm(cd_move);
+d_ramp = mean(c_pre_trig, [2 3]) - mean(c_post_cent, [2 3]);
+d_ramp = d_ramp / norm(d_ramp);
+explain_d_ramp = 100 * d_ramp' * cov_hold * d_ramp ./ var_hold;
+explain_d_ramp_tot = 100 * d_ramp' * cov_tot * d_ramp ./ var_tot;
 
-id_d = find(r.EphysTable.Outcome=="Correct");
-d_ramp = mean(c_pre_trig.Count(id_d,:)) - mean(c_post_cent.Count(id_d,:));
-d_ramp = d_ramp' / norm(d_ramp);
+d_trig = mean(c_post_trig, [2 3]) - mean(c_pre_trig, [2 3]);
+d_trig = d_trig / norm(d_trig);
+explain_d_trig = 100 * d_trig' * cov_resp * d_trig ./ var_resp;
+explain_d_trig_tot = 100 * d_trig' * cov_tot * d_trig ./ var_tot;
 
-d_trig = mean(c_post_trig.Count(id_d,:)) - mean(c_pre_trig.Count(id_d,:));
-d_trig = d_trig' / norm(d_trig);
-
-d_move = mean(c_post_resp.Count(id_d,:)) - mean(c_pre_resp.Count(id_d,:));
-d_move = d_move' / norm(d_move);
-
+d_move = mean(c_post_resp, [2 3]) - mean(c_pre_resp, [2 3]);
+d_move = d_move / norm(d_move);
+explain_d_move = 100 * d_move' * cov_move * d_move ./ var_move;
+explain_d_move_tot = 100 * d_move' * cov_tot * d_move ./ var_tot;
 
 %% Plot coding direction
 fig_cd = figure(89); clf(fig_cd);
@@ -138,8 +205,15 @@ ax_proj = plt.assign_ax_to_fig(fig_cd, 2, 3, [8 1 10.5 4], [3 1.5]);
 cellfun(@(x) set(x, 'Xlim', [-1500 2500]), ax_proj(:,1:2));
 cellfun(@(x) set(x, 'Xlim', [-3000 1000]), ax_proj(:,3));
 
+ax_var = plt.assign_ax_to_fig(fig_cd, 2, 3, [8 1 10.5 4], [3 1.5]);
+cellfun(@(x) set(x, 'XColor', 'none', 'YColor', 'none', 'Color', 'none', 'YLim', [0 100], 'XLim', [0 100]), ax_var);
+
 % CD-hold
-ax = ax_proj{1,1};
+id = 1;
+text(ax_var{id}, 5, 100, sprintf('%.1f%%', explain_cd_hold(1)), 'FontSize', 6);
+text(ax_var{id}, 5, 85, sprintf('%.1f%%', explain_cd_hold_tot(1)), 'FontSize', 6);
+
+ax = ax_proj{id};
 
 fr_proj_hold = cellfun(@(x) (x' * cd_hold)', fr_norm, 'UniformOutput', false);
 fr_proj_hold_ci_l = cellfun(@(x) (x' * cd_hold)', fr_norm_ci_l, 'UniformOutput', false);
@@ -160,7 +234,11 @@ title(ax, 'CD_{Hold}');
 ylabel(ax, 'Projection (a.u.)');
 
 % CD-response
-ax = ax_proj{1,2};
+id = 3;
+text(ax_var{id}, 5, 100, sprintf('%.1f%%', explain_cd_resp(1)), 'FontSize', 6);
+text(ax_var{id}, 5, 85, sprintf('%.1f%%', explain_cd_resp_tot(1)), 'FontSize', 6);
+
+ax = ax_proj{id};
 
 fr_proj_resp = cellfun(@(x) (x' * cd_resp)', fr_norm, 'UniformOutput', false);
 fr_proj_resp_ci_l = cellfun(@(x) (x' * cd_resp)', fr_norm_ci_l, 'UniformOutput', false);
@@ -180,7 +258,11 @@ end
 title(ax, 'CD_{Response}');
 
 % CD-move
-ax = ax_proj{1,3};
+id = 5;
+text(ax_var{id}, 5, 100, sprintf('%.1f%%', explain_cd_move(1)), 'FontSize', 6);
+text(ax_var{id}, 5, 85, sprintf('%.1f%%', explain_cd_move_tot(1)), 'FontSize', 6);
+
+ax = ax_proj{id};
 
 fr_proj_move = cellfun(@(x) (x' * cd_move)', fr_norm, 'UniformOutput', false);
 fr_proj_move_ci_l = cellfun(@(x) (x' * cd_move)', fr_norm_ci_l, 'UniformOutput', false);
@@ -200,7 +282,11 @@ end
 title(ax, 'CD_{Move}');
 
 % D-ramp
-ax = ax_proj{2,1};
+id = 2;
+text(ax_var{id}, 5, 100, sprintf('%.1f%%', explain_d_ramp(1)), 'FontSize', 6);
+text(ax_var{id}, 5, 85, sprintf('%.1f%%', explain_d_ramp_tot(1)), 'FontSize', 6);
+
+ax = ax_proj{id};
 
 fr_proj_ramp = cellfun(@(x) (x' * d_ramp)', fr_norm, 'UniformOutput', false);
 fr_proj_ramp_ci_l = cellfun(@(x) (x' * d_ramp)', fr_norm_ci_l, 'UniformOutput', false);
@@ -222,7 +308,11 @@ ylabel(ax, 'Projection (a.u.)');
 xlabel(ax, 'Time to Cent-In (ms)');
 
 % D-trigger
-ax = ax_proj{2,2};
+id = 4;
+text(ax_var{id}, 5, 100, sprintf('%.1f%%', explain_d_trig(1)), 'FontSize', 6);
+text(ax_var{id}, 5, 85, sprintf('%.1f%%', explain_d_trig_tot(1)), 'FontSize', 6);
+
+ax = ax_proj{id};
 
 fr_proj_trig = cellfun(@(x) (x' * d_trig)', fr_norm, 'UniformOutput', false);
 fr_proj_trig_ci_l = cellfun(@(x) (x' * d_trig)', fr_norm_ci_l, 'UniformOutput', false);
@@ -243,7 +333,11 @@ title(ax, 'D_{Response}');
 xlabel(ax, 'Time to Cent-In (ms)');
 
 % D_move
-ax = ax_proj{2,3};
+id = 6;
+text(ax_var{id}, 5, 100, sprintf('%.1f%%', explain_d_move(1)), 'FontSize', 6);
+text(ax_var{id}, 5, 85, sprintf('%.1f%%', explain_d_move_tot(1)), 'FontSize', 6);
+
+ax = ax_proj{id};
 
 fr_proj_turn = cellfun(@(x) (x' * d_move)', fr_norm, 'UniformOutput', false);
 fr_proj_turn_ci_l = cellfun(@(x) (x' * d_move)', fr_norm_ci_l, 'UniformOutput', false);
@@ -267,6 +361,7 @@ xlabel(ax, 'Time to Cent-Out (ms)');
 fig_name = sprintf('CodingDirection_%s_%s', r.BehaviorClass.Subject, r.BehaviorClass.Session);
 fig_path = fullfile('Figure', fig_name);
 exportgraphics(fig_cd, sprintf('%s.png', fig_path), 'Resolution', 300);
+exportgraphics(fig_cd, sprintf('%s.pdf', fig_path), 'ContentType', 'vector');
 
 %%
 CodingDirection.CD_hold = cd_hold;
