@@ -124,7 +124,7 @@ var_move = trace(cov_move);
 % d_move = d_move' / norm(d_move);
 
 c_pre_cent  = cellfun(@(x, t_w, t_p) mean(x(:, t_w>=t_p(1)-150 & t_w<t_p(1)), 2), fr_norm, t_warp, t_point, 'UniformOutput', false);
-c_post_cent = cellfun(@(x, t_w, t_p) mean(x(:, t_w>=t_p(1) & t_w<t_p(1)+500), 2), fr_norm, t_warp, t_point, 'UniformOutput', false);
+c_post_cent = cellfun(@(x, t_w, t_p) mean(x(:, t_w>=t_p(1) & t_w<t_p(1)+150), 2), fr_norm, t_warp, t_point, 'UniformOutput', false);
 c_pre_trig  = cellfun(@(x, t_w, t_p) mean(x(:, t_w>=t_p(2)-150 & t_w<t_p(2)), 2), fr_norm, t_warp, t_point, 'UniformOutput', false);
 c_post_trig = cellfun(@(x, t_w, t_p) mean(x(:, t_w>=t_p(2) & t_w<t_p(2)+150), 2), fr_norm, t_warp, t_point, 'UniformOutput', false);
 c_pre_resp  = cellfun(@(x, t_w, t_p) mean(x(:, t_w>=t_p(3)-150 & t_w<t_p(3)), 2), fr_norm, t_warp, t_point, 'UniformOutput', false);
@@ -162,7 +162,7 @@ d_trig = d_trig / norm(d_trig);
 explain_d_trig = 100 * d_trig' * cov_resp * d_trig ./ var_resp;
 explain_d_trig_tot = 100 * d_trig' * cov_tot * d_trig ./ var_tot;
 
-d_move = mean(c_post_resp, [2 3]) - mean(c_pre_resp, [2 3]);
+d_move = mean(c_post_resp, [2 3]) - mean(c_pre_trig, [2 3]);
 d_move = d_move / norm(d_move);
 explain_d_move = 100 * d_move' * cov_move * d_move ./ var_move;
 explain_d_move_tot = 100 * d_move' * cov_tot * d_move ./ var_tot;
