@@ -48,10 +48,10 @@ t_warp = r.popSDFWarped.t_warp;
 t_point = r.popSDFWarped.t_points;
 
 % analyze from 1500ms pre cent-in, to 200ms post choice-in
-fr_norm = cellfun(@(x, t_w, t_p) x(:, t_w>-1500 & t_w<=t_p(4)+200), fr_norm, t_warp, t_point, 'UniformOutput', false);
-fr_norm_ci_l = cellfun(@(x, t_w, t_p) x(:, t_w>-1500 & t_w<=t_p(4)+200), fr_norm_ci_l, t_warp, t_point, 'UniformOutput', false);
-fr_norm_ci_u = cellfun(@(x, t_w, t_p) x(:, t_w>-1500 & t_w<=t_p(4)+200), fr_norm_ci_u, t_warp, t_point, 'UniformOutput', false);
-t_warp = cellfun(@(t_w, t_p) t_w(t_w>-1500 & t_w<=t_p(4)+200), t_warp, t_point, 'UniformOutput', false);
+fr_norm = cellfun(@(x, t_w, t_p) x(:, t_w>=-1000 & t_w<t_p(4)+200), fr_norm, t_warp, t_point, 'UniformOutput', false);
+fr_norm_ci_l = cellfun(@(x, t_w, t_p) x(:, t_w>=-1000 & t_w<t_p(4)+200), fr_norm_ci_l, t_warp, t_point, 'UniformOutput', false);
+fr_norm_ci_u = cellfun(@(x, t_w, t_p) x(:, t_w>=-1000 & t_w<t_p(4)+200), fr_norm_ci_u, t_warp, t_point, 'UniformOutput', false);
+t_warp = cellfun(@(t_w, t_p) t_w(t_w>=-1000 & t_w<t_p(4)+200), t_warp, t_point, 'UniformOutput', false);
 
 % update fr concatenate
 fr_c_norm = cell2mat(fr_norm(:)');

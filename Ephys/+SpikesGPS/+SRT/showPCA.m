@@ -72,7 +72,7 @@ set(fig_pc, 'Name', 'PCA', 'Position', [5 5 18 14.75]);
 ax_pop_centin = plt.assign_ax_to_fig(fig_pc, 1, 2, [1 10.5 7 3], [2 3]);
 cellfun(@(x) set(x, 'XLim', [-1000 250], 'YLim', [.5 n_u+0.5], 'YDir', 'reverse', 'CLim', [-.2 .6]), ax_pop_centin);
 cellfun(@(x) xline(x, 0, '-w', LineWidth=1), ax_pop_centin);
-set(ax_pop_centin{2}, 'YTickLabel', []);
+set(ax_pop_centin{2}, 'YColor', 'none');
 cellfun(@(x) colormap(x, 'parula'), ax_pop_centin);
 
 ax_pop_trig = plt.assign_ax_to_fig(fig_pc, 1, 2, [3.1 10.5 7 3], [2 3]);
@@ -120,8 +120,8 @@ t_warp = r.popSDFWarped.t_warp;
 t_point = r.popSDFWarped.t_points;
 
 % analyze from 1500ms pre cent-in, to 200ms post choice-in
-fr_norm = cellfun(@(x, t_w, t_p) x(:, t_w>-1000 & t_w<=t_p(4)+200), fr_norm, t_warp, t_point, 'UniformOutput', false);
-t_warp = cellfun(@(t_w, t_p) t_w(t_w>-1000 & t_w<=t_p(4)+200), t_warp, t_point, 'UniformOutput', false);
+fr_norm = cellfun(@(x, t_w, t_p) x(:, t_w>=-1000 & t_w<t_p(4)+200), fr_norm, t_warp, t_point, 'UniformOutput', false);
+t_warp = cellfun(@(t_w, t_p) t_w(t_w>=-1000 & t_w<t_p(4)+200), t_warp, t_point, 'UniformOutput', false);
 
 fr_c_norm = cell2mat(fr_norm(:)');
 n_u = size(fr_norm{1}, 1); % number of units in total
