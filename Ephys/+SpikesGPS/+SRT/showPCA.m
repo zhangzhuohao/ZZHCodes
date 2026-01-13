@@ -127,7 +127,7 @@ fr_c_norm = cell2mat(fr_norm(:)');
 n_u = size(fr_norm{1}, 1); % number of units in total
 n_t = cellfun(@(x) size(x, 2), fr_norm); % time length in each conditions
 
-% covariance matrxi and total var
+% covariance matrix and total var
 cov_tot = cov(fr_c_norm');
 var_tot = trace(cov_tot);
 
