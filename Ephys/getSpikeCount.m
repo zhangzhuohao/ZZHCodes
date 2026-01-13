@@ -18,7 +18,7 @@ EventSpike.Window = Window; % ms
 EventSpike.Count  = zeros(n_trials, length(ku));
 
 for i = 1:n_trials
-    EventSpike.Count(i,:) = arrayfun(@(x) sum(x.timings>r.EphysTable.(tEvent)(i)+Window(1) & x.timings<=r.EphysTable.(tEvent)(i)+Window(2)), r.Units.SpikeTimes(ku));
+    EventSpike.Count(i,:) = arrayfun(@(x) sum(x.timings>=r.EphysTable.(tEvent)(i)+Window(1) & x.timings<r.EphysTable.(tEvent)(i)+Window(2)), r.Units.SpikeTimes(ku));
 end
 
 end
