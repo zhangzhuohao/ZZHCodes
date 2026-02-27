@@ -7,13 +7,13 @@ if nargin<2
     thres = 0.75;
 end
 
-FPs = PopOut.FPs;
+FP = PopOut.FP;
 nPort = length(PopOut.Ports);
 n_unit = size(PopOut.Units, 1);
-FPindx = length(FPs);
+Typeindx = 3; % use correct uncued trials
 n_events = 3; % cent-in, cent-out, reward
 
-CentInTimeRange  = [-2000, FPs(FPindx)*1000];
+CentInTimeRange  = [-2000 FP*1000];
 CentOutTimeRange = [-500 1000];
 RewardTimeRange  = [-1000 2000];
 
@@ -26,20 +26,20 @@ pVals = zeros(n_events, n_unit);
 
 for j = 1:nPort
     for i = 1:n_unit
-        tCentIn = PopOut.CentIn{FPindx, j}(1, :);
-        PSTH_CentIn = PopOut.CentIn{FPindx, j}(i+1, :);
+        tCentIn = PopOut.CentIn{Typeindx, j}(1, :);
+        PSTH_CentIn = PopOut.CentIn{Typeindx, j}(i+1, :);
         IndCentIn   = find(tCentIn>=CentInTimeRange(1) & tCentIn<=CentInTimeRange(2));
-        pVals(1, i) = PopOut.CentInStat{FPindx, j}.StatOut(i).pval;
+        pVals(1, i) = PopOut.CentInStat{Typeindx, j}.StatOut(i).pval;
 
-        tCentOut = PopOut.CentOut{FPindx, j}(1, :);
-        PSTH_CentOut = PopOut.CentOut{FPindx, j}(i+1, :);
+        tCentOut = PopOut.CentOut{Typeindx, j}(1, :);
+        PSTH_CentOut = PopOut.CentOut{Typeindx, j}(i+1, :);
         IndCentOut   = find(tCentOut>=CentOutTimeRange(1) & tCentOut<=CentOutTimeRange(2));
-        pVals(2, i)  = PopOut.CentOutStat{FPindx, j}.StatOut(i).pval;
+        pVals(2, i)  = PopOut.CentOutStat{Typeindx, j}.StatOut(i).pval;
 
-        tReward = PopOut.Reward{FPindx, j}(1, :);
-        PSTH_Reward = PopOut.Reward{FPindx, j}(i+1, :);
+        tReward = PopOut.Reward{Typeindx, j}(1, :);
+        PSTH_Reward = PopOut.Reward{Typeindx, j}(i+1, :);
         IndReward   = find(tReward>=RewardTimeRange(1) & tReward<=RewardTimeRange(2));
-        pVals(3, i) = PopOut.RewardStat{FPindx, j}.StatOut(i).pval;
+        pVals(3, i) = PopOut.RewardStat{Typeindx, j}.StatOut(i).pval;
 
         PSTH_Flat  = [PSTH_CentIn(IndCentIn) PSTH_CentOut(IndCentOut) PSTH_Reward(IndReward)];
         PSTHs_Flat{j} = [PSTHs_Flat{j}; PSTH_Flat];

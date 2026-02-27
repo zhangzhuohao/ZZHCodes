@@ -10,7 +10,7 @@ ch_largest = r.Units.SpikeNotes(ku,1);
 
 ch_map  = r.ChanMap.chanMap;
 kcoords = r.ChanMap.kcoords;
-k_this  = kcoords(ch_map==ch_largest);
+k_this  = kcoords(chs==ch_largest);
 ind_k   = kcoords==k_this;
 
 chs     = chs(ind_k);
@@ -23,8 +23,8 @@ y_id = (ycoords-min(ycoords)) / unique(diff(unique(ycoords)));
 
 n_x = length(unique(x_id));
 
-x_id_0 = x_id(ch_map==ch_largest);
-y_id_0 = y_id(ch_map==ch_largest);
+x_id_0 = x_id(chs==ch_largest);
+y_id_0 = y_id(chs==ch_largest);
 
 switch n_x
     case 4 % NP1.0

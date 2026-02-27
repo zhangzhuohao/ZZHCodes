@@ -8,6 +8,10 @@ function StatOut = ExamineTaskResponsive(t, spkmat)
 % count spikes on 250-ms segements
 % use ANOVA to test if there are significant spk rate modulation 
 
+if isempty(t)
+    StatOut = [];
+    return;
+end
 
 tdiv = 100;   % 100 ms binds
 
@@ -29,13 +33,27 @@ end
  
 [pval, ~, stats] = anova1(spk_bins, [], "off");
 
-[~, ind_max] = max(stats.means);
+[fr_max, ind_max] = max(stats.means);
+[fr_min, ind_min] = min(stats.means);
+fr_mean = mean(stats.means);
 
 tpeak = t_bins(ind_max);
+ttrou = t_bins(ind_min);
 
-StatOut.pval            =       pval;
-StatOut.tpeak          =      tpeak; 
-StatOut.stats           =      stats;
-StatOut.time            =      t;
+d_peak = fr_max - fr_mean;
+d_trou = fr_mean - fr_min;
+
+if d_peak > d_trou
+    modul_dir = 1;
+else
+    modul_dir = -1;
+end
+
+StatOut.pval  = pval;
+StatOut.tpeak = tpeak; 
+StatOut.ttrou = ttrou;
+StatOut.dir   = modul_dir;
+StatOut.stats = stats;
+StatOut.time  = t;
 
 close all;
