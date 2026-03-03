@@ -1,5 +1,4 @@
 function PopOut = PopulationActivity(r, varargin)
-
 % 5/13/2023 Jianing Yu
 % Build upon SRTSpikesPopulation
 % Since we add PSTH to r, we will just use previously computed results to
@@ -11,35 +10,38 @@ function PopOut = PopulationActivity(r, varargin)
 % % end
 
 Units = r.Units.SpikeNotes;
+
+TrialTypes = ["Cued"; "Uncued"; "Premature"];
 % Extract these event-related activity
-[nCue, nPort] = size(r.PSTH.PSTHs(1).CentIn);
+nType = length(TrialTypes);
+[~, nPort] = size(r.PSTH.PSTHs(1).CentIn);
 % nFP = length(r.BehaviorClass.TargetFP);
 % nPort = length(r.BehaviorClass.Ports);
 
 %
-PSTH_CentIn     = cell(nCue, nPort); % one for short FP, one for long FP
-PSTH_CentInZ    = cell(nCue, nPort); % one for short FP, one for long FP 
-PSTH_CentInStat = cell(nCue, nPort); % this gives the statistics of press
+PSTH_CentIn     = cell(nType, nPort); % premature, uncued and cued
+PSTH_CentInZ    = cell(nType, nPort); % premature, uncued and cued
+PSTH_CentInStat = cell(nType, nPort); % this gives the statistics of cent-in
 
-PSTH_CentInAll     = []; % merge short and long FPs
-PSTH_CentInAllZ    = []; % one for short FP, one for long FP 
+PSTH_CentInAll     = []; % merge premature, uncued and cued
+PSTH_CentInAllZ    = []; % merge premature, uncued and cued
 PSTH_CentInAllStat = [];
 
-PSTH_CentOut     = cell(nCue, nPort);
-PSTH_CentOutZ    = cell(nCue, nPort);
-PSTH_CentOutStat = cell(nCue, nPort); % this gives the statistics of release
+PSTH_CentOut     = cell(nType, nPort);
+PSTH_CentOutZ    = cell(nType, nPort);
+PSTH_CentOutStat = cell(nType, nPort); % this gives the statistics of cent-out
 
-PSTH_CentOutAll     = []; % merge short and long FPs
-PSTH_CentOutAllZ    = []; % one for short FP, one for long FP 
+PSTH_CentOutAll     = []; % merge premature, uncued and cued
+PSTH_CentOutAllZ    = []; % merge premature, uncued and cued
 PSTH_CentOutAllStat = [];
 
-PSTH_Reward     = cell(nCue, nPort);
-PSTH_RewardZ    = cell(nCue, nPort);
-PSTH_RewardStat = cell(nCue, nPort); % this gives the statistics of release
+PSTH_Trigger     = cell(nType, nPort);
+PSTH_TriggerZ    = cell(nType, nPort);
+PSTH_TriggerStat = cell(nType, nPort); % this gives the statistics of trigger
 
-PSTH_Trigger     = cell(nCue, nPort);
-PSTH_TriggerZ    = cell(nCue, nPort);
-PSTH_TriggerStat = cell(nCue, nPort); % this gives the statistics of trigger
+PSTH_Reward     = cell(nType, nPort);
+PSTH_RewardZ    = cell(nType, nPort);
+PSTH_RewardStat = cell(nType, nPort); % this gives the statistics of release
 
 if ~isfield(r, 'PSTH')
     error('Compute PSTH first. Run " >>SRTSpikes(r, []);" ')
@@ -60,25 +62,44 @@ for i = 1:n_unit
     StatOut = ExamineTaskResponsive(tspkmat_centinall, trialspxmat_centinall);
     StatOut.CellIndx = r.Units.SpikeNotes(i, :);
     PSTH_CentInAllStat.StatOut(i) = StatOut;
-    PSTH_Trials = zeros(size(r.PSTH.PSTHs(i).CentIn));
+    PSTH_Trials = zeros(nType, nPort);
 
-    for jcue = 1:nCue
+    for jtype = 1:nType
         for kport = 1:nPort
+            if jtype==3 % premature
+                psth_centin_this  = r.PSTH.PSTHs(i).PrematureCentIn{1, kport};
+                psth_centout_this = r.PSTH.PSTHs(i).PrematureCentOut{1, kport};
+                psth_reward_this  = cell(1,6); % set it empty
+            else
+                psth_centin_this  = r.PSTH.PSTHs(i).CentIn{jtype, kport};
+                psth_centout_this = r.PSTH.PSTHs(i).CentOut{jtype, kport};
+                psth_reward_this  = r.PSTH.PSTHs(i).RewardChoice{jtype, kport};
+            end
+            if jtype==1 % cued
+                psth_trig_this = r.PSTH.PSTHs(i).Triggers{jtype, kport};
+            else
+                psth_trig_this = cell(1,6);
+            end
+
             if i==1 % first row for time info
-                PSTH_CentIn{jcue, kport}(1, :)   = r.PSTH.PSTHs(1).CentIn{jcue, kport}{2};
-                PSTH_CentInZ{jcue, kport}(1, :)  = r.PSTH.PSTHs(1).CentIn{jcue, kport}{2};
-                PSTH_CentOut{jcue, kport}(1, :)  = r.PSTH.PSTHs(1).CentOut{jcue, kport}{2};
-                PSTH_CentOutZ{jcue, kport}(1, :) = r.PSTH.PSTHs(1).CentOut{jcue, kport}{2};
-                PSTH_Trigger{jcue, kport}(1, :)  = r.PSTH.PSTHs(1).Triggers{jcue, kport}{2};
-                PSTH_TriggerZ{jcue, kport}(1, :) = r.PSTH.PSTHs(1).Triggers{jcue, kport}{2};
-                PSTH_Reward{jcue, kport}(1, :)   = r.PSTH.PSTHs(1).RewardChoice{jcue, kport}{2};
-                PSTH_RewardZ{jcue, kport}(1, :)  = r.PSTH.PSTHs(1).RewardChoice{jcue, kport}{2};
+                PSTH_CentIn{jtype, kport}(1,:)   = psth_centin_this{2};
+                PSTH_CentInZ{jtype, kport}(1,:)  = psth_centin_this{2};
+                PSTH_CentOut{jtype, kport}(1,:)  = psth_centout_this{2};
+                PSTH_CentOutZ{jtype, kport}(1,:) = psth_centout_this{2};
+                if jtype~=3 % correct trials
+                    PSTH_Reward{jtype, kport}(1,:)  = psth_reward_this{2};
+                    PSTH_RewardZ{jtype, kport}(1,:) = psth_reward_this{2};
+                end
+                if jtype==1 % correct cued trials
+                    PSTH_Trigger{jtype, kport}(1,:)  = psth_trig_this{2};
+                    PSTH_TriggerZ{jtype, kport}(1,:) = psth_trig_this{2};
+                end
             end
 
             % CentIn
-            PSTH_CentIn{jcue, kport} = [PSTH_CentIn{jcue, kport};  r.PSTH.PSTHs(i).CentIn{jcue, kport}{1}];
-            tspkmat     = r.PSTH.PSTHs(i).CentIn{jcue, kport}{4};
-            trialspxmat = r.PSTH.PSTHs(i).CentIn{jcue, kport}{3};
+            PSTH_CentIn{jtype, kport} = [PSTH_CentIn{jtype, kport}; psth_centin_this{1}];
+            tspkmat     = psth_centin_this{4};
+            trialspxmat = psth_centin_this{3};
 
             % restricting activity to a relatively narrow window.
             tCentInWin = [-2500 1500];
@@ -88,14 +109,14 @@ for i = 1:n_unit
 
             StatOut = ExamineTaskResponsive(tspkmat, trialspxmat);
             StatOut.CellIndx = r.Units.SpikeNotes(i, :);
-            PSTH_CentInStat{jcue, kport}.StatOut(i) = StatOut;
-            PSTH_Trials(jcue, kport) = size(trialspxmat, 2);
-            PSTH_baseline = [PSTH_baseline r.PSTH.PSTHs(i).CentIn{jcue, kport}{1}];
+            PSTH_CentInStat{jtype, kport}.StatOut(i) = StatOut;
+            PSTH_Trials(jtype, kport) = size(trialspxmat, 2);
+            PSTH_baseline = [PSTH_baseline psth_centin_this{1}];
 
             % CentOut
-            PSTH_CentOut{jcue, kport} = [PSTH_CentOut{jcue, kport};  r.PSTH.PSTHs(i).CentOut{jcue, kport}{1}];
-            tspkmat     = r.PSTH.PSTHs(i).CentOut{jcue, kport}{4};
-            trialspxmat = r.PSTH.PSTHs(i).CentOut{jcue, kport}{3};
+            PSTH_CentOut{jtype, kport} = [PSTH_CentOut{jtype, kport}; psth_centout_this{1}];
+            tspkmat     = psth_centout_this{4};
+            trialspxmat = psth_centout_this{3};
 
             % restricting activity to a relatively narrow window.
             tCentOutWin = [-500 1000];
@@ -105,54 +126,54 @@ for i = 1:n_unit
 
             StatOut = ExamineTaskResponsive(tspkmat, trialspxmat);
             StatOut.CellIndx =  r.Units.SpikeNotes(i, :);
-            PSTH_CentOutStat{jcue, kport}.StatOut(i) = StatOut;
-            PSTH_baseline = [PSTH_baseline r.PSTH.PSTHs(i).CentOut{jcue, kport}{1}];
+            PSTH_CentOutStat{jtype, kport}.StatOut(i) = StatOut;
+            PSTH_baseline = [PSTH_baseline psth_centout_this{1}];
 
             % Trigger
-            PSTH_Trigger{jcue, kport} = [PSTH_Trigger{jcue, kport}; r.PSTH.PSTHs(i).Triggers{jcue, kport}{1}];
-            tspkmat     = r.PSTH.PSTHs(i).Triggers{jcue, kport}{4};
-            trialspxmat = r.PSTH.PSTHs(i).Triggers{jcue, kport}{3};
+            PSTH_Trigger{jtype, kport} = [PSTH_Trigger{jtype, kport}; psth_trig_this{1}];
+            tspkmat     = psth_trig_this{4};
+            trialspxmat = psth_trig_this{3};
 
             StatOut = ExamineTaskResponsive(tspkmat, trialspxmat);
             StatOut.CellIndx = r.Units.SpikeNotes(i, :);
-            PSTH_TriggerStat{jcue, kport}.StatOut(i) =  StatOut;
+            PSTH_TriggerStat{jtype, kport}.StatOut(i) =  StatOut;
 
             % Reward
-            PSTH_Reward{jcue, kport} = [PSTH_Reward{jcue, kport};  r.PSTH.PSTHs(i).RewardChoice{jcue, kport}{1}];
-            tspkmat     = r.PSTH.PSTHs(i).RewardChoice{jcue, kport}{4};
-            trialspxmat = r.PSTH.PSTHs(i).RewardChoice{jcue, kport}{3};
+            PSTH_Reward{jtype, kport} = [PSTH_Reward{jtype, kport}; psth_reward_this{1}];
+            tspkmat     = psth_reward_this{4};
+            trialspxmat = psth_reward_this{3};
 
             % restricting activity to a relatively narrow window.
             tRewardWin = [-1000 1000];
-            indWin = find(tspkmat>=tRewardWin(1) & tspkmat<= tRewardWin(2));
+            indWin = find(tspkmat>=tRewardWin(1) & tspkmat<=tRewardWin(2));
             tspkmat = tspkmat(indWin);
             trialspxmat = trialspxmat(indWin, :);
 
             StatOut = ExamineTaskResponsive(tspkmat, trialspxmat);
-            StatOut.CellIndx =  r.Units.SpikeNotes(i, :);
-            PSTH_RewardStat{jcue, kport}.StatOut(i) =  StatOut;
-            PSTH_baseline = [PSTH_baseline r.PSTH.PSTHs(i).RewardChoice{jcue, kport}{1}];
+            StatOut.CellIndx = r.Units.SpikeNotes(i, :);
+            PSTH_RewardStat{jtype, kport}.StatOut(i) = StatOut;
+            PSTH_baseline = [PSTH_baseline psth_reward_this{1}];
 
             % compute z
             mean_baseline = mean(PSTH_baseline, 'omitnan');
             sd_baseline   = std(PSTH_baseline, 'omitnan');
-            PSTH_CentInZ{jcue, kport}  = [PSTH_CentInZ{jcue, kport}; (r.PSTH.PSTHs(i).CentIn{jcue, kport}{1}-mean_baseline)/sd_baseline];
-            PSTH_CentOutZ{jcue, kport} = [PSTH_CentOutZ{jcue, kport}; (r.PSTH.PSTHs(i).CentOut{jcue, kport}{1}-mean_baseline)/sd_baseline];
-            PSTH_TriggerZ{jcue, kport} = [PSTH_TriggerZ{jcue, kport}; (r.PSTH.PSTHs(i).Triggers{jcue, kport}{1}-mean_baseline)/sd_baseline];
-            PSTH_RewardZ{jcue, kport}  = [PSTH_RewardZ{jcue, kport}; (r.PSTH.PSTHs(i).RewardChoice{jcue, kport}{1}-mean_baseline)/sd_baseline];
+            PSTH_CentInZ{jtype, kport}  = [PSTH_CentInZ{jtype, kport}; (psth_centin_this{1}-mean_baseline)/sd_baseline];
+            PSTH_CentOutZ{jtype, kport} = [PSTH_CentOutZ{jtype, kport}; (psth_centout_this{1}-mean_baseline)/sd_baseline];
+            PSTH_RewardZ{jtype, kport}  = [PSTH_RewardZ{jtype, kport}; (psth_reward_this{1}-mean_baseline)/sd_baseline];
 
-            PSTH_CentInZ{jcue, kport}(isnan(PSTH_CentInZ{jcue, kport}) | isinf(PSTH_CentInZ{jcue, kport}))    = 0;
-            PSTH_CentOutZ{jcue, kport}(isnan(PSTH_CentOutZ{jcue, kport}) | isinf(PSTH_CentOutZ{jcue, kport})) = 0;
-            PSTH_TriggerZ{jcue, kport}(isnan(PSTH_TriggerZ{jcue, kport}) | isinf(PSTH_TriggerZ{jcue, kport})) = 0;
-            PSTH_RewardZ{jcue, kport}(isnan(PSTH_RewardZ{jcue, kport}) | isinf(PSTH_RewardZ{jcue, kport}))    = 0;
+            PSTH_CentInZ{jtype, kport}(isnan(PSTH_CentInZ{jtype, kport}) | isinf(PSTH_CentInZ{jtype, kport}))    = 0;
+            PSTH_CentOutZ{jtype, kport}(isnan(PSTH_CentOutZ{jtype, kport}) | isinf(PSTH_CentOutZ{jtype, kport})) = 0;
+            PSTH_RewardZ{jtype, kport}(isnan(PSTH_RewardZ{jtype, kport}) | isinf(PSTH_RewardZ{jtype, kport}))    = 0;
         end
     end
 end
+
 
 PopOut.Name       = r.BehaviorClass.Subject;
 PopOut.ImplantLateral = r.ImplantLateral;
 PopOut.FP         = r.BehaviorClass.TargetFP;
 PopOut.CueUncue   = r.BehaviorClass.CueUncue;
+PopOut.TrialTypes = TrialTypes;
 PopOut.Ports      = r.BehaviorClass.Ports;
 PopOut.Trials     = PSTH_Trials;
 PopOut.Session    = r.BehaviorClass.Session;
@@ -182,11 +203,12 @@ PopOut.Trigger     = PSTH_Trigger;
 PopOut.TriggerZ    = PSTH_TriggerZ;
 PopOut.TriggerStat = PSTH_TriggerStat;
 
-[PopOut.IndSort, PopOut.IndUnmodulated] = SpikesGPS.SRT.RankActivityFlat(PopOut);
+[PopOut.IndSort, PopOut.IndUnmodulated] = SpikesGPS.Timing.RankActivityFlat(PopOut);
 
-PopOut.IndSort = SpikesGPS.SRT.VisualizePopPSTH(PopOut, 'Each');
-SpikesGPS.SRT.VisualizePopPSTH(PopOut, 'Ipsi');
-SpikesGPS.SRT.VisualizePopPSTH(PopOut, 'Contra');
+
+PopOut.IndSort = SpikesGPS.Timing.VisualizePopPSTH(PopOut, 'Each');
+SpikesGPS.Timing.VisualizePopPSTH(PopOut, 'Ipsi');
+SpikesGPS.Timing.VisualizePopPSTH(PopOut, 'Contra');
 
 r.PopPSTH = PopOut;
 r_name = 'RTarray_'+r.PSTH.PSTHs(1).ANM_Session{1}+'_'+strrep(r.PSTH.PSTHs(1).ANM_Session{2}, '_', '')+'.mat';
@@ -194,12 +216,3 @@ save(r_name, 'r');
 % Save a copy of PSTHOut to a collector folder
 tosavename = 'PopOut_'+r.PSTH.PSTHs(1).ANM_Session{1}+'_'+strrep(r.PSTH.PSTHs(1).ANM_Session{2}, '_', '')+'.mat';
 save(tosavename, 'PopOut');
-
-% thisFolder = fullfile(findonedrive, '00_Work' , '03_Projects', '05_Physiology', 'Data', 'PopulationPSTH', r.PSTH.PSTHs(1).ANM_Session{1});
-% if ~exist(thisFolder, 'dir')
-%     mkdir(thisFolder)
-% end
-% disp('##########  copying PopOut ########## ')
-% tic
-% copyfile(tosavename, thisFolder)
-% toc

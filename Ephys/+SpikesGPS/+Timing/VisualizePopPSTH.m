@@ -238,28 +238,29 @@ for jport = 1:nPort
     xlevel_now = xlevel_now + Width + w_space;
 
     % Reward
-    if ~isempty(Pop.Reward{itype, jport})
-        tRange = [-500 tRewardPSTHs{2}(end)];
-        Width  = size_factor*diff(tRange)/2000;
-        for itype =1:nType
-            ha_reward(itype) = axes('unit', 'centimeters', 'position',...
-                [xlevel_now ylevel_start+(map_height+h_space)*(itype-1) Width map_height],...
-                'nextplot', 'add', 'xlim', tRange, 'xtick', -500:500:2000,'ytick', [], 'yticklabel', [],...
-                'ylim', [0.5 n_unit+0.5], 'ydir', 'reverse', 'ticklength', [0.025 0.01], 'XTickLabelRotation', 90);
-            if itype >1
-                set(ha_reward(itype), 'xticklabel', [])
-            end
-            if jport > 1
-                yticklabels([]);
-                ylabel([]);
-            end
-            RewardPSTH_thisFP = PSTH_ConNorm{itype, jport}(:, IndReward{itype, jport});
-            imagesc(tRewardPSTHs{itype, jport}, 1:n_unit, RewardPSTH_thisFP, norm_range);
-            colormap('Parula')
-            yrange = [0.5 n_unit+0.5];
-            line([0 0], yrange, 'color', c_reward, 'linestyle', ':', 'linewidth', 1.5);
-            fill([get(gca, 'xlim') flip(get(gca, 'xlim'))], [nsig+.5 nsig+.5 n_unit+0.5 n_unit+0.5], 'w', 'FaceColor', 'w', 'EdgeColor', 'none', 'FaceAlpha', .75);
+    tRange = [-500 tRewardPSTHs{2}(end)];
+    Width  = size_factor*diff(tRange)/2000;
+    for itype =1:nType
+        if isempty(Pop.Reward{itype, jport})
+            continue
         end
+        ha_reward(itype) = axes('unit', 'centimeters', 'position',...
+            [xlevel_now ylevel_start+(map_height+h_space)*(itype-1) Width map_height],...
+            'nextplot', 'add', 'xlim', tRange, 'xtick', -500:500:2000,'ytick', [], 'yticklabel', [],...
+            'ylim', [0.5 n_unit+0.5], 'ydir', 'reverse', 'ticklength', [0.025 0.01], 'XTickLabelRotation', 90);
+        if itype >1
+            set(ha_reward(itype), 'xticklabel', [])
+        end
+        if jport > 1
+            yticklabels([]);
+            ylabel([]);
+        end
+        RewardPSTH_thisFP = PSTH_ConNorm{itype, jport}(:, IndReward{itype, jport});
+        imagesc(tRewardPSTHs{itype, jport}, 1:n_unit, RewardPSTH_thisFP, norm_range);
+        colormap('Parula')
+        yrange = [0.5 n_unit+0.5];
+        line([0 0], yrange, 'color', c_reward, 'linestyle', ':', 'linewidth', 1.5);
+        fill([get(gca, 'xlim') flip(get(gca, 'xlim'))], [nsig+.5 nsig+.5 n_unit+0.5 n_unit+0.5], 'w', 'FaceColor', 'w', 'EdgeColor', 'none', 'FaceAlpha', .75);
     end
     xlevel_now = xlevel_now + Width + 2*w_space;
 end
@@ -345,27 +346,28 @@ for jport = 1:nPort
     xlevel_now = xlevel_now + Width+w_space;
 
     % Reward
-    if ~isempty(Pop.Reward{itype, jport})
-        tRange = [-500 tRewardPSTHs{2}(end)];
-        Width  = size_factor*diff(tRange)/2000;
-        for itype = 1:nType
-            ha_reward(itype) = axes('unit', 'centimeters', 'position',...
-                [xlevel_now ylevel_start+(map_height+0.5)*(itype-1)  Width map_height],...
-                'nextplot', 'add', 'xlim', tRange, 'xtick', -500:500:2000,'ytick', [], 'yticklabel', [],...
-                'ylim', [0.5 n_unit+0.5], 'ydir', 'reverse', 'ticklength', [0.025 0.01], 'XTickLabelRotation', 90);
-            colormap(ha_reward(itype), zcolormap);
-            if itype >1
-                set(ha_reward(itype), 'xticklabel', [])
-            end
-            if jport > 1
-                yticklabels([]);
-                ylabel([]);
-            end
-            imagesc(tRewardPSTHs{itype, jport}, 1:n_unit, RewardPSTHZs{itype, jport}, 'AlphaData', ~isnan(RewardPSTHZs{itype, jport})); clim(zrange);
-            yrange = [0.5 n_unit+0.5];
-            line([0 0], yrange, 'color', c_reward_z, 'linestyle', ':', 'linewidth', 1.5);
-            fill([get(gca, 'xlim') flip(get(gca, 'xlim'))], [nsig+.5 nsig+.5 n_unit+0.5 n_unit+0.5], 'w', 'FaceColor', 'w', 'EdgeColor', 'none', 'FaceAlpha', .75);
+    tRange = [-500 tRewardPSTHs{2}(end)];
+    Width  = size_factor*diff(tRange)/2000;
+    for itype = 1:nType
+        if isempty(Pop.Reward{itype, jport})
+            continue
         end
+        ha_reward(itype) = axes('unit', 'centimeters', 'position',...
+            [xlevel_now ylevel_start+(map_height+0.5)*(itype-1)  Width map_height],...
+            'nextplot', 'add', 'xlim', tRange, 'xtick', -500:500:2000,'ytick', [], 'yticklabel', [],...
+            'ylim', [0.5 n_unit+0.5], 'ydir', 'reverse', 'ticklength', [0.025 0.01], 'XTickLabelRotation', 90);
+        colormap(ha_reward(itype), zcolormap);
+        if itype >1
+            set(ha_reward(itype), 'xticklabel', [])
+        end
+        if jport > 1
+            yticklabels([]);
+            ylabel([]);
+        end
+        imagesc(tRewardPSTHs{itype, jport}, 1:n_unit, RewardPSTHZs{itype, jport}, 'AlphaData', ~isnan(RewardPSTHZs{itype, jport})); clim(zrange);
+        yrange = [0.5 n_unit+0.5];
+        line([0 0], yrange, 'color', c_reward_z, 'linestyle', ':', 'linewidth', 1.5);
+        fill([get(gca, 'xlim') flip(get(gca, 'xlim'))], [nsig+.5 nsig+.5 n_unit+0.5 n_unit+0.5], 'w', 'FaceColor', 'w', 'EdgeColor', 'none', 'FaceAlpha', .75);
     end
 
     xlevel_now = xlevel_now + Width + 2 * w_space;

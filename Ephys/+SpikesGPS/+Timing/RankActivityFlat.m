@@ -10,7 +10,7 @@ end
 FP = PopOut.FP;
 nPort = length(PopOut.Ports);
 n_unit = size(PopOut.Units, 1);
-Typeindx = 3; % use correct uncued trials
+Typeindx = 2; % use correct uncued trials
 n_events = 3; % cent-in, cent-out, reward
 
 CentInTimeRange  = [-2000 FP*1000];

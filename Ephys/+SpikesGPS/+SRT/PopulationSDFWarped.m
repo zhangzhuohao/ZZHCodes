@@ -85,6 +85,7 @@ for i = 1:n_units
         popWarpPool.stat.centin{p}(i)  = ExamineTaskResponsive(popWarpPool.t_warp.centin{p}, i_sdf_all.SDFWarpPool.sdf_warp.centin{p}');
         popWarpPool.stat.trigger{p}(i) = ExamineTaskResponsive(popWarpPool.t_warp.trigger{p}, i_sdf_all.SDFWarpPool.sdf_warp.trigger{p}');
     end
+    clear i_sdf_all;
 end
 [IndSort, IndInsignificant] = SpikesGPS.SRT.RankSDFWarpPooled(popWarpPool, 0.75);
 popWarpPool.IndSort = IndSort;
