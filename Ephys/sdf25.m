@@ -1,6 +1,5 @@
 function [sdf_out, t] = sdf25(tspk, time_range, sigma, dt, num_trials)
 % spike density function, 2025. JY
-% modified by (ZZH, 2026) to calculate sdf for multi trials respectively
 %
 % Inputs:
 %   tspk       - Vector of spike times in milliseconds, or cell for spike times in each trial

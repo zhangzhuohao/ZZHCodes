@@ -27,7 +27,7 @@ waveCollection              =       cell(1, nWave);
 nNearest = 40;
 unitLocation.where          =       zeros(3, nSpk);
 unitLocation.what           =       zeros(1, nSpk); % size of the spike (this differs from the max size in a channel)
-unitLocation.type           =       zeros(1, nSpk); % size of the spike (this differs from the max size in a channel)
+unitLocation.type           =       zeros(1, nSpk);
 
 for i =1:nSpk
 

@@ -6,7 +6,14 @@ end
 
 % figure out which unit it is
 spk_note = r.Units.SpikeNotes;
-ind_unit = find(spk_note(:, 1)==id(1) & spk_note(:, 2)==id(2));
+switch length(id)
+    case 2
+        ind_unit = find(spk_note(:, 1)==id(1) & spk_note(:, 2)==id(2));
+    case 1
+        ind_unit = id;
+        id = spk_note(ind_unit, [1 2]);
+end
+
 spkwave  = r.Units.SpikeTimes(ind_unit).wave;
 spktimes = r.Units.SpikeTimes(ind_unit).timings; % in ms
 spktimes_ = zeros(1, ceil(max(spktimes)));

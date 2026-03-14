@@ -30,9 +30,8 @@ data_range = max(g_mean_sub) - min(g_mean_sub);
 
 % Step 3: Soft normalization
 if data_range == 0
-    g_soft_norm = g_mean_sub;  % Avoid division by zero for flat data
     soft_factor = 1;
 else
-    g_soft_norm = g_mean_sub / (data_range + soft_norm);
     soft_factor = data_range + soft_norm;
 end
+g_soft_norm = g_mean_sub / soft_factor;

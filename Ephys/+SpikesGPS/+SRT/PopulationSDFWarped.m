@@ -118,7 +118,7 @@ popWarp.popWarpPooled = popWarpPool;
 save(sprintf('PopSDFWarped_%s_%s.mat', popWarp.Subject, popWarp.Session), "popWarp");
 
 r.popSDFWarped = popWarp;
-save(sprintf('RTarray_%s_%s.mat', popWarp.Subject, popWarp.Session), "r");
+save(sprintf('RTarray_%s_%s.mat', popWarp.Subject, popWarp.Session), "r", '-v7.3');
 
 %% Plot warped SDF
 SpikesGPS.SRT.VisualizePopSDFWarped(popWarp, 'Each');
