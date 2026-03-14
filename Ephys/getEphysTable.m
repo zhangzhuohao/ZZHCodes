@@ -41,6 +41,10 @@ EphysTable.HD = EphysTable.tCentOut - EphysTable.tCentIn;
 EphysTable.RT = EphysTable.tCentOut - EphysTable.tTrigger;
 EphysTable.MT = EphysTable.tChoice - EphysTable.tCentOut;
 
+BehavInfo = EphysTable;
+save_name = sprintf("BehavInfo_%s_%s.mat", r.BehaviorClass.Subject, r.BehaviorClass.Session);
+save(save_name, 'BehavInfo');
+
 % r.EphysTable = EphysTable;
 % save(sprintf('RTarray_%s_%s.mat', r.BehaviorClass.Subject, r.BehaviorClass.Session), "r");
 
