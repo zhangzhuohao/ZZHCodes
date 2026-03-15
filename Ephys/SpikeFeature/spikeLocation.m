@@ -18,7 +18,7 @@ end
 
 if isfield(channel_locations, 'xcoords')
     chanMap = channel_locations;
-    if length(chanMap.xcoords) ~= length(chanMap.connected)
+    if length(chanMap.xcoords) ~= sum(chanMap.connected)
         chanMap.xcoords = chanMap.xcoords(chanMap.connected == 1);
         chanMap.ycoords = chanMap.ycoords(chanMap.connected == 1);
     end
