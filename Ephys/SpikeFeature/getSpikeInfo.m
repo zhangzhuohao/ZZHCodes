@@ -12,7 +12,8 @@ function SpikeInfo = getSpikeInfo(r, Regions, manual)
 %       manual: 1*2 logical, whether regular-cluster and recording-region should be manually set (not yet)
 %   Output: 
 %       SpikeInfo, a table with variables:
-%           Subject, Session, NP, Unit, Channel, ChUnit, SpikeTimes, Waveform, Shank, Location, Region, 
+%           Subject, Session, NP, Unit, Channel, ChUnit, SpikeTimes, Waveform, 
+%           Xcoords, Ycoords, Kcoords, Shank, Location, Region, 
 %           Amplitude, AmpTrough, tTrough, AmpPeak, tPeak, PeakTroughRatio, PeakTroughDelay, fwhh, WavePC
 %           AutoCorr, ISI, Single, Regular
 
@@ -57,6 +58,9 @@ for i = 1:n_units
     [loc_x, loc_y, loc_z] = spikeLocation(wave_ch_all{i}, ch_location, 20, 'monopolar_triangulation');
     unit_location(i, :) = [loc_x, loc_y, loc_z];
 end
+SpikeInfo.Xcoords  = repmat({r.ChanMap.xcoords}, n_units, 1);
+SpikeInfo.Ycoords  = repmat({r.ChanMap.xcoords}, n_units, 1);
+SpikeInfo.Kcoords  = repmat({r.ChanMap.xcoords}, n_units, 1);
 SpikeInfo.Shank    = r.ChanMap.kcoords(SpikeInfo.Channel);
 SpikeInfo.Location = unit_location;
 
@@ -191,7 +195,10 @@ if ~manual(2)
             region_idx = cluster(gm_sorted, depth_k);
 
             for m = 1:n_regions
-                SpikeInfo.Region(ind_k(region_idx==m)) = regions_k(m)';
+                region_m = find(region_idx==m);
+                [~, ind_rm] = rmoutliers(depth_k(region_m), 'mean');
+                region_m = region_m(~ind_rm);
+                SpikeInfo.Region(ind_k(region_m)) = regions_k(m)';
             end
         else
             SpikeInfo.Region(ind_k) = regions_k;
@@ -248,9 +255,10 @@ title(ax, 'irregular');
 
 % update unit location plot
 cla(ax_loc);
-scatter(ax_loc, SpikeInfo.Location(Regular & ~Single, 1), SpikeInfo.Location(Regular & ~Single, 2), 10, c_r, 'LineWidth', .75, 'MarkerEdgeAlpha', .7);
-scatter(ax_loc, SpikeInfo.Location(~Regular, 1), SpikeInfo.Location(~Regular, 2), 10, c_ir, 'LineWidth', .75, 'MarkerEdgeAlpha', .7);
-scatter(ax_loc, SpikeInfo.Location(Regular & Single, 1), SpikeInfo.Location(Regular & Single, 2), 15, c_r, 'filled', 'MarkerFaceAlpha', .6);
+ind_region = SpikeInfo.Region~="";
+scatter(ax_loc, SpikeInfo.Location(Regular & ~Single & ind_region, 1), SpikeInfo.Location(Regular & ~Single & ind_region, 2), 10, c_r, 'LineWidth', .75, 'MarkerEdgeAlpha', .7);
+scatter(ax_loc, SpikeInfo.Location(~Regular & ind_region, 1), SpikeInfo.Location(~Regular & ind_region, 2), 10, c_ir, 'LineWidth', .75, 'MarkerEdgeAlpha', .7);
+scatter(ax_loc, SpikeInfo.Location(Regular & Single & ind_region, 1), SpikeInfo.Location(Regular & Single & ind_region, 2), 15, c_r, 'filled', 'MarkerFaceAlpha', .6);
 
 scatter(ax_loc, ch_location(:,1), ch_location(:,2), 2, 'black', '.', 'LineWidth', 1, 'MarkerEdgeAlpha', .6);
 
