@@ -2,7 +2,7 @@ function SpikeInfo = getSpikeInfo(r, Regions, manual)
 %% Calculate all features (waveform, timing-related etc.) of units.
 % Cluster units by trough-peak delay and waveform PC-1 to get regular units.
 % Assign units to different regions according to recording depth.
-%   Input: 
+%   Input:
 %       r: RT array
 %       Reigions: recording regions, each column for each shank; each row for each region, for example:
 %           Regions = [
@@ -10,10 +10,10 @@ function SpikeInfo = getSpikeInfo(r, Regions, manual)
 %               "OFC" ""
 %               ];
 %       manual: 1*2 logical, whether regular-cluster and recording-region should be manually set (not yet)
-%   Output: 
+%   Output:
 %       SpikeInfo, a table with variables:
-%           Subject, Session, NP, Unit, Channel, ChUnit, SpikeTimes, Waveform, 
-%           Xcoords, Ycoords, Kcoords, Shank, Location, Region, 
+%           Subject, Session, NP, Unit, Channel, ChUnit, SpikeTimes, Waveform,
+%           Xcoords, Ycoords, Kcoords, Shank, Location, Region,
 %           Amplitude, AmpTrough, tTrough, AmpPeak, tPeak, PeakTroughRatio, PeakTroughDelay, fwhh, WavePC
 %           AutoCorr, ISI, Single, Regular
 
@@ -59,8 +59,8 @@ for i = 1:n_units
     unit_location(i, :) = [loc_x, loc_y, loc_z];
 end
 SpikeInfo.Xcoords  = repmat({r.ChanMap.xcoords}, n_units, 1);
-SpikeInfo.Ycoords  = repmat({r.ChanMap.xcoords}, n_units, 1);
-SpikeInfo.Kcoords  = repmat({r.ChanMap.xcoords}, n_units, 1);
+SpikeInfo.Ycoords  = repmat({r.ChanMap.ycoords}, n_units, 1);
+SpikeInfo.Kcoords  = repmat({r.ChanMap.kcoords}, n_units, 1);
 SpikeInfo.Shank    = r.ChanMap.kcoords(SpikeInfo.Channel);
 SpikeInfo.Location = unit_location;
 
@@ -86,7 +86,7 @@ wave_features = struct2table(wave_features);
 
 % correct the difference in gain between NP1.0 and NP2.0 (which has not been considered in BuildSpikeTable.m),
 wave_features.amp_trough = wave_features.amp_trough * wave_scale;
-wave_features.amp_peak   = wave_features.amp_trough * wave_scale;
+wave_features.amp_peak   = wave_features.amp_peak   * wave_scale;
 
 % PC-1
 [~, wave_pc] = pca(zscore(wave_mean, [], 2));
@@ -159,13 +159,22 @@ if ~manual(1)
     % regular units should have longer peak_trough_delay and normal PC
     cluster_X = [wave_features.peak_trough_delay, wave_features.pc];
     % at first, take units with longer peak-trough-dealy into consideration,
-    % find units with mahalanobis-distance < 3
     ind_regular = cluster_X(:,1)>0.5;
-    mal_dist = sqrt(mahal(cluster_X, cluster_X(ind_regular, :)));
+%     % find units with mahalanobis-distance < 3
+%     mal_dist = sqrt(mahal(cluster_X, cluster_X(ind_regular, :)));
+    % find units within 3 standard deviance in both dimensions
+    mal_dist_1 = sqrt(mahal(cluster_X(:,1), cluster_X(ind_regular,1)));
+    mal_dist_2 = sqrt(mahal(cluster_X(:,2), cluster_X(ind_regular,2)));
+    mal_dist = max([mal_dist_1 mal_dist_2], [], 2);
     ind_regular = mal_dist<3;
     % then, re-calculate mahalanobis-distance based the units found before,
-    % cluster units with mahalanobis-distance < 3 as "regular"
-    mal_dist = sqrt(mahal(cluster_X, cluster_X(ind_regular, :)));
+%     % cluster units with mahalanobis-distance < 3 as "regular"
+%     mal_dist = sqrt(mahal(cluster_X, cluster_X(ind_regular, :)));
+%     ind_regular = mal_dist<3;
+    % cluster units within 3 standard deviance in both dimensions as "regular"
+    mal_dist_1 = sqrt(mahal(cluster_X(:,1), cluster_X(ind_regular,1)));
+    mal_dist_2 = sqrt(mahal(cluster_X(:,2), cluster_X(ind_regular,2)));
+    mal_dist = max([mal_dist_1 mal_dist_2], [], 2);
     ind_regular = mal_dist<3;
 
     Regular(ind_regular) = true;
