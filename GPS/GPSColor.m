@@ -45,6 +45,10 @@ classdef GPSColor
             [183 34 48]   / 255, [49 124 183]  / 255
             };
         EphysCentOut = [238 5 219] / 255;
+
+        Beginner = [253 128 2] / 255;
+        Expert   = [55 159 48] / 255;
+
     end
 
     methods

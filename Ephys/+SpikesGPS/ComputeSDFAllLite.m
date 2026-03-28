@@ -1,5 +1,11 @@
-function SDFAll = ComputeSDFAllLite(spktimes, e_tbl)
-%
+function SDFAll = ComputeSDFAllLite(spktimes, e_tbl, sigma, dt)
+% 
+if nargin<3
+    sigma = 20;
+    dt    = 1;
+elseif nargin<4
+    dt = 1;
+end
 
 %% Gather behavior information
 % event times in original order
@@ -34,6 +40,7 @@ pre_max = 10; % if the rat took very long time for shuttling, trim it to 10 sec
 pre_min = 2.5; % if the rat was too fast, set it to 2.5 sec
 post_ = 3; % take 3 sec after choice/cent-out at first
 
+win_ext = [-50 50]; % ms
 win_pre = zeros(n_trials, 1);
 for i = 1:n_trials
     win_pre(i) = min([ST(i) + pre_*1000, pre_max*1000]);
@@ -43,13 +50,17 @@ end
 win_post = t_choice - t_centin + post_*1000;
 win_post(isnan(win_post)) = t_centout(isnan(win_post)) - t_centin(isnan(win_post)) + post_*1000;
 
-t_spk_times = getSpikeTimingsWithin(spktimes, t_centin, [-win_pre win_post]);
+t_spk_times = getSpikeTimingsWithin(spktimes, t_centin, [-win_pre win_post] + win_ext);
 
 t_sdf_trial = cell(n_trials, 1);
 sdf_trial   = cell(n_trials, 1);
 
 for i = 1:n_trials
-    [sdf_trial{i}, t_sdf_trial{i}] = sdf26(t_spk_times{i}, [-win_pre(i) win_post(i)], 20, 1);
+    win_i = [-win_pre(i) win_post(i)];
+    [sdf_i, t_sdf_i] = sdf26(t_spk_times{i}, win_i + win_ext, sigma, dt);
+    ind_i = t_sdf_i>=win_i(1) & t_sdf_i<win_i(2);
+    sdf_trial{i}   = sdf_i(ind_i);
+    t_sdf_trial{i} = t_sdf_i(ind_i);
 end
 
 %% save whole trial sdf to strcut SDFOut

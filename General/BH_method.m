@@ -8,6 +8,8 @@ if nargin<3
     end
 end
 
+allpvals = allpvals(:)';
+allpvals(isnan(allpvals)) = [];
 allpvals_sort = sort(allpvals);
 if size(allpvals_sort, 1)>1
     allpvals_sort = allpvals_sort';

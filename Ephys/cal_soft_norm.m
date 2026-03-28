@@ -22,16 +22,13 @@ if nargin<2
 end
 
 % Step 1: Mean subtraction
-g_mean = mean(g);
+g(isnan(g)) = 0;
+g_mean = mean(g, 2);
 g_mean_sub = g - g_mean;
 
 % Step 2: Compute range of mean-subtracted data
-data_range = max(g_mean_sub) - min(g_mean_sub);
+data_range = max(g_mean_sub, [], 2) - min(g_mean_sub, [], 2);
 
 % Step 3: Soft normalization
-if data_range == 0
-    soft_factor = 1;
-else
-    soft_factor = data_range + soft_norm;
-end
-g_soft_norm = g_mean_sub / soft_factor;
+soft_factor = data_range + soft_norm;
+g_soft_norm = g_mean_sub ./ soft_factor;

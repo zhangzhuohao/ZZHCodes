@@ -421,6 +421,16 @@ classdef GPSPlot < handle
             parse(P, varargin{:});
             font_size = P.Results.font_size;
 
+            h = get(fig, 'type');
+            switch h
+                case 'figure'
+                case 'axes'
+                    pos([1 2]) = fig.Position([1 2]) + pos([1 2]);
+                    fig = fig.Parent;
+                otherwise
+                    error('Incorrect input args for constructing axes object, requiring figure or axes graphic handle.');
+            end
+
             %
             ax = cell(n_row, n_col);
             [dist_w, dist_h] = obj.get_plot_dist(ax, pos, ax_sz);
