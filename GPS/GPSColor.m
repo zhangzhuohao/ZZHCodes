@@ -46,8 +46,10 @@ classdef GPSColor
             };
         EphysCentOut = [238 5 219] / 255;
 
-        Beginner = [253 128 2] / 255;
-        Expert   = [55 159 48] / 255;
+%         Beginner = [253 128 2] / 255;
+%         Expert   = [55 159 48] / 255;
+        Beginner = [210 105 30] / 255;
+        Expert   = [0 120 90] / 255;
 
     end
 
