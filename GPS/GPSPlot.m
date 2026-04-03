@@ -431,16 +431,24 @@ classdef GPSPlot < handle
                     error('Incorrect input args for constructing axes object, requiring figure or axes graphic handle.');
             end
 
+            if iscell(ax_sz)
+                if size(ax_sz, 1)~=n_row || size(ax_sz, 2)~=n_col
+                    error('The size of ax_sz should match axis number');
+                end
+            else
+                ax_sz = repmat({ax_sz}, n_row, n_col);
+            end
+
             %
             ax = cell(n_row, n_col);
             [dist_w, dist_h] = obj.get_plot_dist(ax, pos, ax_sz);
 
             for i = 1:n_row
                 for j = 1:n_col
-                    x_now = pos(1) + dist_w * (j-1);
-                    y_now = pos(2) + dist_h * (n_row-i);
+                    x_now = pos(1) + dist_w{i,j};
+                    y_now = pos(2) + dist_h{i,j};
 
-                    ax{i,j} = axes(fig, "Units", "centimeters", "Position", [x_now y_now ax_sz], ...
+                    ax{i,j} = axes(fig, "Units", "centimeters", "Position", [x_now y_now ax_sz{i,j}], ...
                         'NextPlot', 'add', 'FontSize', font_size, 'TickDir', 'out', 'TickLength', [0.02 0.03]);
                 end
             end
@@ -522,19 +530,33 @@ classdef GPSPlot < handle
 
         function [dist_w, dist_h] = get_plot_dist(~, ax_cell, pos, ax_sz)
             [n_h, n_w] = size(ax_cell);
-            if n_w>1
-                sep_w = ( pos(3) - n_w*ax_sz(1) ) / (n_w-1);
-            else
-                sep_w = 0;
-            end
-            if n_h > 1
-                sep_h = ( pos(4) - n_h*ax_sz(2) ) / (n_h-1);
-            else
-                sep_h = 0;
+
+            dist_w = cell(n_h, n_w);
+            for i = 1:n_h
+                sz_this = cat(1, ax_sz{i,:});
+                sep_w = ( pos(3) - sum(sz_this(:,1)) ) / (n_w-1);
+                for j = 1:n_w
+                    if j==1
+                        dist_w{i,j} = 0;
+                    else
+                        dist_w{i,j} = dist_w{i,j-1} + sz_this(j-1,1) + sep_w;
+                    end
+                end
             end
 
-            dist_w = sep_w + ax_sz(1);
-            dist_h = sep_h + ax_sz(2);
+            dist_h = cell(n_h, n_w);
+            for i = 1:n_w
+                sz_this = cat(1, ax_sz{:,i});
+                sep_h = ( pos(4) - sum(sz_this(:,2)) ) / (n_h-1);
+                for j = 1:n_h
+                    if j==1
+                        dist_h{j,i} = pos(4) - sz_this(1,2);
+                    else
+                        dist_h{j,i} = dist_h{j-1,i} - sz_this(j,2) - sep_h;
+                    end
+                end
+            end
+
         end % get_plot_dist
     end
 end
