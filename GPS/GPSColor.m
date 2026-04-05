@@ -38,6 +38,8 @@ classdef GPSColor
         % Task paradigm
         FP = [247 182 45] / 255;
         RW = [0   152 68] / 255;
+%         FP = [220, 220, 220] / 255;
+%         RW = [250, 192, 144] / 255;
         % Ephys direction
         EphysDir = {
             [246 178 147] / 255, [182 215 232] / 255;
