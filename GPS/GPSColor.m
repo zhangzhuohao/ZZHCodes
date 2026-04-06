@@ -17,9 +17,11 @@ classdef GPSColor
         Treat       = [53   114  239 ] / 255;
         Chemo       = [53   114  239 ] / 255;
         % FP
-        FPLong      = [254  245  172] / 255;
-        FPMed       = [151  210  236] / 255;
-        FPShort     = [95   111  148] / 255;
+        FPLength    = {
+            [87 166 161] / 255; % short
+            [87 123 141] / 255; % medium
+            [52 76  100] / 255  % long
+            };
         % Phase
         PhaseEarly  = [63   85   172] / 255;
         PhaseLate   = [250  75   40 ] / 255;
@@ -30,7 +32,7 @@ classdef GPSColor
         Empty       = [.6 .6 .6];
         % Lesion
         PreControl  = [61   59   64 ] / 255;
-        LesionEarly = [255  108  34 ] / 255
+        LesionEarly = [255  108  34 ] / 255;
         LesionExtensive = [82 92 235] / 255;
         % Contra vs. Ipsi
         Contra = [216 48 96] / 255;
@@ -48,10 +50,12 @@ classdef GPSColor
             };
         EphysCentOut = [238 5 219] / 255;
 
-%         Beginner = [253 128 2] / 255;
-%         Expert   = [55 159 48] / 255;
-        Beginner = [210 105 30] / 255;
-        Expert   = [0 120 90] / 255;
+        Beginner = [0   96 128] / 255;
+        Expert   = [228 92 64] / 255
+%         Beginner = [118,42,132] / 255;
+%         Expert   = [240,88,64] / 255;
+%         Beginner = [210 105 30] / 255;
+%         Expert   = [0 120 90] / 255;
 
     end
 
