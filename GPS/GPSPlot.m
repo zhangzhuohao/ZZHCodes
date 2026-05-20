@@ -530,6 +530,13 @@ classdef GPSPlot < handle
 
         function [dist_w, dist_h] = get_plot_dist(~, ax_cell, pos, ax_sz)
             [n_h, n_w] = size(ax_cell);
+            if iscell(ax_sz)
+                if size(ax_sz, 1)~=n_h || size(ax_sz, 2)~=n_w
+                    error('The size of ax_sz should match axis number');
+                end
+            else
+                ax_sz = repmat({ax_sz}, n_h, n_w);
+            end
 
             dist_w = cell(n_h, n_w);
             for i = 1:n_h

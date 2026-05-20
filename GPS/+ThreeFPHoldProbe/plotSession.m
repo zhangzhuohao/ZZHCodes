@@ -123,8 +123,8 @@ x_lim = max(max(cellfun(@(x) max(x.Pos), perf_track)));
 x_lim = max([1 x_lim]);
 for i = 1:draw_sz(1)
     for j = 1:draw_sz(2)
-        x_now = pos(1) + dist_w * (j-1);
-        y_now = pos(2) + dist_h * (draw_sz(1)-i);
+        x_now = pos(1) + dist_w{i,j};
+        y_now = pos(2) + dist_h{i,j};
 
         ax{i,j} = axes(fig, "Units", "centimeters", "Position", [x_now y_now ax_sz], ...
             'NextPlot', 'add', 'FontSize', 8, 'TickDir', 'out');
@@ -165,7 +165,7 @@ ax = cell(1, 2);
 [dist_w, ~] = obj.get_plot_dist(ax, pos, ax_sz);
 
 for j = 1:2
-    x_now = pos(1) + dist_w * (j-1);
+    x_now = pos(1) + dist_w{j};
     y_now = pos(2);
     ax{j} = axes(fig, "Units", "centimeters", "Position", [x_now y_now ax_sz], ...
             'NextPlot', 'add', 'FontSize', 8, 'TickDir', 'out');
@@ -197,7 +197,7 @@ ax = cell(1, draw_sz);
 dist_w = obj.get_plot_dist(ax, pos, ax_sz);
 x_lim = max(obj.TrialCentInTime);
 for i = 1:draw_sz
-    x_now = pos(1) + dist_w * (i-1);
+    x_now = pos(1) + dist_w{i};
     y_now = pos(2);
 
     ax{i} = axes(fig, "Units", "centimeters", "Position", [x_now y_now ax_sz], ...
@@ -257,7 +257,7 @@ if x_lim==0
     x_lim = 1;
 end
 for i = 1:draw_sz
-    x_now = pos(1) + dist_w * (i-1);
+    x_now = pos(1) + dist_w{i};
     y_now = pos(2);
 
     ax{i} = axes(fig, "Units", "centimeters", "Position", [x_now y_now ax_sz], ...

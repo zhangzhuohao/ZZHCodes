@@ -5,3 +5,7 @@ try
 catch
     disp('You do not have "set_matlab_default"');
 end
+
+% Call Psychtoolbox-3 specific startup function:
+if exist('PsychStartup'), PsychStartup; end;
+
