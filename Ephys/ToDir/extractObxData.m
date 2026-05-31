@@ -11,6 +11,7 @@ dataArray = SGLX_readMeta.ReadBin(0, nFileSamp, meta, binName, path);
 % dataArray = SGLX_readMeta.GainCorrectOBX(dataArray, 1, meta);
 
 sample_rate = str2double(meta.obSampRate);
+sample_dur  = str2double(meta.fileTimeSecs) * 1000; % in ms
 
 %%
 TimeEvents = double(SGLX_readMeta.ExtractDigital(dataArray, meta, 1, 0:2));
@@ -18,7 +19,8 @@ TimeEvents = double(SGLX_readMeta.ExtractDigital(dataArray, meta, 1, 0:2));
 event_labels = {'PokeCentIn', 'PokeChoiceIn', 'PokeInitIn'};
 n_events = length(event_labels);
 
-bit_label = 'PokeCentIn';
+% bit_label = '';
+bit_label = 'PokeCentIn'; % bitcode
 
 %%
 EventOnset_sec = cell(1, n_events);
@@ -84,16 +86,16 @@ for k = 1:length(event_labels)
     events_offset_Tprime_ms{k} = readNPY(['event',num2str(k),'_offset_Tprime.npy'])*1000;
 end
 
-event_onset_sec = events_onset_Tprime_ms(idx_for_phy);
+event_onset_sec = events_onset_Tprime_ms(idx_for_phy); % ms for now
 event_offset_sec = events_offset_Tprime_ms(idx_for_phy);
 
 %%
 for k = 1:length(event_onset_sec)
     if strcmpi(bit_label, event_labels_for_phy{k})
-        [~, ind_head] = decodeBitMarker(event_onset_sec{k}, event_offset_sec{k}, 'bit_len', 60, 'bit_num', 9, 'head_on_dur', 120, 'head_off_dur', 60, 'fs', sample_rate);
+        [~, ind_head] = decodeBitMarker(event_onset_sec{k}, event_offset_sec{k}, 'bit_len', 60, 'bit_num', 9, 'head_on_dur', 120, 'head_off_dur', 60, 'fs', sample_rate, 'sample_dur', sample_dur);
         event_onset_sec{k} = event_onset_sec{k}(ind_head);
     end
-    event_onset_sec{k} = event_onset_sec{k}./1000;
+    event_onset_sec{k} = event_onset_sec{k}./1000; % convert to sec
 end
 
 writecell(event_onset_sec,'events.csv');

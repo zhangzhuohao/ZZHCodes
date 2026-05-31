@@ -1,5 +1,6 @@
 %% you need to change most of the paths in this block
-addpath(genpath('E:\Code\Kilosort_2_5-master\Kilosort_2_5-master')) % path to kilosort folder
+% addpath(genpath('E:\Code\Kilosort_2_5-master\Kilosort_2_5-master')) % path to kilosort folder
+close all; clear;
 
 rootZ = '.\catgt_Exp_g0'; % the raw data binary file is in this folder
 rootH = '.\catgt_Exp_g0'; % path to temporary binary file (same size as data, should be on fast SSD)
@@ -22,6 +23,7 @@ fprintf('Looking for data inside %s \n', rootZ)
 % main parameter changes from Kilosort2 to v2.5
 ops.sig        = 20;  % spatial smoothness constant for registration
 ops.fshigh     = 300; % high-pass more aggresively
+ops.fslow      = 9000; % low-pass
 ops.nblocks    = 5; % blocks for registration. 0 turns it off, 1 does rigid registration. Replaces "datashift" option. 
 ops.Th = [8, 3];
 
@@ -39,7 +41,7 @@ ops.fbinary = fullfile(rootZ, fs(1).name);
 ops.CAR = 1;
 
 % set Filter
-ops.Filter = 0;
+ops.Filter = 1;
 
 % preprocess data to create temp_wh.dat
 rez = preprocessDataSub(ops);

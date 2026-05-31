@@ -1,4 +1,4 @@
-% clear; close all;
+clear; close all;
 %% you need to change most of the paths in this block
 dir_output = './catgt_Exp_g0';
 
@@ -147,39 +147,43 @@ chanMap = load(fullfile(dir_output, 'chanMap.mat'));
 KilosortOutput = KilosortOutputClass(spikeTable, chanMap, ops);
 KilosortOutput.save();
 
+KilosortOutput.plotChannelActivity();
+
 %% build R
 KilosortOutput.buildRNeuropixelsGPS(...
     'KornblumStyle', false,...
     'ProbeStyle', true,...
-    'Subject', 'Michael',...
+    'Subject', 'Lamine',...
     'BpodProtocol', '3FPHoldSRTProbe',...
     'Experimenter', 'ZZH', ...
     'ImplantLateral', 'R', ...
-    'BitEvent', '');
-
-KilosortOutput.plotChannelActivity();
+    'BitCode', true);
 
 output = dir("*RTarray*.mat");
 load(output.name);
 
 %%
-% % For SRT:
-% SpikesGPS.SRT.SRTSpikes(r,[]);
+% % For Autoshaping:
+% SpikesGPS.Autoshaping.ChoiceSpikes(r,[]);
 % load(output.name);
-% SpikesGPS.SRT.PopulationActivity(r);
+% SpikesGPS.Autoshaping.PopulationActivity(r);
+
+% For Wait1Hold and Wait1HoldSRT:
+% SpikesGPS.Wait1.Wait1Spikes(r,[]);
+% load(output.name);
+% SpikesGPS.Wait1.PopulationActivity(r);
+
+% % For Wait2HoldSRT:
+% SpikesGPS.Wait2.Wait2Spikes(r,[]);
+% load(output.name);
+% SpikesGPS.Wait2.PopulationActivity(r);
+
+% For SRT:
+SpikesGPS.SRT.SRTSpikes(r,[]);
+load(output.name);
+SpikesGPS.SRT.PopulationActivity(r);
 
 % % For Kornblum:
-% Spikes.Timing.KornblumSpikes(r,[]);
+% SpikesGPS.Timing.KornblumSpikes(r, []);
 % load(output.name);
-
-% % For Autoshaping:
-% Spikes.Autoshaping.ChoiceSpikes(r,[]);
-% load(output.name);
-
-% % For Wait1:
-% Spikes.Wait1.Wait1Spikes(r,[]);
-% load(output.name);
-
-% % For Wait2:
-% Spikes.Wait2.Wait2Spikes(r,[]);
-% load(output.name);
+% SpikesGPS.Timing.PopulationActivity(r);

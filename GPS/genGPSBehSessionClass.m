@@ -14,6 +14,7 @@ Tasks = [
     "ThreeFPHoldCRT";
     "ThreeFPHoldSRT";
     "ThreeFPHoldWM";
+    "TwoFPHoldSRTProbe";
     "ThreeFPHoldSRTProbe";
     "ThreeFPFreeCRTProbe";
     "ThreeFPFreeSRTProbe";
