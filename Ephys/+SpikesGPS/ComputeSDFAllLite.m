@@ -48,7 +48,7 @@ for i = 1:n_trials
 end
 
 win_post = t_choice - t_centin + post_*1000;
-win_post(isnan(win_post)) = t_centout(isnan(win_post)) - t_centin(isnan(win_post)) + post_*1000;
+win_post(isnan(win_post)) = median(HD, 'omitnan') + median(MT, 'omitnan') + post_*1000;
 
 t_spk_times = getSpikeTimingsWithin(spktimes, t_centin, [-win_pre win_post] + win_ext);
 
