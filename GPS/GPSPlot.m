@@ -448,7 +448,7 @@ classdef GPSPlot < handle
                     x_now = pos(1) + dist_w{i,j};
                     y_now = pos(2) + dist_h{i,j};
 
-                    ax{i,j} = axes(fig, "Units", "centimeters", "Position", [x_now y_now ax_sz{i,j}], ...
+                    ax{i,j} = axes(fig, "Units", "centimeters", "Position", [x_now y_now ax_sz{i,j}], 'Color', 'none', ...
                         'NextPlot', 'add', 'FontSize', font_size, 'TickDir', 'out', 'TickLength', [0.02 0.03]);
                 end
             end
