@@ -170,7 +170,7 @@ for j = 1:2
     ax{j} = axes(fig, "Units", "centimeters", "Position", [x_now y_now ax_sz], ...
             'NextPlot', 'add', 'FontSize', 8, 'TickDir', 'out');
 
-    id = zeros(1, 3);
+    id = zeros(1, 2);
     for i = 1:2
         id(i) = find(obj.Performance.FP==obj.TargetFP(i) & obj.Performance.PortCorrect==j);
     end
@@ -179,7 +179,7 @@ for j = 1:2
     for k = 1:4
         b(k).FaceColor = GPSColor.(obj.PerformanceType(k));
     end
-    set(ax{j}, 'XLim', [.5 3.5], 'XTick', 1:2, 'XTickLabel', obj.TargetFP, 'XTickLabelRotation', 0, 'YLim', [0 100]);
+    set(ax{j}, 'XLim', [.5 2.5], 'XTick', 1:2, 'XTickLabel', obj.TargetFP, 'XTickLabelRotation', 0, 'YLim', [0 100]);
     if j==1
         ylabel(ax{j}, 'Perfomance %', 'FontWeight', 'bold');
         xlabel(ax{j}, 'Fore-period (s)', 'FontWeight', 'bold');
