@@ -39,8 +39,8 @@ post_keep = 2.5; % should be shorter than post_, to avoid length error
 latency = 2.5; % max cent-out to choice latency (max movement time)
 
 % trim whole trial sdf to time warp duration
-% remove trials with long movement time
-ind_invalid = SDFUncue.MT>=latency*1000 & SDFUncue.HD<=200;
+% remove trials with long movement time or too short hold duration
+ind_invalid = SDFUncue.MT>=latency*1000 | SDFUncue.HD<=200;
 SDFUncue = SDFUncue(~ind_invalid, :);
 % remove trials with outlier HD
 [~, ind_out] = rmoutliers(SDFUncue.HD);
@@ -108,8 +108,8 @@ for j = 1:NumPorts
             m_t_sdf   = k_t_sdf(k_t_sdf>=m_t_point(1) & k_t_sdf<m_t_point(2));
 
             m_sdf_warp = warp_sdf(m_t_sdf, m_sdf, m_t_warp);
-
             k_sdf_warp{m} = m_sdf_warp;
+
         end
         sdf_warp{j}(k,:) = cat(2, k_sdf_warp{:});
 
