@@ -48,8 +48,8 @@ tFramesEphys = FrameInfo.tFramesInEphys;
 
 % set up video clip storage folder
 thisView   = "Top";
-viewFolder = ClipInfo.VideoFolderTop;
-clipFolder = fullfile(ClipInfo.VideoFolderTop, 'Clips');
+viewFolder = fullfile(pwd, "Video", thisView);
+clipFolder = fullfile(viewFolder, 'Clips');
 if ~isfolder(clipFolder)
     mkdir(clipFolder);
 end
@@ -97,19 +97,19 @@ for i = 1:length(tEventEphys) % i is not the trial number
     % re-create the same video
     switch event
         case 'PortSamplePokeTime'
-            ClipName = sprintf('%s_%s_SamplePokeTrial%03d', anm, session, i_trial);
+            ClipName = sprintf('%s_%s_SamplePokeTrial%d', anm, session, round(itEvent));
 
         case 'PortCenterPokeTime'
-            ClipName = sprintf('%s_%s_CenterPokeTrial%03d', anm, session, i_trial);
+            ClipName = sprintf('%s_%s_CenterPokeTrial%d', anm, session, round(itEvent));
 
         case 'CentInTime'
-            ClipName = sprintf('%s_%s_HoldTrial%03d_%sView', anm, session, i_trial, thisView);
+            ClipName = sprintf('%s_%s_CentIn%d_%sView', anm, session, round(itEvent), thisView);
 
         case 'CentOutTime'
-            ClipName = sprintf('%s_%s_ChoiceTrial%03d_%sView', anm, session, i_trial, thisView);
+            ClipName = sprintf('%s_%s_ChoiceTrial%d_%sView', anm, session, round(itEvent), thisView);
     end
 
-    VidClipFileName = fullfile(clipFolder, [ClipName '.avi']);
+    VidClipFileName = fullfile(clipFolder, [ClipName '.mp4']);
     check_this_file = dir(VidClipFileName);
 
     if ~isempty(check_this_file) && ~remake % found a video clip with the same name, and we don't want to remake the video clip
@@ -210,13 +210,6 @@ for i = 1:length(tEventEphys) % i is not the trial number
     VidMeta.Code         = mfilename('fullpath');
     VidMeta.CreatedOn    = date; % today's date
 
-    video_accum = video_accum + 1;
-    if video_accum==1
-        VidsMeta = VidMeta;
-    else
-        VidsMeta(video_accum) = VidMeta;
-    end
-
     % Extract frames
     VidFrameIndx_thisfile = FrameInfo.AviFrameIndx(IndThisClip);  % these are the frame index in this video
     this_video = fullfile(viewFolder, FrameInfo.MyVidFiles{IndThisFrame});
@@ -235,6 +228,22 @@ for i = 1:length(tEventEphys) % i is not the trial number
     clear frames_ifile vidObj
 
     [H, W, nframe] = size(img_extracted); %
+    H_scl = scale_ratio*H;
+    W_scl = scale_ratio*W;
+
+    H_beh = ceil(.3*H_scl);
+    if mod(H_beh, 2)
+        H_beh = H_beh+1;
+    end
+
+    VidMeta.SizeVideo = [H W];
+
+    video_accum = video_accum + 1;
+    if video_accum==1
+        VidsMeta = VidMeta;
+    else
+        VidsMeta(video_accum) = VidMeta;
+    end
 
     % height = height - 200;
 
@@ -242,11 +251,11 @@ for i = 1:length(tEventEphys) % i is not the trial number
 
     k = 1;
     hf25 = figure(25); clf
-    set(hf25, 'name', thisView, 'units', 'pixels', 'position', [5 50 scale_ratio*W 1.3*scale_ratio*H], ...
+    set(hf25, 'name', thisView, 'units', 'pixels', 'position', [5 50 W_scl H_scl+H_beh], ...
         'PaperPositionMode', 'auto', 'color', 'w', 'renderer', 'opengl', 'toolbar', 'none', 'resize', 'off', 'Visible', 'on');
 
     ha = axes;
-    set(ha, 'units', 'pixels', 'position', [0 .3*scale_ratio*H + 1 scale_ratio*W scale_ratio*H], 'nextplot', 'add', 'xlim', [.5 W+.5], 'ylim', [.5 H+.5], 'ydir', 'reverse')
+    set(ha, 'units', 'pixels', 'position', [1 H_beh+1 W_scl H_scl], 'nextplot', 'add', 'xlim', [.5 W+.5], 'ylim', [.5 H+.5], 'ydir', 'reverse')
     axis off
 
     % plot this frame:
@@ -257,17 +266,17 @@ for i = 1:length(tEventEphys) % i is not the trial number
     tthis_frame   = round(iFrameTimesEphys(k) - iFrameTimesEphys(1) - tPre_this);
     time_of_frame = sprintf('%3.0f', tthis_frame);
 
-    text(W-20, 40,  sprintf('%s %s', anm, session), 'color', [255 255 255]/255, 'FontSize', 20, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
-    text(W-20, 90,  beh_type, 'color', [255 255 255]/255, 'FontSize', 20, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
-    text(W-20, 140,  sprintf('Trial %03d', i_trial), 'color', [255 255 255]/255, 'FontSize', 20, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
-    text(W-20, 190,  sprintf('FP: %d ms', thisFP), 'color', [255 255 255]/255, 'FontSize', 20, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
-    text(W-20, 240,  sprintf('RT: %d ms', round(1000*BehTable.RT(ind_bpod))), 'color', [255 255 255]/255, 'FontSize', 20, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
-    text(W-20, 290,  thisOutcome, 'color', color.(thisOutcome), 'FontSize', 20, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
-    time_text = text(20, 40, [time_of_frame ' ms'], 'color', [255 215 0]/255, 'FontSize', 22,'fontweight', 'bold');
-    
+%     text(W-20, 40,  sprintf('%s %s', anm, session), 'color', [255 255 255]/255, 'FontSize', 20, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
+%     text(W-20, 90,  beh_type, 'color', [255 255 255]/255, 'FontSize', 20, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
+%     text(W-20, 140,  sprintf('Trial %03d', i_trial), 'color', [255 255 255]/255, 'FontSize', 20, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
+%     text(W-20, 190,  sprintf('FP: %d ms', thisFP), 'color', [255 255 255]/255, 'FontSize', 20, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
+%     text(W-20, 240,  sprintf('RT: %d ms', round(1000*BehTable.RT(ind_bpod))), 'color', [255 255 255]/255, 'FontSize', 20, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
+%     text(W-20, 290,  thisOutcome, 'color', color.(thisOutcome), 'FontSize', 20, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
+%     time_text = text(20, 40, [time_of_frame ' ms'], 'color', [255 215 0]/255, 'FontSize', 22,'fontweight', 'bold');
+%     
     % plot some important behavioral events
     ha2 = axes;
-    set(ha2, 'units', 'pixels', 'position', [0.05*scale_ratio*W 0.11*scale_ratio*H 0.9*scale_ratio*W 0.18*scale_ratio*H], ...
+    set(ha2, 'units', 'pixels', 'position', [0.05*W_scl 0.11*H_scl 0.9*W_scl 0.18*H_scl], ...
         'nextplot', 'add', 'xtick', [-tPre:500:tPost], 'xlim', [-tPre tPost], ...
         'ycolor', 'none', 'ylim', [0 1.25], 'tickdir', 'out', 'FontSize', 20) %#ok<NBRAK>
     ha2.XLabel.String = 'Time (ms)';
@@ -317,8 +326,12 @@ for i = 1:length(tEventEphys) % i is not the trial number
     close(hf25);
     clear img_extracted
 
-    writerObj = VideoWriter(VidClipFileName);
-    writerObj.FrameRate = 0.5 * median(1000./diff(iFrameTimesEphys));
+    warning('off', 'MATLAB:audiovideo:VideoWriter:mp4FramePadded');
+    writerObj = VideoWriter(VidClipFileName, 'MPEG-4');
+    Fs = median(1000./diff(iFrameTimesEphys));
+    Fs = roundn(Fs, 1);
+    writerObj.FrameRate = 0.4 * Fs;
+    writerObj.Quality   = 100;
     % set the seconds per image
     % open the video writer
     open(writerObj);
@@ -328,6 +341,8 @@ for i = 1:length(tEventEphys) % i is not the trial number
         frame = F(ifrm);
         writeVideo(writerObj, frame);
     end
+    warning('on', 'MATLAB:audiovideo:VideoWriter:mp4FramePadded');
+
     % close the writer object
     close(writerObj);
     clear writerObj F IndThisClip IndThisFrame
