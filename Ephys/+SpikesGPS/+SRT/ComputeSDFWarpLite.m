@@ -1,14 +1,19 @@
-function SDFAll = ComputeSDFWarpLite(spktimes, beh_info, cal_ci, sigma, dt)
+function SDFAll = ComputeSDFWarpLite(spktimes, beh_info, cal_ci, sigma, dt, type)
 
 if nargin < 3
     cal_ci = 1;
     sigma = 20;
     dt = 10;
+    type = 'gaussian';
 elseif nargin<4
     sigma = 20;
     dt = 10;
+    type = 'gaussian';
 elseif  nargin<5
     dt = 10;
+    type = 'gaussian';
+elseif nargin<6
+    type = 'gaussian';
 end
 
 %% Task information
@@ -20,7 +25,7 @@ Ports = unique(beh_info.PortCorrect);
 NumPorts = length(Ports);
 
 %% Gather all
-SDFAll = SpikesGPS.ComputeSDFAllLite(spktimes, beh_info, sigma, dt);
+SDFAll = SpikesGPS.ComputeSDFAllLite(spktimes, beh_info, sigma, dt, type);
 % for i = 1:length(SDFAll.sdf)
 %     [SDFAll.sdf{i}, SDFAll.t_sdf{i}] = downsample_sdf(SDFAll.sdf{i}, SDFAll.t_sdf{i}, dt);
 % end

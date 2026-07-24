@@ -1,10 +1,14 @@
-function SDFAll = ComputeSDFAllLite(spktimes, e_tbl, sigma, dt)
+function SDFAll = ComputeSDFAllLite(spktimes, e_tbl, sigma, dt, type)
 % 
 if nargin<3
     sigma = 20;
     dt    = 1;
+    type  = 'gaussian';
 elseif nargin<4
-    dt = 1;
+    dt   = 1;
+    type = 'gaussian';
+elseif nargin<5
+    type = 'gaussian';
 end
 
 %% Gather behavior information
@@ -37,7 +41,7 @@ MT = t_choice - t_centout;
 % the whole duration of time warp
 pre_  = .5; % 0.5 sec before init-out
 pre_max = 10; % if the rat took very long time for shuttling, trim it to 10 sec
-pre_min = 2.5; % if the rat was too fast, set it to 2.5 sec
+pre_min = 3; % if the rat was too fast, set it to 3 sec
 post_ = 3; % take 3 sec after choice/cent-out at first
 
 win_ext = [-50 50]; % ms
@@ -57,7 +61,12 @@ sdf_trial   = cell(n_trials, 1);
 
 for i = 1:n_trials
     win_i = [-win_pre(i) win_post(i)];
-    [sdf_i, t_sdf_i] = sdf26(t_spk_times{i}, win_i + win_ext, sigma, dt);
+    switch type
+        case 'gaussian'
+            [sdf_i, t_sdf_i] = sdf26(t_spk_times{i}, win_i + win_ext, sigma, dt);
+        case 'half-gaussian'
+            [sdf_i, t_sdf_i] = sdf26_half_gaussian(t_spk_times{i}, win_i + win_ext, sigma, dt);
+    end
     ind_i = t_sdf_i>=win_i(1) & t_sdf_i<win_i(2);
     sdf_trial{i}   = sdf_i(ind_i);
     t_sdf_trial{i} = t_sdf_i(ind_i);
