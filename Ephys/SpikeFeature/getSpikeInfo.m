@@ -115,7 +115,7 @@ SpikeInfo.ISI = ISI;
 SpikeInfo.ISIViolation = ISIViolation;
 
 
-%% plot waveform feature and unit location
+%% plot waveform feature
 % set figure
 plt = GPSPlot();
 fig_unit = figure(12); clf(fig_unit);
@@ -132,25 +132,6 @@ yline(ax_wave, 0, ':k');
 set(ax_wave, 'XLim', [0 1]);
 xlabel(ax_wave, 'Peak-trough delay (ms)');
 ylabel(ax_wave, 'Waveform PC-1');
-
-% plot unit location on probe
-if num_shank==1
-    ax_loc_width = 1.5;
-else
-    ax_loc_width = 3;
-end
-ax_loc = plt.assign_ax_to_fig(fig_unit, 1, 1, [5.5 1 ax_loc_width 6], [ax_loc_width 6]);
-ax_loc = ax_loc{1};
-
-scatter(ax_loc, SpikeInfo.Location(:,1), SpikeInfo.Location(:,2), 15, 'black', 'filled', 'LineWidth', 1, 'MarkerFaceAlpha', .6);
-scatter(ax_loc, ch_location(:,1), ch_location(:,2), 2, 'black', '.', 'LineWidth', 1, 'MarkerEdgeAlpha', .6);
-dist_horizon = max(r.ChanMap.xcoords) - min(r.ChanMap.xcoords);
-dist_horizon = max([.2*dist_horizon, 50]);
-set(ax_loc, 'XLim', [min(r.ChanMap.xcoords)-dist_horizon max(r.ChanMap.xcoords)+dist_horizon], 'YLim', [min(r.ChanMap.ycoords)-50 max(r.ChanMap.ycoords)+50], ...
-    'XTick', [min(r.ChanMap.xcoords) max(r.ChanMap.xcoords)], 'YTick', [min(r.ChanMap.ycoords) max(r.ChanMap.ycoords)]);
-xlabel(ax_loc, 'Horizontal location (μm)');
-ylabel(ax_loc, 'Distance from tip (μm)');
-
 
 %% Cluster units by waveform features (peak_trough_delay vs. pc-1)
 Single  = SpikeNotes(:,3)==1;
@@ -183,37 +164,6 @@ end
 SpikeInfo.Single  = Single;
 SpikeInfo.Regular = Regular;
 
-%% Assign units to different regions according to recording depth (LocY)
-SpikeInfo.Region = strings(n_units, 1);
-if ~manual(2)
-    if size(Regions, 2)==1
-        Regions = repmat(Regions, 1, num_shank);
-    end
-    for k = 1:num_shank % for each shank
-        ind_k = find(SpikeInfo.Shank==shanks(k));
-        regions_k = Regions(:,k);
-        regions_k = regions_k(regions_k~="");
-        n_regions = length(regions_k);
-        if n_regions > 1
-            % fit a gaussian-mixture model to cluster units to different region
-            depth_k = SpikeInfo.Location(ind_k, 2);
-            gm = fitgmdist(depth_k, n_regions, 'RegularizationValue', 0.01);
-            [~, sort_idx] = sortrows(gm.mu, 1, "descend");
-            gm_sorted = gmdistribution(gm.mu(sort_idx,:), gm.Sigma(:,:,sort_idx), gm.ComponentProportion(sort_idx));
-
-            region_idx = cluster(gm_sorted, depth_k);
-
-            for m = 1:n_regions
-                region_m = find(region_idx==m);
-                [~, ind_rm] = rmoutliers(depth_k(region_m), 'mean');
-                region_m = region_m(~ind_rm);
-                SpikeInfo.Region(ind_k(region_m)) = regions_k(m)';
-            end
-        else
-            SpikeInfo.Region(ind_k) = regions_k;
-        end
-    end
-end
 
 %% Update plot
 c_r  = [0, 135, 100]/255;
@@ -262,7 +212,74 @@ for i = 1:length(irregular_show)
 end
 title(ax, 'irregular');
 
-% update unit location plot
+%% plot unit location on probe
+if num_shank==1
+    ax_loc_width = 1.5;
+else
+    ax_loc_width = 3;
+end
+ax_loc = plt.assign_ax_to_fig(fig_unit, 1, 1, [5.5 1 ax_loc_width 6], [ax_loc_width 6]);
+ax_loc = ax_loc{1};
+
+dist_horizon = max(r.ChanMap.xcoords) - min(r.ChanMap.xcoords);
+dist_horizon = max([.2*dist_horizon, 50]);
+set(ax_loc, 'XLim', [min(r.ChanMap.xcoords)-dist_horizon max(r.ChanMap.xcoords)+dist_horizon], 'YLim', [min(r.ChanMap.ycoords)-50 max(r.ChanMap.ycoords)+50], ...
+    'XTick', [min(r.ChanMap.xcoords) max(r.ChanMap.xcoords)], 'YTick', [min(r.ChanMap.ycoords) max(r.ChanMap.ycoords)]);
+xlabel(ax_loc, 'Horizontal location (μm)');
+ylabel(ax_loc, 'Distance from tip (μm)');
+
+%% Assign units to different regions according to recording depth (LocY)
+SpikeInfo.Region = strings(n_units, 1);
+if size(Regions, 2)==1
+    Regions = repmat(Regions, 1, num_shank);
+end
+for k = 1:num_shank % for each shank
+    ind_k = find(SpikeInfo.Shank==shanks(k));
+    scatter(ax_loc, SpikeInfo.Location(ind_k,1), SpikeInfo.Location(ind_k,2), 15, 'black', 'filled', 'LineWidth', 1, 'MarkerFaceAlpha', .6);
+    scatter(ax_loc, ch_location(ind_k,1), ch_location(ind_k,2), 2, 'black', '.', 'LineWidth', 1, 'MarkerEdgeAlpha', .6);
+
+    % assign regions
+    regions_k = Regions(:,k);
+    regions_k = regions_k(regions_k~="");
+    n_regions = length(regions_k);
+    if n_regions > 1
+        depth_k = SpikeInfo.Location(ind_k, 2);
+        if ~manual(2)
+            % fit a gaussian-mixture model to cluster units to different region
+            gm = fitgmdist(depth_k, n_regions, 'RegularizationValue', 0.01);
+            [~, sort_idx] = sortrows(gm.mu, 1, "descend");
+            gm_sorted = gmdistribution(gm.mu(sort_idx,:), gm.Sigma(:,:,sort_idx), gm.ComponentProportion(sort_idx));
+
+            region_idx = cluster(gm_sorted, depth_k);
+
+            for m = 1:n_regions
+                region_m = find(region_idx==m);
+                [~, ind_rm] = rmoutliers(depth_k(region_m), 'mean');
+                region_m = region_m(~ind_rm);
+                SpikeInfo.Region(ind_k(region_m)) = regions_k(m)';
+            end
+        else
+            % separated by hand
+            disp('Manually choose locations to separate regions');
+
+            sep_k = zeros(n_regions-1, 1);
+            for m = 1:n_regions-1
+                [~, y_m]  = getpts(ax_loc);
+                sep_k(m) = mean(y_m(1:end-1));
+            end
+            sep_k = sort(sep_k, 'descend');
+            SpikeInfo.Region(ind_k) = regions_k(1);
+            for m = 1:n_regions-1
+                region_m = depth_k<sep_k(m);
+                SpikeInfo.Region(ind_k(region_m)) = regions_k(m+1);
+            end
+        end
+    else
+        SpikeInfo.Region(ind_k) = regions_k;
+    end
+end
+
+%% update unit location plot
 cla(ax_loc);
 ind_region = SpikeInfo.Region~="";
 scatter(ax_loc, SpikeInfo.Location(Regular & ~Single & ind_region, 1), SpikeInfo.Location(Regular & ~Single & ind_region, 2), 10, c_r, 'LineWidth', .75, 'MarkerEdgeAlpha', .7);

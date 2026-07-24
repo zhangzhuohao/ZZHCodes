@@ -47,7 +47,7 @@ tFramesEphys = FrameInfo.tFramesInEphys;
 % set up video clip storage folder
 thisView   = "Field";
 viewFolder = ClipInfo.VideoFolderField;
-clipFolder = fullfile(ClipInfo.VideoFolderField, 'Clips');
+clipFolder = fullfile(viewFolder, 'Clips');
 if ~isfolder(clipFolder)
     mkdir(clipFolder);
 end
@@ -102,9 +102,10 @@ for i = 1:length(tEventEphys) % i is also the trial number
 
     % check if a video has been created and check if we want to
     % re-create the same video
-    ClipName = sprintf('%s_%s_Trial%03d_FieldView', anm, session, i_trial);
+    %     ClipName = sprintf('%s_%s_Trial%03d_FieldView', anm, session, i_trial);
+    ClipName = sprintf('%s_%s_CentIn%d_%sView', anm, session, round(itEvent), thisView);
 
-    VidClipFileName = fullfile(clipFolder, [ClipName '.avi']);
+    VidClipFileName = fullfile(clipFolder, [ClipName '.mp4']);
     check_this_file = dir(VidClipFileName);
 
     if ~isempty(check_this_file) && ~remake % found a video clip with the same name, and we don't want to remake the video clip
@@ -193,6 +194,30 @@ for i = 1:length(tEventEphys) % i is also the trial number
     VidMeta.Code         = mfilename('fullpath');
     VidMeta.CreatedOn    = date; % today's date
 
+    % Extract frames
+    VidFrameIndx_thisfile = FrameInfo.AviFrameIndx(IndThisClip);  % these are the frame index in this video
+    this_video = fullfile(viewFolder, FrameInfo.MyVidFiles{IndThisFrame});
+    
+    vidObj = VideoReader(this_video);
+    img_extracted = [];
+    for ii = 1:length(VidFrameIndx_thisfile)
+        img_extracted = cat(3, img_extracted, rgb2gray(read(vidObj, VidFrameIndx_thisfile(ii))));
+    end
+    clear frames_ifile vidObj
+    % for shuttle
+    if size(img_extracted, 1)==1240
+        img_extracted = img_extracted(1:900, :, :);
+    end
+    [H, W, nframe] = size(img_extracted); %\
+    VidMeta.SizeVideo = [H W];
+    H_scl = scale_ratio*H;
+    W_scl = scale_ratio*W;
+% % 
+% %     H_beh = ceil(.3*H_scl);
+% %     if mod(H_beh, 2)
+% %         H_beh = H_beh+1;
+% %     end
+
     video_accum = video_accum + 1;
     if video_accum==1
         VidsMeta = VidMeta;
@@ -200,30 +225,16 @@ for i = 1:length(tEventEphys) % i is also the trial number
         VidsMeta(video_accum) = VidMeta;
     end
 
-    % Extract frames
-    VidFrameIndx_thisfile = FrameInfo.AviFrameIndx(IndThisClip);  % these are the frame index in this video
-    this_video = fullfile(viewFolder, FrameInfo.MyVidFiles{IndThisFrame});
-    vidObj = VideoReader(this_video);
-    img_extracted = [];
-    for ii = 1:length(VidFrameIndx_thisfile)
-        img_extracted = cat(3, img_extracted, rgb2gray(read(vidObj, VidFrameIndx_thisfile(ii))));
-    end
-    clear frames_ifile vidObj
-% 
-    if size(img_extracted, 1)==1240
-        img_extracted = img_extracted(1:900, :, :);
-    end
-    [H, W, nframe] = size(img_extracted); %
     % height = height - 200;
 
     %% Make videos
     k = 1;
     hf25 = figure(25); clf
-    set(hf25, 'name', thisView, 'units', 'pixels', 'position', [5 50 scale_ratio*W 1.3*scale_ratio*H], ...
+    set(hf25, 'name', thisView, 'units', 'pixels', 'position', [5 50 W_scl H_scl], ...
         'PaperPositionMode', 'auto', 'color', 'w', 'renderer', 'opengl', 'toolbar', 'none', 'resize', 'off', 'Visible', 'on');
 
     ha = axes;
-    set(ha, 'units', 'pixels', 'position', [0 .3*scale_ratio*H + 1 scale_ratio*W scale_ratio*H], 'nextplot', 'add', 'xlim', [.5 W+.5], 'ylim', [.5 H+.5], 'ydir', 'reverse')
+    set(ha, 'units', 'pixels', 'position', [1 1 W_scl H_scl], 'nextplot', 'add', 'xlim', [.5 W+.5], 'ylim', [.5 H+.5], 'ydir', 'reverse')
     if x_rev==1
         set(ha, 'xdir', 'reverse');
     end
@@ -234,62 +245,62 @@ for i = 1:length(tEventEphys) % i is also the trial number
     colormap('gray');
 
     % plot some behavior data
-    tthis_frame   = round(iFrameTimesEphys(k) - iFrameTimesEphys(1) - tPre_this);
-    time_of_frame = sprintf('%3.0f', tthis_frame);
-
-    text(W-20, 40,  sprintf('%s %s', anm, session), 'color', [255 255 255]/255, 'FontSize', 20, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
-    text(W-20, 90,  beh_type, 'color', [255 255 255]/255, 'FontSize', 20, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
-    text(W-20, 140,  sprintf('Trial %03d', i_trial), 'color', [255 255 255]/255, 'FontSize', 20, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
-    text(W-20, 190,  sprintf('FP: %d ms', thisFP), 'color', [255 255 255]/255, 'FontSize', 20, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
-    text(W-20, 240,  sprintf('RT: %d ms', round(1000*BehTable.RT(ind_bpod))), 'color', [255 255 255]/255, 'FontSize', 20, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
-    text(W-20, 290,  sprintf('ST: %d ms', round(1000*BehTable.ST(ind_bpod))), 'color', [255 255 255]/255, 'FontSize', 20, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
-    text(W-20, 340,  thisOutcome, 'color', color.(thisOutcome), 'FontSize', 20, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
-    time_text = text(20, 40, [time_of_frame ' ms'], 'color', [255 215 0]/255, 'FontSize', 22,'fontweight', 'bold');
+% %     tthis_frame   = round(iFrameTimesEphys(k) - iFrameTimesEphys(1) - tPre_this);
+% %     time_of_frame = sprintf('%3.0f', tthis_frame);
+% % 
+% %     text(W-20, 40,  sprintf('%s %s', anm, session), 'color', [255 255 255]/255, 'FontSize', 20, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
+% %     text(W-20, 90,  beh_type, 'color', [255 255 255]/255, 'FontSize', 20, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
+% %     text(W-20, 140,  sprintf('Trial %03d', i_trial), 'color', [255 255 255]/255, 'FontSize', 20, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
+% %     text(W-20, 190,  sprintf('FP: %d ms', thisFP), 'color', [255 255 255]/255, 'FontSize', 20, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
+% %     text(W-20, 240,  sprintf('RT: %d ms', round(1000*BehTable.RT(ind_bpod))), 'color', [255 255 255]/255, 'FontSize', 20, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
+% %     text(W-20, 290,  sprintf('ST: %d ms', round(1000*BehTable.ST(ind_bpod))), 'color', [255 255 255]/255, 'FontSize', 20, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
+% %     text(W-20, 340,  thisOutcome, 'color', color.(thisOutcome), 'FontSize', 20, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
+% %     time_text = text(20, 40, [time_of_frame ' ms'], 'color', [255 215 0]/255, 'FontSize', 22,'fontweight', 'bold');
     
-    % plot some important behavioral events
-    ha2 = axes;
-    set(ha2, 'units', 'pixels', 'position', [0.05*scale_ratio*W 0.11*scale_ratio*H 0.9*scale_ratio*W 0.18*scale_ratio*H], ...
-        'nextplot', 'add', 'xtick', [-tPreMax:1000:tPost], 'xlim', [-tPre tPost], ...
-        'ycolor', 'none', 'ylim', [0 1.25], 'tickdir', 'out', 'FontSize', 20) %#ok<NBRAK>
-    ha2.XLabel.String = 'Time (ms)';
-    ha2.XLabel.FontWeight = 'bold';
-    ha2.XLabel.FontSize = 20;
-
-    time_line = xline(ha2, tthis_frame, 'Color', 'k', 'LineStyle', '-', 'LineWidth', 2, 'Alpha', 0.6);
-
-    if thisOutcome~="Probe"
-        xline(ha2, thisFP, 'Color', 'k', 'LineStyle', ':', 'LineWidth', 2);
-    end
-
-    stairs(ha2, time_elapsed, poke_state, 'Color', 'k', 'LineWidth', 2.5);
-    text(ha2, -tPre+5, 0.35, "Poke", 'Color', 'k', 'FontSize', 20, 'FontWeight', 'bold', 'VerticalAlignment', 'middle');
-
-    patch(ha2, 'XData', [ChoicePokeTime ChoicePokeTime ChoicePokeTime ChoicePokeTime] + [0 40 40 0], ...
-        'YData', [.2 .2 .45 .45], ...
-        'FaceColor', color.(thisOutcome), 'EdgeColor', 'none');
-    patch(ha2, 'XData', [InitOutTime InitOutTime InitOutTime InitOutTime] + [0 40 40 0], ...
-        'YData', [.2 .2 .45 .45], ...
-        'FaceColor', 'k', 'EdgeColor', 'none');
-
-    text(ha2, -tPre+5, 0.8, "Choice cue", 'Color', color.Cue, 'FontSize', 20, 'FontWeight', 'bold', 'VerticalAlignment', 'middle');
-    patch(ha2, 'XData', [ChoiceCueTime flip(ChoiceCueTime)], ...
-        'YData', [.7 .7 .85 .85], ...
-        'FaceColor', color.Cue, 'FaceAlpha', 0.8, 'EdgeColor', 'none');
-
-    text(ha2, -tPre+5, 1.1, "Trigger cue", 'Color', [30 144 255] / 255, 'FontSize', 20, 'FontWeight', 'bold', 'VerticalAlignment', 'middle');
-    patch(ha2, 'XData', [TriggerCueTime flip(TriggerCueTime)], ...
-        'YData', [1.0 1.0 1.15 1.15], ...
-        'FaceColor', [30 144 255] / 255, 'FaceAlpha', 0.8, 'EdgeColor', 'none');
-
+% %     % plot some important behavioral events
+% %     ha2 = axes;
+% %     set(ha2, 'units', 'pixels', 'position', [0.05*W_scl 0.11*H_scl 0.9*W_scl 0.18*H_scl], ...
+% %         'nextplot', 'add', 'xtick', [-tPreMax:1000:tPost], 'xlim', [-tPre tPost], ...
+% %         'ycolor', 'none', 'ylim', [0 1.25], 'tickdir', 'out', 'FontSize', 20) %#ok<NBRAK>
+% %     ha2.XLabel.String = 'Time (ms)';
+% %     ha2.XLabel.FontWeight = 'bold';
+% %     ha2.XLabel.FontSize = 20;
+% % 
+% %     time_line = xline(ha2, tthis_frame, 'Color', 'k', 'LineStyle', '-', 'LineWidth', 2, 'Alpha', 0.6);
+% % 
+% %     if thisOutcome~="Probe"
+% %         xline(ha2, thisFP, 'Color', 'k', 'LineStyle', ':', 'LineWidth', 2);
+% %     end
+% % 
+% %     stairs(ha2, time_elapsed, poke_state, 'Color', 'k', 'LineWidth', 2.5);
+% %     text(ha2, -tPre+5, 0.35, "Poke", 'Color', 'k', 'FontSize', 20, 'FontWeight', 'bold', 'VerticalAlignment', 'middle');
+% % 
+% %     patch(ha2, 'XData', [ChoicePokeTime ChoicePokeTime ChoicePokeTime ChoicePokeTime] + [0 40 40 0], ...
+% %         'YData', [.2 .2 .45 .45], ...
+% %         'FaceColor', color.(thisOutcome), 'EdgeColor', 'none');
+% %     patch(ha2, 'XData', [InitOutTime InitOutTime InitOutTime InitOutTime] + [0 40 40 0], ...
+% %         'YData', [.2 .2 .45 .45], ...
+% %         'FaceColor', 'k', 'EdgeColor', 'none');
+% % 
+% %     text(ha2, -tPre+5, 0.8, "Choice cue", 'Color', color.Cue, 'FontSize', 20, 'FontWeight', 'bold', 'VerticalAlignment', 'middle');
+% %     patch(ha2, 'XData', [ChoiceCueTime flip(ChoiceCueTime)], ...
+% %         'YData', [.7 .7 .85 .85], ...
+% %         'FaceColor', color.Cue, 'FaceAlpha', 0.8, 'EdgeColor', 'none');
+% % 
+% %     text(ha2, -tPre+5, 1.1, "Trigger cue", 'Color', [30 144 255] / 255, 'FontSize', 20, 'FontWeight', 'bold', 'VerticalAlignment', 'middle');
+% %     patch(ha2, 'XData', [TriggerCueTime flip(TriggerCueTime)], ...
+% %         'YData', [1.0 1.0 1.15 1.15], ...
+% %         'FaceColor', [30 144 255] / 255, 'FaceAlpha', 0.8, 'EdgeColor', 'none');
+% % 
     F(k) = getframe(hf25);
     % plot or update data in this plot
     for k = 2:nframe
 
-        tthis_frame = round(iFrameTimesEphys(k) - iFrameTimesEphys(1) - tPre_this);
-        time_of_frame = sprintf('%3.0f', tthis_frame);
-        time_text.String = [time_of_frame ' ms'];
-
-        time_line.Value = tthis_frame;
+% %         tthis_frame = round(iFrameTimesEphys(k) - iFrameTimesEphys(1) - tPre_this);
+% %         time_of_frame = sprintf('%3.0f', tthis_frame);
+% %         time_text.String = [time_of_frame ' ms'];
+% % 
+% %         time_line.Value = tthis_frame;
 
         img.CData = img_extracted(:, :, k);
 
@@ -301,8 +312,11 @@ for i = 1:length(tEventEphys) % i is also the trial number
     close(hf25);
     clear img_extracted
 
-    writerObj = VideoWriter(VidClipFileName);
-    writerObj.FrameRate = 0.5 * median(1000./diff(iFrameTimesEphys));
+    warning('off', 'MATLAB:audiovideo:VideoWriter:mp4FramePadded');
+    writerObj = VideoWriter(VidClipFileName, 'MPEG-4');
+    Fs = median(1000./diff(iFrameTimesEphys));
+    Fs = roundn(Fs, 1);
+    writerObj.FrameRate = 0.4 * Fs;
     % set the seconds per image
     % open the video writer
     open(writerObj);
@@ -312,6 +326,8 @@ for i = 1:length(tEventEphys) % i is also the trial number
         frame = F(ifrm);
         writeVideo(writerObj, frame);
     end
+    warning('on', 'MATLAB:audiovideo:VideoWriter:mp4FramePadded');
+
     % close the writer object
     close(writerObj);
     clear writerObj F IndThisClip IndThisFrame

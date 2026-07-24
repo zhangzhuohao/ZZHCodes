@@ -310,8 +310,12 @@ else
         'string', (['Unit #' num2str(ku) ' (' num2str(ch) ' | ' num2str(unit_no) ')']),...
         'BackgroundColor','w', 'fontsize', 8, 'fontweight','bold',  'FontName','Dejavu Sans')
 end
+region = "";
+if isfield(r, 'SpikeInfo')
+    region = r.SpikeInfo.Region(ku);
+end
 uicontrol('style', 'text', 'units', 'centimeters', 'position', [x_col1-.25 y_col1_row6+1.2 4 0.5],...
-    'string', ([r.Meta(1).Subject ' ' r.Meta(1).DateTime(1:11)]), 'BackgroundColor','w',...
+    'string', sprintf("%s %s %s", r.Meta(1).Subject, r.Meta(1).DateTime(1:11), region), 'BackgroundColor','w',...
     'fontsize', 8, 'fontweight', 'bold',  'FontName','Dejavu Sans')
 
 fig_height = y_col1_row6 + 2;
@@ -1076,9 +1080,9 @@ PSTH.SpikeWave = mean(allwaves, 1);
 
 switch r.Units.SpikeNotes(ku, 3)
     case 1
-        title(['#' num2str(ku) '(Ch ' num2str(r.Units.SpikeNotes(ku, 1)) ' | unit' num2str(r.Units.SpikeNotes(ku, 2))  ' | SU'], 'fontsize', 7);
+        title(['#' num2str(ku) '(Ch ' num2str(r.Units.SpikeNotes(ku, 1)) ' | unit' num2str(r.Units.SpikeNotes(ku, 2))  ' | SU)'], 'fontsize', 7);
     case 2
-        title(['#' num2str(ku) '(Ch ' num2str(r.Units.SpikeNotes(ku, 1))  ' | unit' num2str(r.Units.SpikeNotes(ku, 2))  ' | MU'], 'fontsize', 7);
+        title(['#' num2str(ku) '(Ch ' num2str(r.Units.SpikeNotes(ku, 1))  ' | unit' num2str(r.Units.SpikeNotes(ku, 2))  ' | MU)'], 'fontsize', 7);
     otherwise
 end
 
