@@ -66,6 +66,8 @@ for i = 1:n_trials
             [sdf_i, t_sdf_i] = sdf26(t_spk_times{i}, win_i + win_ext, sigma, dt);
         case 'half-gaussian'
             [sdf_i, t_sdf_i] = sdf26_half_gaussian(t_spk_times{i}, win_i + win_ext, sigma, dt);
+        case 'gamma'
+            [sdf_i, t_sdf_i] = sdf26_gamma(t_spk_times{i}, win_i + win_ext, sigma, dt);
     end
     ind_i = t_sdf_i>=win_i(1) & t_sdf_i<win_i(2);
     sdf_trial{i}   = sdf_i(ind_i);
