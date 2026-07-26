@@ -51,7 +51,7 @@ sdf_out = zeros(num_trials, length(t_sdf));
 kernel_half_width = ceil(4 * sigma);  % In ms
 kernel_t = -kernel_half_width:dt:kernel_half_width;
 gaussian_kernel = (1 / (sigma * sqrt(2 * pi))) * exp(-kernel_t.^2 / (2 * sigma^2));
-gaussian_kernel(kernel_t>0) = [];
+gaussian_kernel(kernel_t<0) = [];
 % Normalize kernel to ensure area = 1 when scaled to spikes/sec later
 gaussian_kernel = gaussian_kernel / sum(gaussian_kernel);
 
