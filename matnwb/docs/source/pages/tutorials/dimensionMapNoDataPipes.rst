@@ -1,0 +1,19 @@
+.. _dimensionMapNoDataPipes-tutorial:
+
+Mapping Dimensions without DataPipes
+====================================
+
+.. image:: https://www.mathworks.com/images/responsive/global/open-in-matlab-online.svg
+   :target: https://matlab.mathworks.com/open/github/v1?repo=NeurodataWithoutBorders/matnwb&file=tutorials/dimensionMapNoDataPipes.mlx
+   :alt: Open in MATLAB Online
+.. image:: https://img.shields.io/badge/View-Full_Page-blue
+   :target: ../../_static/html/tutorials/dimensionMapNoDataPipes.html
+   :alt: View full page
+
+
+.. raw:: html
+
+   <iframe class="autoresize"
+           src="../../_static/html/tutorials/dimensionMapNoDataPipes.html"
+           style="width:100%; border:none; display:block;">
+   </iframe>

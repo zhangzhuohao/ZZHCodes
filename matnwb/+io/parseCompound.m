@@ -1,0 +1,75 @@
+function data = parseCompound(datasetId, data, isScalar)
+    %did is the dataset_id for the containing dataset
+    %data should be a scalar struct with fields as columns
+    if nargin < 3; isScalar = false; end
+    if isempty(data)
+        return;
+    end
+    typeId = H5D.get_type(datasetId);
+    numFields = H5T.get_nmembers(typeId);
+    subTypeId = cell(1, numFields);
+    isReferenceType = false(1, numFields);
+    isCharacterType = false(1, numFields);
+    isLogicalType = false(1,numFields);
+    isScalarCellStr = false(1,numFields);
+    for iField = 1:numFields
+        fieldTypeId = H5T.get_member_type(typeId, iField-1);
+        subTypeId{iField} = fieldTypeId;
+        switch H5T.get_member_class(typeId, iField-1)
+            case H5ML.get_constant_value('H5T_REFERENCE')
+                isReferenceType(iField) = true;
+            case H5ML.get_constant_value('H5T_STRING')
+                %if not variable len (which would make it a cell array)
+                %then mark for transpose
+                isCharacterType(iField) = ~H5T.is_variable_str(fieldTypeId);
+                isScalarCellStr(iField) = isScalar && ~isCharacterType(iField);
+            case H5ML.get_constant_value('H5T_ENUM')
+                isLogicalType(iField) = io.isBool(fieldTypeId);
+                % Note: There is currently no postprocessing applied for
+                % other ENUMs when parsing compound data types. 
+                % Should be fine as NWB only uses the ENUM class for booleans.
+            otherwise
+                %do nothing
+        end
+    end
+    H5T.close(typeId)
+
+    fieldName = fieldnames(data);
+
+    % resolve references by column
+    referenceTypeId = subTypeId(isReferenceType);
+    referenceFieldName = fieldName(isReferenceType);
+    for iFieldName = 1:length(referenceFieldName)
+        name = referenceFieldName{iFieldName};
+        rawReference = data.(name);
+        rawTypeId = referenceTypeId{iFieldName};
+        data.(name) = io.parseReference(datasetId, rawTypeId, rawReference);
+    end
+
+    % Close type ids
+    for i = 1:numel(subTypeId)
+        H5T.close(subTypeId{i})
+    end
+
+    % transpose character arrays because they are column-ordered
+    % when read
+    characterFieldName = fieldName(isCharacterType);
+    for iFieldName = 1:length(characterFieldName)
+        name = characterFieldName{iFieldName};
+        data.(name) = data.(name) .';
+    end
+
+    % convert column data to proper logical arrays/matrices
+    logicalFieldName = fieldName(isLogicalType);
+    for iFieldName = 1:length(logicalFieldName)
+        name = logicalFieldName{iFieldName};
+        data.(name) = io.internal.h5.postprocess.toLogical(data.(name));
+    end
+
+    % unpack scalar cellstr
+    scalarCellstrFieldName = fieldName(isScalarCellStr);
+    for iFieldName = 1:length(scalarCellstrFieldName)
+        name = scalarCellstrFieldName{iFieldName};
+        data.(name) = data.(name){1};
+    end
+end

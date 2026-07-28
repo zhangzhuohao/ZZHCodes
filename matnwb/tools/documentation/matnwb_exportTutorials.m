@@ -1,0 +1,124 @@
+function matnwb_exportTutorials(options)
+% matnwb_exportTutorials - Export mlx tutorial files to the specified output format
+%
+% Note: This function will ignore the following live scripts:
+%  - basicUsage.mlx : depends on output from convertTrials.m
+%  - read_demo.mlx : depends on external data, potentially slow
+%  - remote_read.mlx : Uses nwbRead on s3 url, potentially very slow]
+%
+%   To export all livescripts (assuming you have made sure the above-mentioned 
+%   files will run) call the function with IgnoreFiles set to empty, i.e:
+%       matnwb_exportTutorials(..., "IgnoreFiles", string.empty)
+%
+% WARNING: 
+%   This function invokes evalin('base','clearvars')
+%   which removes **all** variables from the MATLAB base workspace.
+%
+% Live Scripts store the variables they create in the base workspace, and
+% their associated class definitions remain in memory. If this function then
+% runs another Live Script that introduces a *different* version of the same
+% classes, MATLAB can raise errors due to schema-version conflicts.
+%
+% Clearing the base workspace before each run prevents these conflicts by
+% unloading the existing class definitions, so the new versions can load
+% cleanly.
+
+    arguments
+        options.ExportFormat (1,:) string {mustStartWithDot} = [".m", ".html"]
+        options.Expression (1,1) string = "*" % Filter by expression
+        options.FileNames (1,:) string = string.empty % Filter by file names
+        options.FilePaths (1,:) string = string.empty % Export specified files
+        options.IgnoreFiles (1,:) string = ["basicUsage", "read_demo", "remote_read"];
+        options.RunLivescript (1,1) logical = true
+    end
+
+    EXPORT_FOLDERS = dictionary(...
+        '.m', fullfile(misc.getMatnwbDir, "tutorials", "private", "mcode"), ...
+        '.html', fullfile(misc.getMatnwbDir, "docs", "source", "_static", "html", "tutorials") );
+    
+    [exportFormat, targetFolderNames] = deal(options.ExportFormat);
+
+    targetFolderNames = extractAfter(targetFolderNames, ".");
+    nwbTutorialDir = fullfile(misc.getMatnwbDir, "tutorials");
+    targetFolderPaths = fullfile(nwbTutorialDir, targetFolderNames);
+    
+    for i = 1:numel(exportFormat)
+        if isKey(EXPORT_FOLDERS, exportFormat(i))
+            targetFolderPaths(i) = EXPORT_FOLDERS(exportFormat(i));
+        end
+        if ~isfolder(targetFolderPaths(i)); mkdir(targetFolderPaths(i)); end
+    end
+    
+    if isempty(options.FilePaths)
+        if endsWith(options.Expression, "*")
+            expression = options.Expression + ".mlx";
+        else
+            expression = options.Expression + "*.mlx";
+        end
+    
+        L = dir(fullfile(nwbTutorialDir, expression));
+        filePaths = string( fullfile({L.folder}, {L.name}) );
+    else
+        filePaths = options.FilePaths;
+    end
+
+    [~, fileNames] = fileparts(filePaths);
+    if ~isempty(options.FileNames)
+        [fileNames, iA] = intersect(fileNames, options.FileNames, 'stable');
+        filePaths = filePaths(iA);
+    end
+        
+    if ~isempty(options.IgnoreFiles)
+        [~, fileNames] = fileparts(filePaths);
+        [fileNames, iA] = setdiff(fileNames, options.IgnoreFiles, 'stable');
+        filePaths = filePaths(iA);
+    end
+
+    % Go to a temporary directory, so that tutorials are exported in a
+    % temporary folder which is cleaned up afterwards
+    currentDir = pwd();
+    cleanupWorkdir = onCleanup(@(fp) cd(currentDir));
+
+    tempDir = fullfile(tempdir, 'nwbTutorials');
+    if ~isfolder(tempDir); mkdir(tempDir); end
+    disp('Changing into temporary directory:')
+    cd(tempDir)
+
+    cleanupDeleteTempFiles = onCleanup(@(fp) rmdir(tempDir, 's'));
+    disp(tempDir)
+
+    evalin('base','clearvars')
+
+    for i = 1:numel(filePaths)
+        % Ensure we are using the latest version of the schemas
+        nwbClearGenerated(); generateCore();
+
+        sourcePath = char( fullfile(filePaths(i)) );
+        if options.RunLivescript
+            fprintf('Running livescript "%s"\n', fileNames(i))
+            matlab.internal.liveeditor.executeAndSave(sourcePath);
+            % Livescripts are run in the base workspace, and will drop created 
+            % NWB types there. We need to clear those because some
+            % livescripts will generate types using different schema
+            % versions, and this can lead to errors in livescript runs due
+            % to schema version conflicts.
+            evalin('base','clearvars')
+        end
+        
+        for j = 1:numel(exportFormat)
+            targetFilePath = fullfile(targetFolderPaths(j), fileNames(i) + exportFormat(j));
+            fprintf('Exporting livescript "%s" to "%s"\n', fileNames(i), exportFormat(j))
+            export(sourcePath, targetFilePath);
+            if strcmp(exportFormat(j), '.html')
+                postProcessLivescriptHtml(targetFilePath)
+            end
+        end
+    end
+end
+
+function mustStartWithDot(value)
+    for i = 1:numel(value)
+        assert(startsWith(value(i), '.'), ...
+            'Value must be a file extension starting with a period, e.g ".html"')
+    end
+end
