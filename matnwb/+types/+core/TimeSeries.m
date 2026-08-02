@@ -14,7 +14,7 @@ end
 % REQUIRED PROPERTIES
 properties
     data; % REQUIRED (any) Data values. Data can be in 1-D, 2-D, 3-D, or 4-D. The first dimension should always represent time. This can also be used to store binary data (e.g., image frames). This can also be a link to data stored in an external file.
-    data_unit; % REQUIRED (char) Base unit of measurement for working with the data. Actual stored values are not necessarily stored in these units. To access the data in these units, multiply 'data' by 'conversion' and add 'offset'.
+    data_unit; % REQUIRED (char) Base unit of measurement for working with the data. Actual stored values are not necessarily stored in these units. To access the data in these units, multiply 'data' by 'conversion'.
 end
 % OPTIONAL PROPERTIES
 properties
@@ -23,7 +23,6 @@ properties
     control_description; %  (char) Description of each control value. Must be present if control is present. If present, control_description[0] should describe time points where control == 0.
     data_continuity; %  (char) Optionally describe the continuity of the data. Can be "continuous", "instantaneous", or "step". For example, a voltage trace would be "continuous", because samples are recorded from a continuous process. An array of lick times would be "instantaneous", because the data represents distinct moments in time. Times of image presentations would be "step" because the picture remains the same until the next timepoint. This field is optional, but is useful in providing information about the underlying data. It may inform the way this data is interpreted, the way it is visualized, and what analysis methods are applicable.
     data_conversion = 1; %  (single) Scalar to multiply each element in data to convert it to the specified 'unit'. If the data are stored in acquisition system units or other units that require a conversion to be interpretable, multiply the data by 'conversion' to convert the data to the specified 'unit'. e.g. if the data acquisition system stores values in this object as signed 16-bit integers (int16 range -32,768 to 32,767) that correspond to a 5V range (-2.5V to 2.5V), and the data acquisition system gain is 8000X, then the 'conversion' multiplier to get from raw data acquisition values to recorded volts is 2.5/32768/8000 = 9.5367e-9.
-    data_offset = 0; %  (single) Scalar to add to the data after scaling by 'conversion' to finalize its coercion to the specified 'unit'. Two common examples of this include (a) data stored in an unsigned type that requires a shift after scaling to re-center the data, and (b) specialized recording devices that naturally cause a scalar offset with respect to the true units.
     data_resolution = -1; %  (single) Smallest meaningful difference between values in data, stored in the specified by unit, e.g., the change in value of the least significant bit, or a larger number if signal noise is known to be present. If unknown, use -1.0.
     description = "no description"; %  (char) Description of the time series.
     starting_time; %  (double) Timestamp of the first sample in seconds. When timestamps are uniformly spaced, the timestamp of the first sample can be specified and all subsequent ones calculated from the sampling rate attribute.
@@ -53,11 +52,9 @@ methods
         %
         %  - data_conversion (single) - Scalar to multiply each element in data to convert it to the specified 'unit'. If the data are stored in acquisition system units or other units that require a conversion to be interpretable, multiply the data by 'conversion' to convert the data to the specified 'unit'. e.g. if the data acquisition system stores values in this object as signed 16-bit integers (int16 range -32,768 to 32,767) that correspond to a 5V range (-2.5V to 2.5V), and the data acquisition system gain is 8000X, then the 'conversion' multiplier to get from raw data acquisition values to recorded volts is 2.5/32768/8000 = 9.5367e-9.
         %
-        %  - data_offset (single) - Scalar to add to the data after scaling by 'conversion' to finalize its coercion to the specified 'unit'. Two common examples of this include (a) data stored in an unsigned type that requires a shift after scaling to re-center the data, and (b) specialized recording devices that naturally cause a scalar offset with respect to the true units.
-        %
         %  - data_resolution (single) - Smallest meaningful difference between values in data, stored in the specified by unit, e.g., the change in value of the least significant bit, or a larger number if signal noise is known to be present. If unknown, use -1.0.
         %
-        %  - data_unit (char) - Base unit of measurement for working with the data. Actual stored values are not necessarily stored in these units. To access the data in these units, multiply 'data' by 'conversion' and add 'offset'.
+        %  - data_unit (char) - Base unit of measurement for working with the data. Actual stored values are not necessarily stored in these units. To access the data in these units, multiply 'data' by 'conversion'.
         %
         %  - description (char) - Description of the time series.
         %
@@ -70,7 +67,7 @@ methods
         % Output Arguments:
         %  - timeSeries (types.core.TimeSeries) - A TimeSeries object
         
-        varargin = [{'comments' 'no comments' 'data_conversion' types.util.correctType(1, 'single') 'data_offset' types.util.correctType(0, 'single') 'data_resolution' types.util.correctType(-1, 'single') 'description' 'no description' 'starting_time_unit' 'seconds' 'timestamps_interval' types.util.correctType(1, 'int32') 'timestamps_unit' 'seconds'} varargin];
+        varargin = [{'comments' 'no comments' 'data_conversion' types.util.correctType(1, 'single') 'data_resolution' types.util.correctType(-1, 'single') 'description' 'no description' 'starting_time_unit' 'seconds' 'timestamps_interval' types.util.correctType(1, 'int32') 'timestamps_unit' 'seconds'} varargin];
         obj = obj@types.core.NWBDataInterface(varargin{:});
         
         
@@ -84,7 +81,6 @@ methods
         addParameter(p, 'data',[]);
         addParameter(p, 'data_continuity',[]);
         addParameter(p, 'data_conversion',[]);
-        addParameter(p, 'data_offset',[]);
         addParameter(p, 'data_resolution',[]);
         addParameter(p, 'data_unit',[]);
         addParameter(p, 'description',[]);
@@ -101,7 +97,6 @@ methods
         obj.data = p.Results.data;
         obj.data_continuity = p.Results.data_continuity;
         obj.data_conversion = p.Results.data_conversion;
-        obj.data_offset = p.Results.data_offset;
         obj.data_resolution = p.Results.data_resolution;
         obj.data_unit = p.Results.data_unit;
         obj.description = p.Results.description;
@@ -145,15 +140,6 @@ methods
     function postset_data_conversion(obj)
         if isempty(obj.data) && ~isempty(obj.data_conversion)
             obj.warnIfAttributeDependencyMissing('data_conversion', 'data')
-        end
-    end
-    function set.data_offset(obj, val)
-        obj.data_offset = obj.validate_data_offset(val);
-        obj.postset_data_offset()
-    end
-    function postset_data_offset(obj)
-        if isempty(obj.data) && ~isempty(obj.data_offset)
-            obj.warnIfAttributeDependencyMissing('data_offset', 'data')
         end
     end
     function set.data_resolution(obj, val)
@@ -217,10 +203,6 @@ methods
         val = types.util.checkDtype('data_conversion', 'single', val);
         types.util.validateShape('data_conversion', {[1]}, val)
     end
-    function val = validate_data_offset(obj, val)
-        val = types.util.checkDtype('data_offset', 'single', val);
-        types.util.validateShape('data_offset', {[1]}, val)
-    end
     function val = validate_data_resolution(obj, val)
         val = types.util.checkDtype('data_resolution', 'single', val);
         types.util.validateShape('data_resolution', {[1]}, val)
@@ -278,9 +260,6 @@ methods
         end
         if ~isempty(obj.data) && ~isa(obj.data, 'types.untyped.SoftLink') && ~isa(obj.data, 'types.untyped.ExternalLink') && ~isempty(obj.data_conversion)
             io.writeAttribute(fid, [fullpath '/data/conversion'], obj.data_conversion);
-        end
-        if ~isempty(obj.data) && ~isa(obj.data, 'types.untyped.SoftLink') && ~isa(obj.data, 'types.untyped.ExternalLink') && ~isempty(obj.data_offset)
-            io.writeAttribute(fid, [fullpath '/data/offset'], obj.data_offset);
         end
         if ~isempty(obj.data) && ~isa(obj.data, 'types.untyped.SoftLink') && ~isa(obj.data, 'types.untyped.ExternalLink') && ~isempty(obj.data_resolution)
             io.writeAttribute(fid, [fullpath '/data/resolution'], obj.data_resolution);

@@ -12,7 +12,6 @@ properties
 end
 % OPTIONAL PROPERTIES
 properties
-    cell_id; %  (char) unique ID of the cell
     filtering; %  (char) Electrode specific filtering.
     initial_access_resistance; %  (char) Initial access resistance.
     location; %  (char) Location of the electrode. Specify the area, layer, comments on estimation of area/layer, stereotaxic coordinates if in vivo, etc. Use standard atlas names for anatomical regions when possible.
@@ -31,8 +30,6 @@ methods
         %  intracellularElectrode = types.core.INTRACELLULARELECTRODE(Name, Value) creates a IntracellularElectrode object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
-        %  - cell_id (char) - unique ID of the cell
-        %
         %  - description (char) - Description of electrode (e.g.,  whole-cell, sharp, etc.).
         %
         %  - device (Device) - Device that was used to record from this electrode.
@@ -59,7 +56,6 @@ methods
         p.KeepUnmatched = true;
         p.PartialMatching = false;
         p.StructExpand = false;
-        addParameter(p, 'cell_id',[]);
         addParameter(p, 'description',[]);
         addParameter(p, 'device',[]);
         addParameter(p, 'filtering',[]);
@@ -69,7 +65,6 @@ methods
         addParameter(p, 'seal',[]);
         addParameter(p, 'slice',[]);
         misc.parseSkipInvalidName(p, varargin);
-        obj.cell_id = p.Results.cell_id;
         obj.description = p.Results.description;
         obj.device = p.Results.device;
         obj.filtering = p.Results.filtering;
@@ -84,9 +79,6 @@ methods
         end
     end
     %% SETTERS
-    function set.cell_id(obj, val)
-        obj.cell_id = obj.validate_cell_id(val);
-    end
     function set.description(obj, val)
         obj.description = obj.validate_description(val);
     end
@@ -113,10 +105,6 @@ methods
     end
     %% VALIDATORS
     
-    function val = validate_cell_id(obj, val)
-        val = types.util.checkDtype('cell_id', 'char', val);
-        types.util.validateShape('cell_id', {[1]}, val)
-    end
     function val = validate_description(obj, val)
         val = types.util.checkDtype('description', 'char', val);
         types.util.validateShape('description', {[1]}, val)
@@ -153,13 +141,6 @@ methods
         refs = export@types.core.NWBContainer(obj, fid, fullpath, refs);
         if any(strcmp(refs, fullpath))
             return;
-        end
-        if ~isempty(obj.cell_id)
-            if startsWith(class(obj.cell_id), 'types.untyped.')
-                refs = obj.cell_id.export(fid, [fullpath '/cell_id'], refs);
-            elseif ~isempty(obj.cell_id)
-                io.writeDataset(fid, [fullpath '/cell_id'], obj.cell_id);
-            end
         end
         if startsWith(class(obj.description), 'types.untyped.')
             refs = obj.description.export(fid, [fullpath '/description'], refs);

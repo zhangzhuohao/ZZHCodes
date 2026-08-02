@@ -1,13 +1,13 @@
 classdef BehavioralEvents < types.core.NWBDataInterface & types.untyped.GroupClass
-% BEHAVIORALEVENTS - TimeSeries for storing behavioral events. See description of BehavioralEpochs for more details.
+% BEHAVIORALEVENTS - TimeSeries for storing behavioral events. See description of <a href="#BehavioralEpochs">BehavioralEpochs</a> for more details.
 %
 % Required Properties:
-%  timeseries
+%  None
 
 
-% REQUIRED PROPERTIES
+% OPTIONAL PROPERTIES
 properties
-    timeseries; % REQUIRED (TimeSeries) TimeSeries object containing behavioral events.
+    timeseries; %  (TimeSeries) TimeSeries object containing behavioral events.
 end
 
 methods
@@ -56,7 +56,9 @@ methods
         if any(strcmp(refs, fullpath))
             return;
         end
-        refs = obj.timeseries.export(fid, fullpath, refs);
+        if ~isempty(obj.timeseries)
+            refs = obj.timeseries.export(fid, fullpath, refs);
+        end
     end
 end
 

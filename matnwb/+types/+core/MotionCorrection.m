@@ -7,7 +7,7 @@ classdef MotionCorrection < types.core.NWBDataInterface & types.untyped.GroupCla
 
 % REQUIRED PROPERTIES
 properties
-    correctedimagestack; % REQUIRED (CorrectedImageStack) Results from motion correction of an image stack.
+    correctedimagestack; % REQUIRED (CorrectedImageStack) Reuslts from motion correction of an image stack.
 end
 
 methods
@@ -20,7 +20,7 @@ methods
         %  motionCorrection = types.core.MOTIONCORRECTION(Name, Value) creates a MotionCorrection object where one or more property values are specified using name-value pairs.
         %
         % Input Arguments (Name-Value Arguments):
-        %  - correctedimagestack (CorrectedImageStack) - Results from motion correction of an image stack.
+        %  - correctedimagestack (CorrectedImageStack) - Reuslts from motion correction of an image stack.
         %
         % Output Arguments:
         %  - motionCorrection (types.core.MotionCorrection) - A MotionCorrection object

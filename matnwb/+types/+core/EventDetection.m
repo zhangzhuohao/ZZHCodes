@@ -2,7 +2,7 @@ classdef EventDetection < types.core.NWBDataInterface & types.untyped.GroupClass
 % EVENTDETECTION - Detected spike events from voltage trace(s).
 %
 % Required Properties:
-%  detection_method, source_electricalseries, source_idx
+%  detection_method, source_electricalseries, source_idx, times
 
 
 % READONLY PROPERTIES
@@ -13,11 +13,8 @@ end
 properties
     detection_method; % REQUIRED (char) Description of how events were detected, such as voltage threshold, or dV/dT threshold, as well as relevant values.
     source_electricalseries; % REQUIRED ElectricalSeries
-    source_idx; % REQUIRED (int32) Indices (zero-based) into the linked source ElectricalSeries::data array corresponding to time of event or time and channel of event. ''description'' should define what is meant by time of event (e.g., .25 ms before action potential peak, zero-crossing time, etc). The index points to each event from the raw data.
-end
-% OPTIONAL PROPERTIES
-properties
-    times; %  (double) DEPRECATED. Timestamps of events, in seconds.
+    source_idx; % REQUIRED (int32) Indices (zero-based) into source ElectricalSeries::data array corresponding to time of event. ''description'' should define what is meant by time of event (e.g., .25 ms before action potential peak, zero-crossing time, etc). The index points to each event from the raw data.
+    times; % REQUIRED (double) Timestamps of events, in seconds.
 end
 
 methods
@@ -34,9 +31,9 @@ methods
         %
         %  - source_electricalseries (ElectricalSeries) - Link to the ElectricalSeries that this data was calculated from. Metadata about electrodes and their position can be read from that ElectricalSeries so it's not necessary to include that information here.
         %
-        %  - source_idx (int32) - Indices (zero-based) into the linked source ElectricalSeries::data array corresponding to time of event or time and channel of event. ''description'' should define what is meant by time of event (e.g., .25 ms before action potential peak, zero-crossing time, etc). The index points to each event from the raw data.
+        %  - source_idx (int32) - Indices (zero-based) into source ElectricalSeries::data array corresponding to time of event. ''description'' should define what is meant by time of event (e.g., .25 ms before action potential peak, zero-crossing time, etc). The index points to each event from the raw data.
         %
-        %  - times (double) - DEPRECATED. Timestamps of events, in seconds.
+        %  - times (double) - Timestamps of events, in seconds.
         %
         % Output Arguments:
         %  - eventDetection (types.core.EventDetection) - A EventDetection object
@@ -89,7 +86,7 @@ methods
     end
     function val = validate_source_idx(obj, val)
         val = types.util.checkDtype('source_idx', 'int32', val);
-        types.util.validateShape('source_idx', {[2,Inf], [Inf]}, val)
+        types.util.validateShape('source_idx', {[Inf]}, val)
     end
     function val = validate_times(obj, val)
         val = types.util.checkDtype('times', 'double', val);
@@ -112,12 +109,10 @@ methods
         elseif ~isempty(obj.source_idx)
             io.writeDataset(fid, [fullpath '/source_idx'], obj.source_idx, 'forceArray');
         end
-        if ~isempty(obj.times)
-            if startsWith(class(obj.times), 'types.untyped.')
-                refs = obj.times.export(fid, [fullpath '/times'], refs);
-            elseif ~isempty(obj.times)
-                io.writeDataset(fid, [fullpath '/times'], obj.times, 'forceArray');
-            end
+        if startsWith(class(obj.times), 'types.untyped.')
+            refs = obj.times.export(fid, [fullpath '/times'], refs);
+        elseif ~isempty(obj.times)
+            io.writeDataset(fid, [fullpath '/times'], obj.times, 'forceArray');
         end
         if ~isempty(obj.times) && ~isa(obj.times, 'types.untyped.SoftLink') && ~isa(obj.times, 'types.untyped.ExternalLink')
             io.writeAttribute(fid, [fullpath '/times/unit'], obj.times_unit);

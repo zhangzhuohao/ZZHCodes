@@ -8,7 +8,6 @@ classdef Subject < types.core.NWBContainer & types.untyped.GroupClass
 % OPTIONAL PROPERTIES
 properties
     age; %  (char) Age of subject. Can be supplied instead of 'date_of_birth'.
-    age_reference = "birth"; %  (char) Age is with reference to this event. Can be 'birth' or 'gestational'. If reference is omitted, 'birth' is implied.
     date_of_birth; %  (datetime) Date of birth of subject. Can be supplied instead of 'age'.
     description; %  (char) Description of subject and where subject came from (e.g., breeder, if animal).
     genotype; %  (char) Genetic strain. If absent, assume Wild Type (WT).
@@ -31,8 +30,6 @@ methods
         % Input Arguments (Name-Value Arguments):
         %  - age (char) - Age of subject. Can be supplied instead of 'date_of_birth'.
         %
-        %  - age_reference (char) - Age is with reference to this event. Can be 'birth' or 'gestational'. If reference is omitted, 'birth' is implied.
-        %
         %  - date_of_birth (datetime) - Date of birth of subject. Can be supplied instead of 'age'.
         %
         %  - description (char) - Description of subject and where subject came from (e.g., breeder, if animal).
@@ -52,7 +49,6 @@ methods
         % Output Arguments:
         %  - subject (types.core.Subject) - A Subject object
         
-        varargin = [{'age_reference' 'birth'} varargin];
         obj = obj@types.core.NWBContainer(varargin{:});
         
         
@@ -61,7 +57,6 @@ methods
         p.PartialMatching = false;
         p.StructExpand = false;
         addParameter(p, 'age',[]);
-        addParameter(p, 'age_reference',[]);
         addParameter(p, 'date_of_birth',[]);
         addParameter(p, 'description',[]);
         addParameter(p, 'genotype',[]);
@@ -72,7 +67,6 @@ methods
         addParameter(p, 'weight',[]);
         misc.parseSkipInvalidName(p, varargin);
         obj.age = p.Results.age;
-        obj.age_reference = p.Results.age_reference;
         obj.date_of_birth = p.Results.date_of_birth;
         obj.description = p.Results.description;
         obj.genotype = p.Results.genotype;
@@ -89,15 +83,6 @@ methods
     %% SETTERS
     function set.age(obj, val)
         obj.age = obj.validate_age(val);
-    end
-    function set.age_reference(obj, val)
-        obj.age_reference = obj.validate_age_reference(val);
-        obj.postset_age_reference()
-    end
-    function postset_age_reference(obj)
-        if isempty(obj.age) && ~isempty(obj.age_reference)
-            obj.warnIfAttributeDependencyMissing('age_reference', 'age')
-        end
     end
     function set.date_of_birth(obj, val)
         obj.date_of_birth = obj.validate_date_of_birth(val);
@@ -128,10 +113,6 @@ methods
     function val = validate_age(obj, val)
         val = types.util.checkDtype('age', 'char', val);
         types.util.validateShape('age', {[1]}, val)
-    end
-    function val = validate_age_reference(obj, val)
-        val = types.util.checkDtype('age_reference', 'char', val);
-        types.util.validateShape('age_reference', {[1]}, val)
     end
     function val = validate_date_of_birth(obj, val)
         val = types.util.checkDtype('date_of_birth', 'datetime', val);
@@ -177,9 +158,6 @@ methods
             elseif ~isempty(obj.age)
                 io.writeDataset(fid, [fullpath '/age'], obj.age);
             end
-        end
-        if ~isempty(obj.age) && ~isa(obj.age, 'types.untyped.SoftLink') && ~isa(obj.age, 'types.untyped.ExternalLink') && ~isempty(obj.age_reference)
-            io.writeAttribute(fid, [fullpath '/age/reference'], obj.age_reference);
         end
         if ~isempty(obj.date_of_birth)
             if startsWith(class(obj.date_of_birth), 'types.untyped.')

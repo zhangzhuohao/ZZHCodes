@@ -14,7 +14,7 @@ end
 properties
     tags; %  (VectorData) User-defined tags that identify or categorize events.
     tags_index; %  (VectorIndex) Index for tags.
-    timeseries; %  (TimeSeriesReferenceVectorData) An index into a TimeSeries object.
+    timeseries; %  (VectorData) An index into a TimeSeries object.
     timeseries_index; %  (VectorIndex) Index for timeseries.
 end
 
@@ -42,7 +42,7 @@ methods
         %
         %  - tags_index (VectorIndex) - Index for tags.
         %
-        %  - timeseries (TimeSeriesReferenceVectorData) - An index into a TimeSeries object.
+        %  - timeseries (VectorData) - An index into a TimeSeries object.
         %
         %  - timeseries_index (VectorIndex) - Index for timeseries.
         %
@@ -128,7 +128,20 @@ methods
         types.util.checkType('tags_index', 'types.hdmf_common.VectorIndex', val);
     end
     function val = validate_timeseries(obj, val)
-        types.util.checkType('timeseries', 'types.core.TimeSeriesReferenceVectorData', val);
+        types.util.checkType('timeseries', 'types.hdmf_common.VectorData', val);
+        if ~isempty(val)
+            [val, originalVal] = types.util.unwrapValue(val);
+            if isempty(val)
+                % skip validation for empty values
+            else
+                vprops = struct();
+                vprops.idx_start = 'int32';
+                vprops.count = 'int32';
+                vprops.timeseries = 'types.untyped.ObjectView';
+                val = types.util.checkDtype('timeseries', vprops, val);
+            end
+            val = types.util.rewrapValue(val, originalVal);
+        end
     end
     function val = validate_timeseries_index(obj, val)
         types.util.checkType('timeseries_index', 'types.hdmf_common.VectorIndex', val);

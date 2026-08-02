@@ -1,13 +1,13 @@
 classdef EventWaveform < types.core.NWBDataInterface & types.untyped.GroupClass
-% EVENTWAVEFORM - DEPRECATED. Represents either the waveforms of detected events, as extracted from a raw data trace in /acquisition, or the event waveforms that were stored during experiment acquisition.
+% EVENTWAVEFORM - Represents either the waveforms of detected events, as extracted from a raw data trace in /acquisition, or the event waveforms that were stored during experiment acquisition.
 %
 % Required Properties:
-%  spikeeventseries
+%  None
 
 
-% REQUIRED PROPERTIES
+% OPTIONAL PROPERTIES
 properties
-    spikeeventseries; % REQUIRED (SpikeEventSeries) SpikeEventSeries object(s) containing detected spike event waveforms.
+    spikeeventseries; %  (SpikeEventSeries) SpikeEventSeries object(s) containing detected spike event waveforms.
 end
 
 methods
@@ -56,7 +56,9 @@ methods
         if any(strcmp(refs, fullpath))
             return;
         end
-        refs = obj.spikeeventseries.export(fid, fullpath, refs);
+        if ~isempty(obj.spikeeventseries)
+            refs = obj.spikeeventseries.export(fid, fullpath, refs);
+        end
     end
 end
 

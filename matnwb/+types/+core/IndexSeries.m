@@ -1,14 +1,13 @@
 classdef IndexSeries < types.core.TimeSeries & types.untyped.GroupClass
-% INDEXSERIES - Stores indices that reference images defined in other containers. The primary purpose of the IndexSeries is to allow images stored in an Images container to be referenced in a specific sequence through the 'indexed_images' link. This approach avoids duplicating image data when the same image needs to be presented multiple times or when images need to be shown in a different order than they are stored. Since images in an Images container do not have an inherent order, the Images container needs to include an 'order_of_images' dataset (of type ImageReferences) when being referenced by an IndexSeries. This dataset establishes the ordered sequence that the indices in IndexSeries refer to. The 'data' field stores the index into this ordered sequence, and the 'timestamps' array indicates the precise presentation time of each indexed image during an experiment. This can be used for displaying individual images or creating movie segments by referencing a sequence of images with the appropriate timestamps. While IndexSeries can also reference frames from an ImageSeries through the 'indexed_timeseries' link, this usage is discouraged and will be deprecated in favor of using Images containers with 'order_of_images'.
+% INDEXSERIES - Stores indices to image frames stored in an ImageSeries. The purpose of the ImageIndexSeries is to allow a static image stack to be stored somewhere, and the images in the stack to be referenced out-of-order. This can be for the display of individual images, or of movie segments (as a movie is simply a series of images). The data field stores the index of the frame in the referenced ImageSeries, and the timestamps array indicates when that image was displayed.
 %
 % Required Properties:
-%  data
+%  data, data_unit, indexed_timeseries
 
 
-% OPTIONAL PROPERTIES
+% REQUIRED PROPERTIES
 properties
-    indexed_images; %  Images
-    indexed_timeseries; %  ImageSeries
+    indexed_timeseries; % REQUIRED ImageSeries
 end
 
 methods
@@ -27,21 +26,19 @@ methods
         %
         %  - control_description (char) - Description of each control value. Must be present if control is present. If present, control_description[0] should describe time points where control == 0.
         %
-        %  - data (uint32) - Index of the image (using zero-indexing) in the linked Images object.
+        %  - data (int32) - Index of the frame in the referenced ImageSeries.
         %
         %  - data_continuity (char) - Optionally describe the continuity of the data. Can be "continuous", "instantaneous", or "step". For example, a voltage trace would be "continuous", because samples are recorded from a continuous process. An array of lick times would be "instantaneous", because the data represents distinct moments in time. Times of image presentations would be "step" because the picture remains the same until the next timepoint. This field is optional, but is useful in providing information about the underlying data. It may inform the way this data is interpreted, the way it is visualized, and what analysis methods are applicable.
         %
-        %  - data_conversion (single) - This field is unused by IndexSeries.
+        %  - data_conversion (single) - Scalar to multiply each element in data to convert it to the specified 'unit'. If the data are stored in acquisition system units or other units that require a conversion to be interpretable, multiply the data by 'conversion' to convert the data to the specified 'unit'. e.g. if the data acquisition system stores values in this object as signed 16-bit integers (int16 range -32,768 to 32,767) that correspond to a 5V range (-2.5V to 2.5V), and the data acquisition system gain is 8000X, then the 'conversion' multiplier to get from raw data acquisition values to recorded volts is 2.5/32768/8000 = 9.5367e-9.
         %
-        %  - data_offset (single) - This field is unused by IndexSeries.
+        %  - data_resolution (single) - Smallest meaningful difference between values in data, stored in the specified by unit, e.g., the change in value of the least significant bit, or a larger number if signal noise is known to be present. If unknown, use -1.0.
         %
-        %  - data_resolution (single) - This field is unused by IndexSeries.
+        %  - data_unit (char) - Base unit of measurement for working with the data. Actual stored values are not necessarily stored in these units. To access the data in these units, multiply 'data' by 'conversion'.
         %
         %  - description (char) - Description of the time series.
         %
-        %  - indexed_images (Images) - Link to Images object containing an ordered set of images that are indexed. The Images object must contain a 'ordered_images' dataset specifying the order of the images in the Images type.
-        %
-        %  - indexed_timeseries (ImageSeries) - Link to ImageSeries object containing images that are indexed. Use of this link is discouraged and will be deprecated. Link to an Images type instead.
+        %  - indexed_timeseries (ImageSeries) - Link to ImageSeries object containing images that are indexed.
         %
         %  - starting_time (double) - Timestamp of the first sample in seconds. When timestamps are uniformly spaced, the timestamp of the first sample can be specified and all subsequent ones calculated from the sampling rate attribute.
         %
@@ -52,7 +49,6 @@ methods
         % Output Arguments:
         %  - indexSeries (types.core.IndexSeries) - A IndexSeries object
         
-        varargin = [{'data_conversion' types.util.correctType(1, 'single') 'data_offset' types.util.correctType(0, 'single') 'data_resolution' types.util.correctType(-1, 'single') 'data_unit' 'N/A'} varargin];
         obj = obj@types.core.TimeSeries(varargin{:});
         
         
@@ -60,10 +56,8 @@ methods
         p.KeepUnmatched = true;
         p.PartialMatching = false;
         p.StructExpand = false;
-        addParameter(p, 'indexed_images',[]);
         addParameter(p, 'indexed_timeseries',[]);
         misc.parseSkipInvalidName(p, varargin);
-        obj.indexed_images = p.Results.indexed_images;
         obj.indexed_timeseries = p.Results.indexed_timeseries;
         if strcmp(class(obj), 'types.core.IndexSeries')
             cellStringArguments = convertContainedStringsToChars(varargin(1:2:end));
@@ -71,39 +65,14 @@ methods
         end
     end
     %% SETTERS
-    function set.indexed_images(obj, val)
-        obj.indexed_images = obj.validate_indexed_images(val);
-    end
     function set.indexed_timeseries(obj, val)
         obj.indexed_timeseries = obj.validate_indexed_timeseries(val);
     end
     %% VALIDATORS
     
     function val = validate_data(obj, val)
-        val = types.util.checkDtype('data', 'uint32', val);
+        val = types.util.checkDtype('data', 'int32', val);
         types.util.validateShape('data', {[Inf]}, val)
-    end
-    function val = validate_data_conversion(obj, val)
-        val = types.util.checkDtype('data_conversion', 'single', val);
-        types.util.validateShape('data_conversion', {[1]}, val)
-    end
-    function val = validate_data_offset(obj, val)
-        val = types.util.checkDtype('data_offset', 'single', val);
-        types.util.validateShape('data_offset', {[1]}, val)
-    end
-    function val = validate_data_resolution(obj, val)
-        val = types.util.checkDtype('data_resolution', 'single', val);
-        types.util.validateShape('data_resolution', {[1]}, val)
-    end
-    function val = validate_data_unit(obj, val)
-        if isequal(val, 'N/A')
-            val = 'N/A';
-        else
-            error('NWB:Type:ReadOnlyProperty', 'Unable to set the ''data_unit'' property of class ''<a href="matlab:doc types.core.IndexSeries">IndexSeries</a>'' because it is read-only.')
-        end
-    end
-    function val = validate_indexed_images(obj, val)
-        val = types.util.validateSoftLink('indexed_images', val, 'types.core.Images');
     end
     function val = validate_indexed_timeseries(obj, val)
         val = types.util.validateSoftLink('indexed_timeseries', val, 'types.core.ImageSeries');
@@ -114,12 +83,7 @@ methods
         if any(strcmp(refs, fullpath))
             return;
         end
-        if ~isempty(obj.indexed_images)
-            refs = obj.indexed_images.export(fid, [fullpath '/indexed_images'], refs);
-        end
-        if ~isempty(obj.indexed_timeseries)
-            refs = obj.indexed_timeseries.export(fid, [fullpath '/indexed_timeseries'], refs);
-        end
+        refs = obj.indexed_timeseries.export(fid, [fullpath '/indexed_timeseries'], refs);
     end
 end
 
