@@ -1,5 +1,4 @@
-function ExportVideoClipFromAviEphys_Top(r, FrameInfo, ClipInfo, scn_scale, remake, x_rev)
-
+function ExportVideoClipFromAvi_Top(BehClass, FrameInfo, ClipInfo, scn_scale, remake, x_rev)
 
 % ExportVideoClipFromAvi(thisTable, FrameTable, 'Event', VideoEvent,'ANM', ANM, ...
 %     'Pre', Pre, 'Post', Post, 'BehaviorType', BehaviorType, 'Session', Session, 'Remake', 1)
@@ -21,11 +20,7 @@ scale_ratio     =   1 / scn_scale;
 color           =   GPSColor();
 
 %% get information
-% load Ephys data
-rb = r.Behavior;
-
 % get behavior data
-BehClass = r.BehaviorClass;
 BehTable = BehClass.BehavTable;
 anm      = BehClass.Subject;
 beh_type = BehClass.Task;
@@ -37,77 +32,62 @@ tPre         = ClipInfo.Pre;
 tPost        = ClipInfo.Post;
 time_elapsed = -tPre:0.1:tPost;
 
-% in mili-seconds, timing of selected events.
-tEventEphys = FrameInfo.tEventEphys;
+%  in mili-seconds, timing of selected events.
 tEventBpod  = FrameInfo.tEventBpod*1000;
 Trials      = FrameInfo.Trials;
 % in mili-seconds, timing of each frame in Bpod's world
 tFramesBpod  = FrameInfo.tFramesInBpod;
-% in mili-seconds, timing of each frame in Ephys' world
-tFramesEphys = FrameInfo.tFramesInEphys;
 
 % set up video clip storage folder
 thisView   = "Top";
-viewFolder = ClipInfo.VideoFolderTop;
-% viewFolder = fullfile(pwd, "Video", thisView);
+viewFolder = fullfile(pwd, thisView);
+% viewFolder = ClipInfo.VideoFolderTop;
 clipFolder = fullfile(viewFolder, 'Clips');
 if ~isfolder(clipFolder)
     mkdir(clipFolder);
 end
 
-% Get Ephys event timings
-id_centin = find(strcmp(rb.Labels, 'PokeCentIn'));
-t_centin  = rb.EventTimings(rb.EventMarkers==id_centin);
-id_centout = find(strcmp(rb.Labels, 'PokeCentOut'));
-t_centout  = rb.EventTimings(rb.EventMarkers==id_centout);
-id_choicein = find(strcmp(rb.Labels, 'PokeChoiceIn'));
-t_choicein  = rb.EventTimings(rb.EventMarkers==id_choicein);
-id_trigger = find(strcmp(rb.Labels, 'Trigger'));
-t_trigger  = rb.EventTimings(rb.EventMarkers==id_trigger);
-
 % % setting up metadata
-% VidsMeta = struct('Session', [], 'Event', [], 'EventIndex', [], 'Performance', [], 'EventTime', [], 'FrameTimesE', [], 'FrameTimesB', [], 'VideoOrg', [], 'FrameIndx', [], 'Code', [], 'CreatedOn', []);
+% VidsMeta = struct('Session', [], 'Event', [], 'EventIndex', [], 'Performance', [], 'EventTime', [], 'FrameTimesB', [], 'VideoOrg', [], 'FrameIndx', [], 'Code', [], 'CreatedOn', []);
 
 %% Start making videos
 fprintf("\nStart video clipping ...\n")
 video_accum = 0;
 
-wait_bar = waitbar(0, sprintf('1 / %d', length(tEventEphys)), 'Name', sprintf('Clipping_%s_%s', anm, session));
-for i = 1:length(tEventEphys) % i is not the trial number
+wait_bar = waitbar(0, sprintf('1 / %d', length(tEventBpod)), 'Name', sprintf('Clipping_%s_%s', anm, session));
+for i = 1:length(tEventBpod) % i is also the trial number
 
     i_trial = Trials(i);
-    ind_bpod = find(BehClass.Trials==i_trial);
-    ind_ephys = find(rb.TrialID==i_trial);
 
     if ~isvalid(wait_bar)
         fprintf("\n****** Interrupted ******\n");
-        fprintf("%d / %d clips have been generated\n", i-1, length(tEventEphys));
+        fprintf("%d / %d clips have been generated\n", i-1, length(tEventBpod));
         return
     end
-    waitbar(i/length(tEventEphys), wait_bar, sprintf('%d / %d', i, length(tEventEphys)));
+    waitbar(i/length(tEventBpod), wait_bar, sprintf('%d / %d', i, length(tEventBpod)));
 
-    itEvent = tEventEphys(i);
+    itEvent = tEventBpod(i);
 
-    IndThisClip = find(tFramesEphys>=itEvent-tPre & tFramesEphys<=itEvent+tPost);
+    IndThisClip = find(tFramesBpod>=itEvent-tPre & tFramesBpod<=itEvent+tPost);
     if isempty(IndThisClip)
         continue
     end
-    [~, IndThisFrame] = min(abs(tFramesEphys - itEvent));
+    [~, IndThisFrame] = min(abs(tFramesBpod - itEvent));
 
     % check if a video has been created and check if we want to
     % re-create the same video
     switch event
         case 'PortSamplePokeTime'
-            ClipName = sprintf('%s_%s_SamplePokeTrial%d', anm, session, round(itEvent));
+            ClipName = sprintf('%s_%s_SamplePokeTrial%03d', anm, session, round(itEvent));
 
         case 'PortCenterPokeTime'
-            ClipName = sprintf('%s_%s_CenterPokeTrial%d', anm, session, round(itEvent));
+            ClipName = sprintf('%s_%s_CenterPokeTrial%03d', anm, session, round(itEvent));
 
         case 'CentInTime'
-            ClipName = sprintf('%s_%s_CentIn%d_%sView', anm, session, round(itEvent), thisView);
+            ClipName = sprintf('%s_%s_CentIn%03d_%sView', anm, session, round(itEvent), thisView);
 
         case 'CentOutTime'
-            ClipName = sprintf('%s_%s_ChoiceTrial%d_%sView', anm, session, round(itEvent), thisView);
+            ClipName = sprintf('%s_%s_ChoiceTrial%03d_%sView', anm, session, round(itEvent), thisView);
     end
 
     VidClipFileName = fullfile(clipFolder, [ClipName '.mp4']);
@@ -117,51 +97,34 @@ for i = 1:length(tEventEphys) % i is not the trial number
         continue % move on
     end
 
-    iFrameTimesEphys = tFramesEphys(IndThisClip);
+    iFrameTimesBpod = tFramesBpod(IndThisClip);
     % make sure the videoclip can be constructed from a single video file
-    if itEvent-iFrameTimesEphys(1) < tPre-50
+    if itEvent-iFrameTimesBpod(1) < tPre-50
         continue
-    elseif iFrameTimesEphys(end)-itEvent < tPost-50
+    elseif iFrameTimesBpod(end)-itEvent < tPost-50
         continue
-    elseif ~strcmp(FrameInfo.MyVidFiles{(IndThisClip(1))}, FrameInfo.MyVidFiles{(IndThisClip(end))})
+    elseif ~strcmp(FrameInfo.MyVidFiles{(IndThisClip(1))}, FrameInfo.MyVidFiles{(IndThisFrame)}) || ~strcmp(FrameInfo.MyVidFiles{(IndThisClip(end))}, FrameInfo.MyVidFiles{(IndThisFrame)})
         % same video file
         continue
     end
-
     EventFrame   = IndThisFrame - IndThisClip(1) + 1;
     NumFrames    = length(IndThisClip);
     NumFramePre  = EventFrame - 1;
     NumFramePost = NumFrames - EventFrame;
 
-    tPre_this = tFramesEphys(IndThisFrame) - tFramesEphys(IndThisClip(1));
+    tPre_this = tFramesBpod(IndThisFrame) - tFramesBpod(IndThisClip(1));
 
     % poke events
 %     SamplePokeTime  =   BehTable.PortSamplePokeTime(i)*1000-iFrameTimesBpod(1);
-%     CentInTime      =   (BehTable.TrialStartTime(i) + BehTable.CentInTime(i))*1000     - iFrameTimesEphys(1) - tPre_this;
-%     CentOutTime     =   (BehTable.TrialStartTime(i) + BehTable.CentOutTime(i))*1000    - iFrameTimesEphys(1) - tPre_this;
-%     ChoicePokeTime  =   (BehTable.TrialStartTime(i) + BehTable.ChoicePokeTime(i))*1000 - iFrameTimesEphys(1) - tPre_this;
-% 
-%     IntOnTime       =   CentInTime + 1000*IntTable.On(IntTable.Trials==i_trial);
-%     IntOffTime      =   CentInTime + IntOnTime + 1000*IntTable.Dur(IntTable.Trials==i_trial);
-%     poke_state      =   .5*ones(1, length(time_elapsed));
-%     poke_state(time_elapsed>=CentInTime & time_elapsed<CentOutTime) = 0.2;
-%     for int = 1:length(IntOnTime)
-%         poke_state(time_elapsed>=IntOnTime(int) & time_elapsed<IntOffTime(int)) = .35;
-%     end
+    CentInTime      =   (BehTable.TrialStartTime(i) + BehTable.CentInTime(i))*1000     - iFrameTimesBpod(1) - tPre_this;
+    CentOutTime     =   (BehTable.TrialStartTime(i) + BehTable.CentOutTime(i))*1000    - iFrameTimesBpod(1) - tPre_this;
+    ChoicePokeTime  =   (BehTable.TrialStartTime(i) + BehTable.ChoicePokeTime(i))*1000 - iFrameTimesBpod(1) - tPre_this;
 
-    CentInTime  = t_centin(ind_ephys) - tFramesEphys(IndThisFrame);
-    CentOutTime = t_centout(ind_ephys) - tFramesEphys(IndThisFrame);
-    poke_state  = .5*ones(1, length(time_elapsed));
+    poke_state      =   .5*ones(1, length(time_elapsed));
     poke_state(time_elapsed>=CentInTime & time_elapsed<CentOutTime) = 0.2;
 
-    ChoicePokeTime = t_choicein - tFramesEphys(IndThisFrame);
-    ChoicePokeTime = ChoicePokeTime(ChoicePokeTime<=tPost & ChoicePokeTime>=-tPre);
-    if isempty(ChoicePokeTime)
-        ChoicePokeTime = nan;
-    end
-
-    thisFP = CentInTime + rb.Foreperiods(ind_ephys)*1000;
-    switch rb.Outcome(ind_ephys)
+    thisFP          =   CentInTime + BehTable.FP(i)*1000;
+    switch BehTable.Outcome{i}
         case {'Premature', 'Pre'}
             thisOutcome = "Premature";
         case {'Correct', 'Cor'}
@@ -175,18 +138,15 @@ for i = 1:length(tEventEphys) % i is not the trial number
     end
 
     % cue events
-    ChoiceCueTime  = (BehTable.ChoiceCueTime(ind_bpod,:) - BehTable.CentInTime(ind_bpod))*1000 + t_centin(ind_ephys) - tFramesEphys(IndThisFrame);
-
-    TriggerCueTime = t_trigger - tFramesEphys(IndThisFrame);
-    TriggerCueTime = TriggerCueTime(TriggerCueTime<=tPost & TriggerCueTime>=-tPre);
-    if isempty(TriggerCueTime)
-        TriggerCueTime = [nan nan];
-    else
-        TriggerCueTime = [0 250] + TriggerCueTime;
+    try
+        ChoiceCueTime = (BehTable.TrialStartTime(i) + BehTable.ChoiceCueTime(i,:))*1000 - iFrameTimesBpod(1) - tPre_this;
+    catch
+        ChoiceCueTime = (BehTable.TrialStartTime(i) + [BehTable.ChoiceCueTime_1(i) BehTable.ChoiceCueTime_2(i)])*1000 - iFrameTimesBpod(1) - tPre_this;
     end
+    TriggerCueTime  =   [0 250] + (BehTable.TrialStartTime(i) + BehTable.TriggerCueTime(i))*1000 - iFrameTimesBpod(1) - tPre_this;
 
     if strcmp(beh_type, "KornblumSRT")
-        if rb.CueIndex(ind_ephys)==0
+        if BehTable.Cued(i)==0
             TriggerCueTime = nan(1,2);
         end
     end
@@ -198,9 +158,9 @@ for i = 1:length(tEventEphys) % i is not the trial number
     VidMeta.Session      = session;
     VidMeta.Event        = event;
     VidMeta.EventIndex   = i_trial;
-    VidMeta.EventTimeE   = itEvent/1000; % Event time in sec (Ephys)
-    VidMeta.EventTimeB   = tEventBpod(i)/1000; % Event time in sec (Bpod)
-    VidMeta.FrameTimesE  = tFramesEphys(IndThisClip); % frame time in ms in behavior time
+%     VidMeta.EventTimeE   = itEvent/1000; % Event time in sec (Ephys)
+    VidMeta.EventTimeB   = itEvent/1000; % Event time in sec (Bpod)
+%     VidMeta.FrameTimesE  = tFramesEphys(IndThisClip); % frame time in ms in behavior time
     VidMeta.FrameTimesB  = tFramesBpod(IndThisClip); % frame time in ms in behavior time
     VidMeta.FrameIndx    = IndThisClip; % frame index in original video
     VidMeta.NumFrames    = NumFrames;
@@ -264,20 +224,20 @@ for i = 1:length(tEventEphys) % i is not the trial number
     colormap('gray');
 
     % plot some behavior data
-% %     tthis_frame   = round(iFrameTimesEphys(k) - iFrameTimesEphys(1) - tPre_this);
+% %     tthis_frame   = round(iFrameTimesBpod(k) - iFrameTimesBpod(1) - tPre_this);
 % %     time_of_frame = sprintf('%3.0f', tthis_frame);
 % % 
 % %     text(W-20, 40,  sprintf('%s %s', anm, session), 'color', [255 255 255]/255, 'FontSize', 20, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
 % %     text(W-20, 90,  beh_type, 'color', [255 255 255]/255, 'FontSize', 20, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
 % %     text(W-20, 140,  sprintf('Trial %03d', i_trial), 'color', [255 255 255]/255, 'FontSize', 20, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
-% %     text(W-20, 190,  sprintf('FP: %d ms', thisFP), 'color', [255 255 255]/255, 'FontSize', 20, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
-% %     text(W-20, 240,  sprintf('RT: %d ms', round(1000*BehTable.RT(ind_bpod))), 'color', [255 255 255]/255, 'FontSize', 20, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
+% %     text(W-20, 190,  sprintf('FP: %d ms', BehTable.FP(i)*1000), 'color', [255 255 255]/255, 'FontSize', 20, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
+% %     text(W-20, 240,  sprintf('RT: %d ms', round(1000*BehTable.RT(i))), 'color', [255 255 255]/255, 'FontSize', 20, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
 % %     text(W-20, 290,  thisOutcome, 'color', color.(thisOutcome), 'FontSize', 20, 'fontweight', 'bold', 'HorizontalAlignment', 'right')
 % %     time_text = text(20, 40, [time_of_frame ' ms'], 'color', [255 215 0]/255, 'FontSize', 22,'fontweight', 'bold');
-%     
 % %     % plot some important behavioral events
+% % 
 % %     ha2 = axes;
-% %     set(ha2, 'units', 'pixels', 'position', [0.05*W_scl 0.11*H_scl 0.9*W_scl 0.18*H_scl], ...
+% %     set(ha2, 'units', 'pixels', 'position', [0.05*scale_ratio*W 0.11*scale_ratio*H 0.9*scale_ratio*W 0.18*scale_ratio*H], ...
 % %         'nextplot', 'add', 'xtick', [-tPre:500:tPost], 'xlim', [-tPre tPost], ...
 % %         'ycolor', 'none', 'ylim', [0 1.25], 'tickdir', 'out', 'FontSize', 20) %#ok<NBRAK>
 % %     ha2.XLabel.String = 'Time (ms)';
@@ -286,10 +246,8 @@ for i = 1:length(tEventEphys) % i is not the trial number
 % % 
 % %     time_line = xline(ha2, tthis_frame, 'Color', 'k', 'LineStyle', '-', 'LineWidth', 2, 'Alpha', 0.6);
 % % 
-% %     if thisOutcome~="Probe"
-% %         xline(ha2, thisFP, 'Color', 'k', 'LineStyle', ':', 'LineWidth', 2);
-% %     end
-% %     
+% %     xline(ha2, thisFP, 'Color', 'k', 'LineStyle', ':', 'LineWidth', 2);
+% % 
 % %     stairs(ha2, time_elapsed, poke_state, 'Color', 'k', 'LineWidth', 2.5);
 % %     text(ha2, -tPre+5, 0.35, "Center poke", 'Color', 'k', 'FontSize', 20, 'FontWeight', 'bold', 'VerticalAlignment', 'middle');
 % % 
@@ -311,7 +269,7 @@ for i = 1:length(tEventEphys) % i is not the trial number
     % plot or update data in this plot
     for k = 2:nframe
 
-% %         tthis_frame = round(iFrameTimesEphys(k) - iFrameTimesEphys(1) - tPre_this);
+% %         tthis_frame = round(iFrameTimesBpod(k) - iFrameTimesBpod(1) - tPre_this);
 % %         time_of_frame = sprintf('%3.0f', tthis_frame);
 % %         time_text.String = [time_of_frame ' ms'];
 % % 
@@ -329,7 +287,7 @@ for i = 1:length(tEventEphys) % i is not the trial number
 
     warning('off', 'MATLAB:audiovideo:VideoWriter:mp4FramePadded');
     writerObj = VideoWriter(VidClipFileName, 'MPEG-4');
-    Fs = median(1000./diff(iFrameTimesEphys));
+    Fs = median(1000./diff(iFrameTimesBpod));
     Fs = roundn(Fs, 1);
     writerObj.FrameRate = 0.4 * Fs;
     writerObj.Quality   = 100;
@@ -342,8 +300,6 @@ for i = 1:length(tEventEphys) % i is not the trial number
         frame = F(ifrm);
         writeVideo(writerObj, frame);
     end
-    warning('on', 'MATLAB:audiovideo:VideoWriter:mp4FramePadded');
-
     % close the writer object
     close(writerObj);
     clear writerObj F IndThisClip IndThisFrame
