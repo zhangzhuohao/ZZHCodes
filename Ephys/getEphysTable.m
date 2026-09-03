@@ -1,4 +1,8 @@
-function EphysTable = getEphysTable(r)
+function EphysTable = getEphysTable(r, save_tbl)
+
+if nargin<2
+    save_tbl = 1;
+end
 
 rb = r.Behavior;
 
@@ -42,9 +46,10 @@ EphysTable.RT = EphysTable.tCentOut - EphysTable.tTrigger;
 EphysTable.MT = EphysTable.tChoice - EphysTable.tCentOut;
 
 BehavInfo = EphysTable;
+if save_tbl
 save_name = sprintf("BehavInfo_%s_%s.mat", r.BehaviorClass.Subject, r.BehaviorClass.Session);
 save(save_name, 'BehavInfo');
-
+end
 % r.EphysTable = EphysTable;
 % save(sprintf('RTarray_%s_%s.mat', r.BehaviorClass.Subject, r.BehaviorClass.Session), "r");
 

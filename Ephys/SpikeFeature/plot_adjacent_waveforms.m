@@ -19,7 +19,7 @@ xcoords = r.ChanMap.xcoords(ind_k);
 ycoords = r.ChanMap.ycoords(ind_k);
 
 x_id = (xcoords-min(xcoords)) / unique(diff(unique(xcoords)));
-y_id = (ycoords-min(ycoords)) / unique(diff(unique(ycoords)));
+y_id = (ycoords-min(ycoords)) / mode(diff(unique(ycoords)));
 
 n_x = length(unique(x_id));
 
