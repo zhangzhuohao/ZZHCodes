@@ -1,4 +1,9 @@
-function obj = getTrialInfo(obj, SessionData)
+function obj = getTrialInfo(obj, SessionData, bug_trial)
+
+if nargin<3
+    bug_trial = [];
+end
+
 % Get trial information of events' time points
 obj.NumTrials = SessionData.nTrials;
 
@@ -251,6 +256,11 @@ for i = 1:obj.NumTrials
 end
 
 obj.FP = roundn(obj.FP, -3);
+
+%% get bug trials from manual label
+if ~isempty(bug_trial)
+    obj.Outcome(ismember(obj.Trials, bug_trial.trial_id)) = "Bug";
+end
 
 %% remove bug trials
 ind_bug = obj.Outcome=="Bug" | (obj.FP<=0 & obj.FP~=-1);

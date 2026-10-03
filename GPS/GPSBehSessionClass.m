@@ -148,7 +148,7 @@ classdef GPSBehSessionClass < GPSBehClass & GPSPlot
             load(BpodFile, 'SessionData');
             obj.BpodFile = BpodFile;
             [obj.SessionFolder, obj.BpodFileName] = fileparts(obj.BpodFile);
-            
+
             % Get meta information from session folder path and Bpod file name
             session_path_info = split(obj.SessionFolder, '\');
             bpod_file_info = split(obj.BpodFileName, '_');
@@ -232,8 +232,15 @@ classdef GPSBehSessionClass < GPSBehClass & GPSPlot
             obj.SessionStartTime = string(SessionData.Info.SessionStartTime_UTC);
 
             % Get paradigm specific trial information
-            feval(obj.Task+".getTrialInfo", obj, SessionData);
 
+            bug_log_file = fullfile(obj.SessionFolder, 'bug_trial_log.txt');
+            if isfile(bug_log_file)
+                bug_info = extract_bug_trial_log(bug_log_file);
+                feval(obj.Task+".getTrialInfo", obj, SessionData, bug_info);
+            else
+                feval(obj.Task+".getTrialInfo", obj, SessionData);
+            end
+            
             % Get PDFs and CDFs
             obj.get_all_kdes(0);
 
